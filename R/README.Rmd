@@ -15,11 +15,10 @@ knitr::opts_chunk$set(
 ```
 
 #PRIMME
-This package is an R interface to PRIMME, a C library for computing 
-a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix.
-It can also compute singular values and vectors of a square or rectangular matrix. 
-It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. 
-It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
+This package is an R interface to PRIMME, a high-performance C library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
+PRIMME is especially optimized for large, difficult problems.
+Real symmetric and complex Hermitian problems, standard $A x = \lambda x$ and generalized $A x = \lambda B x$, are supported.
+It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence.
 
 The main contributors to PRIMME are James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu.
 
@@ -35,8 +34,12 @@ Use the following two references to cite this package:
   J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
 
 #Installation Instructions
-We are currently working to put the PRIMME package on CRAN. 
-Meanwhile, to install the latest version:
+The latest release of PRIMME is available on CRAN:
+```{r, eval=FALSE}
+install.packages("PRIMME")
+```
+
+To install the developer version:
 ```{r, eval=FALSE}
 library(devtools)
 install_github("primme/primme", subdir="R")
@@ -190,6 +193,11 @@ r <- bench_eigs(
 )
 kable(r, digits=2, caption="40 eigenvalues closest to zero on dense matrix")
 ```
+```{r results='hide', echo=FALSE}
+unloadNamespace("RSpectra")
+unloadNamespace("svd")
+unloadNamespace("irlba")
+```
 
 ## Singular value problems
 For SVD problems, the package provides a similar interface:
@@ -254,6 +262,10 @@ PRIMME svds may perform as good as similar methods in the packages svd, RSpectra
 in solving few singular values.
 
 ```{r }
+library(RSpectra, warn.conflicts=FALSE, pos=5)
+library(irlba, pos=5)
+library(svd, pos=5)
+
 Ad <- matrix(rnorm(6000*6000),6000)
 set.seed(1)
 r <- bench_svds(

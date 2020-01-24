@@ -2,7 +2,7 @@
 PRIMME
 ======
 
-This package is an R interface to PRIMME, a C library for computing a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. It can also compute singular values and vectors of a square or rectangular matrix. It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
+This package is an R interface to PRIMME, a high-performance C library for computing a few eigenvalues/eigenvectors, and singular values/vectors. PRIMME is especially optimized for large, difficult problems. Real symmetric and complex Hermitian problems, standard *A**x* = *λ**x* and generalized *A**x* = *λ**B**x*, are supported. It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence.
 
 The main contributors to PRIMME are James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu.
 
@@ -15,7 +15,13 @@ Use the following two references to cite this package:
 Installation Instructions
 =========================
 
-We are currently working to put the PRIMME package on CRAN. Meanwhile, to install the latest version:
+The latest release of PRIMME is available on CRAN:
+
+``` r
+install.packages("PRIMME")
+```
+
+To install the developer version:
 
 ``` r
 library(devtools)
@@ -192,7 +198,7 @@ r <- bench_eigs(
 kable(r, digits=2, caption="2 largest eigenvalues on dense matrix")
 ```
 
-| test     | time    | matvecs | rnorm        |
+| test     | time             | matvecs | rnorm                |
 |:---------|:--------|:--------|:-------------|
 | PRIMME   | 15.502  | 550     | 0.1129294    |
 | irlba    | 93.184  | --      | 0.04308973   |
@@ -213,7 +219,7 @@ r <- bench_eigs(
 kable(r, digits=2, caption="5 eigenvalues closest to zero on dense matrix")
 ```
 
-| test        | time  | matvecs | rnorm        |
+| test        | time              | matvecs | rnorm                |
 |:------------|:------|:--------|:-------------|
 | PRIMME      | 4.742 | 655     | 0.0005940415 |
 | PRIMME Prec | 0.363 | 49      | 0.0003416209 |
@@ -236,7 +242,7 @@ r <- bench_eigs(
 kable(r, digits=2, caption="40 eigenvalues closest to zero on dense matrix")
 ```
 
-| test            | time   | matvecs | rnorm        |
+| test            | time             | matvecs | rnorm                |
 |:----------------|:-------|:--------|:-------------|
 | PRIMME defaults | 13.597 | 18315   | 4.993289e-06 |
 | PRIMME min time | 8.444  | 18945   | 4.935499e-06 |
@@ -382,7 +388,7 @@ r <- bench_svds(
 kable(r, digits=2, caption="2 largest singular values on dense matrix")
 ```
 
-| test     | time  | matvecs | rnorm        |
+| test     | time             | matvecs | rnorm                |
 |:---------|:------|:--------|:-------------|
 | PRIMME   | 3.857 | 280     | 0.001440893  |
 | irlba    | 4.563 | 342     | 0.001719602  |
@@ -403,7 +409,7 @@ r <- bench_svds(
 kable(r, digits=2, caption="40 largest singular values on sparse matrix")
 ```
 
-| test     | time   | matvecs | rnorm        |
+| test     | time             | matvecs | rnorm                |
 |:---------|:-------|:--------|:-------------|
 | PRIMME   | 3.718  | 12216   | 0.4924661    |
 | irlba    | 13.804 | 4244    | 1.708491     |
@@ -430,7 +436,7 @@ r <- bench_svds(
 kable(r, digits=2, caption="5 smallest singular values on sparse matrix")
 ```
 
-| test        | time   | matvecs | rnorm        |
+| test        | time             | matvecs | rnorm                |
 |:------------|:-------|:--------|:-------------|
 | PRIMME      | 554.16 | 26810   | 2.225024e-07 |
 | PRIMME Prec | 22.046 | 1022    | 2.782366e-07 |

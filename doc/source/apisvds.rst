@@ -7,6 +7,7 @@ Singular Value Problems
 
    svdsc
    svdsf77
+   svdsf90
    pysvds
    matsvds  
    appendixsvds

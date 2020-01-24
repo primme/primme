@@ -299,10 +299,6 @@ SEXP primme_get_member_rcpp(std::string labelstr, PrimmeParams primme) {
       case PRIMME_nLocal:
       case PRIMME_globalSumReal:
       case PRIMME_numTargetShifts:
-      case PRIMME_intWorkSize:
-      case PRIMME_realWorkSize:
-      case PRIMME_intWork:
-      case PRIMME_realWork:
       case PRIMME_outputFile:
       case PRIMME_matrix:
       case PRIMME_preconditioner:
@@ -382,10 +378,6 @@ void primme_set_member_rcpp(std::string labelstr, SEXP value, PrimmeParams primm
       case PRIMME_nLocal:
       case PRIMME_globalSumReal:
       case PRIMME_numTargetShifts:
-      case PRIMME_intWorkSize:
-      case PRIMME_realWorkSize:
-      case PRIMME_intWork:
-      case PRIMME_realWork:
       case PRIMME_outputFile:
       case PRIMME_matrix:
       case PRIMME_preconditioner:
@@ -443,6 +435,12 @@ struct getMatrixField {
    }
 };
 
+struct getMassMatrixField {
+   static void *get(primme_params *primme) {
+      return primme->massMatrix;
+   }
+};
+
 struct getPreconditionerField {
    static void* get(primme_params *primme) {
       return primme->preconditioner;
@@ -495,25 +493,25 @@ static void matrixMatvecEigs(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
 // - Scalar: type of PRIMME evecs
 // - x, ldx, y, ldy, ...: arguments of matrixMatvec, applyPreconditioner...
 
-template <typename TS>
+template <typename TS, typename F>
 void matrixMatvecEigs_Matrix(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, struct primme_params *primme, int *ierr)
 {
    checkUserInterrupt(primme);
 
-   const TS *A = (const TS*)primme->matrix;
+   const TS *A = (const TS*)F::get(primme);
    xhemm("L", "L", primme->nLocal, *blockSize, A, primme->nLocal, (TS*)x,
          (int)*ldx, (TS*)y, (int)*ldy);
    *ierr = 0;
 }
 
-template <typename TS>
+template <typename TS, typename F>
 void matrixMatvecEigs_CHM_DN(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, struct primme_params *primme, int *ierr)
 {
    checkUserInterrupt(primme);
 
-   CHM_DN chm = (CHM_DN)primme->matrix;
+   CHM_DN chm = (CHM_DN)F::get(primme);
    ASSERT(chm->nrow == chm->ncol && (PRIMME_INT)chm->nrow == primme->nLocal);
    ASSERT(chm->dtype == CHOLMOD_DOUBLE);
    ASSERT((chm->xtype == CHOLMOD_REAL ? sizeof(double) : sizeof(Rcomplex)) == sizeof(TS));
@@ -523,13 +521,13 @@ void matrixMatvecEigs_CHM_DN(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    *ierr = 0;
 }
 
-template <typename T>
+template <typename T, typename F>
 void matrixMatvecEigs_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, struct primme_params *primme, int *ierr)
 {
    checkUserInterrupt(primme);
 
-   const_CHM_SP chm = (const_CHM_SP)((void**)primme->matrix)[0];
+   const_CHM_SP chm = (const_CHM_SP)((void**)F::get(primme))[0];
    ASSERT(chm->nrow == chm->ncol && (PRIMME_INT)chm->nrow == primme->nLocal);
 
    cholmod_dense chx, chy;
@@ -550,7 +548,7 @@ void matrixMatvecEigs_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    chy.xtype = (sizeof(T) == sizeof(double) ? CHOLMOD_REAL : CHOLMOD_COMPLEX);
    chy.dtype = CHOLMOD_DOUBLE;
    const double ONEf[] = {1.0, 0.0}, ZEROf[] = {0.0, 0.0};
-   CHM_CM chol_c = (CHM_CM)((void**)primme->matrix)[1];
+   CHM_CM chol_c = (CHM_CM)((void**)F::get(primme))[1];
 
    M_cholmod_sdmult(chm, 0, ONEf, ZEROf, (const_CHM_DN)&chx, &chy, chol_c);
 
@@ -629,28 +627,28 @@ static List xprimme(Matrix<S> ortho, Matrix<S> init, SEXP A, SEXP B,
    primme->initSize = init.cols();
    copyMatrix(init, (TS*)&evecs[primme->nLocal*ortho.cols()], primme->nLocal, init.cols(), primme->nLocal, false);
 
-   // Set matvec and preconditioner
+   // Set matvec
 
-   void *aux[2] = {NULL, NULL};
-   cholmod_common chol_c;
+   void *Aaux[2] = {NULL, NULL};
+   cholmod_common Achol_c;
    NumericMatrix *An = NULL;
    ComplexMatrix *Ac = NULL;
    Function *Af = NULL;
    if (is<NumericMatrix>(A)) {
       primme->matrix = REAL(A);
-      primme->matrixMatvec = matrixMatvecEigs_Matrix<TS>;
+      primme->matrixMatvec = matrixMatvecEigs_Matrix<TS, getMatrixField>;
    } else if (is<ComplexMatrix>(A)) {
       primme->matrix = COMPLEX(A);
-      primme->matrixMatvec = matrixMatvecEigs_Matrix<TS>;
+      primme->matrixMatvec = matrixMatvecEigs_Matrix<TS, getMatrixField>;
    } else if (Matrix_isclass_ge_dense(A)) {
       primme->matrix = AS_CHM_DN(A);
-      primme->matrixMatvec = matrixMatvecEigs_CHM_DN<TS>;
+      primme->matrixMatvec = matrixMatvecEigs_CHM_DN<TS, getMatrixField>;
    } else if (Matrix_isclass_Csparse(A)) {
-      aux[0] = AS_CHM_SP(A);
-      aux[1] = &chol_c;
-      M_R_cholmod_start(&chol_c);
-      primme->matrix = aux;
-      primme->matrixMatvec = matrixMatvecEigs_CHM_SP<T>;
+      Aaux[0] = AS_CHM_SP(A);
+      Aaux[1] = &Achol_c;
+      M_R_cholmod_start(&Achol_c);
+      primme->matrix = Aaux;
+      primme->matrixMatvec = matrixMatvecEigs_CHM_SP<T, getMatrixField>;
    } else if (is<Function>(A)) {
       primme->matrix = Af = new Function(A);
       primme->matrixMatvec = matrixMatvecEigs<T, S, TS, getMatrixField>;
@@ -658,16 +656,45 @@ static List xprimme(Matrix<S> ortho, Matrix<S> init, SEXP A, SEXP B,
       stop("Unsupported matrix type; pass a function instead");
    }
 
+   // Set mass matrix
+
+   void *Baux[2] = {NULL, NULL};
+   cholmod_common Bchol_c;
+   NumericMatrix *Bn = NULL;
+   ComplexMatrix *Bc = NULL;
+   Function *Bf = NULL;
+   if (B == R_NilValue) {
+      /* Do nothing */
+   } else if (is<NumericMatrix>(B)) {
+      primme->massMatrix = REAL(B);
+      primme->massMatrixMatvec = matrixMatvecEigs_Matrix<TS, getMassMatrixField>;
+   } else if (is<ComplexMatrix>(B)) {
+      primme->massMatrix = COMPLEX(B);
+      primme->massMatrixMatvec = matrixMatvecEigs_Matrix<TS, getMassMatrixField>;
+   } else if (Matrix_isclass_ge_dense(B)) {
+      primme->massMatrix = AS_CHM_DN(B);
+      primme->massMatrixMatvec = matrixMatvecEigs_CHM_DN<TS, getMassMatrixField>;
+   } else if (Matrix_isclass_Csparse(B)) {
+      Baux[0] = AS_CHM_SP(B);
+      Baux[1] = &Bchol_c;
+      M_R_cholmod_start(&Bchol_c);
+      primme->massMatrix = Baux;
+      primme->massMatrixMatvec = matrixMatvecEigs_CHM_SP<T, getMassMatrixField>;
+   } else if (is<Function>(B)) {
+      primme->massMatrix = Bf = new Function(B);
+      primme->massMatrixMatvec = matrixMatvecEigs<T, S, TS, getMassMatrixField>;
+   } else {
+      stop("Unsupported matrix type; pass a function instead");
+   }
+
+   // Set preconditioner
+
    Function *fprec = NULL;
    if (prec != R_NilValue) {
       fprec = new Function(prec);
       primme->preconditioner = fprec;
       primme->applyPreconditioner = matrixMatvecEigs<T, S, TS, getPreconditionerField>;
       primme->correctionParams.precondition = 1;
-   }
-
-   if (B != R_NilValue) {
-      stop("Unsupported generalized eigenvalue problems, for now");
    }
 
    Function *fconvTest = NULL;
@@ -685,7 +712,13 @@ static List xprimme(Matrix<S> ortho, Matrix<S> init, SEXP A, SEXP B,
    if (An) delete An;
    if (Af) delete Af;
    if (Matrix_isclass_Csparse(A)) {
-      M_cholmod_finish(&chol_c);
+      M_cholmod_finish(&Achol_c);
+   }
+   if (Bc) delete Bc;
+   if (Bn) delete Bn;
+   if (Bf) delete Bf;
+   if (Matrix_isclass_Csparse(B)) {
+      M_cholmod_finish(&Bchol_c);
    }
    if (fprec) delete fprec;
    if (fconvTest) delete fconvTest;
@@ -793,10 +826,6 @@ SEXP primme_svds_get_member_rcpp(std::string labelstr,
       case PRIMME_SVDS_commInfo:
       case PRIMME_SVDS_globalSumReal:
       case PRIMME_SVDS_numTargetShifts:
-      case PRIMME_SVDS_intWorkSize:
-      case PRIMME_SVDS_realWorkSize:
-      case PRIMME_SVDS_intWork:
-      case PRIMME_SVDS_realWork:
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
@@ -877,10 +906,6 @@ void primme_svds_set_member_rcpp(std::string labelstr, SEXP value,
       case PRIMME_SVDS_commInfo:
       case PRIMME_SVDS_globalSumReal:
       case PRIMME_SVDS_numTargetShifts:
-      case PRIMME_SVDS_intWorkSize:
-      case PRIMME_SVDS_realWorkSize:
-      case PRIMME_SVDS_intWork:
-      case PRIMME_SVDS_realWork:
       case PRIMME_SVDS_matrix:
       case PRIMME_SVDS_preconditioner:
       case PRIMME_SVDS_outputFile:
@@ -1104,7 +1129,6 @@ static void matrixMatvecSvds_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_IN
 // - ortho: orthogonal constrains
 // - init: initial guesses
 // - A: matrix-vector product
-// - B: mass matrix-vector product
 // - prec: preconditioner application
 // - convTest: convergence criterion
 

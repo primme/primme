@@ -27,45 +27,29 @@
  * PRIMME: https://github.com/primme/primme
  * Contact: Andreas Stathopoulos, a n d r e a s _at_ c s . w m . e d u
  *******************************************************************************
- * File: primme_svds_f77_private.h
+ * File: common_eigs.h
  *
- * Purpose - Definitions used exclusively by primme_svds_f77.c
+ * Purpose - Header file containing constants used throughout PRIMME
  *
  ******************************************************************************/
 
-#ifndef PRIMME_SVDS_F77_PRIVATE_H
-#define PRIMME_SVDS_F77_PRIVATE_H
+#ifndef COMMON_EIGS_H
+#define COMMON_EIGS_H
 
-#include "template.h"
-#include "primme_svds_interface.h"
+/* Values for flags */
 
-/* Prototypes for Fortran-C interface */
+enum conv_flags {
+   UNCONVERGED,
+   SKIP_UNTIL_RESTART,
+   CONVERGED,
+   PRACTICALLY_CONVERGED
+};
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define EVAL KIND(REAL,SCALAR)
+#define XEVAL KIND(XREAL,XSCALAR)
+#define HEVAL KIND(HREAL,HSCALAR)
+#define EVAL_ABS(X) KIND(fabs,ABS)(X)
+#define EVAL_REAL_PART(X) KIND((X),REAL_PART(TO_COMPLEX(X)))
+#define EVAL_IMAGINARY_PART(X) KIND(0,IMAGINARY_PART(TO_COMPLEX(X)))
 
-#define AS_FORTRAN(X) AS_FORTRANX(X)
-#define AS_FORTRANX(X) FORTRAN_FUNCTION(X ## _f77)
-
-void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,
-      XREAL *resNorms, primme_svds_params **primme_svds, int *ierr);
-
-/* Only define these functions ones */
-#ifdef USE_DOUBLE
-void AS_FORTRAN(primme_svds_initialize)(primme_svds_params **primme_svds);
-void AS_FORTRAN(primme_svds_set_method)(primme_svds_preset_method *method,
-      primme_preset_method *methodStage1, primme_preset_method *methodStage2,
-      primme_svds_params **primme_svds, int *ierr);
-void AS_FORTRAN(primme_svds_display_params)(primme_svds_params **primme_svds);
-void AS_FORTRAN(primme_svds_free)(primme_svds_params **primme_svds);
-void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds, int *label, void* ptr, int *ierr);
-void AS_FORTRAN(primme_svdstop_get_member)(primme_svds_params **primme_svds, int *label, void *ptr, int *ierr);
-void AS_FORTRAN(primme_svds_get_member)(primme_svds_params *primme_svds, int *label, void *ptr, int *ierr);
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* PRIMME_SVDS_F77_PRIVATE_H */
+#endif /* COMMON_EIGS_H */

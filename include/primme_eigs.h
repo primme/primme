@@ -38,7 +38,7 @@
 
 #include <stdio.h>
 
-#include "primme.h" // cyclic
+#include "primme.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -115,6 +115,7 @@ typedef struct primme_stats {
    PRIMME_INT numBroadcast;         /* times called broadcastReal */
    PRIMME_INT volumeGlobalSum;      /* number of SCALARs reduced by globalSumReal */
    PRIMME_INT volumeBroadcast;      /* number of SCALARs broadcast by broadcastReal */
+   double flopsDense;               /* FLOPS done by Num_update_VWXR_Sprimme */
    double numOrthoInnerProds;       /* number of inner prods done by Ortho */
    double elapsedTime; 
    double timeMatvec;               /* time expend by matrixMatvec */
@@ -122,6 +123,7 @@ typedef struct primme_stats {
    double timeOrtho;                /* time expend by ortho  */
    double timeGlobalSum;            /* time expend by globalSumReal  */
    double timeBroadcast;            /* time expend by broadcastReal  */
+   double timeDense;                /* time expend by Num_update_VWXR_Sprimme */
    double estimateMinEVal;          /* the leftmost Ritz value seen */
    double estimateMaxEVal;          /* the rightmost Ritz value seen */
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
@@ -244,7 +246,7 @@ typedef struct primme_params {
          void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms,
          int *inner_its, void *LSRes, const char *msg, double *time,
          primme_event *event, struct primme_params *primme, int *err);
-   primme_op_datatype monitorFun_type; /* expected type of FP arrays */
+   primme_op_datatype monitorFun_type; /* expected type of float-point arrays */
    void *monitor;
    void *queue;      /* magma device queue (magma_queue_t*) */
    const char *profile; /* regex expression with functions to monitor times */
@@ -269,6 +271,10 @@ typedef enum {
    PRIMME_LOBPCG_OrthoBasis,
    PRIMME_LOBPCG_OrthoBasis_Window
 } primme_preset_method;
+
+
+/* Indicates the type of primme_param's members. Used in primme_member_info */
+/* and in primme_svds_member_info                                           */
 
 typedef enum {
    primme_int,
@@ -318,54 +324,59 @@ typedef enum {
    PRIMME_matrix                                 = 37  ,
    PRIMME_massMatrix                             = 38  ,
    PRIMME_preconditioner                         = 39  ,
-   PRIMME_initBasisMode                          = 40  ,
-   PRIMME_projectionParams_projection            = 41  ,
-   PRIMME_restartingParams_maxPrevRetain         = 42  ,
-   PRIMME_correctionParams_precondition          = 43  ,
-   PRIMME_correctionParams_robustShifts          = 44  ,
-   PRIMME_correctionParams_maxInnerIterations    = 45  ,
-   PRIMME_correctionParams_projectors_LeftQ      = 46  ,
-   PRIMME_correctionParams_projectors_LeftX      = 47  ,
-   PRIMME_correctionParams_projectors_RightQ     = 48  ,
-   PRIMME_correctionParams_projectors_RightX     = 49  ,
-   PRIMME_correctionParams_projectors_SkewQ      = 50  ,
-   PRIMME_correctionParams_projectors_SkewX      = 51  ,
-   PRIMME_correctionParams_convTest              = 52  ,
-   PRIMME_correctionParams_relTolBase            = 53  ,
-   PRIMME_stats_numOuterIterations               = 54  ,
-   PRIMME_stats_numRestarts                      = 55  ,
-   PRIMME_stats_numMatvecs                       = 56  ,
-   PRIMME_stats_numPreconds                      = 57  ,
-   PRIMME_stats_numGlobalSum                     = 58  ,
-   PRIMME_stats_volumeGlobalSum                  = 59  ,
-   PRIMME_stats_numBroadcast                     = 60  ,
-   PRIMME_stats_volumeBroadcast                  = 61  ,
-   PRIMME_stats_numOrthoInnerProds               = 62  ,
-   PRIMME_stats_elapsedTime                      = 63  ,
-   PRIMME_stats_timeMatvec                       = 64  ,
-   PRIMME_stats_timePrecond                      = 65  ,
-   PRIMME_stats_timeOrtho                        = 66  ,
-   PRIMME_stats_timeGlobalSum                    = 67  ,
-   PRIMME_stats_timeBroadcast                    = 68  ,
-   PRIMME_stats_estimateMinEVal                  = 69  ,
-   PRIMME_stats_estimateMaxEVal                  = 70  ,
-   PRIMME_stats_estimateLargestSVal              = 71  ,
-   PRIMME_stats_estimateBNorm                    = 72  ,
-   PRIMME_stats_estimateInvBNorm                 = 73  ,
-   PRIMME_stats_maxConvTol                       = 74  ,
-   PRIMME_stats_lockingIssue                     = 75  ,
-   PRIMME_dynamicMethodSwitch                    = 76  ,
-   PRIMME_convTestFun                            = 77  ,
-   PRIMME_convTestFun_type                       = 78  ,
-   PRIMME_convtest                               = 79  ,
-   PRIMME_ldevecs                                = 80  ,
-   PRIMME_ldOPs                                  = 81  ,
-   PRIMME_monitorFun                             = 82  ,
-   PRIMME_monitorFun_type                        = 83  ,
-   PRIMME_monitor                                = 84  ,
-   PRIMME_queue                                  = 85  ,
-   PRIMME_profile                                = 86  
+   PRIMME_ShiftsForPreconditioner                = 40  ,
+   PRIMME_initBasisMode                          = 41  ,
+   PRIMME_projectionParams_projection            = 42  ,
+   PRIMME_restartingParams_maxPrevRetain         = 43  ,
+   PRIMME_correctionParams_precondition          = 44  ,
+   PRIMME_correctionParams_robustShifts          = 45  ,
+   PRIMME_correctionParams_maxInnerIterations    = 46  ,
+   PRIMME_correctionParams_projectors_LeftQ      = 47  ,
+   PRIMME_correctionParams_projectors_LeftX      = 48  ,
+   PRIMME_correctionParams_projectors_RightQ     = 49  ,
+   PRIMME_correctionParams_projectors_RightX     = 50  ,
+   PRIMME_correctionParams_projectors_SkewQ      = 51  ,
+   PRIMME_correctionParams_projectors_SkewX      = 52  ,
+   PRIMME_correctionParams_convTest              = 53  ,
+   PRIMME_correctionParams_relTolBase            = 54  ,
+   PRIMME_stats_numOuterIterations               = 55  ,
+   PRIMME_stats_numRestarts                      = 56  ,
+   PRIMME_stats_numMatvecs                       = 57  ,
+   PRIMME_stats_numPreconds                      = 58  ,
+   PRIMME_stats_numGlobalSum                     = 59  ,
+   PRIMME_stats_volumeGlobalSum                  = 60  ,
+   PRIMME_stats_numBroadcast                     = 61  ,
+   PRIMME_stats_volumeBroadcast                  = 62  ,
+   PRIMME_stats_flopsDense                       = 63  ,
+   PRIMME_stats_numOrthoInnerProds               = 64  ,
+   PRIMME_stats_elapsedTime                      = 65  ,
+   PRIMME_stats_timeMatvec                       = 66  ,
+   PRIMME_stats_timePrecond                      = 67  ,
+   PRIMME_stats_timeOrtho                        = 68  ,
+   PRIMME_stats_timeGlobalSum                    = 69  ,
+   PRIMME_stats_timeBroadcast                    = 70  ,
+   PRIMME_stats_timeDense                        = 71  ,
+   PRIMME_stats_estimateMinEVal                  = 72  ,
+   PRIMME_stats_estimateMaxEVal                  = 73  ,
+   PRIMME_stats_estimateLargestSVal              = 74  ,
+   PRIMME_stats_estimateBNorm                    = 75  ,
+   PRIMME_stats_estimateInvBNorm                 = 76  ,
+   PRIMME_stats_maxConvTol                       = 77  ,
+   PRIMME_stats_lockingIssue                     = 78  ,
+   PRIMME_dynamicMethodSwitch                    = 79  ,
+   PRIMME_convTestFun                            = 80  ,
+   PRIMME_convTestFun_type                       = 81  ,
+   PRIMME_convtest                               = 82  ,
+   PRIMME_ldevecs                                = 83  ,
+   PRIMME_ldOPs                                  = 84  ,
+   PRIMME_monitorFun                             = 85  ,
+   PRIMME_monitorFun_type                        = 86  ,
+   PRIMME_monitor                                = 87  ,
+   PRIMME_queue                                  = 88  ,
+   PRIMME_profile                                = 89  
 } primme_params_label;
+
+/* Hermitian operator */
 
 int hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, 
       primme_params *primme);
@@ -391,6 +402,36 @@ int magma_dprimme(double *evals, double *evecs, double *resNorms,
       primme_params *primme);
 int magma_zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
       primme_params *primme);
+
+int hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+int ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+
+/* Normal operator */
+
+int kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, 
+      primme_params *primme);
+int cprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, 
+      primme_params *primme);
+int zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
+      primme_params *primme);
+int magma_kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, 
+      primme_params *primme);
+int magma_cprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, 
+      primme_params *primme);
+
+int kcprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+int magma_kcprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, 
+      primme_params *primme);
+
 primme_params* primme_params_create(void);
 int primme_params_destroy(primme_params *primme);
 void primme_initialize(primme_params *primme);

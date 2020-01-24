@@ -4,4 +4,4 @@
 Python Interface
 ----------------
 
-.. autofunction:: Primme.eigsh
+.. autofunction:: primme.eigsh

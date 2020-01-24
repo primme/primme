@@ -141,12 +141,14 @@ typedef struct primme_svds_params {
    PRIMME_INT maxMatvecs;
    PRIMME_INT iseed[4];
    int printLevel;
+   primme_op_datatype internalPrecision; /* force primme to work in that precision */
    FILE *outputFile;
    struct primme_svds_stats stats;
 
    void (*convTestFun)(double *sval, void *leftsvec, void *rightsvec,
          double *rNorm, int *method, int *isconv,
          struct primme_svds_params *primme, int *ierr);
+   primme_op_datatype convTestFun_type; /* expected type of evec */
    void *convtest;
    void (*monitorFun)(void *basisSvals, int *basisSize, int *basisFlags,
          int *iblock, int *blockSize, void *basisNorms, int *numConverged,
@@ -154,6 +156,7 @@ typedef struct primme_svds_params {
          int *inner_its, void *LSRes, const char *msg, double *time,
          primme_event *event, int *stage,
          struct primme_svds_params *primme_svds, int *err);
+   primme_op_datatype monitorFun_type; /* expected type of float-point arrays */
    void *monitor;
    void *queue;   	/* magma device queue (magma_queue_t*) */
    const char *profile; /* regex expression with functions to monitor times */
@@ -197,29 +200,32 @@ typedef enum {
    PRIMME_SVDS_maxMatvecs                   = 34,
    PRIMME_SVDS_iseed                        = 35,
    PRIMME_SVDS_printLevel                   = 36,
-   PRIMME_SVDS_outputFile                   = 37,
-   PRIMME_SVDS_stats_numOuterIterations     = 38,
-   PRIMME_SVDS_stats_numRestarts            = 39,
-   PRIMME_SVDS_stats_numMatvecs             = 40,
-   PRIMME_SVDS_stats_numPreconds            = 41,
-   PRIMME_SVDS_stats_numGlobalSum           = 42,
-   PRIMME_SVDS_stats_volumeGlobalSum        = 43,
-   PRIMME_SVDS_stats_numBroadcast           = 44,
-   PRIMME_SVDS_stats_volumeBroadcast        = 45,
-   PRIMME_SVDS_stats_numOrthoInnerProds     = 46,
-   PRIMME_SVDS_stats_elapsedTime            = 47,
-   PRIMME_SVDS_stats_timeMatvec             = 48,
-   PRIMME_SVDS_stats_timePrecond            = 49,
-   PRIMME_SVDS_stats_timeOrtho              = 50,
-   PRIMME_SVDS_stats_timeGlobalSum          = 51,
-   PRIMME_SVDS_stats_timeBroadcast          = 52,
-   PRIMME_SVDS_stats_lockingIssue           = 53,
-   PRIMME_SVDS_convTestFun                  = 54,
-   PRIMME_SVDS_convtest                     = 55,
-   PRIMME_SVDS_monitorFun                   = 56,
-   PRIMME_SVDS_monitor                      = 57,
-   PRIMME_SVDS_queue                        = 58,
-   PRIMME_SVDS_profile                      = 59 
+   PRIMME_SVDS_internalPrecision            = 37,
+   PRIMME_SVDS_outputFile                   = 38,
+   PRIMME_SVDS_stats_numOuterIterations     = 39,
+   PRIMME_SVDS_stats_numRestarts            = 40,
+   PRIMME_SVDS_stats_numMatvecs             = 41,
+   PRIMME_SVDS_stats_numPreconds            = 42,
+   PRIMME_SVDS_stats_numGlobalSum           = 43,
+   PRIMME_SVDS_stats_volumeGlobalSum        = 44,
+   PRIMME_SVDS_stats_numBroadcast           = 45,
+   PRIMME_SVDS_stats_volumeBroadcast        = 46,
+   PRIMME_SVDS_stats_numOrthoInnerProds     = 47,
+   PRIMME_SVDS_stats_elapsedTime            = 48,
+   PRIMME_SVDS_stats_timeMatvec             = 49,
+   PRIMME_SVDS_stats_timePrecond            = 50,
+   PRIMME_SVDS_stats_timeOrtho              = 51,
+   PRIMME_SVDS_stats_timeGlobalSum          = 52,
+   PRIMME_SVDS_stats_timeBroadcast          = 53,
+   PRIMME_SVDS_stats_lockingIssue           = 54,
+   PRIMME_SVDS_convTestFun                  = 55,
+   PRIMME_SVDS_convTestFun_type             = 56,
+   PRIMME_SVDS_convtest                     = 57,
+   PRIMME_SVDS_monitorFun                   = 58,
+   PRIMME_SVDS_monitorFun_type              = 59,
+   PRIMME_SVDS_monitor                      = 60,
+   PRIMME_SVDS_queue                        = 61,
+   PRIMME_SVDS_profile                      = 62 
 } primme_svds_params_label;
 
 int hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms,
@@ -246,6 +252,17 @@ int magma_dprimme_svds(double *svals, double *svecs, double *resNorms,
       primme_svds_params *primme_svds);
 int magma_zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
       primme_svds_params *primme_svds);
+
+int hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+int ksprimme_svds(float *svals, PRIMME_COMPLEX_HALF *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+int magma_hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+int magma_ksprimme_svds(float *svals, PRIMME_COMPLEX_HALF *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+
+
 primme_svds_params * primme_svds_params_create(void);
 int primme_svds_params_destroy(primme_svds_params *primme_svds);
 void primme_svds_initialize(primme_svds_params *primme_svds);

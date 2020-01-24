@@ -9,7 +9,7 @@ BUILDDIR      = build
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
-$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed together with napoleon and matlabdomain extension. If you don't know what I'm talking about try 'pip install numpy scipy Sphinx sphinxcontrib-napoleon sphinxcontrib-matlabdomain')
+$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed together with napoleon and matlabdomain extension. If you don't know what I'm talking about try 'pip install numpy scipy Sphinx sphinxcontrib-napoleon sphinxcontrib-matlabdomain sphinx_rtd_theme sphinx-fortran')
 endif
 
 # Internal variables.
@@ -134,8 +134,8 @@ text:
 	@echo
 	@echo "Build finished. The text files are in $(BUILDDIR)/text."
 	@rm -f ../readme.txt
-	@for i in readme intro apieigs primmec primmef77 appendix pyeigsh mateigs \
-	          apisvds svdsc svdsf77 appendixsvds pysvds matsvds; do \
+	@for i in readme intro apieigs primmec primmef77 primmef90 appendix pyeigsh mateigs \
+	          apisvds svdsc svdsf77 svdsf90 appendixsvds pysvds matsvds; do \
 		cat $(BUILDDIR)/text/$${i}.txt >> ../readme.txt; \
 		echo >> ../readme.txt; \
 	done

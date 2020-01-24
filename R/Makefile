@@ -17,7 +17,7 @@ update: clean src/primme/zhegv.c
 	cd ..; find include -name '*.h' -exec cp {} R/inst/{} \;
 	cd ../src; find . -name '*.[ch]' -exec cp {} ../R/src/primme/{} \;
 	R -e "require(Rcpp); compileAttributes();"
-	R -e "require(devtools); document()"
+	R -e "require(devtools); load_all(); document()"
 	#R -e 'require(rmarkdown); render("README.Rmd",output_format="all")'
 	make clean
 
@@ -28,7 +28,7 @@ src/primme/zhegv.c:
 
 doc:
 	find . -name '*.pdf' -exec rm {} \;
-	R -e "require(devtools); document()"
+	R -e "require(devtools); load_all(); document()"
 	find . -name '*.pdf' -exec rm {} \;
 	R CMD Rd2pdf .
 	find . -name '*.pdf' -exec rm {} \;
@@ -37,7 +37,7 @@ install: update
 	R CMD INSTALL .
 
 check: update
-	R -e "require(devtools); check()"
+	R -e "require(devtools); load_all(); check()"
 
 clean:
 	find . -name '*.pdf' -exec rm {} \;

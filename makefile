@@ -29,8 +29,8 @@ solib:
 ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
 	@cd lib; ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
 endif
-ifneq ($(MAJORVERSION),)
-	@cd lib; ln -fs $(SONAMELIBRARY) $(SOLIBRARY).$(MAJORVERSION)
+ifneq ($(SONAMELIBRARYMAJOR),$(SONAMELIBRARY))
+	@cd lib; ln -fs $(SONAMELIBRARY) $(SONAMELIBRARYMAJOR)
 endif
 
 
@@ -73,45 +73,64 @@ R_install:
 
 install: solib
 	install -d $(includedir)
-	install -m 644 include/primme.h include/primme_eigs.h \
-		include/primme_eigs_f77.h include/primme_f77.h \
-		include/primme_svds.h include/primme_svds_f77.h \
+	cd include && install -m 644 primme_eigs_f77.h primme_eigs_f90.inc primme_eigs.h  \
+	        primme_f77.h primme_f90.inc primme.h primme_svds_f77.h  \
+	        primme_svds_f90.inc primme_svds.h \
 		$(includedir)
 	install -d $(libdir)
 	install -m 644 lib/$(SONAMELIBRARY) $(libdir)
+ifeq ($(UNAME), Darwin)
+	$(INSTALL_NAME_TOOL) -id $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SONAMELIBRARY) || echo Failed install_name_tool
+endif
 ifneq ($(SOLIBRARY),$(SONAMELIBRARY))
 	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SOLIBRARY)
 endif
-ifneq ($(MAJORVERSION),)
-	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SOLIBRARY).$(MAJORVERSION)
+ifneq ($(SONAMELIBRARYMAJOR),$(SONAMELIBRARY))
+	@cd $(libdir); ln -fs $(SONAMELIBRARY) $(SONAMELIBRARYMAJOR)
 endif
 
 uninstall:
-	rm -f $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SOLIBRARY)
-	rm -f $(includedir)/primme.h $(includedir)/primme_eigs.h \
-		$(includedir)/primme_eigs_f77.h $(includedir)/primme_f77.h \
-		$(includedir)/primme_svds.h $(includedir)/primme_svds_f77.h
+	rm -f $(libdir)/$(SONAMELIBRARY) $(libdir)/$(SOLIBRARY) $(libdir)/$(SONAMELIBRARYMAJOR)
+	rm -f $(includedir)/primme_eigs_f77.h $(includedir)/primme_eigs_f90.inc \
+	      $(includedir)/primme_eigs.h $(includedir)/primme_f77.h \
+	      $(includedir)/primme_f90.inc $(includedir)/primme.h \
+	      $(includedir)/primme_svds_f77.h $(includedir)/primme_svds_f90.inc \
+	      $(includedir)/primme_svds.h
 
 deps:
-	touch src/*/*.c
+	@touch src/*/*.c
+	@rm -f src/deps
 	@$(MAKE) -C src auto_headers
 
 check_style:
 	@( grep '	' -R . --include='*.[chfmF]' && echo "Please don't use tabs!" ) || true
 
 tags:
+	rm -f tags
 	@$(MAKE) -C src ../tags
 
 #
 # Convenient actions to build half precision (optional)
 #
 
+lib-debug-sanitize all_tests-debug-sanitize: export CFLAGS += -g -O0 -fsanitize=undefined,address
+lib-debug-sanitize all_tests-debug-sanitize: export LDFLAGS += -g -O0 -fsanitize=undefined,address
+lib-debug-sanitize: lib
+all_tests-debug-sanitize: all_tests
+
 lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export PRIMME_WITH_HALF := yes
 lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export CC := clang
 lib-clang-half matlab-clang-half: export CFLAGS += -march=native -Ofast
-matlab-clang-half-debug: export CFLAGS := -O0 -g -fPIC
-lib-clang-half: lib
+lib-clang-half-debug matlab-clang-half-debug: export CFLAGS := -O0 -g -fPIC
+lib-clang-half lib-clang-half-debug: lib
+all_tests-clang-half-debug: export CC := clang
+all_tests-clang-half-debug: export CXX := clang++
+all_tests-clang-half-debug: export LDFLAGS := -rtlib=compiler-rt -fPIC -lgcc_s
+all_tests-clang-half-debug: all_tests
 matlab-clang-half-debug: export MEXFLAGS := CXX=clang LDFLAGS='-rtlib=compiler-rt -fPIC' -g CXXFLAGS='-fPIC -O0 -g'
 matlab-clang-half matlab-clang-half-debug: matlab
+
+python-clang-half-debug: clean clean_lib lib-clang-half-debug
+	@$(MAKE) -C Python clean all  CC='clang -fPIC' LDSHARED='clang -shared -rtlib=compiler-rt -lm'
 
 .NOTPARALLEL:

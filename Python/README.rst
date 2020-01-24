@@ -2,13 +2,10 @@
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 ========================================================
 
-`Primme` is a Python interface to PRIMME_, a C library for computing a few
-eigenvalues and their corresponding eigenvectors of a real symmetric or complex
-Hermitian matrix. It can also compute singular values and vectors of a square
-or rectangular matrix. It can find largest, smallest, or interior
-singular/eigenvalues and can use preconditioning to accelerate convergence. It
-is especially optimized for large, difficult problems, and can be a useful tool
-for both non-experts and experts.
+`primme` is a Python interface to PRIMME_, a high-performance library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
+PRIMME is especially optimized for large, difficult problems.
+Real symmetric and complex Hermitian problems, standard :math:`A x = \lambda x` and generalized :math:`A x = \lambda B x`, are supported.
+It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence.
 
 The main contributors to PRIMME are James R. McCombs, Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu.
 
@@ -19,6 +16,8 @@ You can install the latest version with `pip`::
 
     pip install numpy   # if numpy is not installed yet
     pip install scipy   # if scipy is not installed yet
+    pip install future  # if using python 2
+    conda install mkl-devel # if using Anaconda Python distribution
     pip install primme
 
 Optionally for building the development version do::
@@ -41,6 +40,20 @@ The following examples compute a few eigenvalues and eigenvectors from a real sy
     >>> new_evals, new_evecs = Primme.eigsh(A, 3, tol=1e-6, which='LA', ortho=evecs)
     >>> new_evals # the next three largest eigenvalues
     array([ 96.,  95.,  94.])
+
+    >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which=50.1)
+    >>> evals # the three closest eigenvalues to 50.1
+    array([ 50.,  51.,  49.])
+
+
+The following examples compute a few eigenvalues and eigenvectors from a generalized Hermitian problem, without factorizing or inverting :math:`B`::
+
+    >>> import Primme, scipy.sparse
+    >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
+    >>> M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1)), [0], 100, 100)
+    >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
+    >>> evals
+    array([1.0035e-07, 1.0204e-02, 2.0618e-02])
 
 The following examples compute a few singular values and vectors::
 

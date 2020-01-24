@@ -4,8 +4,9 @@
 \alias{eigs_sym}
 \title{Find a few eigenvalues and vectors on large, sparse Hermitian matrix}
 \usage{
-eigs_sym(A, NEig = 1, which = "LA", targetShifts = NULL, tol = 1e-06,
-  x0 = NULL, ortho = NULL, prec = NULL, isreal = NULL, ...)
+eigs_sym(A, NEig = 1, which = "LA", targetShifts = NULL,
+  tol = 1e-06, x0 = NULL, ortho = NULL, prec = NULL,
+  isreal = NULL, B = NULL, ...)
 }
 \arguments{
 \item{A}{symmetric/Hermitian matrix or a function with signature f(x) that
@@ -44,6 +45,10 @@ it is used as prec \%*\% x; otherwise it is used as prec(x).}
 
 \item{isreal}{whether A \%*\% x always returns real number and not complex.}
 
+\item{B}{symmetric/Hermitian positive definite matrix or a function with
+signature f(x) that returns \code{B \%*\% x}. If given, the function
+returns the eigenpairs of (A,B).}
+
 \item{...}{other PRIMME options (see details).}
 }
 \value{
@@ -52,12 +57,13 @@ list with the next elements
       \item{\code{values}}{the eigenvalues \eqn{\lambda_i}}
       \item{\code{vectors}}{the eigenvectors \eqn{x_i}}
       \item{\code{rnorms}}{the residual vector norms
-         \eqn{\|A x_i - \lambda_i x_i\|}{||A*x_i - lambda_i*x_i||}.}
+         \eqn{\|A x_i - \lambda_i B x_i\|}{||A*x_i - lambda_i*B*x_i||}.}
       \item{\code{stats$numMatvecs}}{number of matrix-vector products performed}
       \item{\code{stats$numPreconds}}{number of preconditioner applications performed}
       \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
       \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
       \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
+      \item{\code{stats$timeOrtho}}{time expended in orthogonalizing}
       \item{\code{stats$estimateMinEval}}{estimation of the smallest eigenvalue of A}
       \item{\code{stats$estimateMaxEval}}{estimation of the largest eigenvalue of A}
       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
@@ -66,6 +72,7 @@ list with the next elements
 \description{
 Compute a few eigenpairs from a specified region (the largest, the smallest,
 the closest to a point) on a symmetric/Hermitian matrix using PRIMME [1].
+Generalized symmetric/Hermitian problem is also supported.
 Only the matrix-vector product of the matrix is required. The used method is
 usually faster than a direct method (such as \code{\link{eigen}}) if
 seeking a few eigenpairs and the matrix-vector product is cheap. For
@@ -137,6 +144,10 @@ r <- eigs_sym(A, 3, 2.5) # compute the three closest values to 2.5
 
 r <- eigs_sym(A, 3, 2.5, tol=1e-3); # compute the values with
 r$rnorms                                    # residual norm <= 1e-3*||A||
+
+B <- diag(rev(1:10));
+r <- eigs_sym(A, 3, B=B); # compute the 3 largest eigenpairs of
+                          # the generalized problem (A,B)
 
 # Build a Jacobi preconditioner (too convenient for a diagonal matrix!)
 # and see how reduce the number matrix-vector products

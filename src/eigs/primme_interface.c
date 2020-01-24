@@ -36,14 +36,17 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/primme_interface.c"
+#endif
+
 #include <stdlib.h>   /* mallocs, free */
 #include <stdio.h>    
 #include <math.h>    
 #include <string.h>  /* strcmp */  
 #include <limits.h>    
-#include "template.h"
+#include "numerical.h"
 #include "primme_interface.h"
-#include "const.h"
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE
@@ -152,6 +155,8 @@ void primme_initialize(primme_params *primme) {
    primme->stats.numMatvecs                    = 0;
    primme->stats.numPreconds                   = 0;
    primme->stats.numGlobalSum                  = 0;
+   primme->stats.flopsDense                    = 0.0;
+   primme->stats.timeDense                     = 0;
    primme->stats.volumeGlobalSum               = 0;
    primme->stats.numBroadcast                  = 0;
    primme->stats.volumeBroadcast               = 0;
@@ -446,6 +451,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->correctionParams.maxInnerIterations = 0;
       primme->correctionParams.projectors.RightX  = 1;
       primme->correctionParams.projectors.SkewX   = 0;
+      primme->initBasisMode                       = primme_init_random;
    }
    else if (method == PRIMME_LOBPCG_OrthoBasis_Window) {
       /* Observed needing to restart with two vectors at least to converge    */
@@ -467,6 +473,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
       primme->correctionParams.maxInnerIterations = 0;
       primme->correctionParams.projectors.RightX  = 1;
       primme->correctionParams.projectors.SkewX   = 0;
+      primme->initBasisMode                       = primme_init_random;
    }
    else if (method == PRIMME_DYNAMIC) {
       if (primme->restartingParams.maxPrevRetain <= 0) {
@@ -698,6 +705,11 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINTIF(orth, primme_orth_implicit_I);
    PRINTIF(orth, primme_orth_explicit_I);
 
+   PRINTIF(internalPrecision, primme_op_half);
+   PRINTIF(internalPrecision, primme_op_float);
+   PRINTIF(internalPrecision, primme_op_double);
+   PRINTIF(internalPrecision, primme_op_quad);
+
    PRINTParams(restarting, maxPrevRetain, %d);
 
    fprintf(outputFile, "\n// Correction parameters\n");
@@ -817,9 +829,10 @@ int primme_get_member(primme_params *primme, primme_params_label label,
               v->int_v = primme->numTargetShifts;
       break;
       case PRIMME_targetShifts:
-         for (i=0; i< primme->numTargetShifts; i++) {
-             (&v->double_v)[i] = primme->targetShifts[i];
-         }
+              v->ptr_v = primme->targetShifts;
+      break;
+      case PRIMME_ShiftsForPreconditioner:
+              v->ptr_v = primme->ShiftsForPreconditioner;
       break;
       case PRIMME_locking:
               v->int_v = primme->locking;
@@ -946,6 +959,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_volumeBroadcast:
               v->int_v = primme->stats.volumeBroadcast;
       break;
+      case PRIMME_stats_flopsDense:
+              v->double_v = primme->stats.flopsDense;
+      break;
       case PRIMME_stats_numOrthoInnerProds:
               v->double_v = primme->stats.numOrthoInnerProds;
       break;
@@ -966,6 +982,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_stats_timeBroadcast:
               v->double_v = primme->stats.timeBroadcast;
+      break;
+      case PRIMME_stats_timeDense:
+              v->double_v = primme->stats.timeDense;
       break;
       case PRIMME_stats_estimateMinEVal:
               v->double_v = primme->stats.estimateMinEVal;
@@ -1124,6 +1143,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_targetShifts:
               primme->targetShifts = v.double_v;
       break;
+      case PRIMME_ShiftsForPreconditioner:
+              primme->ShiftsForPreconditioner = v.double_v;
+      break;
       case PRIMME_locking:
               if (*v.int_v > INT_MAX) return 1; else 
               primme->locking = (int)*v.int_v;
@@ -1267,6 +1289,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_volumeBroadcast:
               primme->stats.volumeBroadcast = *v.int_v;
       break;
+      case PRIMME_stats_flopsDense:
+              primme->stats.flopsDense = *v.double_v;
+      break;
       case PRIMME_stats_numOrthoInnerProds:
               primme->stats.numOrthoInnerProds = *v.double_v;
       break;
@@ -1287,6 +1312,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_stats_timeBroadcast:
               primme->stats.timeBroadcast = *v.double_v;
+      break;
+      case PRIMME_stats_timeDense:
+              primme->stats.timeDense = *v.double_v;
       break;
       case PRIMME_stats_estimateMinEVal:
               primme->stats.estimateMinEVal = *v.double_v;
@@ -1423,6 +1451,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(matrix                       , matrix);
    IF_IS(massMatrix                   , massMatrix);
    IF_IS(preconditioner               , preconditioner);
+   IF_IS(ShiftsForPreconditioner      , ShiftsForPreconditioner);
    IF_IS(initBasisMode                , initBasisMode);
    IF_IS(projection_projection        , projectionParams_projection);
    IF_IS(restarting_maxPrevRetain     , restartingParams_maxPrevRetain);
@@ -1445,6 +1474,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(stats_volumeGlobalSum        , stats_volumeGlobalSum);
    IF_IS(stats_numBroadcast           , stats_numBroadcast);
    IF_IS(stats_volumeBroadcast        , stats_volumeBroadcast);
+   IF_IS(stats_flopsDense             , stats_flopsDense);
    IF_IS(stats_numOrthoInnerProds     , stats_numOrthoInnerProds);
    IF_IS(stats_elapsedTime            , stats_elapsedTime);
    IF_IS(stats_timeMatvec             , stats_timeMatvec);
@@ -1452,6 +1482,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(stats_timeOrtho              , stats_timeOrtho);
    IF_IS(stats_timeGlobalSum          , stats_timeGlobalSum);
    IF_IS(stats_timeBroadcast          , stats_timeBroadcast);
+   IF_IS(stats_timeDense              , stats_timeDense);
    IF_IS(stats_estimateMinEVal        , stats_estimateMinEVal);
    IF_IS(stats_estimateMaxEVal        , stats_estimateMaxEVal);
    IF_IS(stats_estimateLargestSVal    , stats_estimateLargestSVal);
@@ -1548,6 +1579,9 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_stats_timePrecond:
       case PRIMME_stats_timeOrtho:
       case PRIMME_stats_timeGlobalSum:
+      case PRIMME_stats_timeBroadcast:
+      case PRIMME_stats_flopsDense:
+      case PRIMME_stats_timeDense:
       case PRIMME_stats_elapsedTime:
       case PRIMME_stats_estimateMinEVal:
       case PRIMME_stats_estimateMaxEVal:
@@ -1560,6 +1594,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       break;
  
       case PRIMME_targetShifts:
+      case PRIMME_ShiftsForPreconditioner:
       if (type) *type = primme_double;
       if (arity) *arity = 0;
       break;

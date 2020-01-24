@@ -6,7 +6,7 @@ $(SHLIB): primme/libprimme.a primme/libprimmeext.a
 
 primme/libprimme.a:
 	@(cd primme && $(MAKE) -f make_primme libprimme.a \
-	  CC="$(CC)" CFLAGS="$(CFLAGS) $(CPICFLAGS) -DF77UNDERSCORE -DUSE_XHEEV -DUSE_ZGESV -DUSE_XHEGV -DPRIMME_INT_SIZE=0" AR="$(AR)" \
+	  CC="$(CC)" CFLAGS="$(CFLAGS) $(CPICFLAGS) -DF77UNDERSCORE -DUSE_XHEEV -DUSE_ZGESV -DUSE_XHEGV -DPRIMME_INT_SIZE=0 -DPRIMME_WITHOUT_FLOAT" AR="$(AR)" \
 	  RANLIB="$(RANLIB)")
 
 primme/libprimmeext.a:

@@ -149,7 +149,7 @@ def setup_package():
          ],
          keywords = "eigenvalues singular values Davidson-type high-performance large-scale matrix",
          setup_requires = ['numpy', 'scipy'],
-         install_requires = ['numpy', 'scipy'],
+         install_requires = ['future', 'numpy', 'scipy'],
          ext_modules = cythonize([_Primme])
          )
 

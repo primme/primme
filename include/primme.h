@@ -41,12 +41,6 @@
 #define PRIMME_VERSION_MAJOR      3
 #define PRIMME_VERSION_MINOR      0
 
-/* A C99 code with complex type is not a valid C++ code. However C++          */
-/* compilers usually can take it. Nevertheless in order to avoid the warnings */
-/* while compiling in pedantic mode, we use the proper complex type for C99   */
-/* (complex double and complex float) and C++ (std::complex<double> and       */
-/* std::complex<float>). Of course both complex types are binary compatible.  */
-
 #if defined(__clang__) && defined(__FLT16_EPSILON__)
 #  define PRIMME_HALF __fp16
 #  define PRIMME_WITH_NATIVE_HALF
@@ -56,6 +50,12 @@
 #endif
 
 #define PRIMME_QUAD double long
+
+/* A C99 code with complex type is not a valid C++ code. However C++          */
+/* compilers usually can take it. Nevertheless in order to avoid the warnings */
+/* while compiling in pedantic mode, we use the proper complex type for C99   */
+/* (complex double and complex float) and C++ (std::complex<double> and       */
+/* std::complex<float>). Of course both complex types are binary compatible.  */
 
 #ifdef __cplusplus
 #  include <complex>

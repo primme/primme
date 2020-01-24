@@ -94,6 +94,7 @@
 #'       \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
 #'       \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
 #'       \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
+#'       \item{\code{stats$timeOrtho}}{time expended in orthogonalizing}
 #'       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
 #'    }
 #'
@@ -201,6 +202,7 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
       if (!.is.wholenumber(opts$n) || !.is.wholenumber(opts$m))
          stop("matrix dimension not set (set 'm' and 'n')");
       Af <- A;
+      Aarg <- A;
       isreal_suggestion <- FALSE;
    }
    else if (length(dim(A)) != 2) {
@@ -222,16 +224,17 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
       isreal_suggestion <-
          if (ismatrix) is.double(A)
          else (inherits(A, "Matrix") && substr(class(A), 0, 1) == "d");
+      Af <- function(x,trans)
+         if (trans == "n") A %*% x else Conj(t(crossprod(Conj(x),A)));
       if ((is.null(isreal) || isreal == isreal_suggestion) && (
                ismatrix ||
                any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A)) ||
                any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A)) )) {
-         Af <- A;
+         Aarg <- A;
       }
       else {
-         Af <- function(x,trans)
-            if (trans == "n") A %*% x else Conj(t(crossprod(Conj(x),A)));
          isreal_suggestion <- FALSE;
+         Aarg <- Af;
       }
    }
 
@@ -358,9 +361,9 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
 
    # Call PRIMME SVDS
    r <- if (!isreal)
-      .zprimme_svds(ortho$u, ortho$v, init$u, init$v, Af, precf, primme_svds)
+      .zprimme_svds(ortho$u, ortho$v, init$u, init$v, Aarg, precf, primme_svds)
    else
-      .dprimme_svds(ortho$u, ortho$v, init$u, init$v, Af, precf, primme_svds)
+      .dprimme_svds(ortho$u, ortho$v, init$u, init$v, Aarg, precf, primme_svds)
 
    # Get stats
    r$stats$numMatvecs <- .primme_svds_get_member("stats_numMatvecs", primme_svds)
@@ -369,6 +372,7 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
    r$stats$estimateANorm <- .primme_svds_get_member("aNorm", primme_svds)
    r$stats$timeMatvec <- .primme_svds_get_member("stats_timeMatvec", primme_svds)
    r$stats$timePrecond <- .primme_svds_get_member("stats_timePrecond", primme_svds)
+   r$stats$timeOrtho <- .primme_svds_get_member("stats_timeOrtho", primme_svds)
    
    # Free PRIMME SVDS structure
    .primme_svds_free(primme_svds);
@@ -386,10 +390,9 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
 .getSvdsErrorMsg <- function(n) {
    l <- list(
       "0" = "success",
-      "1" = "reported only amount of required memory",
-      "-1" = "failed in allocating int or real workspace",
-      "-2" = "malloc failed in allocating a permutation integer array",
-      "-3" = "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
+      "-1" = "unexpected internal error; please consider to set 'printLevel' to a value larger than 0 to see the call stack and to report these errors because they may be bugs",
+      "-2" = "memory allocation failure",
+      "-3" = "maximum iterations or matvecs reached",
       "-4" = "primme_svds is NULL",
       "-5" = "Wrong value for m or n or mLocal or nLocal",
       "-6" = "Wrong value for numProcs",
@@ -405,8 +408,11 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
       "-17" = "svals is not set",
       "-18" = "svecs is not set",
       "-19" = "resNorms is not set",
-      "-20" = "not enough memory for realWork",
-      "-21" = "not enough memory for intWork");
+      "-40" = "some LAPACK function performing a factorization returned an error code; set 'printLevel' > 0 to see the error code and the call stack",
+      "-41" = "error happened at the matvec or applying the preconditioner",
+      "-42" = "the matrix provided in 'lock' is not full rank",
+      "-43" = "parallel failure",
+      "-44" = "unavailable functionality; PRIMME was not compiled with support for the requesting precision or for GPUs");
    if (n >= -100)
       l[[as.character(n)]]
    else if (n >= -200)

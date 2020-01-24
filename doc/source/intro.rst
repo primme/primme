@@ -3,15 +3,31 @@
 PRIMME: PReconditioned Iterative MultiMethod Eigensolver
 --------------------------------------------------------
 
-PRIMME, pronounced as *prime*, computes
-a few eigenvalues and their corresponding eigenvectors of a real symmetric or complex Hermitian matrix. 
-It can also compute singular values and vectors of a square or rectangular matrix. 
-It can find largest, smallest, or interior singular/eigenvalues and can use preconditioning to accelerate convergence. 
-It is especially optimized for large, difficult problems, and can be a useful tool for both non-experts and experts.
-PRIMME is written in C99, but complete interfaces are provided for Fortran 77, MATLAB, Python, and R.
+PRIMME, pronounced as *prime*, is a high-performance library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
+PRIMME is especially optimized for large, difficult problems.
+Real symmetric and complex Hermitian problems, standard :math:`A x = \lambda x` and generalized :math:`A x = \lambda B x`, are supported.
+Besides standard eigenvalue problems with a normal matrix are supported.
+It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence. 
+PRIMME is written in C99, but complete interfaces are provided for Fortran, MATLAB, Python, and R.
 
 Incompatibilities
 ^^^^^^^^^^^^^^^^^
+
+From PRIMME 2.2 to 3.0:
+
+* Removed constants ``primme_thick`` and ``primme_dtr``, and the member ``scheme`` from ``restarting_params``.
+
+* Added members |numBroadcast|, |volumeBroadcast|, ``flopsDense``, |timeBroadcast|, ``timeDense``, ``estimateBNorm``, ``estimateInvBNorm``, and |lockingIssue| to ``primme_stats``.
+
+* Added members |matrixMatvec_type|, |applyPreconditioner_type|, |massMatrixMatvec_type|, |globalSumReal_type|, |broadcastReal|, |broadcastReal_type|, |BNorm|, |invBNorm|, |orth|, |internalPrecision|, |massMatrix|, |convTestFun_type|, |monitorFun_type|, |queue|, and ``profile`` to :c:type:`primme_params`.
+
+* Added members |SmatrixMatvec_type|, |SapplyPreconditioner_type|, |SglobalSumReal_type|, |SbroadcastReal|, |SbroadcastReal_type|, |SinternalPrecision|, |SconvTestFun_type|, |SmonitorFun_type|, |Squeue|, and ``profile`` to :c:type:`primme_svds_params`.
+
+* Changed callbacks |monitorFun| and |SmonitorFun|.
+
+* Changed the value of all constants; see :c:func:`primme_get_member_f77`, :c:func:`primme_set_member_f77`, :c:func:`primme_svds_get_member_f77`, and :c:func:`primme_svds_set_member_f77`.
+
+* Removed ``intWorkSize``, ``realWorkSize``, ``intWork``, ``realWork`` from :c:type:`primme_params` and :c:type:`primme_svds_params`.
 
 From PRIMME 2.0 to 2.1:
 
@@ -39,6 +55,29 @@ From PRIMME 1.x to 2.0:
 
 Changelog
 ^^^^^^^^^
+
+Changes in PRIMME 3.0 (released on December 14, 2019):
+
+* Added support for the generalized Hermitian eigenvalue problem (see |massMatrixMatvec|) and the standard normal eigenvalue problem (see :c:func:`zprimme_normal`).
+
+* Added support for GPU (see :c:func:`magma_dprimme`, :c:func:`magma_zprimme_normal`, and :c:func:`magma_dprimme_svds`).
+
+* Added support for half precision (see :c:func:`hprimme` and :c:func:`kprimme`, and other variants for normal eigenproblems and singular value problems).
+
+* Added block orthogonalization (see |orth|).
+
+* Resolution of all linear system of equations simultaneously in Jacobi-Davidson.
+
+* Added interface for Fortran 90.
+
+* Added an optional callback for broadcasting (see |broadcastReal| and |SbroadcastReal|).
+
+* The callbacks can work with different precision than the main call (see for instance |matrixMatvec_type| and |globalSumReal_type|).
+
+* Added new counters: |numGlobalSum|, |volumeGlobalSum|, |numBroadcast|, |volumeGlobalSum|, |timeOrtho|, |timeGlobalSum|, |timeBroadcast|.
+
+* Added :c:func:`primme_params_create`, :c:func:`primme_params_destroy`, :c:func:`primme_svds_params_create`, and :c:func:`primme_svds_params_destroy`.
+
 Changes in PRIMME 2.2 (released on October 26, 2018):
 
 * Improved stability for single precision.
@@ -268,6 +307,13 @@ Contact Information
 For reporting bugs or questions about functionality contact `Andreas Stathopoulos`_ by
 email, `andreas` at `cs.wm.edu`. See further information in
 the webpage http://www.cs.wm.edu/~andreas/software and on github_.
+
+Support
+-------
+
+- National Science Foundation through grants CCF 1218349, ACI SI2-SSE 1440700, and NSCI 1835821
+- Department of Energy through grant Exascale Computing Project 17-SC-20-SC
+
 
 
 Directory Structure

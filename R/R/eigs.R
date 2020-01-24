@@ -37,6 +37,7 @@
 #'
 #' Compute a few eigenpairs from a specified region (the largest, the smallest,
 #' the closest to a point) on a symmetric/Hermitian matrix using PRIMME [1].
+#' Generalized symmetric/Hermitian problem is also supported.
 #' Only the matrix-vector product of the matrix is required. The used method is
 #' usually faster than a direct method (such as \code{\link{eigen}}) if
 #' seeking a few eigenpairs and the matrix-vector product is cheap. For
@@ -70,18 +71,22 @@
 #'        the closest eigenvalues to \eqn{\sigma}. If it is a matrix
 #'        it is used as prec \%*\% x; otherwise it is used as prec(x).
 #' @param isreal whether A \%*\% x always returns real number and not complex.
+#' @param B symmetric/Hermitian positive definite matrix or a function with
+#'        signature f(x) that returns \code{B \%*\% x}. If given, the function
+#'        returns the eigenpairs of (A,B).
 #' @param ... other PRIMME options (see details).
 #' @return list with the next elements
 #'    \describe{
 #'       \item{\code{values}}{the eigenvalues \eqn{\lambda_i}}
 #'       \item{\code{vectors}}{the eigenvectors \eqn{x_i}}
 #'       \item{\code{rnorms}}{the residual vector norms
-#'          \eqn{\|A x_i - \lambda_i x_i\|}{||A*x_i - lambda_i*x_i||}.}
+#'          \eqn{\|A x_i - \lambda_i B x_i\|}{||A*x_i - lambda_i*B*x_i||}.}
 #'       \item{\code{stats$numMatvecs}}{number of matrix-vector products performed}
 #'       \item{\code{stats$numPreconds}}{number of preconditioner applications performed}
 #'       \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
 #'       \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
 #'       \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
+#'       \item{\code{stats$timeOrtho}}{time expended in orthogonalizing}
 #'       \item{\code{stats$estimateMinEval}}{estimation of the smallest eigenvalue of A}
 #'       \item{\code{stats$estimateMaxEval}}{estimation of the largest eigenvalue of A}
 #'       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
@@ -165,6 +170,10 @@
 #' r <- eigs_sym(A, 3, 2.5, tol=1e-3); # compute the values with
 #' r$rnorms                                    # residual norm <= 1e-3*||A||
 #'
+#' B <- diag(rev(1:10));
+#' r <- eigs_sym(A, 3, B=B); # compute the 3 largest eigenpairs of
+#'                           # the generalized problem (A,B)
+#'
 #' # Build a Jacobi preconditioner (too convenient for a diagonal matrix!)
 #' # and see how reduce the number matrix-vector products
 #' A <- diag(1:1000)   # we use a larger matrix to amplify the difference
@@ -192,7 +201,7 @@
 #' @export
 
 eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
-      x0=NULL, ortho=NULL, prec=NULL, isreal=NULL, ...) {
+      x0=NULL, ortho=NULL, prec=NULL, isreal=NULL, B=NULL, ...) {
 
    # Extra arguments are considered PRIMME options
    opts <- list(...);
@@ -231,6 +240,40 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
       }
       else {
          Af <- function(x) A %*% x;
+      }
+   }
+
+   # If B is a matrix, check that B has the same dimension as A
+   if (is.null(B)) {
+      Bf <- NULL;
+   }
+   else if (is.function(B)) {
+      Bf <- B;
+   }
+   else if (length(dim(B)) != 2 || ncol(B) != nrow(B) || ncol(B) != opts$n) {
+      stop("B should be a square matrix with the same dimension as A, or a function")
+   }
+   else {
+      # Convert integer and logical matrices to double
+      if (is.matrix(B) && (is.integer(B) || is.logical(B))) {
+         B <- as.double(B);
+         dim(B) = c(opts$n, opts$n);
+      }
+
+      # Restrict matrix to double and complex
+      Bismatrix <- (is.matrix(B) && (is.double(B) || is.complex(B)));
+
+      Bisreal_suggestion <-
+         if (Bismatrix) is.double(B)
+         else (inherits(B, "Matrix") && substr(class(B), 0, 1) == "d");
+      if ((is.null(isreal) || isreal == Bisreal_suggestion) && (
+               Bismatrix ||
+               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(B)) ||
+               any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(B)) )) {
+         Bf <- B;
+      }
+      else {
+         Bf <- function(x) B %*% x;
       }
    }
 
@@ -322,9 +365,9 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
 
    # Call PRIMME
    r <- if (!isreal)
-      .zprimme(ortho, x0, Af, NULL, precf, convTest, primme)
+      .zprimme(ortho, x0, Af, Bf, precf, convTest, primme)
    else
-      .dprimme(ortho, x0, Af, NULL, precf, convTest, primme);
+      .dprimme(ortho, x0, Af, Bf, precf, convTest, primme);
 
    # Get stats
    r$stats$numMatvecs <- .primme_get_member("stats_numMatvecs", primme)
@@ -334,6 +377,7 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
    r$stats$estimateMaxEval <- .primme_get_member("stats_estimateMaxEVal", primme)
    r$stats$estimateANorm <- .primme_get_member("stats_estimateLargestSVal", primme)
    r$stats$timeMatvec <- .primme_get_member("stats_timeMatvec", primme)
+   r$stats$timeOrtho <- .primme_get_member("stats_timeOrtho", primme)
    r$stats$timePrecond <- .primme_get_member("stats_timePrecond", primme)
    
    # Free PRIMME structure
@@ -350,46 +394,48 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
 
 .getEigsErrorMsg <- function(n) {
    l <- list(
-      "0"= "success",
-      "1"= "reported only amount of required memory",
-      "-1"= "failed in allocating int or real workspace",
-      "-2"= "malloc failed in allocating a permutation integer array",
-      "-3"= "main_iter() encountered problem; the calling stack of the functions where the error occurred was printed in 'stderr'",
-      "-4"= "argument 'primme' is NULL",
-      "-5"= "'n' < 0 or 'nLocal' < 0 or 'nLocal' > 'n'",
-      "-6"= "'numProcs' < 1",
-      "-7"= "'matrixMatvec' is NULL",
-      "-8"= "'applyPreconditioner' is NULL and 'precondition' is not NULL",
-      "-9"= "'not used",
-      "-10"= "'numEvals' > 'n'",
-      "-11"= "'numEvals' < 0",
-      "-12"= "'eps' > 0 and 'eps' < machine precision",
-      "-13"= "'target' is not properly defined",
-      "-14"= "'target' is one of 'primme_largest_abs', 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'numTargetShifts' <= 0 (no shifts)",
-      "-15"= "'target' is one of 'primme_largest_abs', 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'targetShifts' is NULL  (no shifts array)",
-      "-16"= "'numOrthoConst' < 0 or 'numOrthoConst' > 'n'. (no free dimensions left)",
-      "-17"= "'maxBasisSize' < 2",
-      "-18"= "'minRestartSize' < 0 or 'minRestartSize' shouldn't be zero",
-      "-19"= "'maxBlockSize' < 0 or 'maxBlockSize' shouldn't be zero",
-      "-20"= "'maxPrevRetain' < 0",
-      "-21"= "'scheme' is not one of *primme_thick* or *primme_dtr*",
-      "-22"= "'initSize' < 0",
-      "-23"= "'locking' == 0 and 'initSize' > 'maxBasisSize'",
-      "-24"= "'locking' and 'initSize' > 'numEvals'",
-      "-25"= "'maxPrevRetain' + 'minRestartSize' >= 'maxBasisSize'",
-      "-26"= "'minRestartSize' >= 'n'",
-      "-27"= "'printLevel' < 0 or 'printLevel' > 5",
-      "-28"= "'convTest' is not one of 'primme_full_LTolerance', 'primme_decreasing_LTolerance', 'primme_adaptive_ETolerance' or 'primme_adaptive'",
-      "-29"= "'convTest' == 'primme_decreasing_LTolerance' and 'relTolBase' <= 1",
-      "-30"= "'evals' is NULL, but not 'evecs' and 'resNorms'",
-      "-31"= "'evecs' is NULL, but not 'evals' and 'resNorms'",
-      "-32"= "'resNorms' is NULL, but not 'evecs' and 'evals'",
-      "-33"= "'locking' == 0 and 'minRestartSize' < 'numEvals'",
-      "-34"= "'ldevecs' is less than 'nLocal'",
-      "-35"= "'ldOPs' is non-zero and less than 'nLocal'",
-      "-36"= "not enough memory for realWork",
-      "-37"= "not enough memory for intWork",
-      "-38"= "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'");
+     "0"  = "success",
+     "-1" = "unexpected internal error; please consider to set 'printLevel' to a value larger than 0 to see the call stack and to report these errors because they may be bugs",
+     "-2" = "memory allocation failure",
+     "-3" = "maximum iterations or matvecs reached",
+     "-4" = "argument 'primme' is NULL",
+     "-5" = "'n' < 0 or 'nLocal' < 0 or 'nLocal' > 'n'",
+     "-6" = "'numProcs' < 1",
+     "-7" = "'matrixMatvec' is NULL",
+     "-8" = "'applyPreconditioner' is NULL and 'precondition' is not NULL",
+     "-9" = "'not used",
+     "-10"= "'numEvals' > 'n'",
+     "-11"= "'numEvals' < 0",
+     "-12"= "'eps' > 0 and 'eps' < machine precision",
+     "-13"= "'target' is not properly defined",
+     "-14"= "'target' is one of 'primme_largest_abs', 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'numTargetShifts' <= 0 (no shifts)",
+     "-15"= "'target' is one of 'primme_largest_abs', 'primme_closest_geq', 'primme_closest_leq' or 'primme_closest_abs' but 'targetShifts' is NULL  (no shifts array)",
+     "-16"= "'numOrthoConst' < 0 or 'numOrthoConst' > 'n'. (no free dimensions left)",
+     "-17"= "'maxBasisSize' < 2",
+     "-18"= "'minRestartSize' < 0 or 'minRestartSize' shouldn't be zero",
+     "-19"= "'maxBlockSize' < 0 or 'maxBlockSize' shouldn't be zero",
+     "-20"= "'maxPrevRetain' < 0",
+     "-21"= "'scheme' is not one of *primme_thick* or *primme_dtr*",
+     "-22"= "'initSize' < 0",
+     "-23"= "'locking' == 0 and 'initSize' > 'maxBasisSize'",
+     "-24"= "'locking' and 'initSize' > 'numEvals'",
+     "-25"= "'maxPrevRetain' + 'minRestartSize' >= 'maxBasisSize'",
+     "-26"= "'minRestartSize' >= 'n'",
+     "-27"= "'printLevel' < 0 or 'printLevel' > 5",
+     "-28"= "'convTest' is not one of 'primme_full_LTolerance', 'primme_decreasing_LTolerance', 'primme_adaptive_ETolerance' or 'primme_adaptive'",
+     "-29"= "'convTest' == 'primme_decreasing_LTolerance' and 'relTolBase' <= 1",
+     "-30"= "'evals' is NULL",
+     "-31"= "'evecs' is NULL",
+     "-32"= "'resNorms' is NULL",
+     "-33"= "'locking' == 0 and 'minRestartSize' < 'numEvals'",
+     "-34"= "'ldevecs' is less than 'nLocal'",
+     "-35"= "'ldOPs' is non-zero and less than 'nLocal'",
+     "-38"= "'locking' == 0 and 'target' is 'primme_closest_leq' or 'primme_closet_geq'",
+     "-40"= "some LAPACK function performing a factorization returned an error code; set 'printLevel' > 0 to see the error code and the call stack",
+     "-41"= "error happened at the matvec or applying the preconditioner",
+     "-42"= "the matrix provided in 'lock' is not full rank",
+     "-43"= "parallel failure",
+     "-44"= "unavailable functionality; PRIMME was not compiled with support for the requesting precision or for GPUs");
    l[[as.character(n)]];
 }
 

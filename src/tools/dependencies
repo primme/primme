@@ -96,10 +96,10 @@ Comments /* ... */ with includes will not be ignored. For instance, consider the
      foo.c : a.h b.h
 """
 
-def find_deps(filename, include_paths, ignore_patterns):
-	deps = []
+def find_deps(filename, include_paths, ignore_patterns, ignore_paths=set()):
 	# Include source file's path in the include paths
-	include_paths = [os.path.dirname(filename)] + include_paths
+	include_paths = set(include_paths)
+	include_paths.add(os.path.dirname(filename))
 
 	# Ignore indicated patterns
 	ignore = "|".join(["(" + p + ")" for p in ignore_patterns])
@@ -108,8 +108,11 @@ def find_deps(filename, include_paths, ignore_patterns):
 	# Search for #include "..."
 	# NOTE: commented out lines will not be ignored!
 	p = r'\s*'.join(r'\# include "(?P<f>[^"]*)"'.split())
+	deps = set()
 	for m in re.finditer(p, content):
 		fname = m.group('f')
+
+		# Find fname in include_paths
 		path = None
 		for d in include_paths:
 			if os.path.exists(os.path.join(d, fname)):
@@ -117,7 +120,22 @@ def find_deps(filename, include_paths, ignore_patterns):
 				break
 		if not path:
 			raise Exception("In '" + filename + ": file '" +  fname + "' not found!")
-		deps.append(path)
+
+		# Ignore it if path is in ignore_paths
+		ignore = False
+		for p in ignore_paths:
+			if os.path.samefile(p, path):
+				ignore = True
+				break
+		if ignore:
+			continue
+
+		# Otherwise, add path to deps
+		deps.add(path)
+
+		# Add also includes in path
+		deps.update(find_deps(path, include_paths, ignore_patterns, deps.union((filename, path))))
+
 	return deps
 
 if __name__ == "__main__":
@@ -154,4 +172,4 @@ if __name__ == "__main__":
 			source_filename_h = os.path.basename(source_name) + ".h"
 			deps = [d for d in deps if os.path.basename(d) != source_filename_h]
 
-		sys.stdout.write(s + " : " + " ".join(deps) + "\n")
+		sys.stdout.write(s + " : " + " ".join(sorted(set(deps))) + "\n")

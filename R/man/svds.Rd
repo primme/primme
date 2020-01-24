@@ -71,6 +71,7 @@ list with the next elements
       \item{\code{stats$elapsedTime}}{time expended by the eigensolver}
       \item{\code{stats$timeMatvec}}{time expended in the matrix-vector products}
       \item{\code{stats$timePrecond}}{time expended in applying the preconditioner}
+      \item{\code{stats$timeOrtho}}{time expended in orthogonalizing}
       \item{\code{stats$estimateANorm}}{estimation of the norm of A}
    }
 }

@@ -33,8 +33,16 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/primme_f77.c"
+#endif
+
 #include <stdlib.h>   /* free */
-#include "primme_f77_private.h"
+#include "numerical.h"
+#include "template_normal.h"
+#include "common_eigs.h"
+#include "primme_interface.h" /* for Xprimme */
+
 
 /******************************************************************************/
 /* The following differ only in the name mangling from C                      */
@@ -45,22 +53,21 @@
  * The only difference from primme: the return value passed as parameter 
  *****************************************************************************/
 
-void AS_FORTRAN(Xprimme)(XREAL *evals, XSCALAR *evecs,
-      XREAL *rnorms, primme_params **primme, int *ierr) {
+EXTERN_C void AS_FORTRAN(Xprimme)(XEVAL *evals, XSCALAR *evecs, XREAL *rnorms,
+      primme_params **primme, int *ierr) {
 
-  *ierr = Xprimme(evals, evecs, rnorms, *primme);
+   *ierr = Xprimme(evals, evecs, rnorms, *primme);
 
 } /* end of xprimme_f77 wrapper for calling from Fortran */
 
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE
-#include "notemplate.h"
 
 /*****************************************************************************
  * Initialize handles also the allocation of primme structure 
  *****************************************************************************/
-void AS_FORTRAN(primme_initialize)(primme_params **primme) {
+EXTERN_C void AS_FORTRAN(primme_initialize)(primme_params **primme) {
 
    *primme = NULL;
    if (MALLOC_PRIMME(1, primme) == 0)
@@ -70,7 +77,7 @@ void AS_FORTRAN(primme_initialize)(primme_params **primme) {
 /*****************************************************************************
  *  * Free the internally allocated work arrays of the primme structure 
  *   *****************************************************************************/
-void AS_FORTRAN(primme_free)(primme_params **primme) {
+EXTERN_C void AS_FORTRAN(primme_free)(primme_params **primme) {
 
    primme_free(*primme);
    free(*primme);
@@ -80,7 +87,7 @@ void AS_FORTRAN(primme_free)(primme_params **primme) {
 /*****************************************************************************
  * Wrapper for displaying the primme parameters 
  *****************************************************************************/
-void AS_FORTRAN(primme_display_params)(primme_params **primme) {
+EXTERN_C void AS_FORTRAN(primme_display_params)(primme_params **primme) {
 
    primme_display_params(*(*primme));
 }
@@ -91,7 +98,7 @@ void AS_FORTRAN(primme_display_params)(primme_params **primme) {
  *    returnValue < 0 no such method exists. If not defined by user, defaults 
  *    have been set for maxBasisSize, minRestartSize, and maxBlockSize   
  *************************************************************************/
-void AS_FORTRAN(primme_set_method)(primme_params **primme,
+EXTERN_C void AS_FORTRAN(primme_set_method)(primme_params **primme,
       primme_preset_method *method, int *returnValue) {
   *returnValue = primme_set_method(*method, *primme);
 }
@@ -115,7 +122,7 @@ void AS_FORTRAN(primme_set_method)(primme_params **primme,
  *
  *************************************************************************/
 
-void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label,
+EXTERN_C void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label,
       void *v, int *ierr) {
    *ierr = primme_set_member(*primme, (primme_params_label)*label, v);
 }
@@ -147,7 +154,7 @@ void AS_FORTRAN(primme_set_member)(primme_params **primme, int *label,
  *
  *************************************************************************/
 
-void AS_FORTRAN(primme_get_member)(primme_params *primme, int *label,
+EXTERN_C void AS_FORTRAN(primme_get_member)(primme_params *primme, int *label,
       void *v, int *ierr) {
    *ierr = primme_get_member(primme, (primme_params_label)*label, v);
 }
@@ -158,7 +165,7 @@ void AS_FORTRAN(primme_get_member)(primme_params *primme, int *label,
  *   this is at location (i-1) in C   (i-th location in Fortran)
  *   of the array primme->ShiftsForPreconditioner
  *************************************************************************/
-void AS_FORTRAN(primme_get_prec_shift)(primme_params *primme, int *i,
+EXTERN_C void AS_FORTRAN(primme_get_prec_shift)(primme_params *primme, int *i,
       double *shift) {
    *shift = primme->ShiftsForPreconditioner[*i-1];
 }
@@ -183,12 +190,12 @@ void AS_FORTRAN(primme_get_prec_shift)(primme_params *primme, int *i,
  *      primme_get_member_f77
  *
  *************************************************************************/
-void AS_FORTRAN(primmetop_get_member)(primme_params **primme, int *label,
+EXTERN_C void AS_FORTRAN(primmetop_get_member)(primme_params **primme, int *label,
       void *ptr, int *ierr) {
    *ierr = primme_get_member(*primme, (primme_params_label)*label, ptr);
 }
 
-void AS_FORTRAN(primmetop_get_prec_shift)(primme_params **primme, int *i,
+EXTERN_C void AS_FORTRAN(primmetop_get_prec_shift)(primme_params **primme, int *i,
       double *shift) {
    AS_FORTRAN(primme_get_prec_shift)(*primme, i, shift);
 }

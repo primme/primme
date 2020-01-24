@@ -33,35 +33,25 @@
  *  
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../eigs/inner_solve.c"
+#endif
+
 #include "numerical.h"
-#include "const.h"
+#include "template_normal.h"
+#include "common_eigs.h"
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "inner_solve.h"
 #include "factorize.h"
 #include "update_W.h"
 #include "auxiliary_eigs.h"
+#include "auxiliary_eigs_normal.h"
 #endif
 
 #ifdef SUPPORTED_TYPE
 
-static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
-      PRIMME_INT ldQ, SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
-      PRIMME_INT ldx, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
-      int sizeRprojectorQ, int sizeRprojectorX, HSCALAR *xKinvx, HSCALAR *Mfact,
-      int *ipivot, SCALAR *result, PRIMME_INT ldresult, int blockSize,
-      primme_context ctx);
-
-static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
-      PRIMME_INT ldQhat, HSCALAR *Mfact, int *ipivot, int numCols, SCALAR *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
-
-static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
-      SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *BQ, PRIMME_INT ldBQ, SCALAR *X,
-      PRIMME_INT ldX, SCALAR *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      SCALAR *result, PRIMME_INT ldresult, primme_context ctx);
-
-static int perm_set_value_on_pos(int *p, int val, int pos, int n);
+#ifdef USE_HERMITIAN
 
 /*******************************************************************************
  * Function inner_solve - This subroutine solves the correction equation
@@ -147,8 +137,9 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       SCALAR *LprojectorBX, PRIMME_INT ldLprojectorBX, SCALAR *RprojectorQ,
       PRIMME_INT ldRprojectorQ, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeLprojectorQ, int sizeLprojectorX, int sizeRprojectorQ,
-      int sizeRprojectorX, SCALAR *sol, PRIMME_INT ldsol, HREAL *eval,
-      double *shift, int *touch, double startTime, primme_context ctx) {
+      int sizeRprojectorX, SCALAR *sol, PRIMME_INT ldsol, HEVAL *eval,
+      KIND(double, PRIMME_COMPLEX_DOUBLE) * shift, int *touch, double startTime,
+      primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int maxIterations; /* The maximum # iterations allowed. Depends on primme */
@@ -219,7 +210,10 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
    /* NOTE: In any case stop when linear system residual is less than         */
    /*       max(machEps,eps)*aNorm.                                           */
-   LTolerance = MACHINE_EPSILON * problemNorm_Sprimme(1, primme);
+   double eps_matrix, eps_orth;
+   CHKERR(machineEpsMatrix_Sprimme(&eps_matrix, ctx));
+   CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
+   LTolerance = max(eps_matrix, eps_orth) * problemNorm_Sprimme(1, primme);
    LTolerance_factor = 1.0;
    ETolerance = 0.0;
    ETolerance_factor = 0.0;
@@ -278,7 +272,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    /* --------------------------------------------------------*/
 
    /* Assume zero initial guess */
-   Num_copy_matrix_Sprimme(r, nLocal, blockSize, ldr, g, nLocal, ctx);
+   CHKERR(Num_copy_matrix_Sprimme(r, nLocal, blockSize, ldr, g, nLocal, ctx));
 
    CHKERR(apply_projected_preconditioner(g, nLocal, evecs, ldevecs, RprojectorQ,
          ldRprojectorQ, x, ldx, RprojectorX, ldRprojectorX, sizeRprojectorQ,
@@ -332,8 +326,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
             /* sol = r if first iteration */
             if (numIts == 0) {
-               Num_copy_matrix_Sprimme(&r[ldr * i], nLocal, 1, ldr,
-                     &sol[ldsol * i], ldsol, ctx);
+               CHKERR(Num_copy_matrix_Sprimme(
+                     &r[ldr * i], nLocal, 1, ldr, &sol[ldsol * i], ldsol, ctx));
             }
             CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
@@ -348,8 +342,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
             /* sol = r if first iteration */
             if (numIts == 0) {
-               Num_copy_matrix_Sprimme(&r[ldr * i], nLocal, 1, ldr,
-                     &sol[ldsol * i], ldsol, ctx);
+               CHKERR(Num_copy_matrix_Sprimme(
+                     &r[ldr * i], nLocal, 1, ldr, &sol[ldsol * i], ldsol, ctx));
             }
             CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
@@ -566,12 +560,15 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
            /* --------------------------------------------------------*/
          } /* End of if adaptive JDQMR section                        */
            /* --------------------------------------------------------*/
-         else {
+         else
+         {
             /* Check if the linear system residual norm (tau) is less         */
-            /* than eps*aNorm*LTolerance_factor                               */
+            /* than eps*aNorm*LTolerance_factor. Note that QMR residual can   */
+            /* be sqrt(iterations) times away from the actual residual.       */
 
             CHKERR(convTestFun_Sprimme(eval[p[i]], NULL, 0 /* evec not given */,
-                  tau[p[i]] / LTolerance_factor, &isConv, ctx));
+                  tau[p[i]] / LTolerance_factor * sqrt((double)numIts), &isConv,
+                  ctx));
 
             if (numIts > 0 && isConv) {
                PRINTF(5,
@@ -586,7 +583,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                /* Report for non adaptive inner iterations */
                int ZERO = 0, UNCO = UNCONVERGED;
                CHKERR(monitorFun_Sprimme(&eval[p[i]], 1, &UNCO, &ZERO, 1,
-                     &rnorm[p[i]], -1, NULL, -1, NULL, NULL, numIts, tau[p[i]],
+                     &rnorm[p[i]], 0, NULL, 0, NULL, NULL, numIts, tau[p[i]],
                      NULL, 0.0, primme_event_inner_iteration, startTime, ctx));
             }
          }
@@ -667,7 +664,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    CHKERR(Num_free_RHprimme(dot_sol, ctx));
    CHKERR(Num_free_iprimme(p, ctx));
    CHKERR(Num_free_iprimme(p0, ctx));
- 
+
    return 0;
 }
    
@@ -714,7 +711,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
  *
  ******************************************************************************/
 
-static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
+STATIC int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
       PRIMME_INT ldQ, SCALAR *RprojectorQ, PRIMME_INT ldRprojectorQ, SCALAR *x,
       PRIMME_INT ldx, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, HSCALAR *xKinvBx,
@@ -769,7 +766,7 @@ static int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
  * 
  ******************************************************************************/
 
-static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
+STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
       PRIMME_INT ldQhat, HSCALAR *Mfact, int *ipivot, int numCols, SCALAR *v,
       PRIMME_INT ldv, int blockSize, primme_context ctx) {
 
@@ -777,12 +774,15 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
 
    if (numCols <= 0 || blockSize <= 0) return 0;
 
+   double t0 = primme_wTimer();
+
    HSCALAR *overlaps; /* overlaps of v with columns of Q   */
    CHKERR(Num_malloc_SHprimme(numCols * blockSize, &overlaps, ctx));
 
    /* Compute workspace = Q'*v */
    CHKERR(Num_gemm_ddh_Sprimme("C", "N", numCols, blockSize, primme->nLocal,
          1.0, Q, ldQ, v, ldv, 0.0, overlaps, numCols, ctx));
+   if (primme) primme->stats.numOrthoInnerProds += numCols * blockSize;
 
    /* Global sum: overlaps = Q'*v */
    CHKERR(globalSum_SHprimme(overlaps, numCols * blockSize, ctx));
@@ -801,6 +801,8 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
          -1.0, Qhat, ldQhat, overlaps, numCols, 1.0, v, ldv, ctx));
 
    CHKERR(Num_free_SHprimme(overlaps, ctx));
+
+   if (primme) primme->stats.timeOrtho += primme_wTimer() - t0;
 
    return 0;
 }
@@ -833,7 +835,7 @@ static int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
  *
  ******************************************************************************/
 
-static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
+STATIC int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
       SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *BQ, PRIMME_INT ldBQ, SCALAR *X,
       PRIMME_INT ldX, SCALAR *BX, PRIMME_INT ldBX, int nX, int blockSize,
       SCALAR *result, PRIMME_INT ldresult, primme_context ctx) {
@@ -908,7 +910,7 @@ static int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
  *
  ******************************************************************************/
 
-static int perm_set_value_on_pos(int *p, int val, int pos, int n) {
+STATIC int perm_set_value_on_pos(int *p, int val, int pos, int n) {
 
    int i;
    for (i=0; i<n; i++) {
@@ -921,5 +923,7 @@ static int perm_set_value_on_pos(int *p, int val, int pos, int n) {
 
    return -1;
 }
+
+#endif /* USE_HERMITIAN */
 
 #endif /* SUPPORTED_TYPE */

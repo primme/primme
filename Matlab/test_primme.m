@@ -45,7 +45,7 @@ assert(norm(evals - (50:-1:50-k+1)') < 1e-6*norm(A))
 
 [a,p] = sort(abs((1:50) - 25.2)); p = sort(p(1:k), 'descend');
 assert(all(abs(diag(evals) - p(1:k)') < 1e-6*stats.estimateLargestSVal));
-assert(all(rnorms < 5e-6*stats.estimateLargestSVal));
+assert(all(rnorms < 1e-5*stats.estimateLargestSVal));
 
 % Compute the 6 smallest eigenvalues and vectors of a matrix defined by
 % the matrix-vector product
@@ -199,7 +199,7 @@ assert(norm(evals - exact_eigs(end:-1:end-k+1,:)) < 1e-6*norm(B\A))
 
 [a,p] = sort(abs(exact_eigs - 25.2)); p = sort(exact_eigs(p(1:k)), 'descend');
 assert(all(abs(diag(evals) - p) < 1e-5*stats.estimateLargestSVal))
-assert(all(rnorms < 5e-6*stats.estimateLargestSVal));
+assert(all(rnorms < 1e-5*stats.estimateLargestSVal));
 
 % Compute the 6 smallest eigenvalues and vectors of a matrix defined by
 % the matrix-vector product

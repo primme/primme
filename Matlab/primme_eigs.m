@@ -46,6 +46,7 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.isdouble: whether the class of in/out vectors in AFUN are
 %          double or single {false}
 %     OPTS.isgpu: whether the class of in/out vectors in AFUN are gpuArray {false}
+%     OPTS.ishermitian: whether A is Hermitian; otherwise it is considered normal {true}
 %     OPTS.targetShifts: shifts for interior eigenvalues (see TARGET) {[]}
 %     OPTS.v0: any number of initial guesses to the eigenvectors {[]}
 %     OPTS.orthoConst: external orthogonalization constraints {[]}
@@ -54,7 +55,6 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.minRestartSize: minimum Ritz vectors to keep in restarting
 %     OPTS.maxMatvecs: maximum number of matrix vector multiplications {Inf}
 %     OPTS.maxit: maximum number of outer iterations {Inf}
-%     OPTS.scheme: the restart scheme {'primme_thick'}
 %     OPTS.maxPrevRetain: number of Ritz vectors from previous iteration
 %          that are kept after restart {typically >0, see PRIMME doc}
 %     OPTS.robustShifts: setting to true may avoid stagnation or misconvergence 
@@ -184,7 +184,8 @@ function [varargout] = primme_eigs(varargin)
 
    % Check primme_mex exists
    if ~ exist('primme_mex')
-      error 'primme_mex is not available. Try to recompile the MATLAB/Octave''s PRIMME module'
+      warning 'primme_mex is not available. Building PRIMME...'
+      make
    end
 
    % Check arity of input and output arguments
@@ -204,12 +205,10 @@ function [varargout] = primme_eigs(varargin)
    Acomplex = true;
    Adouble = true;
    Agpu = false;
+   Aherm = true;
    if isnumeric(A)
       % Check matrix is Hermitian and get matrix dimension
       [m, n] = size(A);
-      if m < 1e4 && ~ishermitian(A)
-         error('Input matrix must be real symmetric or complex Hermitian');
-      end
       opts.n = n;
       opts.matrixMatvec = @(x)A*x;
 
@@ -257,16 +256,21 @@ function [varargout] = primme_eigs(varargin)
    end
 
    if ABfun
-      n = round(varargin{nextArg});
-      if ~isscalar(n) || ~isreal(n) || (n<0) || ~isfinite(n)
-         error(message('The size of input matrices must be an positive integer'));
+      n = varargin{nextArg};
+      if ~isscalar(n) || ~isnumeric(n) || (n<0) || ~isfinite(n)
+         error(message('The size of input matrices must be a positive integer'));
       end
+      n = round(n);
       opts.n = n;
       nextArg = nextArg + 1;
    end
 
    if nargin >= nextArg
-      opts.numEvals = round(varargin{nextArg});
+      opts.numEvals = varargin{nextArg};
+      if ~isscalar(opts.numEvals) || ~isnumeric(opts.numEvals) || (opts.numEvals<0) || ~isfinite(opts.numEvals)
+         error(message('The argument numEvals must be a positive integer'));
+      end
+      opts.numEvals = round(opts.numEvals);
       nextArg = nextArg + 1;
    else
       opts.numEvals = min(6, opts.n);
@@ -362,6 +366,16 @@ function [varargout] = primme_eigs(varargin)
       Adouble = opts.isdouble;
       opts = rmfield(opts, 'isdouble');
    end
+
+   % Process 'ishermitian' in opts
+   if isfield(opts, 'ishermitian')
+      Aherm = opts.ishermitian;
+      opts = rmfield(opts, 'ishermitian');
+   end
+   if isnumeric(A) && m < 1e4 && Aherm && ~ishermitian(A)
+      error('Input matrix must be real symmetric or complex Hermitian, or set OPTS.ishermitian to false');
+   end
+
    % Process 'isgpu' in opts
    if isfield(opts, 'isgpu')
       Agpu = opts.isgpu;
@@ -544,6 +558,9 @@ function [varargout] = primme_eigs(varargin)
          type = ['magma_' type];
       end
       xprimme = [type 'primme'];
+      if ~Aherm
+         xprimme = [xprimme '_normal'];
+      end
 
       % Call xprimme
       [ierr, evals, norms, evecs] = primme_mex(xprimme, init, primme); 
@@ -664,11 +681,13 @@ function [varargout] = primme_eigs(varargin)
          end
       end
       if showHist && size(histline,1) > 0
-         template{1} = '%7d\t%-5.g\t%7d\t%-5.1g\t%-5.1e\n';
-         template{2} = '%7d\t%-5.g\t%7d\t%7d\t%-5.4g\t%5.1e\n';
-         template{3} = '%7d\t%-5.g\t%7d\t%7d\t%-5.4g\t%5.1e\t%5.1e\n';
+         template{1} = '%7d\t%-5.g\t%7d\t%s\t%-5.1e\n';
+         template{2} = '%7d\t%-5.g\t%7d\t%7d\t%s\t%5.1e\n';
+         template{3} = '%7d\t%-5.g\t%7d\t%7d\t%s\t%5.1e\t%5.1e\n';
          for i=1:size(histline,1)
             a = num2cell(histline(i,:));
+            if dispLevel == 1, ieval = 4; else ieval = 5; end
+            a{ieval} = num2str(a{ieval}, '%-5.1e');
             fprintf(template{dispLevel}, a{:});
          end
       end
@@ -730,10 +749,9 @@ function s = primme_error_msg(errorCode)
 
    msg = {};
    msg{45+  0} = 'success';
-   msg{45+  1} = 'reported only amount of required memory';
-   msg{45+ -1} = 'unexpected failure';
+   msg{45+ -1} = 'unexpected internal error; please consider to set "printLevel" to a value larger than 0 to see the call stack and to report these errors because they may be bugs';
    msg{45+ -2} = 'memory allocation failure';
-   msg{45+ -3} = 'iteration error; usually maximum iterations or matvecs reached';
+   msg{45+ -3} = 'maximum iterations or matvecs reached';
    msg{45+ -4} = 'argument primme is NULL';
    msg{45+ -5} = 'n < 0 or nLocal < 0 or nLocal > n';
    msg{45+ -6} = 'numProcs' < 1';
@@ -769,11 +787,11 @@ function s = primme_error_msg(errorCode)
    msg{45+-36} = 'not enough memory for realWork';
    msg{45+-37} = 'not enough memory for intWork';
    msg{45+-38} = 'locking == 0 and target is primme_closest_leq or primme_closet_geq';
-   msg{45+-40} = 'factorization failure';
+   msg{45+-40} = 'some LAPACK function performing a factorization returned an error code; set "printLevel" > 0 to see the error code and the call stack';
    msg{45+-41} = 'user cancelled execution';
-   msg{45+-42} = 'orthogonalization failure';
+   msg{45+-42} = 'the matrix provided in "orthoConst" is not full rank';
    msg{45+-43} = 'parallel failure';
-   msg{45+-44} = 'unavailable functionality';
+   msg{45+-44} = 'unavailable functionality; PRIMME was not compiled with support for the requesting precision or for GPUs';
 
    errorCode = errorCode + 45;
    if errorCode > 0 && errorCode <= numel(msg)

@@ -1286,7 +1286,7 @@ static real c_b1095 = 1.f;
     extern /* Subroutine */ int zheev_(char *, char *, integer *, 
 	    doublecomplex *, integer *, doublereal *, doublecomplex *, 
 	    integer *, doublereal *, integer *);
-    char trans[1];
+    char trans[2];
     logical upper, wantz;
     extern /* Subroutine */ int ztrmm_(char *, char *, char *, char *, 
 	    integer *, integer *, doublecomplex *, doublecomplex *, integer *,
@@ -2737,7 +2737,7 @@ doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a,
     extern /* Subroutine */ int zlacgv_(integer *, doublecomplex *, integer *)
 	    ;
     extern integer ilazlr_(integer *, integer *, doublecomplex *, integer *);
-    char transt[1];
+    char transt[2];
 
 
 /*  -- LAPACK auxiliary routine (version 3.3.1) -- */
@@ -9772,13 +9772,13 @@ integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1,
 
     /* Local variables */
     integer i__;
-    char c1[1], c2[2], c3[3], c4[2];
+    char c1[2], c2[3], c3[4], c4[3];
     integer ic, nb, iz, nx;
     logical cname;
     integer nbmin;
     logical sname;
     extern integer ieeeck_(integer *, real *, real *);
-    char subnam[6];
+    char subnam[7];
     extern integer iparmq_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *);
 

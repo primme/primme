@@ -33,56 +33,60 @@
  *
  ******************************************************************************/
 
+#ifndef THIS_FILE
+#define THIS_FILE "../svds/primme_svds_f77.c"
+#endif
+
+
 #include <stdlib.h>   /* free */
-#include "primme_svds_f77_private.h"
+#include "numerical.h"
 #include "primme_svds_interface.h"
 
 
-void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,
+EXTERN_C void AS_FORTRAN(Sprimme_svds)(XREAL *svals, XSCALAR *svecs,
       XREAL *resNorms, primme_svds_params **primme_svds, int *ierr) {
    *ierr = Sprimme_svds(svals, svecs, resNorms, *primme_svds);
 }
 
 /* Only define these functions ones */
 #ifdef USE_DOUBLE
-#include "notemplate.h"
 
-void AS_FORTRAN(primme_svds_initialize)(primme_svds_params **primme_svds) {
+EXTERN_C void AS_FORTRAN(primme_svds_initialize)(primme_svds_params **primme_svds) {
    *primme_svds = NULL;
    if (MALLOC_PRIMME(1, primme_svds) == 0)
       primme_svds_initialize(*primme_svds);
 }
 
-void AS_FORTRAN(primme_svds_set_method)(primme_svds_preset_method *method,
+EXTERN_C void AS_FORTRAN(primme_svds_set_method)(primme_svds_preset_method *method,
       primme_preset_method *methodStage1, primme_preset_method *methodStage2,
       primme_svds_params **primme_svds, int *ierr) {
    *ierr = primme_svds_set_method(*method, *methodStage1, *methodStage2,
          *primme_svds);
 }
 
-void AS_FORTRAN(primme_svds_display_params)(primme_svds_params **primme_svds) {
+EXTERN_C void AS_FORTRAN(primme_svds_display_params)(primme_svds_params **primme_svds) {
    primme_svds_display_params(**primme_svds);
 }
 
-void AS_FORTRAN(primme_svds_free)(primme_svds_params **primme_svds) {
+EXTERN_C void AS_FORTRAN(primme_svds_free)(primme_svds_params **primme_svds) {
    primme_svds_free(*primme_svds);
    free(*primme_svds);
    *primme_svds = NULL;
 }
 
-void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds,
+EXTERN_C void AS_FORTRAN(primme_svds_set_member)(primme_svds_params **primme_svds,
       int *label, void *v, int *ierr) {
    *ierr = primme_svds_set_member(*primme_svds,
          (primme_svds_params_label)*label, v);
 }
 
-void AS_FORTRAN(primme_svdstop_get_member)(
+EXTERN_C void AS_FORTRAN(primme_svdstop_get_member)(
       primme_svds_params **primme_svds, int *label, void *v, int *ierr) {
    *ierr = primme_svds_get_member(*primme_svds,
          (primme_svds_params_label)*label, v);
 }
 
-void AS_FORTRAN(primme_svds_get_member)(primme_svds_params *primme_svds,
+EXTERN_C void AS_FORTRAN(primme_svds_get_member)(primme_svds_params *primme_svds,
       int *label, void *v, int *ierr) {
    *ierr = primme_svds_get_member(primme_svds,
          (primme_svds_params_label)*label, v);
