@@ -381,9 +381,11 @@ static inline uint32_t hash_call(const char *str, double value) {
    uint32_t hash = 5381;
    int c;
 
+   union { double d; uint32_t i[2]; } t;
+   t.d = value;
    while ((c = *str++)) hash = hash * 33 + c;
-   hash = hash * 33 + ((uint32_t *)&value)[0];
-   hash = hash * 33 + ((uint32_t *)&value)[1];
+   hash = hash * 33 + t.i[0];
+   hash = hash * 33 + t.i[1];
 
    return hash;
 }
