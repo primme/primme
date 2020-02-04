@@ -251,7 +251,7 @@ int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
          x, xt, m * 2, n, ldx * 2, (REAL *)y, ldy * 2, ctx);
 #else
 
-   int info;
+   magma_int_t info;
    void *y0 = y; PRIMME_INT ldy0 = ldy;
    switch (xt) {
 #  ifdef MAGMA_WITH_HALF
@@ -465,6 +465,12 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    SET_COMPLEX(beta0, beta);
 
 #if defined(USE_HALFCOMPLEX_MAGMA)
+   (void)transa;
+   (void)transb;
+   (void)a;
+   (void)lda;
+   (void)b;
+   (void)ldb;
    return PRIMME_FUNCTION_UNAVAILABLE;
 
 #elif defined(USE_HALF_MAGMA)
