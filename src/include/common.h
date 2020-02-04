@@ -343,7 +343,7 @@ static inline const char *__compose_function_name(const char *path,
    return s;
 }
 
-#define PROFILE_BEGIN(CALL) \
+#define PROFILE_INHOUSE_BEGIN(CALL) \
    double ___t0 = 0; \
    const char *old_path = ctx.path; \
    if (ctx.path && ctx.report) { \
@@ -354,7 +354,7 @@ static inline const char *__compose_function_name(const char *path,
       } \
    }
 
-#define PROFILE_END \
+#define PROFILE_INHOUSE_END \
    if (ctx.path) { \
       if (___t0 > 0) { \
          double ___t1 = primme_wTimer(); \
@@ -369,9 +369,21 @@ static inline const char *__compose_function_name(const char *path,
    }
  
 #else
-#define PROFILE_BEGIN(CALL)
-#define PROFILE_END
+#define PROFILE_INHOUSE_BEGIN(CALL)
+#define PROFILE_INHOUSE_END
 #endif
+
+#ifdef PRIMME_PROFILE_NV
+#include <nvToolsExt.h>
+#define PROFILE_NV_BEGIN(CALL) nvtxRangePush(CALL);
+#define PROFILE_NV_END         nvtxRangePop();
+#else
+#define PROFILE_NV_BEGIN(CALL)
+#define PROFILE_NV_END
+#endif
+
+#define PROFILE_BEGIN(CALL) PROFILE_INHOUSE_BEGIN(CALL); PROFILE_NV_BEGIN(CALL)
+#define PROFILE_END         PROFILE_INHOUSE_END; PROFILE_NV_END
 
 /*****************************************************************************/
 /* Parallel checks                                                           */

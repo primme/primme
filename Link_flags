@@ -22,7 +22,7 @@ LDFLAGS ?= $(if $(findstring FreeBSD,$(UNAME)),-L/usr/local/lib -L/usr/local/lib
 ifeq ($(origin LIBS), undefined)
     ifeq ($(PRIMME_WITH_MAGMA),yes)
          LIBS += -L$(MAGMADIR)/lib -lmagma -lmagma_sparse  \
-                 -L$(CUDADIR)/lib64 -lcublas -lcudart -lcusparse
+                 -L$(CUDADIR)/lib64 -lcublas -lcudart -lcusparse -lnvToolsExt
     endif
     ifndef MKLROOT
         LIBS += -llapack -lblas -lm
