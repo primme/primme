@@ -719,10 +719,9 @@ int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
    int destinationIndex; /* Position of out-of-order vector in sorted order */
    int tempIndex;        /* Used to swap                                      */
    int *perm;            /* A copy of perm_                                   */
-   SCALAR *rwork;        /* vector buffer */
+   SCALAR *rwork=NULL;   /* vector buffer */
 
    CHKERR(Num_malloc_iprimme(n, &perm, ctx));
-   CHKERR(Num_malloc_Sprimme(m, &rwork, ctx));
 
    /* Check perm_ is a permutation */
 
@@ -758,7 +757,8 @@ int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
       }
 
       /* Copy the vector to a buffer for swapping */
-      Num_copy_Sprimme(m, &vecs[currentIndex * ld], 1, rwork, 1, ctx);
+      if (!rwork) CHKERR(Num_malloc_Sprimme(m, &rwork, ctx));
+      CHKERR(Num_copy_Sprimme(m, &vecs[currentIndex * ld], 1, rwork, 1, ctx));
 
       destinationIndex = currentIndex;
       /* Copy vector perm[destinationIndex] into position destinationIndex */
@@ -766,15 +766,16 @@ int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
       while (perm[destinationIndex] != currentIndex) {
 
          sourceIndex = perm[destinationIndex];
-         Num_copy_Sprimme(m, &vecs[sourceIndex * ld], 1,
-                          &vecs[destinationIndex * ld], 1, ctx);
+         CHKERR(Num_copy_Sprimme(m, &vecs[sourceIndex * ld], 1,
+               &vecs[destinationIndex * ld], 1, ctx));
          tempIndex = perm[destinationIndex];
          perm[destinationIndex] = destinationIndex;
          destinationIndex = tempIndex;
       }
 
       /* Copy the vector from the buffer to where it belongs */
-      Num_copy_Sprimme(m, rwork, 1, &vecs[destinationIndex * ld], 1, ctx);
+      CHKERR(Num_copy_Sprimme(
+            m, rwork, 1, &vecs[destinationIndex * ld], 1, ctx));
       perm[destinationIndex] = destinationIndex;
 
       currentIndex++;

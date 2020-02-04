@@ -280,7 +280,8 @@ int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
       XCOPY(&ln, x, &lincx, y, &lincy);
    return 0;
 #else
-   return Num_copy_matrix_Sprimme(x, 1, n, incx, y, incy, ctx);
+   CHKERR(Num_copy_matrix_Sprimme(x, 1, n, incx, y, incy, ctx));
+   return 0;
 #endif
 }
 
@@ -350,8 +351,9 @@ int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
    if (x == y) return PRIMME_FUNCTION_UNAVAILABLE;
 
 #ifdef USE_COMPLEX
-   return Num_copy_Tmatrix_Rprimme(
-         x, xt, m * 2, n, ldx * 2, (REAL *)y, ldy * 2, ctx);
+   CHKERR(Num_copy_Tmatrix_Rprimme(
+         x, xt, m * 2, n, ldx * 2, (REAL *)y, ldy * 2, ctx));
+   return 0;
 #else
 
  
@@ -517,12 +519,12 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    /* Quick exit */
    if (k == 0 || ABS(alpha) == 0.0) {
       if (ABS(beta) == 0.0) {
-         Num_zero_matrix_Sprimme(c, m, n, ldc, ctx);
+         CHKERR(Num_zero_matrix_Sprimme(c, m, n, ldc, ctx));
       }
       else if (beta != (HSCALAR)1.0) {
          int i;
          for (i=0; i<n; i++) {
-            Num_scal_Sprimme(m, beta, &c[ldc*i], 1, ctx);
+            CHKERR(Num_scal_Sprimme(m, beta, &c[ldc*i], 1, ctx));
          }
       }
       return 0;
@@ -532,8 +534,9 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
       if (*transa == 'n' || *transa == 'N') mA = m, nA = k;
       else mA = k, nA = m;
       int incb = ((*transb == 'n' || *transb == 'N') ? 1 : ldb);
-      return Num_gemv_Sprimme(
-            transa, mA, nA, alpha, a, lda, b, incb, beta, c, 1, ctx);
+      CHKERR(Num_gemv_Sprimme(
+            transa, mA, nA, alpha, a, lda, b, incb, beta, c, 1, ctx));
+      return 0;
    }
 
    XGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c,
@@ -714,10 +717,10 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
    /* Quick exit */
    if (nA == 0 || ABS(alpha) == 0.0) {
       if (ABS(beta) == 0.0) {
-         Num_zero_matrix_Sprimme(y, 1, mA, incy, ctx);
+         CHKERR(Num_zero_matrix_Sprimme(y, 1, mA, incy, ctx));
       }
       else {
-         Num_scal_Sprimme(mA, beta, y, incy, ctx);
+         CHKERR(Num_scal_Sprimme(mA, beta, y, incy, ctx));
       }
       return 0;
    }
@@ -911,7 +914,8 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
    /* replaced by calling the REAL version doubling the length.         */
 
    assert(idist < 4); /* complex distributions are not supported */
-   return Num_larnv_Rprimme(idist, iseed, length*2, (REAL*)x, ctx);
+   CHKERR(Num_larnv_Rprimme(idist, iseed, length*2, (REAL*)x, ctx));
+   return 0;
 
 #elif (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
    PRIMME_BLASINT lidist = idist;
@@ -1040,7 +1044,7 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    }
 
    /* Copy z to a */
-   Num_copy_matrix_Sprimme(z, n, n, n, a, lda, ctx);
+   CHKERR(Num_copy_matrix_Sprimme(z, n, n, n, a, lda, ctx));
 
    CHKERR(Num_free_Sprimme(z, ctx)); 
 #  ifdef USE_COMPLEX
@@ -1049,7 +1053,7 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    CHKERR(Num_free_iblasprimme(iwork, ctx));
    CHKERR(Num_free_iblasprimme(ifail, ctx));
 
-   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xheev with info %d",
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xheevx with info %d",
           (int)linfo);
    return 0;
 
@@ -1117,7 +1121,8 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 
    /* Call heev if b is null */
    if (b0 == NULL) {
-      return Num_heev_Sprimme(jobz, uplo, n, a, lda, w, ctx);
+      CHKERR(Num_heev_Sprimme(jobz, uplo, n, a, lda, w, ctx));
+      return 0;
    }
 
 #ifndef USE_XHEGV
@@ -1149,9 +1154,9 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    CHKERR(Num_malloc_iblasprimme(5*n, &iwork, ctx));
    CHKERR(Num_malloc_iblasprimme(n, &ifail, ctx));
 
-   Num_copy_trimatrix_Sprimme(b0, n, n, ldb0,
+   CHKERR(Num_copy_trimatrix_Sprimme(b0, n, n, ldb0,
          *uplo == 'U' || *uplo == 'u' ? 0 : 1, 0, b, n,
-         0 /*not to zero rest of the matrix */);
+         0 /*not to zero rest of the matrix */));
 
    /* Call to know the optimal workspace */
 
@@ -1178,7 +1183,7 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    }
 
    /* Copy z to a */
-   Num_copy_matrix_Sprimme(z, n, n, n, a, lda, ctx);
+   CHKERR(Num_copy_matrix_Sprimme(z, n, n, n, a, lda, ctx));
 
    CHKERR(Num_free_Sprimme(z, ctx)); 
    CHKERR(Num_free_Sprimme(b, ctx)); 
@@ -1213,7 +1218,7 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    CHKERR(Num_malloc_Rprimme(3*n, &rwork, ctx));
 #  endif
 
-   Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n, ctx);
+   CHKERR(Num_copy_matrix_Sprimme(b0, n, n, ldb0, b, n, ctx));
 
    /* Call to know the optimal workspace */
 

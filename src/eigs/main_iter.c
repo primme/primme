@@ -1042,10 +1042,10 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      hVecs, basisSize, basisSize, basisSize, iwork, ctx));
                CHKERR(permute_vecs_iprimme(flags, basisSize, iwork, ctx));
                if (hVecsRot) {
-                  Num_zero_matrix_SHprimme(
+                  CHKERR(Num_zero_matrix_SHprimme(
                         &hVecsRot[numArbitraryVecs * primme->maxBasisSize],
                         primme->maxBasisSize, basisSize - numArbitraryVecs,
-                        primme->maxBasisSize, ctx);
+                        primme->maxBasisSize, ctx));
                   for (i = numArbitraryVecs; i < basisSize; i++)
                      hVecsRot[primme->maxBasisSize * i + i] = 1.0;
                   CHKERR(permute_vecs_SHprimme(hVecsRot, basisSize, basisSize,

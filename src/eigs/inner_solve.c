@@ -396,12 +396,12 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                                        TO_COMPLEX(sol[ldsol * i + j]));
          }
 #else
-         Num_scal_Sprimme(
-               nLocal, (HSCALAR)gamma[p[i]], &delta[i * nLocal], 1, ctx);
-         Num_axpy_Sprimme(nLocal, (HSCALAR)eta[p[i]], &d[i * nLocal], 1,
-               &delta[i * nLocal], 1, ctx);
-         Num_axpy_Sprimme(
-               nLocal, 1.0, &delta[i * nLocal], 1, &sol[i * ldsol], 1, ctx);
+         CHKERR(Num_scal_Sprimme(
+               nLocal, (HSCALAR)gamma[p[i]], &delta[i * nLocal], 1, ctx));
+         CHKERR(Num_axpy_Sprimme(nLocal, (HSCALAR)eta[p[i]], &d[i * nLocal], 1,
+               &delta[i * nLocal], 1, ctx));
+         CHKERR(Num_axpy_Sprimme(
+               nLocal, 1.0, &delta[i * nLocal], 1, &sol[i * ldsol], 1, ctx));
          if (dot_sol)
             dot_sol[i] = REAL_PART(Num_dot_Sprimme(
                   nLocal, &sol[i * ldsol], 1, &sol[i * ldsol], 1, ctx));
@@ -618,8 +618,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
          for (i=0; i< blockSize; i++) {
             HREAL beta = rho[p[i]]/rho_prev[p[i]];
-            Num_axpy_Sprimme(
-                  nLocal, beta, &d[nLocal * i], 1, &w[nLocal * i], 1, ctx);
+            CHKERR(Num_axpy_Sprimme(
+                  nLocal, beta, &d[nLocal * i], 1, &w[nLocal * i], 1, ctx));
 
             rho_prev[p[i]] = rho[p[i]];
             tau_prev[p[i]] = tau[p[i]];
@@ -725,8 +725,8 @@ STATIC int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
    CHKERR(applyPreconditioner_Sprimme(v, primme->nLocal, ldv, result,
             ldresult, blockSize, ctx));
 
-   CHKERR(apply_skew_projector(Q, ldQ, RprojectorQ, ldRprojectorQ, Mfact, ipivot,
-            sizeRprojectorQ, result, ldresult, blockSize, ctx));
+   CHKERR(apply_skew_projector(Q, ldQ, RprojectorQ, ldRprojectorQ, Mfact,
+         ipivot, sizeRprojectorQ, result, ldresult, blockSize, ctx));
 
    if (sizeRprojectorX <= 0) return 0;
 
@@ -776,31 +776,49 @@ STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
 
    double t0 = primme_wTimer();
 
-   HSCALAR *overlaps; /* overlaps of v with columns of Q   */
-   CHKERR(Num_malloc_SHprimme(numCols * blockSize, &overlaps, ctx));
+   if (ctx.numProcs <= 1 && Mfact == NULL) {
+      SCALAR *overlaps; /* overlaps of v with columns of Q   */
+      CHKERR(Num_malloc_Sprimme(numCols * blockSize, &overlaps, ctx));
+      CHKERR(Num_zero_matrix_Sprimme(
+            overlaps, numCols, blockSize, numCols, ctx));
 
-   /* Compute workspace = Q'*v */
-   CHKERR(Num_gemm_ddh_Sprimme("C", "N", numCols, blockSize, primme->nLocal,
-         1.0, Q, ldQ, v, ldv, 0.0, overlaps, numCols, ctx));
-   if (primme) primme->stats.numOrthoInnerProds += numCols * blockSize;
+      /* Compute workspace = Q'*v */
+      CHKERR(Num_gemm_Sprimme("C", "N", numCols, blockSize, primme->nLocal,
+            1.0, Q, ldQ, v, ldv, 0.0, overlaps, numCols, ctx));
+      if (primme) primme->stats.numOrthoInnerProds += numCols * blockSize;
 
-   /* Global sum: overlaps = Q'*v */
-   CHKERR(globalSum_SHprimme(overlaps, numCols * blockSize, ctx));
+      /* Compute v=v-Qhat*overlaps */
+      CHKERR(Num_gemm_Sprimme("N", "N", primme->nLocal, blockSize, numCols,
+            -1.0, Qhat, ldQhat, overlaps, numCols, 1.0, v, ldv, ctx));
 
-   /* Backsolve only if there is a skew projector */
-   if (Mfact != NULL) {
-      /* Solve (Q'Qhat)^{-1}*overlaps = overlaps = Q'*v for alpha by */
-      /* backsolving  with Mfact.                 */
+      CHKERR(Num_free_Sprimme(overlaps, ctx));
+   } else {
+      HSCALAR *overlaps; /* overlaps of v with columns of Q   */
+      CHKERR(Num_malloc_SHprimme(numCols * blockSize, &overlaps, ctx));
 
-      CHKERR(MSolve_SHprimme(Mfact, ipivot, numCols, overlaps, blockSize,
-            numCols, overlaps, numCols, ctx));
+      /* Compute workspace = Q'*v */
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", numCols, blockSize, primme->nLocal,
+            1.0, Q, ldQ, v, ldv, 0.0, overlaps, numCols, ctx));
+      if (primme) primme->stats.numOrthoInnerProds += numCols * blockSize;
+
+      /* Global sum: overlaps = Q'*v */
+      CHKERR(globalSum_SHprimme(overlaps, numCols * blockSize, ctx));
+
+      /* Backsolve only if there is a skew projector */
+      if (Mfact != NULL) {
+         /* Solve (Q'Qhat)^{-1}*overlaps = overlaps = Q'*v for alpha by */
+         /* backsolving  with Mfact.                 */
+
+         CHKERR(MSolve_SHprimme(Mfact, ipivot, numCols, overlaps, blockSize,
+               numCols, overlaps, numCols, ctx));
+      }
+
+      /* Compute v=v-Qhat*overlaps */
+      CHKERR(Num_gemm_dhd_Sprimme("N", "N", primme->nLocal, blockSize, numCols,
+            -1.0, Qhat, ldQhat, overlaps, numCols, 1.0, v, ldv, ctx));
+
+      CHKERR(Num_free_SHprimme(overlaps, ctx));
    }
-
-   /* Compute v=v-Qhat*overlaps */
-   CHKERR(Num_gemm_dhd_Sprimme("N", "N", primme->nLocal, blockSize, numCols,
-         -1.0, Qhat, ldQhat, overlaps, numCols, 1.0, v, ldv, ctx));
-
-   CHKERR(Num_free_SHprimme(overlaps, ctx));
 
    if (primme) primme->stats.timeOrtho += primme_wTimer() - t0;
 
