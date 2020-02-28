@@ -113,6 +113,29 @@ For calling the function for a particular precision, add the letter h, s, d or q
     Num_copy_astype_Sprimme(x, n, x_single, primme_op_float, ctx); // copy x into x_single as single precision
     dummy_SHsprimme(x_single, n, ctx);
   
+Private (static) internal functions whose prototype depends on SCALAR/REAL or their variants should have STATIC_ or STATIC_DONT_DECLARE_ on their definitions. The function name doesn't have to end in _Sprimme. For instance::
+
+    STATIC int dummy(SCALAR *v, primme_context ctx) {
+       ...
+    }
+
+    void other_function() {
+        SCALAR *x;
+        dummy(x);
+    }
+
+Function defined with `STATIC` may be after being called. For instance, this is valid::
+
+    void other_function() {
+        SCALAR *x;
+        dummy(x);
+    }
+
+    STATIC int dummy(SCALAR *v, primme_context ctx) {
+       ...
+    }
+
+However a declaration of the function will appear on the automatic header. Functions defined with `STATIC_DONT_DECLARE` should be defined before being called and no declaration is inserted on the automated header.
 
 Conditional compilation and type inspection
 -------------------------------------------
@@ -187,7 +210,9 @@ You're right! We don't have much of an excuse for not using C++, a language as w
 .. _HREAL : https://github.com/primme/primme/blob/master/src/include/common.h#L143
 .. _HREAL : https://github.com/primme/primme/blob/master/src/include/common.h#L143
 .. _ctemplate : https://github.com/primme/primme/blob/master/src/tools/ctemplate
-.. _TEMPLATE_PLEASE : https://github.com/primme/primme/blob/master/src/include/template.h#L266
+.. _TEMPLATE_PLEASE : https://github.com/primme/primme/blob/master/src/include/template.h#L276
+.. _STATIC : https://github.com/primme/primme/blob/master/src/include/template.h#L285
+.. _STATIC_DONT_DECLARE : https://github.com/primme/primme/blob/master/src/include/template.h#L286
 .. _USE_HOST : https://github.com/primme/primme/blob/master/src/include/template.h#L85
 .. _USE_MAGMA : https://github.com/primme/primme/blob/master/src/include/template.h#L91
 .. _USE_REAL : https://github.com/primme/primme/blob/master/src/include/template.h#L106

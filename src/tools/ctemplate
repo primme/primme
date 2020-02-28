@@ -128,7 +128,7 @@ Now sum_x calls sum_f or sum_d depending of the value of the macro SUF.
 def generate_definitions(s):
 	r = []
 	defined_macros = set()
-	p = r'\s*'.join(r'APPEND_FUNC \( (?P<SUF>\w*) , (?P<NEW>\w*) \) (?P<USE>(USE \( \w* , "[^"]*" \) )*) (?P<D>[^{(;]+ (?P<F>\b\w+\b) \([^{;]*) \{'.split())
+	p = r'\s*'.join(r'APPEND_FUNC \( (?P<SUF>\w*) , (?P<NEW>\w*) \) (?P<DECL>(DONT_DECLARE)?) (?P<USE>(USE \( \w* , "[^"]*" \) )*) (?P<D>[^{(;]+ (?P<F>\b\w+\b) \([^{;]*) \{'.split())
 	for m in re.finditer(p, s):
 		# Replace SUF by NEW in the function name F
 		Fnew = re.sub(m.group('SUF')+'$', m.group('NEW'), m.group('F'))
@@ -143,7 +143,7 @@ def generate_definitions(s):
 #  define {alias} CONCAT({stem},{macro})
 #endif\
 """.format(alias=Fstem+useNEW, stem=Fstem, macro=useMACRO))
-		r.append(D.strip() + ";")
+		if not m.groupdict()['DECL']: r.append(D.strip() + ";")
 	r.append("")
 	return "\n".join(r)
 
@@ -161,6 +161,12 @@ def test_generate_definitions():
 	assert("{" not in r)
 	assert("}" not in r)
 	assert(";" in r)
+
+	s = 'APPEND_FUNC(x,d) NOT_DECLARE USE(r,"R_PREFIX") int f0x(int a, int b) {return f1(a);}'
+	r = generate_definitions(s)
+	assert("int f0d(int a, int b)" not in r)
+	assert("{" not in r)
+	assert("}" not in r)
 
 
 if __name__ == "__main__":

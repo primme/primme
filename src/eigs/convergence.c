@@ -159,9 +159,15 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       /* of V and W in the next restart.                                   */
       /* ----------------------------------------------------------------- */
 
-      else if (blockNorms[i-left] <= primme->stats.estimateResidualError && reset) {
+      else if (blockNorms[i - left] <= primme->stats.estimateResidualError &&
+               reset) {
          flags[i] = SKIP_UNTIL_RESTART;
          *reset = 1;
+         PRINTF(5,
+               "Warning: Asking for resetting because the residual error %g is "
+               "higher than some residual %g\n",
+               primme->stats.estimateResidualError,
+               (double)blockNorms[i - left]);
       }
 
       /* ----------------------------------------------------------------- */
@@ -182,6 +188,23 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
 
       else {
          flags[i] = UNCONVERGED;
+      }
+
+      if (!isConv && reset && primme->stats.estimateResidualError > 0.0) {
+         CHKERR(convTestFun_Sprimme(
+               hVals[i], NULL, 0 /* not given X */, 0.0, &isConv, ctx));
+         if (isConv) {
+            isConv = 0;
+            CHKERR(convTestFun_Sprimme(hVals[i], NULL, 0 /* not given X */,
+                  primme->stats.estimateResidualError, &isConv, ctx));
+            if (!isConv) {
+               *reset = 1;
+               PRINTF(5,
+                     "Warning: Asking for resetting because the residual error "
+                     "%g is not accepted by convTestFun\n",
+                     primme->stats.estimateResidualError);
+            }
+         }
       }
    }
 

@@ -1678,7 +1678,7 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
       CHKERR(solve_H_SHprimme(H, restartSize, ldH,
             VtBV ? &VtBV[nLocked * ldVtBV + nLocked] : NULL, ldVtBV, NULL, 0,
             NULL, 0, NULL, 0, NULL, 0, hVecs, newldhVecs, hVals, NULL,
-            numConverged, ctx));
+            numConverged, NULL, ctx));
 
       return 0;
    }
@@ -1730,7 +1730,8 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
               : NULL,
          ldVtBV, NULL, 0, NULL, 0, NULL, 0, NULL, 0,
          &hVecs[newldhVecs * orderedIndexOfPreviousVecs + indexOfPreviousVecs],
-         newldhVecs, &hVals[orderedIndexOfPreviousVecs], NULL, numConverged, ctx));
+         newldhVecs, &hVals[orderedIndexOfPreviousVecs], NULL, numConverged,
+         NULL, ctx));
    return 0;
 }
 
@@ -1893,7 +1894,7 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       CHKERR(solve_H_SHprimme(H, restartSize, ldH,
             VtBV ? &VtBV[ldVtBV * nLocked + nLocked] : NULL, ldVtBV, R, ldR,
             NULL, 0, QtQ, ldQtQ, hU, newldhU, hVecs, newldhVecs, hVals,
-            hSVals, numConverged, ctx));
+            hSVals, numConverged, NULL, ctx));
 
       *numArbitraryVecs = 0;
 
@@ -2089,7 +2090,7 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    CHKERR(solve_H_SHprimme(H, restartSize, ldH,
          VtBV ? &VtBV[nLocked * ldVtBV + nLocked] : NULL, ldVtBV, R, ldR, NULL,
          0, QtQ, ldQtQ, hU, newldhU, hVecs, newldhVecs, dummyhVals, hSVals,
-         numConverged, ctx));
+         numConverged, NULL, ctx));
    CHKERR(KIND(Num_free_RHprimme,Num_free_SHprimme)(dummyhVals, ctx));
 
    CHKERR(KIND(permute_vecs_RHprimme, permute_vecs_SHprimme)(
@@ -2318,7 +2319,7 @@ STATIC int restart_harmonic(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    CHKERR(solve_H_SHprimme(H, restartSize, ldH,
          VtBV ? &VtBV[ldVtBV * nLocked + nLocked] : NULL, ldVtBV, R, ldR, QtV,
          ldQtV, QtQ, ldQtQ, hU, newldhU, hVecs, newldhVecs, hVals, hSVals,
-         numConverged, ctx));
+         numConverged, NULL, ctx));
 
    *numArbitraryVecs = 0;
 

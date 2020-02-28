@@ -541,7 +541,8 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
    // return 0;
    
  
-   double t0 = primme_wTimer();
+   double t0 = 0.0;
+   if (primme) t0 = primme_wTimer();
 
    /* input and workspace verification */
 
@@ -1122,8 +1123,9 @@ STATIC int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,
       for (i=0; i < n; i++) {
          for (j = 0; j <= i; j++) { Y[ldY * i + j] = -H[ldH * i + j]; }
       }
- 
-      CHKERR(Num_heev_SHprimme("V", "U", n, Y, ldY, evals, ctx));
+
+      CHKERR(Num_heevx_SHprimme(
+            "V", "A", "U", n, Y, ldY, 0.0, 0.0, 0, 0, NULL, evals, ctx));
 
       /* evals = -evals */
 
@@ -1207,9 +1209,8 @@ int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,
             n - n0, ldVtV, A, n, ctx));
       CHKERR(Num_trsm_SHprimme("L", "U", "C", "N", n0, n - n0, 1.0, fVtV,
             ldfVtV, A, n, ctx));
-      CHKERR(Num_gemm_SHprimme("C", "N", n - n0, n - n0, n, -1.0,
-            A, n, A, n, 1.0, &fVtV[ldfVtV * n0 + n0], ldfVtV,
-            ctx));
+      CHKERR(Num_gemm_SHprimme("C", "N", n - n0, n - n0, n0, -1.0, A, n, A, n,
+            1.0, &A[n0], n, ctx));
       CHKERR(Num_potrf_SHprimme("U", n - n0, &A[n0], n, NULL, ctx));
    }
    CHKERR(broadcast_SHprimme(A, n * (n - n0), ctx));

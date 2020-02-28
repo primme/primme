@@ -283,10 +283,12 @@
       USE_TYPE(s,c,s,c,d,z,q,w, H, HOST_STEM, )
 
 #  define STATIC APPEND_FUNC(,SCALAR_SUF) USE(,"SCALAR_SUF")
+#  define STATIC_DONT_DECLARE APPEND_FUNC(,SCALAR_SUF) DONT_DECLARE USE(,"SCALAR_SUF")
 
 #else
 #  define TEMPLATE_PLEASE
 #  define STATIC
+#  define STATIC_DONT_DECLARE
 #endif /* CHECK_TEMPLATE */
 
 /* Avoid to use the final type for integers and complex in generated       */

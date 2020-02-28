@@ -49,7 +49,7 @@ CUDADIR  ?= /usr/local/cuda
 ifeq ($(PRIMME_WITH_MAGMA), yes)
     override CFLAGS += -I$(MAGMADIR)/include -I$(CUDADIR)/include -DPRIMME_WITH_MAGMA
     # Uncomment the next line to mark CUDA kernels with the invoking PRIMME function
-    override CFLAGS += -DPRIMME_PROFILE_NV
+    # override CFLAGS += -DPRIMME_PROFILE_NV
 endif
 
 #---------------------------------------------------------------

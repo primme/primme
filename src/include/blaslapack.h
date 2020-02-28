@@ -2063,190 +2063,192 @@ int Num_larnv_dprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
 #endif
 int Num_scal_dprimme(
       PRIMME_INT n, dummy_type_dprimme alpha, dummy_type_dprimme *x, int incx, primme_context ctx);
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Sprimme)
-#  define Num_heev_Sprimme CONCAT(Num_heev_,SCALAR_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Sprimme)
+#  define Num_heevx_Sprimme CONCAT(Num_heevx_,SCALAR_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Rprimme)
-#  define Num_heev_Rprimme CONCAT(Num_heev_,REAL_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Rprimme)
+#  define Num_heevx_Rprimme CONCAT(Num_heevx_,REAL_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SHprimme)
-#  define Num_heev_SHprimme CONCAT(Num_heev_,HOST_SCALAR_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SHprimme)
+#  define Num_heevx_SHprimme CONCAT(Num_heevx_,HOST_SCALAR_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RHprimme)
-#  define Num_heev_RHprimme CONCAT(Num_heev_,HOST_REAL_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RHprimme)
+#  define Num_heevx_RHprimme CONCAT(Num_heevx_,HOST_REAL_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SXprimme)
-#  define Num_heev_SXprimme CONCAT(Num_heev_,XSCALAR_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SXprimme)
+#  define Num_heevx_SXprimme CONCAT(Num_heevx_,XSCALAR_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RXprimme)
-#  define Num_heev_RXprimme CONCAT(Num_heev_,XREAL_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RXprimme)
+#  define Num_heevx_RXprimme CONCAT(Num_heevx_,XREAL_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Shprimme)
-#  define Num_heev_Shprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Shprimme)
+#  define Num_heevx_Shprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Rhprimme)
-#  define Num_heev_Rhprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Rhprimme)
+#  define Num_heevx_Rhprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Ssprimme)
-#  define Num_heev_Ssprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Ssprimme)
+#  define Num_heevx_Ssprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Rsprimme)
-#  define Num_heev_Rsprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Rsprimme)
+#  define Num_heevx_Rsprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Sdprimme)
-#  define Num_heev_Sdprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Sdprimme)
+#  define Num_heevx_Sdprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Rdprimme)
-#  define Num_heev_Rdprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Rdprimme)
+#  define Num_heevx_Rdprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Sqprimme)
-#  define Num_heev_Sqprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Sqprimme)
+#  define Num_heevx_Sqprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_Rqprimme)
-#  define Num_heev_Rqprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_Rqprimme)
+#  define Num_heevx_Rqprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SXhprimme)
-#  define Num_heev_SXhprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SXhprimme)
+#  define Num_heevx_SXhprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RXhprimme)
-#  define Num_heev_RXhprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RXhprimme)
+#  define Num_heevx_RXhprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,h),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SXsprimme)
-#  define Num_heev_SXsprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SXsprimme)
+#  define Num_heevx_SXsprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RXsprimme)
-#  define Num_heev_RXsprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RXsprimme)
+#  define Num_heevx_RXsprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,s),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SXdprimme)
-#  define Num_heev_SXdprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SXdprimme)
+#  define Num_heevx_SXdprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RXdprimme)
-#  define Num_heev_RXdprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RXdprimme)
+#  define Num_heevx_RXdprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,d),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SXqprimme)
-#  define Num_heev_SXqprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SXqprimme)
+#  define Num_heevx_SXqprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RXqprimme)
-#  define Num_heev_RXqprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RXqprimme)
+#  define Num_heevx_RXqprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SHhprimme)
-#  define Num_heev_SHhprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SHhprimme)
+#  define Num_heevx_SHhprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RHhprimme)
-#  define Num_heev_RHhprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RHhprimme)
+#  define Num_heevx_RHhprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,s),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SHsprimme)
-#  define Num_heev_SHsprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SHsprimme)
+#  define Num_heevx_SHsprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RHsprimme)
-#  define Num_heev_RHsprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RHsprimme)
+#  define Num_heevx_RHsprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,s),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SHdprimme)
-#  define Num_heev_SHdprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SHdprimme)
+#  define Num_heevx_SHdprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RHdprimme)
-#  define Num_heev_RHdprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RHdprimme)
+#  define Num_heevx_RHdprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,d),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_SHqprimme)
-#  define Num_heev_SHqprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_SHqprimme)
+#  define Num_heevx_SHqprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_heev_RHqprimme)
-#  define Num_heev_RHqprimme CONCAT(Num_heev_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_heevx_RHqprimme)
+#  define Num_heevx_RHqprimme CONCAT(Num_heevx_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
-int Num_heev_dprimme(const char *jobz, const char *uplo, int n, dummy_type_dprimme *a,
-      int lda, dummy_type_dprimme *w, primme_context ctx);
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Sprimme)
-#  define Num_hegv_Sprimme CONCAT(Num_hegv_,SCALAR_SUF)
+int Num_heevx_dprimme(const char *jobz, const char *range, const char *uplo,
+      int n, dummy_type_dprimme *a, int lda, dummy_type_dprimme vl, dummy_type_dprimme vu, int il, int iu, int *m,
+      dummy_type_dprimme *w, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Sprimme)
+#  define Num_hegvx_Sprimme CONCAT(Num_hegvx_,SCALAR_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Rprimme)
-#  define Num_hegv_Rprimme CONCAT(Num_hegv_,REAL_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Rprimme)
+#  define Num_hegvx_Rprimme CONCAT(Num_hegvx_,REAL_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SHprimme)
-#  define Num_hegv_SHprimme CONCAT(Num_hegv_,HOST_SCALAR_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SHprimme)
+#  define Num_hegvx_SHprimme CONCAT(Num_hegvx_,HOST_SCALAR_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RHprimme)
-#  define Num_hegv_RHprimme CONCAT(Num_hegv_,HOST_REAL_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RHprimme)
+#  define Num_hegvx_RHprimme CONCAT(Num_hegvx_,HOST_REAL_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SXprimme)
-#  define Num_hegv_SXprimme CONCAT(Num_hegv_,XSCALAR_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SXprimme)
+#  define Num_hegvx_SXprimme CONCAT(Num_hegvx_,XSCALAR_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RXprimme)
-#  define Num_hegv_RXprimme CONCAT(Num_hegv_,XREAL_SUF)
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RXprimme)
+#  define Num_hegvx_RXprimme CONCAT(Num_hegvx_,XREAL_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Shprimme)
-#  define Num_hegv_Shprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Shprimme)
+#  define Num_hegvx_Shprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Rhprimme)
-#  define Num_hegv_Rhprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Rhprimme)
+#  define Num_hegvx_Rhprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Ssprimme)
-#  define Num_hegv_Ssprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Ssprimme)
+#  define Num_hegvx_Ssprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Rsprimme)
-#  define Num_hegv_Rsprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Rsprimme)
+#  define Num_hegvx_Rsprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Sdprimme)
-#  define Num_hegv_Sdprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Sdprimme)
+#  define Num_hegvx_Sdprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Rdprimme)
-#  define Num_hegv_Rdprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Rdprimme)
+#  define Num_hegvx_Rdprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Sqprimme)
-#  define Num_hegv_Sqprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Sqprimme)
+#  define Num_hegvx_Sqprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_Rqprimme)
-#  define Num_hegv_Rqprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_Rqprimme)
+#  define Num_hegvx_Rqprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SXhprimme)
-#  define Num_hegv_SXhprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SXhprimme)
+#  define Num_hegvx_SXhprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RXhprimme)
-#  define Num_hegv_RXhprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RXhprimme)
+#  define Num_hegvx_RXhprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,h),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SXsprimme)
-#  define Num_hegv_SXsprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SXsprimme)
+#  define Num_hegvx_SXsprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RXsprimme)
-#  define Num_hegv_RXsprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RXsprimme)
+#  define Num_hegvx_RXsprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,s),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SXdprimme)
-#  define Num_hegv_SXdprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SXdprimme)
+#  define Num_hegvx_SXdprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RXdprimme)
-#  define Num_hegv_RXdprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RXdprimme)
+#  define Num_hegvx_RXdprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,d),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SXqprimme)
-#  define Num_hegv_SXqprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SXqprimme)
+#  define Num_hegvx_SXqprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RXqprimme)
-#  define Num_hegv_RXqprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RXqprimme)
+#  define Num_hegvx_RXqprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SHhprimme)
-#  define Num_hegv_SHhprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SHhprimme)
+#  define Num_hegvx_SHhprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RHhprimme)
-#  define Num_hegv_RHhprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RHhprimme)
+#  define Num_hegvx_RHhprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,s),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SHsprimme)
-#  define Num_hegv_SHsprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SHsprimme)
+#  define Num_hegvx_SHsprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RHsprimme)
-#  define Num_hegv_RHsprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RHsprimme)
+#  define Num_hegvx_RHsprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,s),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SHdprimme)
-#  define Num_hegv_SHdprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SHdprimme)
+#  define Num_hegvx_SHdprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RHdprimme)
-#  define Num_hegv_RHdprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RHdprimme)
+#  define Num_hegvx_RHdprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,d),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_SHqprimme)
-#  define Num_hegv_SHqprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_SHqprimme)
+#  define Num_hegvx_SHqprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(Num_hegv_RHqprimme)
-#  define Num_hegv_RHqprimme CONCAT(Num_hegv_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#if !defined(CHECK_TEMPLATE) && !defined(Num_hegvx_RHqprimme)
+#  define Num_hegvx_RHqprimme CONCAT(Num_hegvx_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
-int Num_hegv_dprimme(const char *jobz, const char *uplo, int n, dummy_type_dprimme *a,
-      int lda, dummy_type_dprimme *b0, int ldb0, dummy_type_dprimme *w, primme_context ctx);
+int Num_hegvx_dprimme(const char *jobz, const char *range, const char *uplo,
+      int n, dummy_type_dprimme *a, int lda, dummy_type_dprimme *b0, int ldb0, dummy_type_dprimme vl, dummy_type_dprimme vu, int il,
+      int iu, int *m, dummy_type_dprimme *w, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gesvd_Sprimme)
 #  define Num_gesvd_Sprimme CONCAT(Num_gesvd_,SCALAR_SUF)
 #endif
@@ -3079,6 +3081,97 @@ int Num_getrs_dprimme(const char *trans, int n, int nrhs, dummy_type_dprimme *a,
 int Num_compute_gramm_ddh_dprimme(dummy_type_dprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_dprimme *Y, PRIMME_INT ldY, dummy_type_dprimme alpha, dummy_type_dprimme *H, int ldH, int isherm,
       primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Sprimme)
+#  define Num_print_matrix_Sprimme CONCAT(Num_print_matrix_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rprimme)
+#  define Num_print_matrix_Rprimme CONCAT(Num_print_matrix_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHprimme)
+#  define Num_print_matrix_SHprimme CONCAT(Num_print_matrix_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHprimme)
+#  define Num_print_matrix_RHprimme CONCAT(Num_print_matrix_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXprimme)
+#  define Num_print_matrix_SXprimme CONCAT(Num_print_matrix_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXprimme)
+#  define Num_print_matrix_RXprimme CONCAT(Num_print_matrix_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Shprimme)
+#  define Num_print_matrix_Shprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rhprimme)
+#  define Num_print_matrix_Rhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Ssprimme)
+#  define Num_print_matrix_Ssprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rsprimme)
+#  define Num_print_matrix_Rsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Sdprimme)
+#  define Num_print_matrix_Sdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rdprimme)
+#  define Num_print_matrix_Rdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Sqprimme)
+#  define Num_print_matrix_Sqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rqprimme)
+#  define Num_print_matrix_Rqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXhprimme)
+#  define Num_print_matrix_SXhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXhprimme)
+#  define Num_print_matrix_RXhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXsprimme)
+#  define Num_print_matrix_SXsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXsprimme)
+#  define Num_print_matrix_RXsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXdprimme)
+#  define Num_print_matrix_SXdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXdprimme)
+#  define Num_print_matrix_RXdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXqprimme)
+#  define Num_print_matrix_SXqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXqprimme)
+#  define Num_print_matrix_RXqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHhprimme)
+#  define Num_print_matrix_SHhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHhprimme)
+#  define Num_print_matrix_RHhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHsprimme)
+#  define Num_print_matrix_SHsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHsprimme)
+#  define Num_print_matrix_RHsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHdprimme)
+#  define Num_print_matrix_SHdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHdprimme)
+#  define Num_print_matrix_RHdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHqprimme)
+#  define Num_print_matrix_SHqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHqprimme)
+#  define Num_print_matrix_RHqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int Num_print_matrix_dprimme(dummy_type_dprimme *a, PRIMME_INT m, PRIMME_INT n, int lda, primme_context ctx);
 int Num_check_pointer_hprimme(void *x);
 int Num_malloc_hprimme(PRIMME_INT n, dummy_type_hprimme **x, primme_context ctx);
 int Num_free_hprimme(dummy_type_hprimme *x, primme_context ctx);
@@ -3118,6 +3211,7 @@ int Num_trsm_hd_hprimme(const char *side, const char *uplo, const char *transa,
 int Num_compute_gramm_ddh_hprimme(dummy_type_hprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_hprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_hprimme(dummy_type_hprimme *a, PRIMME_INT m, PRIMME_INT n, int lda, primme_context ctx);
 int Num_check_pointer_kprimme(void *x);
 int Num_malloc_kprimme(PRIMME_INT n, dummy_type_kprimme **x, primme_context ctx);
 int Num_free_kprimme(dummy_type_kprimme *x, primme_context ctx);
@@ -3157,6 +3251,7 @@ int Num_trsm_hd_kprimme(const char *side, const char *uplo, const char *transa,
 int Num_compute_gramm_ddh_kprimme(dummy_type_kprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_kprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_kprimme(dummy_type_kprimme *a, PRIMME_INT m, PRIMME_INT n, int lda, primme_context ctx);
 int Num_check_pointer_sprimme(void *x);
 int Num_malloc_sprimme(PRIMME_INT n, dummy_type_sprimme **x, primme_context ctx);
 int Num_free_sprimme(dummy_type_sprimme *x, primme_context ctx);
@@ -3202,10 +3297,12 @@ int Num_larnv_sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       dummy_type_sprimme *x, primme_context ctx);
 int Num_scal_sprimme(
       PRIMME_INT n, dummy_type_sprimme alpha, dummy_type_sprimme *x, int incx, primme_context ctx);
-int Num_heev_sprimme(const char *jobz, const char *uplo, int n, dummy_type_sprimme *a,
-      int lda, dummy_type_sprimme *w, primme_context ctx);
-int Num_hegv_sprimme(const char *jobz, const char *uplo, int n, dummy_type_sprimme *a,
-      int lda, dummy_type_sprimme *b0, int ldb0, dummy_type_sprimme *w, primme_context ctx);
+int Num_heevx_sprimme(const char *jobz, const char *range, const char *uplo,
+      int n, dummy_type_sprimme *a, int lda, dummy_type_sprimme vl, dummy_type_sprimme vu, int il, int iu, int *m,
+      dummy_type_sprimme *w, primme_context ctx);
+int Num_hegvx_sprimme(const char *jobz, const char *range, const char *uplo,
+      int n, dummy_type_sprimme *a, int lda, dummy_type_sprimme *b0, int ldb0, dummy_type_sprimme vl, dummy_type_sprimme vu, int il,
+      int iu, int *m, dummy_type_sprimme *w, primme_context ctx);
 int Num_gesvd_sprimme(const char *jobu, const char *jobvt, int m, int n,
       dummy_type_sprimme *a, int lda, dummy_type_sprimme *s, dummy_type_sprimme *u, int ldu, dummy_type_sprimme *vt, int ldvt,
       primme_context ctx);
@@ -3228,6 +3325,7 @@ int Num_getrs_sprimme(const char *trans, int n, int nrhs, dummy_type_sprimme *a,
 int Num_compute_gramm_ddh_sprimme(dummy_type_sprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_sprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_sprimme(dummy_type_sprimme *a, PRIMME_INT m, PRIMME_INT n, int lda, primme_context ctx);
 int Num_check_pointer_cprimme(void *x);
 int Num_malloc_cprimme(PRIMME_INT n, dummy_type_cprimme **x, primme_context ctx);
 int Num_free_cprimme(dummy_type_cprimme *x, primme_context ctx);
@@ -3273,10 +3371,12 @@ int Num_larnv_cprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       dummy_type_cprimme *x, primme_context ctx);
 int Num_scal_cprimme(
       PRIMME_INT n, dummy_type_cprimme alpha, dummy_type_cprimme *x, int incx, primme_context ctx);
-int Num_heev_cprimme(const char *jobz, const char *uplo, int n, dummy_type_cprimme *a,
-      int lda, dummy_type_sprimme *w, primme_context ctx);
-int Num_hegv_cprimme(const char *jobz, const char *uplo, int n, dummy_type_cprimme *a,
-      int lda, dummy_type_cprimme *b0, int ldb0, dummy_type_sprimme *w, primme_context ctx);
+int Num_heevx_cprimme(const char *jobz, const char *range, const char *uplo,
+      int n, dummy_type_cprimme *a, int lda, dummy_type_sprimme vl, dummy_type_sprimme vu, int il, int iu, int *m,
+      dummy_type_sprimme *w, primme_context ctx);
+int Num_hegvx_cprimme(const char *jobz, const char *range, const char *uplo,
+      int n, dummy_type_cprimme *a, int lda, dummy_type_cprimme *b0, int ldb0, dummy_type_sprimme vl, dummy_type_sprimme vu, int il,
+      int iu, int *m, dummy_type_sprimme *w, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gees_Sprimme)
 #  define Num_gees_Sprimme CONCAT(Num_gees_,SCALAR_SUF)
 #endif
@@ -3391,6 +3491,7 @@ int Num_getrs_cprimme(const char *trans, int n, int nrhs, dummy_type_cprimme *a,
 int Num_compute_gramm_ddh_cprimme(dummy_type_cprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_cprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_cprimme(dummy_type_cprimme *a, PRIMME_INT m, PRIMME_INT n, int lda, primme_context ctx);
 int Num_check_pointer_zprimme(void *x);
 int Num_malloc_zprimme(PRIMME_INT n, dummy_type_zprimme **x, primme_context ctx);
 int Num_free_zprimme(dummy_type_zprimme *x, primme_context ctx);
@@ -3436,10 +3537,12 @@ int Num_larnv_zprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       dummy_type_zprimme *x, primme_context ctx);
 int Num_scal_zprimme(
       PRIMME_INT n, dummy_type_zprimme alpha, dummy_type_zprimme *x, int incx, primme_context ctx);
-int Num_heev_zprimme(const char *jobz, const char *uplo, int n, dummy_type_zprimme *a,
-      int lda, dummy_type_dprimme *w, primme_context ctx);
-int Num_hegv_zprimme(const char *jobz, const char *uplo, int n, dummy_type_zprimme *a,
-      int lda, dummy_type_zprimme *b0, int ldb0, dummy_type_dprimme *w, primme_context ctx);
+int Num_heevx_zprimme(const char *jobz, const char *range, const char *uplo,
+      int n, dummy_type_zprimme *a, int lda, dummy_type_dprimme vl, dummy_type_dprimme vu, int il, int iu, int *m,
+      dummy_type_dprimme *w, primme_context ctx);
+int Num_hegvx_zprimme(const char *jobz, const char *range, const char *uplo,
+      int n, dummy_type_zprimme *a, int lda, dummy_type_zprimme *b0, int ldb0, dummy_type_dprimme vl, dummy_type_dprimme vu, int il,
+      int iu, int *m, dummy_type_dprimme *w, primme_context ctx);
 int Num_gees_zprimme(const char *jobvs, int n, dummy_type_zprimme *a, int lda, dummy_type_zprimme *w,
       dummy_type_zprimme *vs, int ldvs, primme_context ctx);
 int Num_gesvd_zprimme(const char *jobu, const char *jobvt, int m, int n,
@@ -3464,4 +3567,5 @@ int Num_getrs_zprimme(const char *trans, int n, int nrhs, dummy_type_zprimme *a,
 int Num_compute_gramm_ddh_zprimme(dummy_type_zprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_zprimme *Y, PRIMME_INT ldY, dummy_type_zprimme alpha, dummy_type_zprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_zprimme(dummy_type_zprimme *a, PRIMME_INT m, PRIMME_INT n, int lda, primme_context ctx);
 #endif

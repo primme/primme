@@ -214,7 +214,8 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
    assert(nYe <= nh || nYb >= nYe); /* Check dimension */
    assert(nBXe <= nh || nBXb >= nXe); /* Check dimension */
 
-   double t0 = primme_wTimer();
+   double t0 = 0.0;
+   if (ctx.primme) t0  = primme_wTimer();
 
    CHKERR(Num_malloc_Sprimme(m * (nXe - nXb), &X, ctx));
    CHKERR(Num_malloc_Sprimme(m * (nYe - nYb), &Y, ctx));
@@ -374,13 +375,16 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
    CHKERR(Num_free_Sprimme(BX, ctx));
    CHKERR(Num_free_SHprimme(workGH, ctx));
 
-   if (ctx.primme) ctx.primme->stats.timeDense += primme_wTimer() - t0;
-   ctx.primme->stats.flopsDense +=
-         mV * (nXe - nXb) * nV + mV * (nYe - nYb) * nV +
-         (BV ? mV * (nBXe - nBXb) * nV : 0) + (G ? mV * nG * nG : 0) +
-         (H ? mV * nH * nH : 0) + (xnorms ? (nxe - nxb) * mV : 0) +
-         (R ? (nRe - nRb) * mV : 0) + ((R && Rnorms) ? (nRe - nRb) * mV : 0) +
-         (R ? (nre - nrb) * mV : 0);
+   if (ctx.primme) {
+      ctx.primme->stats.timeDense += primme_wTimer() - t0;
+      ctx.primme->stats.flopsDense +=
+            ctx.primme->n *
+            ((nXe - nXb) * nV + (nYe - nYb) * nV +
+                  (BV ? (nBXe - nBXb) * nV : 0) + (G ? nG * nG : 0) +
+                  (H ? nH * nH : 0) + (xnorms ? (nxe - nxb) : 0) +
+                  (R ? (nRe - nRb) : 0) + ((R && Rnorms) ? (nRe - nRb) : 0) +
+                  (R ? (nre - nrb) : 0));
+   }
 
    return 0; 
 }

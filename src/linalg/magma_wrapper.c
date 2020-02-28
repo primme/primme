@@ -124,6 +124,19 @@ static int free_fn_dummy (void *p, primme_context ctx) {
 
 #endif /* MAGMA_WRAPPER_PRIVATE */
 
+STATIC_DONT_DECLARE MAGMA_SCALAR toMagmaScalar(HSCALAR a) {
+   union {XSCALAR p; MAGMA_SCALAR m; } u;
+   SET_COMPLEX(u.p, a);
+   return u.m;
+}
+
+STATIC_DONT_DECLARE HSCALAR toPrimmeScalar(MAGMA_SCALAR a) {
+   union {XSCALAR p; MAGMA_SCALAR m; } u;
+   u.m = a;
+   return TO_COMPLEX(u.p);
+}
+
+
 /******************************************************************************
  * Function Num_check_pointer - Return no error code if the pointer is on a
  *    device allocation.
@@ -170,7 +183,8 @@ int Num_malloc_Sprimme(PRIMME_INT n, SCALAR **x, primme_context ctx) {
 
    /* Allocate memory */
 
-   if (magma_malloc((void**)x, n * sizeof(SCALAR)) != MAGMA_SUCCESS)
+   if (magma_malloc((void **)x, n * sizeof(SCALAR)) != MAGMA_SUCCESS ||
+         *x == NULL)
       return PRIMME_MALLOC_FAILURE;
 
    /* Register the allocation */
@@ -460,10 +474,6 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    }
 #endif
 
-   XSCALAR alpha0, beta0;
-   SET_COMPLEX(alpha0, alpha);
-   SET_COMPLEX(beta0, beta);
-
 #if defined(USE_HALFCOMPLEX_MAGMA)
    (void)transa;
    (void)transb;
@@ -475,8 +485,8 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
 
 #elif defined(USE_HALF_MAGMA)
    magma_hgemm(magma_trans_const(*transa), magma_trans_const(*transb), m, n, k,
-         *(MAGMA_SCALAR *)&alpha0, (MAGMA_SCALAR *)a, lda, (MAGMA_SCALAR *)b,
-         ldb, *(MAGMA_SCALAR *)&beta0, (MAGMA_SCALAR *)c, ldc,
+         toMagmaScalar(alpha), (MAGMA_SCALAR *)a, lda, (MAGMA_SCALAR *)b,
+         ldb, toMagmaScalar(beta), (MAGMA_SCALAR *)c, ldc,
          *(magma_queue_t *)ctx.queue);
    CHKERRM(cudaSuccess != cudaGetLastError(), PRIMME_UNEXPECTED_FAILURE,
          "Unexpected CUDA error!");
@@ -484,8 +494,8 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
 
 #else
    XGEMM(magma_trans_const(*transa), magma_trans_const(*transb), m, n, k,
-         *(MAGMA_SCALAR *)&alpha0, (MAGMA_SCALAR *)a, lda, (MAGMA_SCALAR *)b,
-         ldb, *(MAGMA_SCALAR *)&beta0, (MAGMA_SCALAR *)c, ldc,
+         toMagmaScalar(alpha), (MAGMA_SCALAR *)a, lda, (MAGMA_SCALAR *)b,
+         ldb, toMagmaScalar(beta), (MAGMA_SCALAR *)c, ldc,
          *(magma_queue_t *)ctx.queue);
    CHKERRM(cudaSuccess != cudaGetLastError(), PRIMME_UNEXPECTED_FAILURE,
          "Unexpected CUDA error!");
@@ -607,13 +617,9 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
    return 0;
 
 #else
-   XSCALAR alpha0, beta0;
-   SET_COMPLEX(alpha0, alpha);
-   SET_COMPLEX(beta0, beta);
-
-   XGEMV(magma_trans_const(*transa), m, n, *(MAGMA_SCALAR *)&alpha0,
+   XGEMV(magma_trans_const(*transa), m, n, toMagmaScalar(alpha),
          (MAGMA_SCALAR *)a, lda, (MAGMA_SCALAR *)x, incx,
-         *(MAGMA_SCALAR *)&beta0, (MAGMA_SCALAR *)y, incy,
+         toMagmaScalar(beta), (MAGMA_SCALAR *)y, incy,
          *(magma_queue_t *)ctx.queue);
    CHKERRM(cudaSuccess != cudaGetLastError(), PRIMME_UNEXPECTED_FAILURE,
          "Unexpected CUDA error!");
@@ -717,9 +723,7 @@ int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
    return 0;
 
 #else
-   XSCALAR alpha0;
-   SET_COMPLEX(alpha0, alpha);
-   XAXPY(n, *(MAGMA_SCALAR *)&alpha0, (MAGMA_SCALAR *)x, incx,
+   XAXPY(n, toMagmaScalar(alpha), (MAGMA_SCALAR *)x, incx,
          (MAGMA_SCALAR *)y, incy, *(magma_queue_t *)ctx.queue);
    CHKERRM(cudaSuccess != cudaGetLastError(), PRIMME_UNEXPECTED_FAILURE,
          "Unexpected CUDA error!");
@@ -772,7 +776,7 @@ HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
          incy, *(magma_queue_t *)ctx.queue);
    CHKERRM(cudaSuccess != cudaGetLastError(), (HSCALAR)NAN,
          "Unexpected CUDA error!");
-   return (HSCALAR)*(XSCALAR*)&result;
+   return toPrimmeScalar(result);
 #endif
 }
 
@@ -809,9 +813,7 @@ int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
    return 0;
 
 #else
-   XSCALAR alpha0;
-   SET_COMPLEX(alpha0, alpha);
-   XSCAL(n, *(MAGMA_SCALAR *)&alpha0, (MAGMA_SCALAR *)x, incx,
+   XSCAL(n, toMagmaScalar(alpha), (MAGMA_SCALAR *)x, incx,
          *(magma_queue_t *)ctx.queue);
    CHKERRM(cudaSuccess != cudaGetLastError(), PRIMME_UNEXPECTED_FAILURE,
          "Unexpected CUDA error!");
@@ -956,11 +958,9 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
    CHKERR(Num_malloc_Sprimme(mA * mA, &a_dev, ctx));
    CHKERR(Num_set_matrix_Sprimme(a, mA, mA, lda, a_dev, mA, ctx));
 
-   XSCALAR alpha0;
-   SET_COMPLEX(alpha0, alpha);
    XTRSM(magma_side_const(*side), magma_uplo_const(*uplo),
          magma_trans_const(*transa), magma_diag_const(*diag), m, n,
-         *(MAGMA_SCALAR *)&alpha0, (MAGMA_SCALAR *)a_dev, mA, (MAGMA_SCALAR *)b,
+         toMagmaScalar(alpha), (MAGMA_SCALAR *)a_dev, mA, (MAGMA_SCALAR *)b,
          ldb, *(magma_queue_t *)ctx.queue);
    CHKERRM(cudaSuccess != cudaGetLastError(), PRIMME_UNEXPECTED_FAILURE,
          "Unexpected CUDA error!");
@@ -1079,7 +1079,7 @@ int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
    if (ABS(alpha) == 0.0) {
       CHKERR(Num_zero_matrix_Sprimme(H_dev, n, n, n, ctx));
    } else {
-      CHKERR(Num_set_matrix_Sprimme(H, n, n, ldH, H_dev, ldH, ctx));
+      CHKERR(Num_set_matrix_Sprimme(H, n, n, ldH, H_dev, n, ctx));
    }
    CHKERR(Num_compute_gramm_Sprimme(
          X, m, n, ldX, Y, ldY, alpha, H_dev, n, 1 /* symmetric */, 4, ctx));
@@ -1112,22 +1112,10 @@ int Num_print_matrix_Sprimme(SCALAR *a, int m, int n, int lda, primme_context ct
    }
 
    XSCALAR *a_host; /* copy of a */
-   CHKERR(Num_malloc_SXprimme(m*n, &a_host, ctx));
+   CHKERR(Num_malloc_SXprimme(m * n, &a_host, ctx));
    CHKERRCUBLAS(cublasGetMatrix(
          m, n, sizeof(SCALAR), (const void *)a, lda, a_host, m));
-   printf("[");
-   int i,j;
-   for (i=0; i<m; i++) {
-      for (j=0; j<n; j++) {
-#ifndef USE_COMPLEX
-         printf("%g ", (double)a_host[lda*j+i]);
-#else
-         printf("%g%+gj ", (double)REAL_PART(TO_COMPLEX(a_host[lda*j+i])), (double)IMAGINARY_PART(TO_COMPLEX(a_host[lda*j+i])));
-#endif
-      }
-      printf(i!=m-1?"\n":"]\n");
-   }
-   
+   CHKERR(Num_print_matrix_SXprimme(a_host, m, n, m, ctx));
    CHKERR(Num_free_SXprimme(a_host, ctx));
 
    return 0;

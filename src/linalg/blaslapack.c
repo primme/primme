@@ -863,24 +863,52 @@ TEMPLATE_PLEASE
 HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
                        primme_context ctx) {
    (void)ctx;
-/* NOTE: vecLib doesn't follow BLAS reference for sdot */
-#if defined(USE_COMPLEX) || (defined(USE_FLOAT) && (defined(__APPLE__) || defined(__MACH__))) || (defined(USE_HALF) && !defined(BLASLAPACK_WITH_HALF))
-/* ---- Explicit implementation of the zdotc() --- */
+#if (defined(USE_HALF) || defined(USE_HALFCOMPLEX)) && !defined(BLASLAPACK_WITH_HALF)
+   /* Explicit implementation of the xdotc() */
    PRIMME_INT i;
    HSCALAR zdotc = 0.0;
-   if (n <= 0) return(zdotc);
+   if (n <= 0) return (zdotc);
    if (incx == 1 && incy == 1) {
-      for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
+      for (i = 0; i < n; i++) {
+         /* zdotc = zdotc + dconjg(x(i))* y(i) */
          zdotc += CONJ(TO_COMPLEX(x[i])) * TO_COMPLEX(y[i]);
       }
-   }
-   else {
-      for (i=0;i<n;i++) { /* zdotc = zdotc + dconjg(x(i))* y(i) */
-         zdotc += CONJ(TO_COMPLEX(x[i*incx])) * TO_COMPLEX(y[i*incy]);
+   } else {
+      for (i = 0; i < n; i++) {
+         /* zdotc = zdotc + dconjg(x(i*incx))* y(i*incy) */
+         zdotc += CONJ(TO_COMPLEX(x[i * incx])) * TO_COMPLEX(y[i * incy]);
       }
    }
    return zdotc;
-/* -- end of explicit implementation of the zdotc() - */
+   /* NOTE: vecLib doesn't follow BLAS reference for sdot.        */
+   /*       We avoid Fortran functions returning complex numbers. */
+   /*       In those cases, do the dot product with gemv/gemm.    */
+   /*       In OpenBLAS and MKL gemv has worse performance than   */
+   /*       xdot and better than gemm in doing inner products. So */
+   /*       use gemv instead of gemm if possible.                 */
+#elif defined(USE_COMPLEX) || (defined(USE_FLOAT) && (defined(__APPLE__) || defined(__MACH__)))
+   PRIMME_BLASINT ONE = 1;
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT lincx = incx;
+   PRIMME_BLASINT lincy = incy;
+   XSCALAR r = 0.0, ONEf = 1.0;
+
+   while(n > 0) {
+      ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
+      if (incx == 1) {
+         XGEMV("C", &ln, &ONE, &ONEf, x, &ln, y, &lincy, &ONEf, &r, &ONE);
+         SET_COMPLEX(r, CONJ(TO_COMPLEX(r)));
+      } else {
+         XGEMM("N", "C", &ONE, &ONE, &ln, &ONEf, x, &lincx, y, &lincy, &ONEf,
+               &r, &ONE);
+      }
+      n -= (PRIMME_INT)ln;
+      x += ln;
+      y += ln;
+   }
+
+   return CONJ(TO_COMPLEX(r));
+
 #else
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT lincx = incx;
@@ -990,25 +1018,30 @@ int Num_scal_Sprimme(
  
 #if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
-int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
-      int lda, REAL *w, primme_context ctx) {
+int Num_heevx_Sprimme(const char *jobz, const char *range, const char *uplo,
+      int n, SCALAR *a, int lda, REAL vl, REAL vu, int il, int iu, int *m,
+      REAL *w, primme_context ctx) {
+
+   /* Zero dimension matrix may cause problems */
+   if (m) *m = 0;
+   if (n == 0) return 0;
+
 #ifndef USE_XHEEV
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lil = il;
+   PRIMME_BLASINT liu = iu;
    PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0;
+   PRIMME_BLASINT lm = 0;
    SCALAR *z;
    REAL abstol=0.0;
 #  ifdef USE_COMPLEX
    REAL *rwork;
+   REAL   dummyr=0;
 #  endif
    PRIMME_BLASINT *iwork, *ifail;
-   REAL   dummyr=0;
-   PRIMME_BLASINT dummyi=0;
-
-   /* Zero dimension matrix may cause problems */
-   if (n == 0) return 0;
 
    /* Allocate arrays */
 
@@ -1023,8 +1056,8 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 
    lldwork = -1;
    SCALAR lwork0 = 0;
-   XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
-         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, &lwork0, &lldwork,
+   XHEEVX(jobz, range, uplo, &ln, a, &llda, &vl, &vu,
+         &lil, &liu, &abstol, &lm, w, z, &ln, &lwork0, &lldwork,
 #  ifdef USE_COMPLEX
          &dummyr,
 #  endif
@@ -1034,12 +1067,13 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    if (linfo == 0) {
       SCALAR *work = NULL;
       CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
-      XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
-            &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+      XHEEVX(jobz, range, uplo, &ln, a, &llda, &vl, &vu,
+            &lil, &liu, &abstol, &lm, w, z, &ln, work, &lldwork,
 #  ifdef USE_COMPLEX
             rwork,
 #  endif
             iwork, ifail, &linfo);
+      if (m) *m = lm;
       CHKERR(Num_free_Sprimme(work, ctx));
    }
 
@@ -1059,18 +1093,19 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 
 #else /* USE_XHEEV */
 
+   (void)range;
+   (void)vl;
+   (void)vu;
+   (void)il;
+   (void)ui;
+
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0;
+
 #  ifdef USE_COMPLEX
    REAL *rwork;
-#  endif
-
-   /* Zero dimension matrix may cause problems */
-   if (n == 0) return 0;
-
-#  ifdef USE_COMPLEX
    CHKERR(Num_malloc_Rprimme(3*n, &rwork, ctx));
 #  endif
 
@@ -1093,6 +1128,7 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
             rwork,
 #     endif
             &linfo); 
+      if (m) *m = n;
       CHKERR(Num_free_Sprimme(work, ctx));
    }
 
@@ -1116,19 +1152,27 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
  
 #if (!defined(USE_HALF) && !defined(USE_HALFCOMPLEX)) || defined(BLASLAPACK_WITH_HALF)
 TEMPLATE_PLEASE
-int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
-      int lda, SCALAR *b0, int ldb0, REAL *w, primme_context ctx) {
+int Num_hegvx_Sprimme(const char *jobz, const char *range, const char *uplo,
+      int n, SCALAR *a, int lda, SCALAR *b0, int ldb0, REAL vl, REAL vu, int il,
+      int iu, int *m, REAL *w, primme_context ctx) {
 
    /* Call heev if b is null */
    if (b0 == NULL) {
-      CHKERR(Num_heev_Sprimme(jobz, uplo, n, a, lda, w, ctx));
+      CHKERR(Num_heevx_Sprimme(
+            jobz, range, uplo, n, a, lda, vl, vu, il, iu, m, w, ctx));
       return 0;
    }
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0;
 
 #ifndef USE_XHEGV
 
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lil = il;
+   PRIMME_BLASINT liu = iu;
+   PRIMME_BLASINT lm = 0;
    PRIMME_BLASINT lldwork = 0;
    PRIMME_BLASINT linfo = 0;
    PRIMME_BLASINT ONE = 1;
@@ -1138,11 +1182,6 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    REAL *rwork;
 #  endif
    PRIMME_BLASINT *iwork, *ifail;
-   REAL   dummyr=0;
-   PRIMME_BLASINT dummyi=0;
-
-   /* Zero dimension matrix may cause problems */
-   if (n == 0) return 0;
 
    /* Allocate arrays */
 
@@ -1162,8 +1201,8 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 
    lldwork = -1;
    SCALAR lwork0 = 0;
-   XHEGVX(&ONE, jobz, "A", uplo, &ln, a, &llda, b, &ln, &dummyr, &dummyr,
-         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, &lwork0, &lldwork,
+   XHEGVX(&ONE, jobz, range, uplo, &ln, a, &llda, b, &ln, &vl, &vu,
+         &lil, &liu, &abstol, &lm, w, z, &ln, &lwork0, &lldwork,
 #  ifdef USE_COMPLEX
          rwork,
 #  endif
@@ -1173,12 +1212,13 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
    if (linfo == 0) {
       SCALAR *work = NULL;
       CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
-      XHEGVX(&ONE, jobz, "A", uplo, &ln, a, &llda, b, &ln, &dummyr, &dummyr,
-            &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+      XHEGVX(&ONE, jobz, range, uplo, &ln, a, &llda, b, &ln, &vl, &vu,
+            &lil, &liu, &abstol, &lm, w, z, &ln, work, &lldwork,
 #  ifdef USE_COMPLEX
             rwork,
 #  endif
             iwork, ifail, &linfo);
+      if (m) *m = lm;
       CHKERR(Num_free_Sprimme(work, ctx));
    }
 
@@ -1200,6 +1240,12 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 
 #else /* USE_XHEGV */
 
+   (void)range;
+   (void)vl;
+   (void)vu;
+   (void)il;
+   (void)ui;
+
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
    PRIMME_BLASINT lldwork = 0;
@@ -1209,9 +1255,6 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 #  ifdef USE_COMPLEX
    REAL *rwork;
 #  endif
-
-   /* Zero dimension matrix may cause problems */
-   if (n == 0) return 0;
 
    CHKERR(Num_malloc_Sprimme(n*n, &b, ctx)); 
 #  ifdef USE_COMPLEX
@@ -1239,6 +1282,7 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
             rwork,
 #  endif
             &linfo);
+      if (m) *m = n;
       CHKERR(Num_free_Sprimme(work, ctx));
    }
 
@@ -1701,6 +1745,33 @@ int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
 
    return 0;
 }
+
+/*******************************************************************************
+ * Subroutine Num_print_matrix_Sprimme - print a matrix
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_print_matrix_Sprimme(SCALAR *a, PRIMME_INT m, PRIMME_INT n, int lda, primme_context ctx) {
+
+   (void)ctx;
+
+   printf("[");
+   PRIMME_INT i,j;
+   for (i=0; i<m; i++) {
+      for (j=0; j<n; j++) {
+#ifndef USE_COMPLEX
+         printf("%g ", (double)a[lda*j+i]);
+#else
+         printf("%g%+gj ", (double)REAL_PART(TO_COMPLEX(a[lda * j + i])),
+               (double)IMAGINARY_PART(TO_COMPLEX(a[lda * j + i])));
+#endif
+      }
+      printf(i!=m-1?"\n":"]\n");
+   }
+   
+   return 0;
+}
+
 
 #endif /* USE_HOST */
 

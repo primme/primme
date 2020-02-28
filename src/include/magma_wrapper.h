@@ -33,6 +33,12 @@
 
 #ifndef magma_wrapper_H
 #define magma_wrapper_H
+#if !defined(CHECK_TEMPLATE) && !defined(toMagmaScalar)
+#  define toMagmaScalar CONCAT(toMagmaScalar,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(toPrimmeScalar)
+#  define toPrimmeScalar CONCAT(toPrimmeScalar,SCALAR_SUF)
+#endif
 #if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Sprimme)
 #  define Num_check_pointer_Sprimme CONCAT(Num_check_pointer_,SCALAR_SUF)
 #endif

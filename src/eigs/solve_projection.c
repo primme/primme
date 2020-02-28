@@ -84,6 +84,7 @@
  * hSVals         The singular values of R
  * rwork          Workspace
  * iwork          Workspace in integers
+ * partial        Whether to return a partial decomposition
  *
  * Return Value
  * ------------
@@ -95,7 +96,7 @@ TEMPLATE_PLEASE
 int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
       SCALAR *R, int ldR, SCALAR *QtV, int ldQtV, SCALAR *QtQ, int ldQtQ,
       SCALAR *hU, int ldhU, SCALAR *hVecs, int ldhVecs, EVAL *hVals,
-      REAL *hSVals, int numConverged, primme_context ctx) {
+      REAL *hSVals, int numConverged, int *partial, primme_context ctx) {
 
    int i;
 
@@ -106,25 +107,36 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
    if (ctx.primme->procID == 0) {
       switch (ctx.primme->projectionParams.projection) {
          case primme_proj_RR:
-            CHKERR(solve_H_RR_Sprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs,
-                     hVals, basisSize, numConverged, ctx))
+            if (!partial || *partial >= basisSize || basisSize < 50) {
+               CHKERR(solve_H_RR_Sprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs,
+                     hVals, basisSize, numConverged, ctx));
+               if (partial) *partial = basisSize;
+            } else {
+               CHKERR(solve_H_RR_partial_Sprimme(H, ldH, VtBV, ldVtBV, hVecs,
+                     ldhVecs, hVals, basisSize, numConverged, partial, ctx));
+            }
             break;
 
          case primme_proj_harmonic:
             CHKERR(solve_H_Harm_Sprimme(H, ldH, QtV, ldQtV, R, ldR, QtQ, ldQtQ,
                   VtBV, ldVtBV, hVecs, ldhVecs, hU, ldhU, hVals, basisSize,
                   numConverged, ctx));
+            if (partial) *partial = basisSize;
             break;
 
          case primme_proj_refined:
             CHKERR(solve_H_Ref_Sprimme(H, ldH, hVecs, ldhVecs, hU, ldhU, hSVals,
                   R, ldR, QtQ, ldQtQ, VtBV, ldVtBV, hVals, basisSize,
                   numConverged, ctx));
+            if (partial) *partial = basisSize;
             break;
 
          default:
             assert(0);
       }
+   }
+   if (partial) {
+      CHKERR(broadcast_iprimme(partial, 1, ctx));
    }
 
    /* Broadcast hVecs, hU, hVals, hSVals */
@@ -141,13 +153,13 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
    /* -------------------------------------------------------- */
    /* Update the leftmost and rightmost Ritz values ever seen  */
    /* -------------------------------------------------------- */
-   for (i=0; i<basisSize; i++) {
-     ctx.primme->stats.estimateMinEVal =
-         min(ctx.primme->stats.estimateMinEVal, EVAL_REAL_PART(hVals[i]));
-     ctx.primme->stats.estimateMaxEVal =
-         max(ctx.primme->stats.estimateMaxEVal, EVAL_REAL_PART(hVals[i])); 
-     ctx.primme->stats.estimateLargestSVal =
-         max(ctx.primme->stats.estimateLargestSVal, EVAL_ABS(hVals[i])); 
+   for (i = 0; i < (partial ? *partial : basisSize); i++) {
+      ctx.primme->stats.estimateMinEVal =
+            min(ctx.primme->stats.estimateMinEVal, EVAL_REAL_PART(hVals[i]));
+      ctx.primme->stats.estimateMaxEVal =
+            max(ctx.primme->stats.estimateMaxEVal, EVAL_REAL_PART(hVals[i]));
+      ctx.primme->stats.estimateLargestSVal =
+            max(ctx.primme->stats.estimateLargestSVal, EVAL_ABS(hVals[i])); 
    }
 
    return 0;
@@ -212,8 +224,8 @@ STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
       }
    }
 
-   CHKERR(Num_hegv_Sprimme("V", "U", basisSize, hVecs, ldhVecs, VtBV, ldVtBV,
-                           hVals, ctx));
+   CHKERR(Num_hegvx_Sprimme("V", "A", "U", basisSize, hVecs, ldhVecs, VtBV,
+         ldVtBV, 0.0, 0.0, 0, 0, NULL, hVals, ctx));
 
    /* ---------------------------------------------------------------------- */
    /* ORDER the eigenvalues and their eigenvectors according to the desired  */
@@ -384,6 +396,188 @@ STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
    CHKERR(Num_free_iprimme(perm, ctx));
 
    return 0;
+#endif /* USE_HERMITIAN */
+}
+
+/*******************************************************************************
+ * Subroutine solve_H_RR_partial - This procedure solves the eigenproblem for the
+ *            matrix H.
+ *        
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * H              The matrix V'*A*V
+ * basisSize      The dimension of H, R, hU
+ * ldH            The leading dimension of H
+ * VtBV           The matrix V'*B*V
+ * ldVtBV         The leading dimension of VtBV
+ * numConverged   Number of eigenvalues converged to determine ordering shift
+ * lrwork         Length of the work array rwork
+ * primme         Structure containing various solver parameters
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * hVecs          The eigenvectors of H or the right singular vectors
+ * ldhVecs        The leading dimension of hVecs
+ * hVals          The Ritz values
+ * hSVals         The singular values of R
+ * rwork          Workspace
+ * iwork          Workspace in integers
+ * partial        compute only the first partial eigenpairs
+ *
+ * Return Value
+ * ------------
+ * int -  0 upon successful return
+ *     - -1 Num_dsyev/zheev was unsuccessful
+ ******************************************************************************/
+
+STATIC int solve_H_RR_partial_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV,
+      int ldVtBV, SCALAR *hVecs, int ldhVecs, EVAL *hVals, int basisSize,
+      int numConverged, int *partial, primme_context ctx) {
+
+   assert(partial != NULL && *partial > 0 && *partial < basisSize);
+
+   /* Some LAPACK implementations don't like zero-size matrices */
+
+   if (basisSize == 0) return 0;
+
+   /* Not supported non-Hermitian cases or generalized eigenproblems */
+
+#ifndef USE_HERMITIAN
+   CHKERR(solve_H_RR_Sprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs, hVals,
+         basisSize, numConverged, ctx));
+   *partial = basisSize;
+   return 0;
+#else
+  
+   primme_params *primme = ctx.primme;
+   int i, j; /* Loop variables    */
+
+   if (primme->target == primme_closest_geq ||
+         primme->target == primme_closest_leq ||
+         (primme->target == primme_largest_abs && *partial * 2 >= basisSize)) {
+      CHKERR(solve_H_RR_Sprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs, hVals,
+               basisSize, numConverged, ctx));
+      *partial = basisSize;
+      return 0;
+   }
+ 
+   double targetShift =
+         primme->numTargetShifts > 0
+               ? primme->targetShifts[min(
+                       primme->numTargetShifts - 1, numConverged)]
+               : 0.0;
+
+   switch (primme->target) {
+   case primme_smallest: /* leftmost eigenvalues */
+      CHKERR(Num_copy_trimatrix_Sprimme(H, basisSize, basisSize, ldH,
+            0 /* upper part */, 0, hVecs, ldhVecs, 0));
+      CHKERR(Num_hegvx_Sprimme("V", "I", "U", basisSize, hVecs, ldhVecs, VtBV,
+            ldVtBV, 0.0, 0.0, 1, *partial, partial, hVals, ctx));
+      break;
+
+   case primme_largest: /* rightmost eigenvalues */
+      for (j = 0; j < basisSize; j++) {
+         for (i = 0; i <= j; i++) hVecs[ldhVecs * j + i] = -H[ldH * j + i];
+      }
+      CHKERR(Num_hegvx_Sprimme("V", "I", "U", basisSize, hVecs, ldhVecs, VtBV,
+            ldVtBV, 0.0, 0.0, 1, *partial, partial, hVals, ctx));
+      for (i = 0; i < *partial; i++) hVals[i] = -hVals[i];
+      break;
+
+   case primme_closest_abs: /* the closest to the target shift */
+   {
+      CHKERR(Num_copy_trimatrix_Sprimme(H, basisSize, basisSize, ldH,
+            0 /* upper part */, 0, hVecs, ldhVecs, 0));
+      HREAL distance_from_target = ABS(hVals[*partial - 1] - targetShift) +
+                                   primme->stats.estimateResidualError;
+      CHKERR(Num_hegvx_Sprimme("V", "V", "U", basisSize, hVecs, ldhVecs, VtBV,
+            ldVtBV, targetShift - distance_from_target,
+            targetShift + distance_from_target, 0, 0, partial, hVals, ctx));
+
+      /* Generate permutation to sort eigenpairs */
+
+      int *permu = NULL; /* permutation of the pairs */
+      CHKERR(Num_malloc_iprimme(*partial, &permu, ctx));
+
+      /* Find hVal closest but geq than targetShift */
+      for (j = 0; j < *partial; j++)
+         if (hVals[j] >= targetShift) break;
+
+      /* Fold along j-1 */
+      i = j-1;
+      int index;
+      for (index = 0; index < *partial; index++) {
+         if (i >= 0 && (j >= *partial || fabs(hVals[i] - targetShift) <
+                                               fabs(hVals[j] - targetShift)))
+            permu[index] = i--;
+         else 
+            permu[index] = j++;
+      }
+
+      /* Reorder hVals and hVecs according to the permutation */
+
+      CHKERR(permute_vecs_Rprimme(hVals, 1, *partial, 1, permu, ctx));
+      CHKERR(permute_vecs_Sprimme(
+            hVecs, basisSize, *partial, ldhVecs, permu, ctx));
+
+      CHKERR(Num_free_iprimme(permu, ctx));
+      break;
+   }
+
+   case primme_largest_abs:     /* the farthest to the target shift */
+   {
+      int converged_left_part = 0, converged_right_part = 0;
+      CHKERR(Num_copy_trimatrix_Sprimme(H, basisSize, basisSize, ldH,
+            0 /* upper part */, 0, hVecs, ldhVecs, 0));
+      CHKERR(Num_hegvx_Sprimme("V", "I", "U", basisSize, hVecs, ldhVecs, VtBV,
+            ldVtBV, 0.0, 0.0, 1, *partial, &converged_left_part, hVals, ctx));
+      SCALAR *aux;
+      CHKERR(Num_malloc_Sprimme(basisSize * basisSize, &aux, ctx));
+      CHKERR(Num_copy_trimatrix_Sprimme(H, basisSize, basisSize, ldH,
+            0 /* upper part */, 0, aux, basisSize, 0));
+      CHKERR(Num_hegvx_Sprimme("V", "I", "U", basisSize, aux, basisSize, VtBV,
+            ldVtBV, 0.0, 0.0, basisSize - *partial + 1, basisSize,
+            &converged_right_part, &hVals[converged_left_part], ctx));
+      CHKERR(Num_copy_matrix_Sprimme(aux, basisSize, converged_right_part,
+            basisSize, &hVecs[converged_left_part * ldhVecs], ldhVecs, ctx));
+      CHKERR(Num_free_Sprimme(aux, ctx));
+      *partial = min(converged_left_part, converged_right_part);
+      int n = converged_left_part + converged_right_part;
+
+      /* Generate permutation to sort eigenpairs */
+
+      int *permu = NULL; /* permutation of the pairs */
+      CHKERR(Num_malloc_iprimme(n, &permu, ctx));
+
+      /* Fold along the extrema */
+      j = 0;
+      i = n - 1;
+      int index = 0;
+      for (index = 0; index < *partial; index++) {
+         if (fabs(hVals[i] - targetShift) > fabs(hVals[j] - targetShift))
+            permu[index] = i--;
+         else 
+            permu[index] = j++;
+      }
+      while(i >= converged_left_part) permu[index++] = i--;
+      while(j < converged_left_part) permu[index++] = j++;
+      assert(index == n);
+
+      /* Reorder hVals and hVecs according to the permutation */
+
+      CHKERR(permute_vecs_Rprimme(hVals, 1, n, 1, permu, ctx));
+      CHKERR(permute_vecs_Sprimme(hVecs, basisSize, n, ldhVecs, permu, ctx));
+
+      CHKERR(Num_free_iprimme(permu, ctx));
+      break;
+   }
+
+   default:
+      CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+   }
+
+   return 0;   
+
 #endif /* USE_HERMITIAN */
 }
 
@@ -994,7 +1188,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
 /*******************************************************************************
  * Function map_vecs: given two basis V and W the function returns the
  *    permutation p such as p[i] is the column in V closest in angle to
- *    column ith on W.
+ *    column ith on W. The angle is measure as |x'*G*y|.
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
@@ -1013,57 +1207,63 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
 
 TEMPLATE_PLEASE
 int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
-      int n, int ldW, int *p, primme_context ctx) {
+      int n, int ldW, HSCALAR *G, int ldG, int *p, primme_context ctx) {
 
    int i;         /* Loop variable                                     */
 
-   /* Compute the norm of the columns V(n0:n-1) */
-
-   HREAL *Vnorms = NULL;
-   CHKERR(Num_malloc_RHprimme(nV, &Vnorms, ctx));
-   for (i = 0; i < nV; i++) {
-      Vnorms[i] = sqrt(REAL_PART(
-            Num_dot_SHprimme(m, &V[ldV * i], 1, &V[ldV * i], 1, ctx)));
-   }
-      
-   /* Compute V'*W[n0:n-1] */
+   /* Compute V' * G * W[n0:n-1] */
 
    HSCALAR *ip = NULL;
    CHKERR(Num_malloc_SHprimme(nV * (n - n0), &ip, ctx));
    CHKERR(Num_zero_matrix_SHprimme(ip, nV, n - n0, nV, ctx));
-   CHKERR(Num_gemm_SHprimme("C", "N", nV, n - n0, m, 1.0, V, ldV, &W[ldW * n0],
-         ldW, 0.0, ip, nV, ctx));
+   if (G == NULL) {
+      CHKERR(Num_gemm_SHprimme("C", "N", nV, n - n0, m, 1.0, V, ldV,
+            &W[ldW * n0], ldW, 0.0, ip, nV, ctx));
+   } else if (nV > 0) {
+      HSCALAR *GW = NULL;
+      CHKERR(Num_malloc_SHprimme(m * (n - n0), &GW, ctx));
+      CHKERR(Num_zero_matrix_SHprimme(GW, m, n - n0, m, ctx));
+      CHKERR(Num_hemm_SHprimme("L", "U", m, n - n0, 1.0, G, ldG, &W[ldW * n0],
+            ldW, 0.0, GW, m, ctx));
+      CHKERR(Num_gemm_SHprimme("C", "N", nV, n - n0, m, 1.0, V, ldV,
+            GW, m, 0.0, ip, nV, ctx));
+      CHKERR(Num_free_SHprimme(GW, ctx));
+   }
 
-   for (i = n0; i < n; i++) {
-      /* Find the j that maximizes ABS(V[j]'*W[i]/Vnorms[j]) and is not */
-      /* in p(0:i-1)                                                    */
+   int *used; /* Whether the index is already used in the permutation p */
+   CHKERR(Num_malloc_iprimme(m, &used, ctx));
+   for (i = 0; i < m; i++) used[i] = 0;
+   for (i = 0; i < n0; i++) used[p[i]] = 1;
+
+   for (i = n0; i < m; i++) {
+      /* Find the j that maximizes ABS(V[j]'*G*W[i]) and is not used */
 
       int j, jmax=-1;
-      HREAL ipmax = -1;
+      HREAL ipmax = 0.0;
       for (j = 0; j < nV; j++) {
+         if (used[j]) continue;
          HREAL ipij = ABS(ip[nV * (i - n0) + j]);
-         if (ipij > ipmax * Vnorms[j]) {
-            /* Check that j is not in p(0:i-1) */
-            int k;
-            for (k = 0; k < i && p[k] != j; k++)
-               ;
-            if (k < i) continue;
-
+         if (ipij > ipmax) {
             /* Update ipmax and jmax */
-            ipmax = fabs(ipij / Vnorms[j]);
+            ipmax = ipij;
             jmax = j;
          }
       }
       if (jmax < 0) {
-         jmax = i;
+         for (j = nV; j < m; j++) {
+            if (used[j]) continue;
+            jmax = j;
+            break;
+         }
       }
 
       /* Assign the map */
 
       p[i] = jmax;
+      used[jmax] = 1;
    }
    
-   CHKERR(Num_free_RHprimme(Vnorms, ctx));
+   CHKERR(Num_free_iprimme(used, ctx));
    CHKERR(Num_free_SHprimme(ip, ctx));
     
    return 0;
