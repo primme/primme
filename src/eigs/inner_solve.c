@@ -776,6 +776,7 @@ STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
 
    double t0 = primme_wTimer();
 
+#ifndef USE_HOST
    if (ctx.numProcs <= 1 && Mfact == NULL) {
       SCALAR *overlaps; /* overlaps of v with columns of Q   */
       CHKERR(Num_malloc_Sprimme(numCols * blockSize, &overlaps, ctx));
@@ -792,7 +793,9 @@ STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
             -1.0, Qhat, ldQhat, overlaps, numCols, 1.0, v, ldv, ctx));
 
       CHKERR(Num_free_Sprimme(overlaps, ctx));
-   } else {
+   } else
+#endif
+   {
       HSCALAR *overlaps; /* overlaps of v with columns of Q   */
       CHKERR(Num_malloc_SHprimme(numCols * blockSize, &overlaps, ctx));
 

@@ -488,7 +488,7 @@ STATIC int solve_H_RR_partial_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV,
    {
       CHKERR(Num_copy_trimatrix_Sprimme(H, basisSize, basisSize, ldH,
             0 /* upper part */, 0, hVecs, ldhVecs, 0));
-      HREAL distance_from_target = ABS(hVals[*partial - 1] - targetShift) +
+      HREAL distance_from_target = EVAL_ABS(hVals[*partial - 1] - targetShift) +
                                    primme->stats.estimateResidualError;
       CHKERR(Num_hegvx_Sprimme("V", "V", "U", basisSize, hVecs, ldhVecs, VtBV,
             ldVtBV, targetShift - distance_from_target,
@@ -1240,17 +1240,19 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
 
       int j, jmax=-1;
       HREAL ipmax = 0.0;
-      for (j = 0; j < nV; j++) {
-         if (used[j]) continue;
-         HREAL ipij = ABS(ip[nV * (i - n0) + j]);
-         if (ipij > ipmax) {
-            /* Update ipmax and jmax */
-            ipmax = ipij;
-            jmax = j;
+      if (i < n) {
+         for (j = 0; j < nV; j++) {
+            if (used[j]) continue;
+            HREAL ipij = ABS(ip[nV * (i - n0) + j]);
+            if (ipij > ipmax) {
+               /* Update ipmax and jmax */
+               ipmax = ipij;
+               jmax = j;
+            }
          }
       }
       if (jmax < 0) {
-         for (j = nV; j < m; j++) {
+         for ( j = 0; j < m; j++) {
             if (used[j]) continue;
             jmax = j;
             break;
