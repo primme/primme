@@ -18,6 +18,43 @@ from compare import stats as st
 from builtins import str
 
 #
+# GPU stuff
+#
+
+try:
+    import cupy, pycuda.autoinit
+    test_gpu = True
+except Exception:
+    test_gpu = False
+    print("Not testing GPU interface")
+
+def togpu(A, dtype=None):
+   if A is None: return A
+   Agpu = cupy.asarray(A, dtype)
+   to_cupy_dtype = dict((f, getattr(cupy, f)) for f in ('float16', 'float32', 'float64', 'complex64', 'complex128'))
+   def Afgpu(x, y):
+      size = x.shape[0] * x.shape[1] * x.dtype.itemsize
+      x_cupy = cupy.ndarray(x.shape, to_cupy_dtype[str(x.dtype)], cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(x.ptr,size,x),0), order='F')
+      y_cupy = cupy.ndarray(y.shape, to_cupy_dtype[str(y.dtype)], cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(y.ptr,size,y),0), order='F')
+      y_cupy[:,:] = cupy.matmul(Agpu,x_cupy)[:,:]
+      cupy.cuda.runtime.deviceSynchronize()
+      return y
+   Afgpu.shape = A.shape
+   Afgpu.dtype = A.dtype if dtype is None else dtype
+   # Test
+   x = np.ones((A.shape[0],2), A.dtype, order='F')
+   y = Afgpu(pycuda.gpuarray.to_gpu(x), pycuda.gpuarray.empty(x.shape, A.dtype, order='F'))
+   pycuda.autoinit.context.synchronize()
+   yref = A.dot(x)
+   assert_allclose(np.linalg.norm(y.get() - yref, axis=0), np.zeros(2), atol=np.linalg.norm(yref[:,1], axis=0)*np.finfo(A.dtype).eps*100, rtol=1)
+   return Afgpu
+
+def tocpu(A):
+   if isinstance(A, pycuda.gpuarray.GPUArray):
+      return A.get()
+   return A
+
+#
 # Collection of problems
 #
 
@@ -149,16 +186,18 @@ def dtype_to_str(precision, complexity):
         return "<class 'numpy.complex128'>"
     
 def eigsh_check(eigsh_solver, A, B, normInvB, k, M, which, sigma, tol,
-                exact_evals, dtype, case_desc, add_stats=True):
+                exact_evals, dtype, case_desc, with_gpu=False, add_stats=True):
    """
    Test eigsh
    """
 
+   f = togpu if with_gpu else lambda x:x 
    try:
-      evals, evecs, stats = eigsh_solver(A, k, B, sigma, which, tol=tol, OPinv=M,
-            maxMatvecs=70000, return_stats=True, internalPrecision=to_primme_datatype(dtype))
+      evals, evecs, stats = eigsh_solver(f(A), k, f(B), sigma, which, tol=tol, OPinv=f(M),
+            maxMatvecs=70000, return_stats=True, internalPrecision=to_primme_datatype(dtype), use_gpuarray=with_gpu)
    except Exception as e:
       raise Exception("Ups! Case %s\n%s" % (case_desc, e))
+   evecs = tocpu(evecs)
    sol_evals = select_pairs_eigsh(k, sigma, which, exact_evals)
 
    # Check eigenvalues are close enough to the exact ones
@@ -190,25 +229,29 @@ def test_primme_eigsh():
             A = toStandardProblem(gen(n, dtype=complexity))
             sigma0 = evals[0]*.51 + evals[-1]*.49
             nA = np.max(np.fabs(evals))
-            for precision in (np.float16, np.float32, np.float64):
-               tol = np.finfo(precision).eps**.5 * 0.1
-               for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
-                  if gen.__name__ != "ElasticRod" and sigma is not None:
-                     precs = (None, jacobi_prec(A, sigma))
-                  else:
-                     precs = (None,)
-                  if precision is np.float16 and which != 'LM':
-                     continue
-                  if precision is np.float16 and gen.__name__ == "ElasticRod":
-                     A0, evals0 = A/nA, evals/nA
-                  else:
-                     A0, evals0 = A, evals
-                  for prec in precs:
-                     for k in (1, 2, 3, 5, 10, 70):
-                        if k > n: continue
-                        case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
-                              (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma))
-                        yield (eigsh_check, eigsh, A0, None, 1, k, prec, which, sigma, tol, evals0, precision, case_desc)
+            for with_gpu in ((False, True) if test_gpu else (False,)):
+               for precision in (np.float16, np.float32, np.float64):
+                  tol = np.finfo(precision).eps**.5 * 0.1
+                  for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
+                     if gen.__name__ != "ElasticRod" and sigma is not None:
+                        precs = (None, jacobi_prec(A, sigma))
+                     else:
+                        precs = (None,)
+                     if precision is np.float16 and which != 'LM':
+                        continue
+                     if precision is np.float16:
+                        A0, evals0 = A/nA, evals/nA
+                        sigma = sigma/nA if sigma is not None else None
+                     else:
+                        A0, evals0 = A, evals
+                     if with_gpu and complexity is np.complex128 and (precision is np.float16 or precision is np.float64):
+                        continue
+                     for prec in precs:
+                        for k in (1, 2, 3, 5, 10, 70):
+                           if k > n: continue
+                           case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s, with_gpuarray=%s" %
+                                 (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma, with_gpu))
+                           yield (eigsh_check, eigsh, A0, None, 1, k, prec, which, sigma, tol, evals0, precision, case_desc, with_gpu)
 
 def test_primme_eigsh_gen():
    """
@@ -225,25 +268,29 @@ def test_primme_eigsh_gen():
          for complexity in (np.float64, np.complex128):
             A, B = gen(n, dtype=complexity)
             stdP = toStandardProblem((A,B))
-            for precision in (np.float16, np.float32, np.float64):
-               tol = np.finfo(precision).eps**.5 * 0.1
-               for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
-                  if gen.__name__ != "ElasticRod" and sigma is not None:
-                     precs = (None, jacobi_prec(stdP, sigma))
-                  else:
-                     precs = (None,)
-                  if precision is np.float16 and which != 'LM':
-                     continue
-                  if precision is np.float16 and gen.__name__ == "ElasticRod":
-                     A0, evals0 = A/nA, evals/nA
-                  else:
-                     A0, evals0 = A, evals
-                  for prec in precs:
-                     for k in (1, 2, 3, 5, 10, 50):
-                        if k > n: continue
-                        case_desc = ("A,B=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
-                              (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma))
-                        yield (eigsh_check, eigsh, A0, B, normInvB, k, prec, which, sigma, tol, evals0, precision, case_desc)
+            for with_gpu in ((False, True) if test_gpu else (False,)):
+               for precision in (np.float16, np.float32, np.float64):
+                  tol = np.finfo(precision).eps**.5 * 0.1
+                  for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
+                     if gen.__name__ != "ElasticRod" and sigma is not None:
+                        precs = (None, jacobi_prec(stdP, sigma))
+                     else:
+                        precs = (None,)
+                     if precision is np.float16 and which != 'LM':
+                        continue
+                     if precision is np.float16:
+                        A0, evals0 = A/nA, evals/nA
+                        sigma = sigma/nA if sigma is not None else None
+                     else:
+                        A0, evals0 = A, evals
+                     if with_gpu and complexity is np.complex128 and (precision is np.float16 or precision is np.float64):
+                        continue
+                     for prec in precs:
+                        for k in (1, 2, 3, 5, 10, 50):
+                           if k > n: continue
+                           case_desc = ("A,B=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s, with_gpuarray=%s" %
+                                 (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma, with_gpu))
+                           yield (eigsh_check, eigsh, A0, B, normInvB, k, prec, which, sigma, tol, evals0, precision, case_desc, with_gpu)
 
 def test_primme_eigsh_matrix_types():
    """
@@ -261,7 +308,7 @@ def test_primme_eigsh_matrix_types():
          M = op(prec) if prec is not None else None
          case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
                       (MikotaPair.__name__, n, dtype, k, prec is None, which, sigma))
-         yield (eigsh_check, eigsh, op(A), None, 1, k, M, which, sigma, 1e-6, evals, dtype, case_desc, False)
+         yield (eigsh_check, eigsh, op(A), None, 1, k, M, which, sigma, 1e-6, evals, dtype, case_desc, False, False)
 
 
 def select_pairs_svds(k, which, svals):
