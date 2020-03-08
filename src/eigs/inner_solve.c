@@ -320,9 +320,9 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       int conv;
       for (i=0; i<blockSize; i++) p0[i] = i;
       for (i = conv = 0; i < blockSize; i++) {
-         if (!ISFINITE(sigma_prev[p[i]]) || sigma_prev[p[i]] == 0.0L) {
+         if (!ISFINITE(sigma_prev[i]) || sigma_prev[i] == 0.0L) {
             PRINTF(5, "Exiting because SIGMA %e in block vector %d",
-                  sigma_prev[p[i]], p[i]);
+                  sigma_prev[i], p[i]);
 
             /* sol = r if first iteration */
             if (numIts == 0) {
@@ -333,10 +333,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
             continue;
          }
 
-         alpha_prev[p[i]] = rho_prev[p[i]]/sigma_prev[p[i]];
-         if (!ISFINITE(alpha_prev[p[i]]) ||
-               fabs(alpha_prev[p[i]]) < MACHINE_EPSILON ||
-               fabs(alpha_prev[p[i]]) > 1.0L / MACHINE_EPSILON) {
+         alpha_prev[p[i]] = rho_prev[p[i]] / sigma_prev[i];
+         if (!ISFINITE(alpha_prev[p[i]])) {
             PRINTF(5, "Exiting because ALPHA %e in block vector %d",
                   alpha_prev[p[i]], p[i]);
 
@@ -356,6 +354,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       /* Apply permutation p0 and shrink blockSize */
       CHKERR(permute_vecs_iprimme(p, blockSize, p0, ctx));
       CHKERR(permute_vecs_dprimme(shift, 1, blockSize, 1, p0, ctx));
+      CHKERR(permute_vecs_RHprimme(sigma_prev, 1, blockSize, 1, p0, ctx));
       CHKERR(permute_vecs_SHprimme(xKinvBx, 1, blockSize, 1, p0, ctx));
       CHKERR(permute_vecs_Sprimme(g, nLocal, blockSize, nLocal, p0, ctx));
       CHKERR(permute_vecs_Sprimme(d, nLocal, blockSize, nLocal, p0, ctx));
@@ -374,11 +373,12 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
             g, nLocal, g, nLocal, nLocal, blockSize, Theta, ctx));
 
       for (i = 0; i < blockSize; i++) {
-         Theta[p[i]] = sqrt(Theta[p[i]]) / tau_prev[p[i]];
-         double c = 1.0/sqrt(1+Theta[p[i]]*Theta[p[i]]);
-         tau[p[i]] = tau_prev[p[i]]*Theta[p[i]]*c;
+         double Theta_i = sqrt(Theta[i]) / tau_prev[p[i]];
+         double c = 1.0 / sqrt(1 + Theta_i * Theta_i);
+         tau[p[i]] = tau_prev[p[i]] * Theta_i * c;
 
-         gamma[p[i]] = c*c*Theta_prev[p[i]]*Theta_prev[p[i]];
+         gamma[p[i]] = c * c * Theta_prev[p[i]] * Theta_prev[p[i]];
+         Theta_prev[p[i]] = Theta_i;
          eta[p[i]] = alpha_prev[p[i]] * c * c;
 
 #ifdef USE_HOST
@@ -446,7 +446,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
             double Delta = gamma[p[i]] * Delta_prev[p[i]] + eta[p[i]] * rho_prev[p[i]];
             double Beta = Beta_prev[p[i]] - Delta;
-            double Phi = gamma[p[i]] * gamma[p[i]] * Phi_prev[p[i]] + eta[p[i]] * eta[p[i]] * sigma_prev[p[i]];
+            double Phi = gamma[p[i]] * gamma[p[i]] * Phi_prev[p[i]] + eta[p[i]] * eta[p[i]] * sigma_prev[i];
             double Psi = gamma[p[i]] * Psi_prev[p[i]] + gamma[p[i]] * Phi_prev[p[i]];
             double Gamma = Gamma_prev[p[i]] + 2.0L * Psi + Phi;
 
@@ -521,6 +521,22 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
                continue;
             }
+
+            // This is a brain-dead heuristic to detect that QMR has stagnated:
+            // check the relative change of the residual norm. It seems enough
+            // to detect the cases that appears on the python test cases, such
+            // as "A,B=MikotaPair(100, <class 'numpy.float64'>), k=3, M=False, which=SM, sigma=4900.509999999997, bs=1, method=DEFAULT_MIN_TIME, with_gpuarray=False"
+
+            if (numIts > 0 &&
+                  fabs(tau[p[i]] - tau_prev[p[i]]) < tau[p[i]] * 1e-8) {
+               PRINTF(5,
+                     "tau changed relatively less than 1e-8 in block vector %d",
+                     p[i]);
+               CHKERR(perm_set_value_on_pos(
+                     p0, i, blockSize - ++conv, blockSize));
+               continue;
+            }
+
 
             /* Check if some of the next conditions is satisfied:             */
             /* a) estimate eigenvalue residual norm (eres_updated) is less    */
@@ -617,13 +633,12 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                g, nLocal, w, nLocal, nLocal, blockSize, rho, ctx));
 
          for (i=0; i< blockSize; i++) {
-            HREAL beta = rho[p[i]]/rho_prev[p[i]];
+            HREAL beta = rho[i] / rho_prev[p[i]];
             CHKERR(Num_axpy_Sprimme(
                   nLocal, beta, &d[nLocal * i], 1, &w[nLocal * i], 1, ctx));
 
-            rho_prev[p[i]] = rho[p[i]];
+            rho_prev[p[i]] = rho[i];
             tau_prev[p[i]] = tau[p[i]];
-            Theta_prev[p[i]] = Theta[p[i]];
          }
 
          /* Alternate between w and d buffers in successive iterations
