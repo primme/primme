@@ -776,7 +776,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             if (primme->locking && !primme->massMatrixMatvec &&
                   !primme->correctionParams.precondition &&
                   primme->correctionParams.maxInnerIterations == 0) {
-               for (i = 0; i < blockSize0 && numConverged < primme->numEvals;
+               for (i = 0;
+                     i < blockSize0 && numConverged + i < primme->numEvals;
                      i++) {
                   HREAL normXx = 0.0;
                   if (primme->orth == primme_orth_explicit_I) {
@@ -804,9 +805,16 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                         ldVtBV, 0, 1, &flags[iev[i]], &newBlockNorm,
                         &hVals[iev[i]], &reset,
                         -1 /* don't check practically convergence */, ctx));
+                  HREAL oldBlockNorm = basisNorms[iev[i]];
                   basisNorms[iev[i]] = newBlockNorm;
                   if (flags[iev[i]] == CONVERGED) {
                      flags[iev[i]] = PRACTICALLY_CONVERGED;
+
+                     PRINTF(5,
+                           " PRACTICALLY_CONVERGED (shortcut) %d norm r: %e "
+                           "norm (I-BQQt)r %e",
+                           iev[i], (double)oldBlockNorm, newBlockNorm);
+
                      numConverged++;
                      /* Report a pair was soft converged */
                      CHKERR(monitorFun_Sprimme(hVals, basisSize, flags, &iev[i],
