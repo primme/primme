@@ -1592,7 +1592,8 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* iev(*blockSize:*blockSize+blockNormsize). Do the proper     */
       /* actions for converged pairs.                                */
 
-      for (blki=*blockSize, i=0; i < blockNormsSize && *blockSize < maxBlockSize; i++, blki++) {
+      for (blki = *blockSize, i = 0;
+            i < blockNormsSize && *blockSize < maxBlockSize; i++, blki++) {
          /* Write back flags and residual norms */
          flags[iev[blki]] = flagsBlock[i];
          basisNorms[iev[blki]] = blockNorms[blki];
