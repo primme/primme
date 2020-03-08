@@ -446,7 +446,6 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
           ( primme->maxOuterIterations == 0 ||
             primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
-      if (reset > 0) PRINTF(5, "Resetting V, W and QR");
 
       /* Reset convergence flags. This may only reoccur without locking */
 
