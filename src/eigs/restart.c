@@ -393,6 +393,33 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    }
    CHKERR(Num_free_iprimme(hVecsPerm, ctx));
 
+   /* Estimate the errors on operators A and B */
+
+   if (*restartsSinceReset <= 1 && restartSize >= 1) {
+      SCALAR *Opv = NULL;
+      CHKERR(Num_malloc_Sprimme(nLocal, &Opv, ctx));
+      CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, Opv, nLocal, 0, 1, ctx));
+      CHKERR(Num_axpy_Sprimme(nLocal, (HSCALAR)-1.0, W, 1, Opv, 1, ctx));
+      HREAL diff_norm = 0.0;
+      CHKERR(Num_dist_dots_real_Sprimme(
+            Opv, nLocal, Opv, nLocal, nLocal, 1, &diff_norm, ctx));
+      primme->stats.estimateErrorOnA = sqrt(diff_norm);
+      PRINTF(5, "Estimated error on A: %g", primme->stats.estimateErrorOnA);
+
+      if (primme->massMatrixMatvec) {
+         CHKERR(massMatrixMatvec_Sprimme(
+               V, nLocal, ldV, Opv, nLocal, 0, 1, ctx));
+         CHKERR(Num_axpy_Sprimme(nLocal, (HSCALAR)-1.0, BV, 1, Opv, 1, ctx));
+         HREAL diff_norm = 0.0;
+         CHKERR(Num_dist_dots_real_Sprimme(
+               Opv, nLocal, Opv, nLocal, nLocal, 1, &diff_norm, ctx));
+         primme->stats.estimateErrorOnB = sqrt(diff_norm);
+         PRINTF(5, "Estimated error on B: %g", primme->stats.estimateErrorOnB);
+      }
+
+      CHKERR(Num_free_Sprimme(Opv, ctx));
+   }
+
    *restartSizeOutput = restartSize; 
 
    /* If VtBV is computed, estimate the orthogonality error as                */
@@ -429,21 +456,19 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    CHKERR(broadcast_RHprimme(&fn, 1, ctx));
       
    if (fn > 0.0) {
-      if (*restartsSinceReset <= 1) {
-         PRINTF(5, "Orthogonalization level: %g", (double)fn);
-         primme->stats.maxConvTol = max(primme->stats.maxConvTol,
-               fn * primme->stats.estimateLargestSVal);
-      }
-      primme->stats.estimateResidualError = sqrt((double)*restartsSinceReset) *
-                                            fn * problemNorm_Sprimme(1, primme);
+      PRINTF(5, "Orthogonalization level: %g", (double)fn);
    }
-   else {
-      double eps_orth;
-      CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
-      primme->stats.estimateResidualError =
-            2 * sqrt((double)*restartsSinceReset) * eps_orth *
-            problemNorm_Sprimme(1, primme);
+
+   double residualError =
+         primme->stats.estimateErrorOnA +
+         primme->stats.estimateErrorOnB * primme->stats.estimateLargestSVal;
+
+   if (*restartsSinceReset <= 1) {
+      primme->stats.maxConvTol = max(primme->stats.maxConvTol, residualError);
    }
+
+   primme->stats.estimateResidualError =
+         sqrt((double)*restartsSinceReset) * residualError;
 
    /* Check VtBV */
 

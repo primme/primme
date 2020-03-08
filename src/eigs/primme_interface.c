@@ -172,6 +172,8 @@ void primme_initialize(primme_params *primme) {
    primme->stats.estimateLargestSVal           = -HUGE_VAL;
    primme->stats.estimateBNorm                 = -HUGE_VAL;
    primme->stats.estimateInvBNorm              = -HUGE_VAL;
+   primme->stats.estimateErrorOnA              = -HUGE_VAL;
+   primme->stats.estimateErrorOnB              = -HUGE_VAL;
    primme->stats.maxConvTol                    = 0.0;
    primme->stats.estimateResidualError         = 0.0;
    primme->stats.lockingIssue                  = 0;

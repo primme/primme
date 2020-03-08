@@ -386,6 +386,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.estimateLargestSVal           = -HUGE_VAL;
    primme->stats.estimateBNorm                 = primme->massMatrixMatvec ? -HUGE_VAL : 1.0;
    primme->stats.estimateInvBNorm              = primme->massMatrixMatvec ? -HUGE_VAL : 1.0;
+   primme->stats.estimateErrorOnA              = 0.0;
+   primme->stats.estimateErrorOnB              = 0.0;
    primme->stats.maxConvTol                    = 0.0;
    primme->stats.estimateResidualError         = 0.0;
    primme->stats.lockingIssue                  = 0;
