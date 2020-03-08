@@ -654,10 +654,18 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             // prepare_candidates ran out of eigenpairs. In that case, we
             // compute all eigenpairs for the next iteration.
 
-            int last_candidate_set = 0;
+            int last_candidate_set = INT_MAX;
             if (blockSize > 0) {
-               last_candidate_set = (nhVecs <= 0 ? INT_MAX : 
-                     iev[blockSize - 1] + 1 + primme->maxBlockSize * 2);
+               if (nhVecs <= 0) {
+                  last_candidate_set = INT_MAX;
+               } else if (primme->target == primme_closest_abs) {
+                  last_candidate_set =
+                        min(iev[blockSize - 1] + 1 + primme->maxBlockSize * 2,
+                              nhVecs);
+               } else {
+                  last_candidate_set =
+                        iev[blockSize - 1] + 1 + primme->maxBlockSize * 2;
+               }
             }
             nhVecs = max(0, nhVecs);
 
