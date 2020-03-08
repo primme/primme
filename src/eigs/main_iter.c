@@ -451,9 +451,19 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       /* Reset convergence flags. This may only reoccur without locking */
 
       primme->initSize = numConverged = numConvergedStored = numLocked;
-      reset = 0;
       for (i=0; i<primme->maxBasisSize; i++)
          flags[i] = UNCONVERGED;
+
+      if (reset) {
+         PRINTF(5, "Resetting V, W and QR");
+
+         /* Compute W = A*V for the orthogonalized corrections */
+
+         CHKERR(matrixMatvec_Sprimme(
+               V, primme->nLocal, ldV, W, ldW, 0, basisSize, ctx));
+
+         reset = 0;
+      }
 
       /* Compute the initial H and solve for its eigenpairs */
 
