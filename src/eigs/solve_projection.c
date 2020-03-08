@@ -107,7 +107,10 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
    if (ctx.primme->procID == 0) {
       switch (ctx.primme->projectionParams.projection) {
          case primme_proj_RR:
-            if (!partial || *partial >= basisSize || basisSize < 50) {
+            // If the number of requested eigenpairs is too many of the problem
+            // size is small, we just compute all of them; it is not worth the
+            // trouble
+            if (!partial || *partial * 2 >= basisSize || basisSize < 50) {
                CHKERR(solve_H_RR_Sprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs,
                      hVals, basisSize, numConverged, ctx));
                if (partial) *partial = basisSize;
