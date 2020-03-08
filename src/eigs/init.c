@@ -272,17 +272,10 @@ STATIC int init_block_krylov(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    if (numNewVectors <= 0) return 0;
  
    /*----------------------------------------------------------------------*/
-   /* Generate a single Krylov space if there are only a few vectors to be */
-   /* generated, else generate a block Krylov space with                   */
-   /* primme->maxBlockSize as the block Size.                              */ 
-   /*----------------------------------------------------------------------*/
-
-   blockSize = numNewVectors <= primme->maxBlockSize ? 1 : primme->maxBlockSize;
-
-   /*----------------------------------------------------------------------*/
    /* Generate the initial vectors.                                        */
    /*----------------------------------------------------------------------*/
 
+   blockSize = min(numNewVectors, primme->maxBlockSize);
    for (i=dv1; i<dv1+blockSize; i++) {
       CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[ldV*i], ctx));
    }
