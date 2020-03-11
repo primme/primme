@@ -129,6 +129,8 @@ typedef struct primme_stats {
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */
    double estimateBNorm;            /* estimation of norm of B */
    double estimateInvBNorm;         /* estimation of norm of inv(B) */
+   double estimateErrorOnA;         /* estimate numerical errors on matvec */
+   double estimateErrorOnB;         /* estimate numerical errors on mass matrix */
    double maxConvTol;               /* largest norm residual of a locked eigenpair */
    double estimateResidualError;    /* accumulated error in V and W */
    PRIMME_INT lockingIssue;         /* Some converged with a weak criterion */
