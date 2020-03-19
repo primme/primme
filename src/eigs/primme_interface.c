@@ -399,7 +399,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
    }
    else if (method == PRIMME_JDQMR) {
       if (primme->restartingParams.maxPrevRetain < 0) {
-         primme->restartingParams.maxPrevRetain   = 1;
+         primme->restartingParams.maxPrevRetain   = primme->maxBlockSize;
       }
       primme->correctionParams.maxInnerIterations = -1;
       if (primme->correctionParams.precondition) {
@@ -417,7 +417,7 @@ int primme_set_method(primme_preset_method method, primme_params *primme) {
    }
    else if (method == PRIMME_JDQMR_ETol) {
       if (primme->restartingParams.maxPrevRetain < 0) {
-         primme->restartingParams.maxPrevRetain   = 1;
+         primme->restartingParams.maxPrevRetain   = primme->maxBlockSize;
       }
       primme->correctionParams.maxInnerIterations = -1;
       if (primme->correctionParams.precondition) {
