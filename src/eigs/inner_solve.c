@@ -489,54 +489,68 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
             /* Stopping criteria                                       */
             /* --------------------------------------------------------*/
 
-            if (numIts > 0 && (tau_prev[p[i]] <= eres_updated[p[i]] ||
-                                    eres_prev <= tau[p[i]])) {
-               PRINTF(5, " tau < R eres for block vector %d", p[i]);
-               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
-               continue;
-            }
+            if (numIts > 0) {
+               if (tau_prev[p[i]] <= eres_updated[p[i]] ||
+                     eres_prev <= tau[p[i]]) {
+                  PRINTF(5, " tau < R eres for block vector %d", p[i]);
+                  CHKERR(perm_set_value_on_pos(
+                        p0, i, blockSize - ++conv, blockSize));
+                  continue;
+               }
 
-            if (primme->target == primme_smallest &&
-                  eval_updated > eval_prev[p[i]]) {
-               PRINTF(5, "eval_updated > eval_prev in block vector %d", p[i]);
-               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
-               continue;
-            }
-            else if (primme->target == primme_largest && eval_updated < eval_prev[p[i]]){
-               PRINTF(5, "eval_updated < eval_prev in block vector %d", p[i]);
-               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
-               continue;
-            } else if (primme->target == primme_closest_abs &&
-                       fabs(eval[p[i]] - eval_updated) >
-                             tau_init[p[i]] + eres_updated[p[i]]) {
-               PRINTF(5, "|eval-eval_updated| > tau0+eres in block vector %d",
-                     p[i]);
-               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
-               continue;
-            }
-          
-            if (numIts > 0 && eres_updated[p[i]] < ETolerance*tau_init[p[i]]) {
-               PRINTF(5, "eres < eresTol %e in block vector %d",
-                     eres_updated[p[i]], p[i]);
-               CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
-               continue;
-            }
+               if (primme->target == primme_smallest &&
+                     eval_updated > eval_prev[p[i]]) {
+                  PRINTF(
+                        5, "eval_updated > eval_prev in block vector %d", p[i]);
+                  CHKERR(perm_set_value_on_pos(
+                        p0, i, blockSize - ++conv, blockSize));
+                  continue;
+               }
 
-            // This is a brain-dead heuristic to detect that QMR has stagnated:
-            // check the relative change of the residual norm. It seems enough
-            // to detect the cases that appears on the python test cases, such
-            // as "A,B=MikotaPair(100, <class 'numpy.float64'>), k=3, M=False, which=SM, sigma=4900.509999999997, bs=1, method=DEFAULT_MIN_TIME, with_gpuarray=False"
+               if (primme->target == primme_largest &&
+                     eval_updated < eval_prev[p[i]]) {
+                  PRINTF(
+                        5, "eval_updated < eval_prev in block vector %d", p[i]);
+                  CHKERR(perm_set_value_on_pos(
+                        p0, i, blockSize - ++conv, blockSize));
+                  continue;
+               }
 
-            if (numIts > 0 &&
-                  fabs(tau[p[i]] - tau_prev[p[i]]) < tau[p[i]] * 1e-8) {
-               PRINTF(5,
-                     "tau changed relatively less than 1e-8 in block vector %d",
-                     p[i]);
-               CHKERR(perm_set_value_on_pos(
-                     p0, i, blockSize - ++conv, blockSize));
-               continue;
+               if (primme->target == primme_closest_abs &&
+                     fabs(eval[p[i]] - eval_updated) >
+                           tau_init[p[i]] + eres_updated[p[i]]) {
+                  PRINTF(5,
+                        "|eval-eval_updated| > tau0+eres in block vector %d",
+                        p[i]);
+                  CHKERR(perm_set_value_on_pos(
+                        p0, i, blockSize - ++conv, blockSize));
+                  continue;
+               }
+
+               if (eres_updated[p[i]] < ETolerance * tau_init[p[i]]) {
+                  PRINTF(5, "eres < eresTol %e in block vector %d",
+                        eres_updated[p[i]], p[i]);
+                  CHKERR(perm_set_value_on_pos(
+                        p0, i, blockSize - ++conv, blockSize));
+                  continue;
+               }
+
+               // This is a brain-dead heuristic to detect that QMR has
+               // stagnated: check the relative change of the residual norm. It
+               // seems enough to detect the cases that appears on the python
+               // test cases, such as 
+               // "A,B=MikotaPair(100, <class 'numpy.float64'>), k=3, M=False, which=SM, sigma=4900.509999999997, bs=1, method=DEFAULT_MIN_TIME, with_gpuarray=False"
+
+               if (fabs(tau[p[i]] - tau_prev[p[i]]) < tau[p[i]] * 1e-8) {
+                  PRINTF(5,
+                        "tau changed relatively less than 1e-8 in block vector "
+                        "%d",
+                        p[i]);
+                  CHKERR(perm_set_value_on_pos(
+                        p0, i, blockSize - ++conv, blockSize));
+                  continue;
+               }
             }
-
 
             /* Check if some of the next conditions is satisfied:             */
             /* a) estimate eigenvalue residual norm (eres_updated) is less    */
