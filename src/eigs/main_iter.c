@@ -1537,12 +1537,22 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    int lasti;              /* last tested pair */
 
    *blockSize = 0;
+   int maxChunck = max(maxBlockSize, blockNormsSize);
    CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(
-         maxBlockSize, &hValsBlock0, ctx));
-   CHKERR(Num_malloc_SHprimme(ldhVecs*maxBlockSize, &hVecsBlock0, ctx));
-   CHKERR(Num_malloc_iprimme(maxBlockSize, &flagsBlock, ctx));
+         maxChunck, &hValsBlock0, ctx));
+   CHKERR(Num_malloc_SHprimme(ldhVecs*maxChunck, &hVecsBlock0, ctx));
+   CHKERR(Num_malloc_iprimme(maxChunck, &flagsBlock, ctx));
    if (primme->massMatrixMatvec) {
-      CHKERR(Num_malloc_RHprimme(maxBlockSize, &XNorms, ctx));
+      CHKERR(Num_malloc_RHprimme(maxChunck, &XNorms, ctx));
+   }
+   PRIMME_INT ldX, ldR;
+   if (!computeXR) {
+      CHKERR(Num_malloc_Sprimme(nLocal * maxChunck, &X, ctx));
+      CHKERR(Num_malloc_Sprimme(nLocal * maxChunck, &R, ctx));
+      ldX = ldR = primme->nLocal;
+   } else {
+      ldX = ldV;
+      ldR = ldW;
    }
    lasti = -1;
 
@@ -1584,11 +1594,11 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i = 0; i < blockNormsSize; i++)
          flagsBlock[i] = flags[iev[*blockSize + i]];
-      CHKERR(check_convergence_Sprimme(&X[(*blockSize) * ldV], ldV, computeXR,
-            &R[(*blockSize) * ldW], ldW, computeXR, evecs, numLocked, ldevecs,
-            Bevecs, ldBevecs, VtBV, ldVtBV, 0, blockNormsSize, flagsBlock,
-            &blockNorms[*blockSize], hValsBlock, reset, practConvChecking,
-            ctx));
+      CHKERR(check_convergence_Sprimme(&X[(*blockSize) * ldX], ldX,
+            1 /* X given */, &R[(*blockSize) * ldR], ldR, 1 /* R given */,
+            evecs, numLocked, ldevecs, Bevecs, ldBevecs, VtBV, ldVtBV, 0,
+            blockNormsSize, flagsBlock, &blockNorms[*blockSize], hValsBlock,
+            reset, practConvChecking, ctx));
 
       /* Compact blockNorms, X and R for the unconverged pairs in    */
       /* iev(*blockSize:*blockSize+blockNormsize). Do the proper     */
@@ -1661,15 +1671,13 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
             blockNorms[*blockSize] = blockNorms[blki];
             iev[*blockSize] = iev[blki];
-            if (computeXR) {
-               CHKERR(Num_copy_matrix_Sprimme(&X[blki * ldV], nLocal, 1, ldV,
-                     &X[(*blockSize) * ldV], ldV, ctx));
-               CHKERR(Num_copy_matrix_Sprimme(&R[blki * ldW], nLocal, 1, ldW,
-                     &R[(*blockSize) * ldW], ldW, ctx));
-               if (BX) {
-                  CHKERR(Num_copy_matrix_Sprimme(&BX[blki * ldBV], nLocal, 1,
-                        ldBV, &BX[(*blockSize) * ldBV], ldBV, ctx));
-               }
+            CHKERR(Num_copy_matrix_Sprimme(&X[blki * ldX], nLocal, 1, ldX,
+                  &X[(*blockSize) * ldX], ldX, ctx));
+            CHKERR(Num_copy_matrix_Sprimme(&R[blki * ldR], nLocal, 1, ldR,
+                  &R[(*blockSize) * ldR], ldR, ctx));
+            if (computeXR && BX) {
+               CHKERR(Num_copy_matrix_Sprimme(&BX[blki * ldBV], nLocal, 1, ldBV,
+                     &BX[(*blockSize) * ldBV], ldBV, ctx));
             }
             (*blockSize)++;
          }
@@ -1725,15 +1733,15 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       assert(ldV == ldW); /* This functions only works in this way */
       CHKERR(Num_update_VWXR_Sprimme(V, W, BV, nLocal, basisSize, ldV,
                hVecsBlock, basisSize, ldhVecs, hValsBlock,
-               &X[(*blockSize)*ldV], 0, computeXR?blockNormsSize:0, ldV,
+               &X[(*blockSize)*ldX], 0, blockNormsSize, ldX,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
-               &R[(*blockSize)*ldV], 0, computeXR?blockNormsSize:0, ldV, computeXR?&blockNorms[*blockSize]:NULL,
-               &BX[(*blockSize)*ldV], 0, BX?blockNormsSize:0, ldV,
+               &R[(*blockSize)*ldR], 0, blockNormsSize, ldR, &blockNorms[*blockSize],
+               &BX[(*blockSize)*ldV], 0, computeXR&&BX?blockNormsSize:0, ldV,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
-               &blockNorms[*blockSize], 0, !computeXR?blockNormsSize:0,
+               NULL, 0, 0,
                NULL, 0, 0,
                NULL, 0, 0,
                &XNorms[*blockSize], 0, primme->massMatrixMatvec?blockNormsSize:0,
@@ -1762,6 +1770,11 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    CHKERR(Num_free_SHprimme(hVecsBlock0, ctx));
    CHKERR(Num_free_iprimme(flagsBlock, ctx));
    CHKERR(Num_free_RHprimme(XNorms, ctx));
+
+   if (!computeXR) {
+      CHKERR(Num_free_Sprimme(X, ctx));
+      CHKERR(Num_free_Sprimme(R, ctx));
+   } 
 
    return 0;
 }
