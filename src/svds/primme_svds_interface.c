@@ -322,7 +322,13 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
       primme->procID = primme_svds->procID;
       primme->numProcs = primme_svds->numProcs;
       primme->commInfo = primme_svds->commInfo;
+   } else {
+      if (primme_svds->m > 0)
+         primme_svds->mLocal = primme_svds->m;
+      if (primme_svds->n > 0)
+         primme_svds->nLocal = primme_svds->n;
    }
+
    if (primme_svds->globalSumReal != NULL) {
       primme->globalSumReal = globalSumRealSvds;
    }
@@ -332,19 +338,19 @@ static void copy_params_from_svds(primme_svds_params *primme_svds, int stage) {
 
    switch(method) {
    case primme_svds_op_AtA:
-      primme->n = primme_svds->n;
-      if (primme->nLocal == -1 && primme_svds->nLocal != -1)
+      if (primme_svds->n > 0) primme->n = primme_svds->n;
+      if (primme_svds->nLocal != -1)
          primme->nLocal = primme_svds->nLocal;
       break;
    case primme_svds_op_AAt:
-      primme->n = primme_svds->m;
-      if (primme->nLocal == -1 && primme_svds->mLocal != -1)
+      if (primme_svds->m > 0) primme->n = primme_svds->m;
+      if (primme_svds->mLocal != -1)
          primme->nLocal = primme_svds->mLocal;
       break;
    case primme_svds_op_augmented:
-      primme->n = primme_svds->m + primme_svds->n;
-      if (primme->nLocal == -1 && primme_svds->mLocal != -1
-            && primme_svds->nLocal != -1)
+      if (primme_svds->m > 0 && primme_svds->n > 0)
+         primme->n = primme_svds->m + primme_svds->n;
+      if (primme_svds->mLocal != -1 && primme_svds->nLocal != -1)
          primme->nLocal = primme_svds->mLocal + primme_svds->nLocal;
       break;
    case primme_svds_op_none:

@@ -408,7 +408,8 @@ int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,
    /* ------------------ */
    /* Set some defaults  */
    /* ------------------ */
-   primme_svds_set_defaults(primme_svds);
+   if (primme_svds->method == primme_svds_default)
+      primme_svds_set_defaults(primme_svds);
 
    /* Deprecated input  */
 
@@ -599,6 +600,23 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
       primme->preconditioner = primme_svds;
    }
 
+   switch(method) {
+   case primme_svds_op_AtA:
+      primme->n = primme_svds->n;
+      primme->nLocal = primme_svds->nLocal;
+      break;
+   case primme_svds_op_AAt:
+      primme->n = primme_svds->m;
+      primme->nLocal = primme_svds->mLocal;
+      break;
+   case primme_svds_op_augmented:
+      primme->n = primme_svds->m + primme_svds->n;
+      primme->nLocal = primme_svds->mLocal + primme_svds->nLocal;
+      break;
+   case primme_svds_op_none:
+      break;
+   }
+
    if (primme_svds->aNorm > 0.0) {
       switch (method) {
          case primme_svds_op_AtA:
@@ -739,9 +757,8 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
             comp_double);
       primme->numTargetShifts = primme_svds->numSvals;
 
-   } else if (method == primme_svds_op_augmented &&
-         primme_svds->target == primme_svds_smallest &&
-         primme->targetShifts == NULL) {
+   } else if (primme_svds->target == primme_svds_smallest &&
+              primme->targetShifts == NULL) {
 
       CHKERR(Num_malloc_dprimme(1, &primme->targetShifts, ctx));
 
