@@ -510,6 +510,10 @@ STATIC int check_input(
       ret = -34;
    else if (primme->ldOPs != 0 && primme->ldOPs < primme->nLocal)
       ret = -35;
+   else if (primme->projectionParams.projection == primme_proj_refined &&
+            (primme->target == primme_smallest
+               || primme->target == primme_largest))
+      ret = -36;
    else if (primme->locking == 0
          && (primme->target == primme_closest_leq
             || primme->target == primme_closest_geq))

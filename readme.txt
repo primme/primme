@@ -647,7 +647,7 @@ precisions:
 
 +-------------+----------------------+----------------------+
 | Precision   | Real                 | Complex              |
-|=============|======================|======================|
++=============+======================+======================+
 | half        | "hprimme()"          | "kprimme()"          |
 |             | "hsprimme()"         | "ksprimme()"         |
 +-------------+----------------------+----------------------+
@@ -667,7 +667,7 @@ precisions:
 
 +-------------+-----------------------------+
 | Precision   | Complex                     |
-|=============|=============================|
++=============+=============================+
 | half        | "kprimme_normal()"          |
 |             | "kcprimme_normal()"         |
 +-------------+-----------------------------+
@@ -3693,7 +3693,7 @@ primme_params
 
       +----------+---------+------------------------------------------------------------+
       | RightX   | SkewX   | D                                                          |
-      |==========|=========|============================================================|
+      +==========+=========+============================================================+
       | 0        | 0       | M^{-1}R (Classic GD)                                       |
       +----------+---------+------------------------------------------------------------+
       | 1        | 0       | M^{-1}(R-Delta X) (cheap Olsen’s Method)                   |
@@ -3730,7 +3730,7 @@ primme_params
 
       +----------+---------+---------------------------------+
       | RightQ   | SkewQ   | P_Q^r                           |
-      |==========|=========|=================================|
+      +==========+=========+=================================+
       | 0        | 0       | I                               |
       +----------+---------+---------------------------------+
       | 1        | 0       | I - QQ^*                        |
@@ -3744,7 +3744,7 @@ primme_params
 
       +----------+---------+---------------------------------+
       | RightX   | SkewX   | P_X^r                           |
-      |==========|=========|=================================|
+      +==========+=========+=================================+
       | 0        | 0       | I                               |
       +----------+---------+---------------------------------+
       | 1        | 0       | I - XX^*                        |
@@ -4610,6 +4610,9 @@ indicated in brackets.
 
 * -35: if "ldOPs" is not zero and less than "nLocal".
 
+* -36: if "projection" is "primme_proj_refined" but "target" is
+  either "primme_smallest" or "primme_largest".
+
 * -38: if "locking" == 0 and "target" is "primme_closest_leq" or
   "primme_closest_geq".
 
@@ -4636,7 +4639,7 @@ indicated in brackets.
 Python Interface
 ****************
 
-primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, return_history=False, convtest=None, **kargs)
+primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, use_gpuarray=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, return_history=False, convtest=None, **kargs)
 
    Find k eigenvalues and eigenvectors of the real symmetric square
    matrix or complex Hermitian matrix A.
@@ -4649,15 +4652,18 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
    corresponding eigenvectors x[i]
 
    Parameters:
-      * **A** (*An N x N matrix**, **array**, **sparse matrix**, or
-        **LinearOperator*) – the operation A * x, where A is a real
-        symmetric matrix or complex Hermitian.
+      * **A** (*matrix**,
+        **scipy.sparse.linalg.interface.LinearOperator**,
+        **pycuda.sparse.operator.OperatorBase**, or **function*) – the
+        operation A * x, where A is a real symmetric matrix or complex
+        Hermitian.
 
       * **k** (*int**, **optional*) – The number of eigenvalues and
         eigenvectors to be computed. Must be 1 <= k < min(A.shape).
 
-      * **M** (*An N x N matrix**, **array**, **sparse matrix**, or
-        **LinearOperator*) –
+      * **M** (*An N x N matrix**, **array**, **sparse matrix**,
+        **scipy.sparse.linalg.interface.LinearOperator**,
+        **pycuda.sparse.operator.OperatorBase**, or **function*) –
 
         the operation M * x for the generalized eigenvalue problem
 
@@ -4671,8 +4677,8 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **sigma** (*real**, **optional*) – Find eigenvalues near
         sigma.
 
-      * **v0** (*N x i**, **ndarray**, **optional*) – Initial
-        guesses to the eigenvectors.
+      * **v0** (*N x i**, **ndarray** or **GPUArray**, **optional*)
+        – Initial guesses to the eigenvectors.
 
       * **ncv** (*int**, **optional*) – The maximum size of the
         basis
@@ -4717,10 +4723,11 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **Minv** (*(**not supported yet**)*) – The inverse of M in
         the generalized eigenproblem.
 
-      * **OPinv** (*N x N matrix**, **array**, **sparse matrix**, or
-        **LinearOperator**, **optional*) – Preconditioner to
-        accelerate the convergence. Usually it is an approximation of
-        the inverse of (A - sigma*M).
+      * **OPinv** (*matrix**,
+        **scipy.sparse.linalg.interface.LinearOperator**,
+        **pycuda.sparse.operator.OperatorBase**, or **function*) –
+        Preconditioner to accelerate the convergence. Usually it is an
+        approximation of the inverse of (A - sigma*M).
 
       * **return_eigenvectors** (*bool**, **optional*) – Return
         eigenvectors (True) in addition to eigenvalues
@@ -4728,10 +4735,16 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **mode** (*string** [**'normal' | 'buckling' | 'cayley'**]*)
         – Only ‘normal’ mode is supported.
 
-      * **lock** (*N x i**, **ndarray**, **optional*) – Seek the
-        eigenvectors orthogonal to these ones. The provided vectors
-        *should* be orthonormal. Useful to avoid converging to
-        previously computed solutions.
+      * **lock** (*N x i**, **ndarray** or **GPUArray**,
+        **optional*) – Seek the eigenvectors orthogonal to these ones.
+        The provided vectors *should* be orthonormal. Useful to avoid
+        converging to previously computed solutions.
+
+      * **use_gpuarray** (*bool*) – Set to True if A, M and Minv
+        accept and return GPUArray. In that case the eigenvectors
+        evecs are also returned as GPUArray. Otherwise all operators
+        accept and return numpy.ndarray and evecs is also of that
+        class.
 
       * **maxBlockSize** (*int**, **optional*) – Maximum number of
         vectors added at every iteration.
@@ -4777,9 +4790,9 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **w** (*array*) – Array of k eigenvalues ordered to best
         satisfy “which”.
 
-      * **v** (*array*) – An array representing the *k*
-        eigenvectors. The column "v[:, i]" is the eigenvector
-        corresponding to the eigenvalue "w[i]".
+      * **v** (*ndarray or GPUArray, shape=(N, k)*) – An array
+        representing the *k* eigenvectors.  The column "v[:, i]" is
+        the eigenvector corresponding to the eigenvalue "w[i]".
 
       * **stats** (*dict, optional (if return_stats)*) – Extra
         information reported by PRIMME:
@@ -4863,7 +4876,7 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
    >>> M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1)), [0], 100, 100)
    >>> # the smallest eigenvalues of the eigenproblem (A,M)
    >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
-   >>> evals 
+   >>> evals # doctest: +SKIP
    array([1.0035e-07, 1.0204e-02, 2.0618e-02])
 
    >>> # Giving the matvec as a function
@@ -4877,6 +4890,13 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
    >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
    >>> evals
    array([99., 98., 97.])
+
+   >>> import primme, scipy.sparse
+   >>> import pycuda.sparse.packeted
+   >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
+   >>> Agpu = pycuda.sparse.packeted.PacketedSpMV(A, True, A.dtype)
+   >>> evals, evecs = primme.eigsh(Agpu, 3, tol=1e-6, which='LA')
+   >>> evals # the three largest eigenvalues of A
 
 MATLAB Interface
 ****************
@@ -5188,7 +5208,7 @@ precisions:
 
 +-------------+---------------------------+---------------------------+
 | Precision   | Real                      | Complex                   |
-|=============|===========================|===========================|
++=============+===========================+===========================+
 | half        | "hprimme_svds()"          | "kprimme_svds()"          |
 |             | "hsprimme_svds()"         | "ksprimme_svds()"         |
 +-------------+---------------------------+---------------------------+
@@ -7997,13 +8017,15 @@ which is indicated in brackets.
 Python Interface
 ****************
 
-primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, orthou0=None, orthov0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, convtest=None, **kargs)
+primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, orthou0=None, orthov0=None, use_gpuarray=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, convtest=None, **kargs)
 
    Compute k singular values and vectors of the matrix A.
 
    Parameters:
-      * **A** (*{sparse matrix**, **LinearOperator}*) – Array to
-        compute the SVD on, of shape (M, N)
+      * **A** (*matrix**,
+        **scipy.sparse.linalg.interface.LinearOperator**,
+        **pycuda.sparse.operator**, or **function*) – Array to compute
+        the SVD on, of shape (M, N)
 
       * **k** (*int**, **optional*) – Number of singular values and
         vectors to compute. Must be 1 <= k < min(A.shape).
@@ -8049,20 +8071,22 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
       * **maxiter** (*int**, **optional*) – Maximum number of
         matvecs with A and A.H.
 
-      * **precAHA** (*{N x N matrix**, **array**, **sparse matrix**,
-        **LinearOperator}**, **optional*) – Approximate inverse of
-        (A.H*A - sigma**2*I). If provided and M>=N, it usually
-        accelerates the convergence.
+      * **precAHA** (*matrix**,
+        **scipy.sparse.linalg.interface.LinearOperator**,
+        **pycuda.sparse.operator**, or **function**, **optional*) –
+        Approximate inverse of (A.H*A - sigma**2*I). If provided and
+        M>=N, it usually accelerates the convergence.
 
-      * **precAAH** (*{M x M matrix**, **array**, **sparse matrix**,
-        **LinearOperator}**, **optional*) – Approximate inverse of
-        (A*A.H - sigma**2*I). If provided and M<N, it usually
-        accelerates the convergence.
+      * **precAAH** (*matrix**,
+        **scipy.sparse.linalg.interface.LinearOperator**,
+        **pycuda.sparse.operator**, or **function**, **optional*) –
+        Approximate inverse of (A*A.H - sigma**2*I). If provided and
+        M<N, it usually accelerates the convergence.
 
-      * **precAug** (*{**(**M+N**) **x** (**M+N**) **matrix**,
-        **array**, **sparse matrix**, **LinearOperator}**,
-        **optional*) – Approximate inverse of ([zeros() A.H; zeros()
-        A] - sigma*I).
+      * **precAug** (*matrix**,
+        **scipy.sparse.linalg.interface.LinearOperator**,
+        **pycuda.sparse.operator**, or **function**, **optional*) –
+        Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I).
 
       * **orthou0** (*ndarray**, **optional*) –
 
@@ -8075,6 +8099,12 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
 
       * **orthov0** (*ndarray**, **optional*) – Right orthogonal
         vector constrain. See orthou0.
+
+      * **use_gpuarray** (*bool*) – Set to True if A and prec*
+        accept and return GPUArray. In that case the singular vectors
+        svecs are also returned as GPUArray. Otherwise all operators
+        accept and return numpy.ndarray and svecs is also of that
+        class.
 
       * **maxBlockSize** (*int**, **optional*) – Maximum number of
         vectors added at every iteration.
@@ -8096,15 +8126,15 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
         function returns performance information at every iteration
 
    Returns:
-      * **u** (*ndarray, shape=(M, k), optional*) – Unitary matrix
-        having left singular vectors as columns. Returned if
-        *return_singular_vectors* is True.
+      * **u** (*ndarray or GPUArray, shape=(M, k), optional*) –
+        Unitary matrix having left singular vectors as columns.
+        Returned if *return_singular_vectors* is True.
 
       * **s** (*ndarray, shape=(k,)*) – The singular values.
 
-      * **vt** (*ndarray, shape=(k, N), optional*) – Unitary matrix
-        having right singular vectors as rows. Returned if
-        *return_singular_vectors* is True.
+      * **vt** (*ndarray or GPUArray, shape=(k, N), optional*) –
+        Unitary matrix having right singular vectors as rows. Returned
+        if *return_singular_vectors* is True.
 
       * **stats** (*dict, optional (if return_stats)*) – Extra
         information reported by PRIMME:
@@ -8182,7 +8212,7 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    ...           [0], 100, 100) # square diag. preconditioner
    >>> # the three smallest singular values of A, using preconditioning
    >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which='SM', tol=1e-6, precAHA=prec)
-   >>> ["%.5f" % x for x in svals.flat] 
+   >>> ["%.5f" % x for x in svals.flat] # doctest: +SKIP
    ['4.57263', '4.78752', '4.82229']
 
    >>> # Giving the matvecs as functions
@@ -8199,8 +8229,15 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    ...
    >>> B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
    >>> svecs_left, svals, svecs_right = primme.svds(B, 5, which='LM', tol=1e-6)
-   >>> svals 
+   >>> svals # doctest: +SKIP
    array([99., 98., 97., 96., 95.])
+
+   >>> import primme, scipy.sparse
+   >>> import pycuda.sparse.packeted
+   >>> A = scipy.sparse.rand(10000, 100, random_state=10)
+   >>> Agpu = pycuda.sparse.packeted.PacketedSpMV(A, False, A.dtype)
+   >>> evals, evecs = primme.eigsh(Agpu, 3, tol=1e-6, which='LA')
+   >>> evals # the three largest eigenvalues of A
 
 MATLAB Interface
 ****************

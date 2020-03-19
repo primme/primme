@@ -1767,7 +1767,9 @@ Some of the error codes have a macro associated which is indicated in brackets.
 * -33: if |locking| == 0 and |minRestartSize| < |numEvals| and |n| > 2.
 * -34: if |ldevecs| < |nLocal|.
 * -35: if |ldOPs| is not zero and less than |nLocal|.
+* -36: if |projection| is |primme_proj_refined| but |target| is either |primme_smallest| or |primme_largest|.
 * -38: if |locking| == 0 and |target| is |primme_closest_leq| or |primme_closest_geq|.
+* -39: if |massMatrixMatvec| is set, only |primme_proj_RR| is supported.
 * -40: (``PRIMME_LAPACK_FAILURE``) some LAPACK function performing a factorization returned an error code; set |printLevel| > 0 to see the error code and the call stack.
 * -41: (``PRIMME_USER_FAILURE``) some of the user-defined functions (|matrixMatvec|, |applyPreconditioner|, ...) returned a non-zero error code; set |printLevel| > 0 to see the call stack that produced the error.
 * -42: (``PRIMME_ORTHO_CONST_FAILURE``) the provided orthogonal constraints (see |numOrthoConst|) are not full rank.
