@@ -732,6 +732,22 @@ STATIC int solve_H_Harm_Sprimme(SCALAR *H, int ldH, SCALAR *QtV, int ldQtV,
  * hVals         The Ritz values of the vectors in hVecs
  * rwork         Workspace
  *
+ *
+ * In refinement, the next residual is minimized |(A - I*tau)*V*x|.
+ * Let's have the QR factorization of (A - tau*I)*V = Q*R, but Q'*Q != I.
+ * Then the projected eigenvalues problem is
+ *
+ *   R'*Q'*Q*R*x_i = V'*V*x_i*\sigma_i^2,
+ *
+ * which satisfies that x_j' * V'*V * x_i = \delta(i,j). We avoid to square R by
+ * rewriting the projected eigenvalue problem as SVD:
+ *
+ *   1) Cholesky factorization of L_v*L_v' = V'*V, and L_q*L_q' = Q'*Q.
+ *   2) L_q'*R/L_v' = U_p*\Sigma_p*V_p'
+ *   3) X = L_v'\V_p 
+ *
+ * NOTE: the left singular vectors, U_p, are orthonormal.
+ *
  * Return Value
  * ------------
  * int -  0 upon successful return
@@ -756,22 +772,31 @@ STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
          R, basisSize, basisSize, ldR, hVecs, ldhVecs, ctx));
 
    if (QtQ) {
-      /* Factorize QtQ */
+      /* Factorize QtQ into U'*U */
+
       CHKERR(Num_copy_matrix_Sprimme(
             QtQ, basisSize, basisSize, ldQtQ, hU, ldhU, ctx));
       CHKERR(Num_potrf_Sprimme("U", basisSize, hU, ldhU, NULL, ctx));
+
+      /* hVecs <= U * hVecs */
+
       CHKERR(Num_trmm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0, hU,
             ldhU, hVecs, ldhVecs, ctx));
    }
 
    SCALAR *U_VtBV=NULL; /* Cholesky factor of VtBV */
    if (VtBV) {
+      /* Factorize VtBV into U'*U */
+
       CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &U_VtBV, ctx));
       CHKERR(Num_copy_matrix_Sprimme(
             VtBV, basisSize, basisSize, ldVtBV, U_VtBV, basisSize, ctx));
       CHKERR(Num_potrf_Sprimme("U", basisSize, U_VtBV, basisSize, NULL, ctx));
+
+      /* hVecs <= hVecs / U */
+
       CHKERR(Num_trsm_Sprimme("R", "U", "N", "N", basisSize, basisSize, 1.0,
-            U_VtBV, basisSize, hVecs, basisSize, ctx));
+            U_VtBV, basisSize, hVecs, ldhVecs, ctx));
    }
 
    /* Note gesvd returns transpose(V) rather than V and sorted in descending */
@@ -793,6 +818,8 @@ STATIC int solve_H_Ref_Sprimme(SCALAR *H, int ldH, SCALAR *hVecs, int ldhVecs,
          rwork, basisSize, basisSize, basisSize, hVecs, ldhVecs, ctx));
 
    if (VtBV) {
+      /* hVecs <= U \ hVecs */
+
       CHKERR(Num_trsm_Sprimme("L", "U", "N", "N", basisSize, basisSize, 1.0,
             U_VtBV, basisSize, hVecs, ldhVecs, ctx));
       CHKERR(Num_free_Sprimme(U_VtBV, ctx));
