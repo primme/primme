@@ -72,11 +72,11 @@ static int monitor_report(const char *fun, double time, primme_context ctx) {
       ctx.path = NULL;
 #endif
 
-      CHKERRM((ctx.primme->monitorFun(NULL, NULL, NULL, NULL, NULL,
-                     NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                     NULL, fun, &time, &event, ctx.primme, &err),
+      CHKERRM((ctx.primme->monitorFun(NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                     NULL, NULL, NULL, NULL, NULL, NULL, fun, &time, &event,
+                     ctx.primme, &err),
                     err),
-            -1, "Error returned by monitorFun: %d", err);
+            PRIMME_USER_FAILURE, "Error returned by monitorFun: %d", err);
    }
    return 0;
 }
@@ -343,7 +343,8 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       CHKERRM((primme->applyPreconditioner(
                      V0, &ldV0, W0, &ldW0, &blockSize, primme, &ierr),
                     ierr),
-            -1, "Error returned by 'applyPreconditioner' %d", ierr);
+            PRIMME_USER_FAILURE, "Error returned by 'applyPreconditioner' %d",
+            ierr);
       primme->stats.numPreconds += blockSize;
 
       /* Copy back W and destroy cast matrices */
