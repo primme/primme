@@ -907,6 +907,14 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
          primme->maxBlockSize),
          primme->numEvals-*numConverged+1));
 
+   /* When QR are computed and there are more than one target shift, */
+   /* limit blockSize and the converged values to one.               */
+
+   if (primme->numTargetShifts > *numConverged + 1 &&
+         primme->projectionParams.projection != primme_proj_RR) {
+      maxBlockSize = min(1, maxBlockSize);
+   }
+
    sizeBlockNorms = max(0, min(
          maxBlockSize,
          primme->maxBasisSize-*restartSize-numPrevRetained
@@ -2014,7 +2022,7 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    
    /* [hVecsRot0, R] = ortho(hVecsRot0) */
    CHKERR(Bortho_local_SHprimme(hVecsRot0, mhVecsRot0, R, ldR, 0, nRegular - 1,
-         NULL, 0, 0, mhVecsRot0, QtQ, ldQtQ, primme->iseed, ctx));
+         NULL, 0, 0, mhVecsRot0, NULL, 0, primme->iseed, ctx));
 
    /* hU = hU * hVecsRot0 */
    HSCALAR *rwork;
@@ -2026,22 +2034,22 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    CHKERR(Num_free_SHprimme(rwork, ctx));
    CHKERR(Num_free_SHprimme(hVecsRot0, ctx));
 
-   /* hU = C'\hU, where C is the Cholesky factor of QtQ */
-
-   if (QtQ) {
-      CHKERR(Num_trsm_SHprimme("R", "U", "N", "N", basisSize, nRegular, 1.0,
-            fQtQ, ldfQtQ, hU, ldhU, ctx));
-   }
-
-   /* hU = [hU RPrevhVecs] */
+  /* hU = [hU RPrevhVecs] */
    CHKERR(Num_copy_matrix_SHprimme(RPrevhVecs, basisSize, numPrevRetained,
          basisSize, &hU[basisSize * nRegular], basisSize, ctx));
    CHKERR(Num_free_SHprimme(RPrevhVecs, ctx));
 
    /* [hU, R] = ortho(hU, nRegular:nRegular+numPrevRetained-1) */
    CHKERR(Bortho_local_SHprimme(hU, basisSize, R, ldR, nRegular,
-         nRegular + numPrevRetained - 1, NULL, 0, 0, basisSize, QtQ, ldQtQ,
+         nRegular + numPrevRetained - 1, NULL, 0, 0, basisSize, NULL, 0,
          primme->iseed, ctx));
+
+   /* hU = C'\hU, where C is the Cholesky factor of QtQ */
+
+   if (QtQ) {
+      CHKERR(Num_trsm_SHprimme("L", "U", "N", "N", basisSize, restartSize, 1.0,
+            fQtQ, ldfQtQ, hU, ldhU, ctx));
+   }
 
    /* Zero upper triangular part of R(:,newNumArbVecs:nRegular-1) for the     */
    /* columns that restartPerm0[i] >= numArbVecs                              */
