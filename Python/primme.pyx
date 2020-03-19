@@ -52,7 +52,18 @@ class LinearOperator:
     def __repr__(self):
         return "LinearOperator(shape=%s, matvec=%s, rmatvec=%s, dtype=%s)" %(self.shape, self.matvec, self.rmatvec, self.dtype)
 
-
+def __get_method(method):
+    if method is None: return PRIMME_DEFAULT_METHOD
+    cdef int method_int = -1;
+    method0 = method
+    if not method0.startswith('PRIMME_'):
+        method0 = 'PRIMME_' + method0;
+    method0 = bytesp23(method0, 'ASCII')
+    primme_constant_info(<const char *>method0, &method_int)
+    if method_int < 0:
+        raise ValueError('Not valid "method": %s' % method)
+    return method_int
+ 
 cdef extern from "magma_v2.h":
     struct magma_queue:
         pass
@@ -155,9 +166,10 @@ def __get_real_dtype(dtype):
 cdef extern from "../include/primme.h":
     struct primme_params:
         pass
-    ctypedef int primme_preset_method
+    ctypedef enum primme_preset_method:
+        PRIMME_DEFAULT_METHOD # We only use this value
     ctypedef enum primme_type:
-        primme_int, primme_double, primme_pointer
+        primme_int, primme_double, primme_pointer # We only use these values
     ctypedef int primme_params_label
     ctypedef int primme_event
     int sprimme(float *evals, void *evecs, float *resNorms, primme_params *primme)
@@ -181,15 +193,30 @@ cdef extern from "../include/primme.h":
 
 cdef class PrimmeParams:
     cpdef primme_params *pp
-    def __cinit__(self):
-        self.pp = primme_params_create() 
-        if self.pp is NULL:
-            raise MemoryError()
-        primme_params_set_pointer(self.pp, "queue", <void*>&__queue)
+    cpdef int _ownpp
+    def __cinit__(self, create=True):
+        if create:	
+            self.pp = primme_params_create()
+            if self.pp is NULL:
+                raise MemoryError()
+            primme_params_set_pointer(self.pp, "queue", <void*>&__queue)
+            self._ownpp = 1
+        else:
+            self.pp = NULL
+            self._ownpp = 0
+
+    @staticmethod
+    cdef from_ptr(void* pp):
+        PP = PrimmeParams(False)
+        PP.pp = <primme_params*>pp
+        PP._ownpp = 0
+        return PP
 
     def __dealloc__(self):
-        if self.pp is not NULL:
+        if self.pp is not NULL and self._ownpp == 1:
             primme_params_destroy(self.pp)
+            self.pp = NULL
+            self._ownpp = 0
     
 def __primme_params_get(PrimmeParams pp_, field_):
     field_ = bytesp23(field_, 'ASCII')
@@ -309,7 +336,7 @@ cdef void c_matvec_gen_numpy(cython.p_char operator, numerics *x, np.int64_t *ld
         if matvec is None: raise RuntimeError("Not defined function for %s" % <bytes>operator)
         n = primme_params_get_int(primme, "nLocal")
         x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:]).astype(get_np_type(x), order='F', copy=False)
+        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(np.array(x_view[0:n,:], copy=False)).astype(get_np_type(x), order='F', copy=False)
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
@@ -399,6 +426,7 @@ cdef void c_matvec_gen_gpuarray(cython.p_char operator, numerics *x, np.int64_t 
         x_py = gpuarray.GPUArray((n,blockSize[0]), get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
         y_py = gpuarray.GPUArray((n,blockSize[0]), get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
         y_py.fill(0)
+        pycuda.autoinit.context.synchronize()
         y0_py = matvec(x_py, y_py)
         if y0_py.ptr != y_py.ptr:
             y_py.set(y0_py)
@@ -913,11 +941,19 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     cdef int method_int = -1;
     if method is not None:
-        method = bytesp23(method, 'ASCII')
-        primme_constant_info(<const char *>method, &method_int)
-        if method_int < 0:
-            raise ValueError('Not valid "method": %s' % method)
+        method_int = __get_method(method)
         primme_set_method(<primme_preset_method>method_int, pp)
+
+        # Set other parameters (again)
+        for dk, dv in kargs.items():
+          try:
+            __primme_params_set(PP, dk, dv)
+          except:
+            raise ValueError("Invalid option '%s' with value '%s'" % (dk, dv))
+
+
+    if __primme_params_get(PP, "printLevel") >= 5:
+        primme_display_params(pp[0]);
 
     global __user_function_exception
     __user_function_exception = None
@@ -967,7 +1003,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 cdef extern from "../include/primme.h":
     struct primme_svds_params:
         pass
-    ctypedef int primme_svds_preset_method
+    ctypedef enum primme_svds_preset_method:
+        primme_svds_default # We only use this value
     ctypedef int primme_svds_params_label
     ctypedef enum primme_svds_operator:
         primme_svds_op_none,
@@ -985,6 +1022,7 @@ cdef extern from "../include/primme.h":
     primme_svds_params* primme_svds_params_create()
     int primme_svds_params_destroy(primme_svds_params *primme_svds)
     void primme_svds_initialize(primme_svds_params *primme_svds)
+    void primme_svds_display_params(primme_svds_params primme_svds)
     int primme_svds_set_method(primme_svds_preset_method method, primme_preset_method methodStage1, primme_preset_method methodStage2, primme_svds_params *primme_svds)
     void primme_svds_free(primme_svds_params *primme_svds)
     int primme_svds_get_member(primme_svds_params *primme_svds, primme_svds_params_label label, void *value)
@@ -1045,6 +1083,20 @@ cdef object primme_svds_params_get_object(primme_svds_params *primme_svds, cytho
     except:
         return None
 
+cdef void* primme_svds_params_get_pointer(primme_svds_params *primme_svds, const char* field):
+    cdef primme_svds_params_label l = <primme_svds_params_label>0
+    cdef primme_type t
+    cdef int arity, r
+    cdef void *v_pvoid
+    try:
+        r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
+        assert r == 0 and l >= 0 and l < 1000 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
+        r = primme_svds_get_member(primme_svds, l, &v_pvoid)
+        assert r == 0, "Invalid field '%s'" % <bytes>field
+        return v_pvoid
+    except:
+        return NULL
+
 cdef np.int64_t primme_svds_params_get_int(primme_svds_params *primme_svds, cython.p_char field):
     cdef primme_svds_params_label l = <primme_svds_params_label>0
     cdef primme_type t
@@ -1060,6 +1112,8 @@ cdef np.int64_t primme_svds_params_get_int(primme_svds_params *primme_svds, cyth
         return -1
 
 def __primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
+    field0 = field_
+    fieldStartsWithPrimme = field_.startswith('primme')
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
@@ -1072,7 +1126,19 @@ def __primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
     cdef np.int64_t v_int
     cdef double v_double
     cdef int i
-    if t == primme_pointer:
+    cdef void* primme
+    if t == primme_pointer and fieldStartsWithPrimme:
+        if not isinstance(value, dict):
+            raise Exception("Invalid value for the field '%s': it should be a dictionary" % field_)
+        primme = primme_svds_params_get_pointer(primme_svds, field)
+        PP = PrimmeParams.from_ptr(primme)
+        # Set the parameters in value
+        for dk, dv in value.items():
+          try:
+            __primme_params_set(PP, dk, dv)
+          except Exception as e:
+            raise ValueError("Invalid option '%s.%s' with value '%s':\n%s" % (field_, dk, dv, e))
+    elif t == primme_pointer:
         r = primme_svds_set_member(primme_svds, l, <void*>value)
         if r != 0: raise Exception("Something went wrong setting the field '%s'" % field_)
     elif t == primme_int:
@@ -1116,7 +1182,7 @@ cdef void c_svds_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int6
         return
     ierr[0] = 1
     cdef object A 
-    cdef numerics[:, :] x_view
+    cdef numerics[::1, :] x_view
     global __user_function_exception
     try:
         A = primme_svds_params_get_object(primme_svds, 'matrix')
@@ -1125,9 +1191,9 @@ cdef void c_svds_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int6
         n = primme_svds_params_get_int(primme_svds, "nLocal")
         x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
         if transpose[0] == 0:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(x_view[:n,:]).astype(get_np_type(x), order='F', copy=False)
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(np.array(x_view[:n,:], copy=False)).astype(get_np_type(x), order='F', copy=False)
         else:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(x_view[:m,:]).astype(get_np_type(x), order='F', copy=False)
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(np.array(x_view[:m,:], copy=False)).astype(get_np_type(x), order='F', copy=False)
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
@@ -1148,11 +1214,11 @@ cdef void c_svds_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int
         n = primme_svds_params_get_int(primme_svds, "nLocal")
         x_view = <numerics[:ldy[0]:1, :blockSize[0]]> x
         if mode[0] == primme_svds_op_AtA:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = np.ndarray((n,blockSize[0]), buffer=precond(x_view[:n,:], mode[0]), dtype=get_np_type(x), order='F')
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = precond(np.array(x_view[:n,:], copy=False), mode[0]).astype(get_np_type(x), order='F', copy=False)
         elif mode[0] == primme_svds_op_AAt:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = np.ndarray((m,blockSize[0]), buffer=precond(x_view[:m,:], mode[0]), dtype=get_np_type(x), order='F')
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = precond(np.array(x_view[:m,:], copy=False), mode[0]).astype(get_np_type(x), order='F', copy=False)
         elif mode[0] == primme_svds_op_augmented:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m+n,:] = np.ndarray((m+n,blockSize[0]), buffer=precond(x_view[:m+n,:], mode[0]), dtype=get_np_type(x), order='F')
+                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m+n,:] = precond(np.array(x_view[:m+n,:], copy=False), mode[0]).astype(get_np_type(x), order='F', copy=False)
         else:
             return
         ierr[0] = 0
@@ -1214,10 +1280,11 @@ cdef void c_svds_matvec_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.i
         y_shape = (m if transpose[0] == 0 else n, blockSize[0])
         x_py = gpuarray.GPUArray(x_shape, dtype=get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
         y_py = gpuarray.GPUArray(y_shape, dtype=get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
-        #y_py.fill(0)
-        cudaMemset2D(y, ldy[0]*sizeof(numerics), 0, y_shape[0]*sizeof(numerics), blockSize[0])
-        magma_queue_sync(__queue)
-        print(blockSize[0], ldx[0], ldy[0], m, n)
+        y_py.fill(0)
+        #cudaMemset2D(y, ldy[0]*sizeof(numerics), 0, y_shape[0]*sizeof(numerics), blockSize[0])
+        #magma_queue_sync(__queue)
+        #print(blockSize[0], ldx[0], ldy[0], m, n)
+        pycuda.autoinit.context.synchronize()
         if transpose[0] == 0:
             y0_py = A.matvec(x_py, y_py)
         else:
@@ -1276,6 +1343,18 @@ cdef void c_svds_convtest_gpuarray(double *sval, numerics *svecleft, numerics *s
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
+
+def __get_svds_method(method):
+    if method is None: return primme_svds_default
+    cdef int method_int = -1;
+    method0 = method
+    if not method0.startswith('primme_svds_'):
+        method0 = 'primme_svds' + method0;
+    method0 = bytesp23(method0, 'ASCII')
+    primme_svds_constant_info(<const char *>method0, &method_int)
+    if method_int < 0:
+        raise ValueError('Not valid "method": %s' % method)
+    return method_int
  
 def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
@@ -1595,12 +1674,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     # Set other parameters
     for dk, dv in kargs.items():
-      try:
         __primme_svds_params_set(PP, dk, dv)
-      except:
-        raise ValueError("Invalid option '%s' with value '%s'" % (dk, dv))
 
-    print(A.dtype)
     if A.dtype.kind in frozenset(["b", "i", "u"]) or A.dtype.type is np.double:
         dtype = np.dtype("d")
     else:
@@ -1706,16 +1781,17 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     # Set method
     cdef int method_int = -1, methodStage1_int = -1, methodStage2_int = -1;
     if method is not None or methodStage1 is not None or methodStage2 is not None:
-        primme_svds_constant_info(method if method is not None else "primme_svds_default", &method_int)
-        if method_int < 0:
-            raise ValueError('Not valid "method": %s' % method)
-        primme_constant_info(methodStage1 if methodStage1 is not None else "PRIMME_DEFAULT_METHOD", &methodStage1_int)
-        if methodStage1_int < 0:
-            raise ValueError('Not valid "methodStage1": %s' % methodStage1)
-        primme_constant_info(methodStage2 if methodStage2 is not None else "PRIMME_DEFAULT_METHOD", &methodStage2_int)
-        if methodStage2_int < 0:
-            raise ValueError('Not valid "methodStage2": %s' % methodStage2)
+        method_int = __get_svds_method(method)
+        methodStage1_int = __get_method(methodStage1)
+        methodStage2_int = __get_method(methodStage2)
         primme_svds_set_method(<primme_svds_preset_method>method_int, <primme_preset_method>methodStage1_int, <primme_preset_method>methodStage2_int, pp)
+        # Set other parameters (again)
+        for dk, dv in kargs.items():
+            try:
+                __primme_svds_params_set(PP, dk, dv)
+            except Exception as e:
+                raise ValueError("Invalid value in field '%s': %s\n%s" % (dk, dv, e))
+
 
     cdef int initSize = 0
     if v0 is not None:
@@ -1728,9 +1804,11 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         svecs[0:m*numOrthoConst].reshape((m,numOrthoConst), order='F')[:,:] = orthou0[:,0:numOrthoConst]
         svecs[m*(numOrthoConst+initSize):m*(numOrthoConst+initSize)+n*numOrthoConst].reshape((n,numOrthoConst), order='F')[:,:] = orthov0[:,:initSize]
 
+    if __primme_svds_params_get(PP, "printLevel") >= 5:
+        primme_svds_display_params(pp[0]);
+
     global __user_function_exception
     __user_function_exception = None
-    print(dtype)
     if not use_gpuarray:
         if dtype.type is np.complex64:
             err = cprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
@@ -1744,7 +1822,6 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         if dtype.type is np.complex64:
             err = magma_cprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
         elif dtype.type is np.float32:
-            print('calling')
             err = magma_sprimme_svds(&svals_s[0], svecs_p, &norms_s[0], pp)
         elif dtype.type is np.float64:
             err = magma_dprimme_svds(&svals_d[0], svecs_p, &norms_d[0], pp)
