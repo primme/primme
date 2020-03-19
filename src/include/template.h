@@ -228,8 +228,8 @@
 #  define MULT_EQUAL(A, B)                                                     \
    {                                                                           \
       HSCALAR C = TO_COMPLEX(A) * (B);                                         \
-      (A).r += REAL_PART(C);                                                   \
-      (A).i += IMAGINARY_PART(C);                                              \
+      (A).r = REAL_PART(C);                                                    \
+      (A).i = IMAGINARY_PART(C);                                               \
    }
 #else
 #  define SET_ZERO(A) {(A) = 0.0;}
