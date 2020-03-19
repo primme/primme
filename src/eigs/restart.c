@@ -189,6 +189,8 @@
  *
  * restartsSinceReset Number of restarts since last reset of V and W
  *
+ * checkOpError     Number of matvecs the last time estimateErrorOnA/B was
+ *                  chekced.
  *
  * Return value
  * ------------
@@ -212,8 +214,8 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
       int ldfQtQ, HSCALAR *hU, int ldhU, int newldhU, HSCALAR *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, HSCALAR *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx) {
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;                   /* Loop indices */
@@ -395,7 +397,9 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
 
    /* Estimate the errors on operators A and B */
 
-   if (*restartsSinceReset <= 1 && restartSize >= 1) {
+   if (restartSize >= 1 &&
+         (*restartsSinceReset <= 0 ||
+               *checkOpError + 20 <= primme->stats.numMatvecs)) {
       SCALAR *Opv = NULL;
       CHKERR(Num_malloc_Sprimme(nLocal, &Opv, ctx));
       CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, Opv, nLocal, 0, 1, ctx));
@@ -418,6 +422,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
       }
 
       CHKERR(Num_free_Sprimme(Opv, ctx));
+      *checkOpError = primme->stats.numMatvecs;
    }
 
    *restartSizeOutput = restartSize; 

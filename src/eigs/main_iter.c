@@ -251,6 +251,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    double smallestResNorm;  /* the smallest residual norm in the block       */
    int reset=0;             /* Flag to reset V and W                         */
    int restartsSinceReset=0;/* Restart since last reset of V and W           */
+   PRIMME_INT checkOpError; /* #matvecs when estimateErrorOnA/B was updated  */
    int wholeSpace=0;        /* search subspace reach max size                */
    int nhVecs=0;            /* Number of available projected pairs           */
 
@@ -504,6 +505,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       if (!primme->locking) primme->stats.maxConvTol = 0.0;
       blockSize = 0;
       restartsSinceReset = 0;
+      checkOpError = 0;
 
       /* -------------------------------------------------------------- */
       /* Begin the iterative process.  Keep restarting until all of the */
@@ -1157,7 +1159,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                primme->maxBasisSize, QtQ, ldQtQ, fQtQ, ldfQtQ, hU, basisSize, 0,
                hVecs, basisSize, 0, &basisSize, &targetShiftIndex,
                &numArbitraryVecs, hVecsRot, primme->maxBasisSize,
-               &restartsSinceReset, startTime, ctx));
+               &restartsSinceReset, &checkOpError, startTime, ctx));
          restartsSinceReset++;
          nhVecs = basisSize;
 
