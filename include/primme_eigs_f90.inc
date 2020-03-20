@@ -289,6 +289,7 @@ interface primme_set_member
 
    function primme_set_member_matvec(primme, label, value) bind(c, name="primme_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_eigs_matvec
       type(c_ptr), value :: primme
       integer(c_int), value :: label
       procedure(primme_eigs_matvec) :: value
@@ -386,12 +387,12 @@ interface xprimme_normal
    function cprimme_normal(evals, evecs, rnorms, primme) bind(c)
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_float
       real(c_float), dimension(*), intent(out) :: rnorms
-      complex(c_real), dimension(*), intent(out) :: evals
+      complex(c_float), dimension(*), intent(out) :: evals
       complex(c_float), dimension(*) :: evecs
       type(c_ptr), value :: primme
       integer(c_int) :: cprimme_normal
    end function
-end interface xprimme
+end interface
 
 interface magma_xprimme_normal
    function magma_zprimme_normal(evals, evecs, rnorms, primme) bind(c)
@@ -411,6 +412,6 @@ interface magma_xprimme_normal
       type(c_ptr), value :: primme
       integer(c_int) :: magma_cprimme_normal
    end function
-end interface magma_xprimme
+end interface
 
 

@@ -221,6 +221,7 @@ interface primme_svds_set_member
 
    function primme_svds_set_member_matvec(primme_svds, label, value) bind(c, name="primme_svds_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_double
+      import :: primme_svds_matvec
       type(c_ptr), value :: primme_svds
       integer(c_int), value :: label
       procedure(primme_svds_matvec) :: value
