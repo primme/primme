@@ -79,7 +79,7 @@ Program primmeF90Example
    ierr = primme_set_member(primme, PRIMME_targetShifts, TargetShifts)
    
    ! Set matvec 
-   ierr = primme_set_member(primme, PRIMME_matrixMatvec, MV)
+   ierr = primme_set_member(primme, PRIMME_matrixMatvec, c_funloc(MV))
    
    ! Set preconditioner  (optional)
    ierr = primme_set_member(primme, PRIMME_applyPreconditioner, c_funloc(ApplyPrecon))
