@@ -60,7 +60,6 @@ Program primmeSvdsF77Example
    double precision :: c
 
    common c
-   procedure(primme_svds_matvec) MV, ApplyPrecon
 
    ! Singular values, vectors and their residual norms
 
@@ -89,10 +88,10 @@ Program primmeSvdsF77Example
    ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_targetShifts, TargetShifts)
 
    ! Set matvec 
-   ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_matrixMatvec, MV)
+   ierr = primme_svds_set_member_matvec_double(primme_svds, PRIMME_SVDS_matrixMatvec, MV)
 
    ! Set preconditioner based on A^H*A (optional)
-   ierr = primme_svds_set_member(primme_svds, PRIMME_SVDS_applyPreconditioner, ApplyPrecon)
+   ierr = primme_svds_set_member_matvec_double(primme_svds, PRIMME_SVDS_applyPreconditioner, ApplyPrecon)
 
    ! Set a few other solver parameters (optional) 
 
@@ -140,133 +139,137 @@ Program primmeSvdsF77Example
    do i = 1, NUMSmax
       print '(a,i1,a,G24.16,a,E12.4)',' sval(', i, ') = ', svals(i), '    residual norm =', rnorms(i)
    enddo
-   stop
-end
 
-!-----------------------------------------------------------------------
-! Supporting subroutines
-!-----------------------------------------------------------------------
+contains
 
-
-! ----------------------------------------------------------------
-! Lauchli-like block matrix-vector products, Y = A * X or Y = A' * X, where
-! 
-! - X, input dense matrix of size primme.n x blockSize or primme.m x blockSize;
-! - Y, output dense matrix of size primme.m x blockSize or primme.n x blockSize;
-! - A, rectangular matrix of size primme.m x primme.n with this form:
-! 
-!       1  1  1  1  1 ... ,  ei = 1 - (1 - c)*i/(min(m,n) - 1)
-!      e0  0  0  0  0 ... 
-!       0 e1  0  0  0 ... 
-!       0  0 e2  0  0 ... 
-!       ...
-!      
-subroutine MV(x,ldx,y,ldy,k,transpose,primme_svds,ierr)
-   use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
-   implicit none
-
-   intrinsic min
-   include 'primme_f90.inc'
-   integer(c_int64_t) :: ldx,ldy
-   real(c_double) :: x(ldx,*), y(ldy,*)
-   type(c_ptr), value :: primme_svds
-   integer(c_int) :: k, transpose, ierr
-
-   integer(c_int64_t) :: m, n, i
-   integer j
-
-   double precision :: c
-   common c
-
-   ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_m, m)
-   ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_n, n)
-
-   if (transpose.eq.0) then
-      do j=1,k
-         y(1,j) = 0
-         do i=1,n
-            y(1,j) = y(1,j) + x(i,j)
+   !-----------------------------------------------------------------------
+   ! Supporting subroutines
+   !-----------------------------------------------------------------------
+   
+   
+   ! ----------------------------------------------------------------
+   ! Lauchli-like block matrix-vector products, Y = A * X or Y = A' * X, where
+   ! 
+   ! - X, input dense matrix of size primme.n x blockSize or primme.m x blockSize;
+   ! - Y, output dense matrix of size primme.m x blockSize or primme.n x blockSize;
+   ! - A, rectangular matrix of size primme.m x primme.n with this form:
+   ! 
+   !       1  1  1  1  1 ... ,  ei = 1 - (1 - c)*i/(min(m,n) - 1)
+   !      e0  0  0  0  0 ... 
+   !       0 e1  0  0  0 ... 
+   !       0  0 e2  0  0 ... 
+   !       ...
+   !      
+   subroutine MV(x,ldx,y,ldy,k,transpose,primme_svds,ierr) bind(c)
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
+      implicit none
+   
+      intrinsic min
+      include 'primme_f90.inc'
+      integer(c_int64_t) :: ldx,ldy
+      real(c_double) :: x(ldx,*), y(ldy,*)
+      type(c_ptr), value :: primme_svds
+      integer(c_int), intent(in) :: k, transpose
+      integer(c_int) :: ierr
+   
+      integer(c_int64_t) :: m, n, i
+      integer j
+   
+      double precision :: c
+      common c
+   
+      ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_m, m)
+      ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_n, n)
+   
+      if (transpose.eq.0) then
+         do j=1,k
+            y(1,j) = 0
+            do i=1,n
+               y(1,j) = y(1,j) + x(i,j)
+            enddo
+            do i=2,m
+               if (i-1.le.n) then
+                  y(i,j) = x(i-1,j)*(1.0 - (1.0-c)*(i-2)/(min(m,n)-1))
+               else
+                  y(i,j) = 0
+               endif
+            enddo
          enddo
-         do i=2,m
-            if (i-1.le.n) then
-               y(i,j) = x(i-1,j)*(1.0 - (1.0-c)*(i-2)/(min(m,n)-1))
-            else
-               y(i,j) = 0
-            endif
+      else
+         do j=1,k
+            do i=1,n
+               if (i+1.le.m) then
+                  y(i,j) = x(1,j) + x(i+1,j) * (1.0-(1.0-c)*(i-1)/(min(m,n)-1))
+               else
+                  y(i,j) = x(1,j)
+               endif
+            enddo
          enddo
-      enddo
-   else
-      do j=1,k
-         do i=1,n
-            if (i+1.le.m) then
-               y(i,j) = x(1,j) + x(i+1,j) * (1.0-(1.0-c)*(i-1)/(min(m,n)-1))
-            else
-               y(i,j) = x(1,j)
-            endif
+      endif
+      ierr = 0
+   end
+   
+   ! ----------------------------------------------------------------
+   ! This performs Y = M^{-1} * X, where
+   !
+   ! - X, input dense matrix of size primme.n x blockSize;
+   ! - Y, output dense matrix of size primme.n x blockSize;
+   ! - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
+   !      
+   subroutine ApplyPrecon(x,ldx,y,ldy,k,mode,primme_svds,ierr) bind(c)
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double, c_f_pointer
+      implicit none
+   
+      intrinsic min
+      include 'primme_f90.inc'
+      integer(c_int64_t) :: ldx,ldy,m,n
+      real(c_double) :: x(ldx,*), y(ldy,*)
+      type(c_ptr), value :: primme_svds
+      integer(c_int), intent(in) :: k,mode
+      integer(c_int) :: ierr
+      integer(c_int64_t) i
+      integer j
+   
+      double precision :: c, ei
+      common c
+      real(c_double), pointer :: shifts(:)
+      type(c_ptr) :: pshifts
+      integer(c_int64_t) :: numTargetShifts
+   
+      ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_m, m)
+      ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_n, n)
+      ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_targetShifts, pshifts)
+      ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_numTargetShifts, numTargetShifts)
+      call c_f_pointer(pshifts, shifts, shape=[numTargetShifts])
+   
+      if (mode.eq.PRIMME_SVDS_op_AtA) then
+         do j=1,k
+            do i=1,n
+               if (i-1.le.m) then
+                  ei = 1.0 - (1.0 - c)*(i-1)/(min(m,n) - 1)
+               else
+                  ei = 0
+               endif
+               y(i,j) = x(i,j)/(1.0 + ei*ei - shifts(1)*shifts(1))
+            enddo
          enddo
-      enddo
-   endif
-   ierr = 0
-end
-
-! ----------------------------------------------------------------
-! This performs Y = M^{-1} * X, where
-!
-! - X, input dense matrix of size primme.n x blockSize;
-! - Y, output dense matrix of size primme.n x blockSize;
-! - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
-!      
-subroutine ApplyPrecon(x,ldx,y,ldy,k,mode,primme_svds,ierr)
-   use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double, c_f_pointer
-   implicit none
-
-   intrinsic min
-   include 'primme_f90.inc'
-   integer(c_int64_t) :: ldx,ldy,m,n
-   real(c_double) :: x(ldx,*), y(ldy,*)
-   type(c_ptr), value :: primme_svds
-   integer(c_int) :: k,mode,ierr
-   integer(c_int64_t) i
-   integer j
-
-   double precision :: c, ei
-   common c
-   real(c_double), pointer :: shifts(:)
-   type(c_ptr) :: pshifts
-   integer(c_int64_t) :: numTargetShifts
-
-   ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_m, m)
-   ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_n, n)
-   ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_targetShifts, pshifts)
-   ierr = primme_svds_get_member(primme_svds, PRIMME_SVDS_numTargetShifts, numTargetShifts)
-   call c_f_pointer(pshifts, shifts, shape=[numTargetShifts])
-
-   if (mode.eq.PRIMME_SVDS_op_AtA) then
-      do j=1,k
-         do i=1,n
-            if (i-1.le.m) then
-               ei = 1.0 - (1.0 - c)*(i-1)/(min(m,n) - 1)
-            else
-               ei = 0
-            endif
-            y(i,j) = x(i,j)/(1.0 + ei*ei - shifts(1)*shifts(1))
+      else if (mode.eq.PRIMME_SVDS_op_AAt) then
+         do j=1,k
+            y(1,j) = x(1,j)/m
+            do i=2,m
+               if (i-2.le.n) then
+                  ei = 1.0 - (1.0 - c)*(i-2)/(min(m,n) - 1)
+               else
+                  ei = 0.0
+               endif
+               y(i,j) = x(i,j)/(ei*ei - shifts(1)*shifts(1))
+            enddo
          enddo
-      enddo
-   else if (mode.eq.PRIMME_SVDS_op_AAt) then
-      do j=1,k
-         y(1,j) = x(1,j)/m
-         do i=2,m
-            if (i-2.le.n) then
-               ei = 1.0 - (1.0 - c)*(i-2)/(min(m,n) - 1)
-            else
-               ei = 0.0
-            endif
-            y(i,j) = x(i,j)/(ei*ei - shifts(1)*shifts(1))
-         enddo
-      enddo
-   else if (mode.eq.PRIMME_SVDS_op_augmented) then
-      ! If any preconditioner is available, just y = x
-      y(1:m+n,1:k) = x(1:m+n,1:k)
-   endif
-   ierr = 0
+      else if (mode.eq.PRIMME_SVDS_op_augmented) then
+         ! If any preconditioner is available, just y = x
+         y(1:m+n,1:k) = x(1:m+n,1:k)
+      endif
+      ierr = 0
+   end
+
 end
