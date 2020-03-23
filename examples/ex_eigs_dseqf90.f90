@@ -79,7 +79,7 @@ Program primmeF90Example
    ierr = primme_set_member(primme, PRIMME_targetShifts, TargetShifts)
    
    ! Set matvec 
-   ierr = primme_set_member(primme, PRIMME_matrixMatvec, MV)
+   ierr = primme_set_member_matvec_double(primme, PRIMME_matrixMatvec, MV)
    
    ! Set preconditioner  (optional)
    ierr = primme_set_member(primme, PRIMME_applyPreconditioner, c_funloc(ApplyPrecon))
@@ -132,84 +132,84 @@ Program primmeF90Example
       print '(a,i1,a,G24.16,a,E12.4)',' eval(', i, ') = ', evals(i), '    residual norm =', rnorms(i)
    end do
    ierr = primme_params_destroy(primme)
-   
+
 contains
 
-!-----------------------------------------------------------------------
-! Supporting subroutines
-!-----------------------------------------------------------------------
-
-! ----------------------------------------------------------------
-! 1-D Laplacian block matrix-vector product, Y = A * X, where
-!
-! - X, input dense matrix of size primme.n x blockSize;
-! - Y, output dense matrix of size primme.n x blockSize;
-! - A, tridiagonal square matrix of dimension primme.n with this form:
-!
-!       2 -1  0  0  0 ... 
-!      -1  2 -1  0  0 ... 
-!       0 -1  2 -1  0 ... 
-!       ...
-! ----------------------------------------------------------------
-  subroutine MV(x,ldx,y,ldy,k,primme,ierr) bind(c)
-     use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
-     implicit none
-
-     integer(c_int64_t) ldx, ldy
-     real(c_double) x(ldx,*), y(ldy,*)
-     type(c_ptr), value :: primme
-     integer(c_int64_t) n, i
+   !-----------------------------------------------------------------------
+   ! Supporting subroutines
+   !-----------------------------------------------------------------------
+   
+   ! ----------------------------------------------------------------
+   ! 1-D Laplacian block matrix-vector product, Y = A * X, where
+   !
+   ! - X, input dense matrix of size primme.n x blockSize;
+   ! - Y, output dense matrix of size primme.n x blockSize;
+   ! - A, tridiagonal square matrix of dimension primme.n with this form:
+   !
+   !       2 -1  0  0  0 ... 
+   !      -1  2 -1  0  0 ... 
+   !       0 -1  2 -1  0 ... 
+   !       ...
+   !
+   subroutine MV(x,ldx,y,ldy,k,primme,ierr) bind(c)
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
+      implicit none
+   
+      integer(c_int64_t) ldx, ldy
+      real(c_double) x(ldx,*), y(ldy,*)
+      type(c_ptr), value :: primme
+      integer(c_int64_t) n, i
+      integer(c_int), intent(in) :: k
+      integer(c_int) :: ierr
+      integer :: j
+   
+      ierr = primme_get_member(primme, PRIMME_n, n)
+      do j=1,k
+         do i=1,n
+            y(i,j) = 0
+            if (i.ge.2) then
+               y(i,j) = y(i,j) - x(i-1,j)
+            endif
+            y(i,j) = y(i,j) + 2.*x(i,j)
+            if (i.le.n-1) then
+               y(i,j) = y(i,j) - x(i+1,j)
+            endif
+         enddo
+      enddo
+      ierr = 0
+   end
+   
+   ! ----------------------------------------------------------------
+   ! This performs Y = M^{-1} * X, where
+   !
+   ! - X, input dense matrix of size primme.n x blockSize;
+   ! - Y, output dense matrix of size primme.n x blockSize;
+   ! - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
+   !
+   subroutine ApplyPrecon(x,ldx,y,ldy,k,primme, ierr) bind(c)
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double, c_f_pointer
+      implicit none
+      integer(c_int64_t) ldx, ldy
+      real(c_double) x(ldx,*), y(ldy,*)
+      type(c_ptr), value :: primme
+      integer(c_int64_t) n, i
      integer(c_int), intent(in) :: k
      integer(c_int) :: ierr
-     integer :: j
-
-     ierr = primme_get_member(primme, PRIMME_n, n)
-     do j=1,k
-        do i=1,n
-           y(i,j) = 0
-           if (i.ge.2) then
-              y(i,j) = y(i,j) - x(i-1,j)
-           endif
-           y(i,j) = y(i,j) + 2.*x(i,j)
-           if (i.le.n-1) then
-              y(i,j) = y(i,j) - x(i+1,j)
-           endif
-        enddo
-     enddo
-     ierr = 0
-  end
-
-  ! ----------------------------------------------------------------
-  ! This performs Y = M^{-1} * X, where
-  !
-  ! - X, input dense matrix of size primme.n x blockSize;
-  ! - Y, output dense matrix of size primme.n x blockSize;
-  ! - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
-  ! ----------------------------------------------------------------
-  subroutine ApplyPrecon(x,ldx,y,ldy,k,primme,ierr) bind(c)
-     use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double, c_f_pointer
-     implicit none
-     integer(c_int64_t) ldx, ldy
-     real(c_double) x(ldx,*), y(ldy,*)
-     type(c_ptr), value :: primme
-     integer(c_int64_t) n, i
-     integer(c_int), intent(in) :: k
-     integer(c_int) :: ierr
-     integer :: j
-
-     real(c_double), pointer :: shifts(:)
-     type(c_ptr) :: pshifts
-
-     ierr = primme_get_member(primme, PRIMME_n, n)
-     ierr = primme_get_member(primme, PRIMME_ShiftsForPreconditioner, pshifts)
-     call c_f_pointer(pshifts, shifts, shape=[k])
-     do j=1,k
-        do i=1,n
-           y(i,j) = x(i,j)/(2.0 - shifts(j))
-        enddo
-     enddo
-     ierr = 0
-  end
+      integer :: j
+   
+      real(c_double), pointer :: shifts(:)
+      type(c_ptr) :: pshifts
+   
+      ierr = primme_get_member(primme, PRIMME_n, n)
+      ierr = primme_get_member(primme, PRIMME_ShiftsForPreconditioner, pshifts)
+      call c_f_pointer(pshifts, shifts, shape=[k])
+      do j=1,k
+         do i=1,n
+            y(i,j) = x(i,j)/(2.0 - shifts(j))
+         enddo
+      enddo
+      ierr = 0
+   end
 
 end
 
