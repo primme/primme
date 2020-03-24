@@ -470,6 +470,24 @@ int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
 }
 
 /******************************************************************************
+ * Function Num_recommended_ld - Return the recommended leading dimension
+ *    such that each column is aligned
+ *
+ * PARAMETERS
+ * ---------------------------
+ * ld         on input, the column length; on output, the recommended ld. 
+ * 
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_recommended_ld_Sprimme(PRIMME_INT *ld, primme_context ctx) {
+   (void)ctx;
+   (void)ld;
+   return 0;
+}
+
+
+/******************************************************************************
  * Function Num_zero_matrix - Zero the matrix
  *
  * PARAMETERS

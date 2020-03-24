@@ -328,6 +328,7 @@ int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,
       } else {
          primme->ldOPs = primme->nLocal;
       }
+      CHKERR(Num_recommended_ld_Sprimme(&primme->ldOPs, ctx));
    }
 
    /* Deprecated input:                                              */
