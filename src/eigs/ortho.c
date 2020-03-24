@@ -804,7 +804,7 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
 }
 
 /**********************************************************************
- * Function ortho_single_iteration -- This function orthogonalizes
+ * Function ortho_single_iteration -- This function
  *    applies ones the projector (I-BQQ') on X. Also returns
  *    the norms of ||(I-BQQ')X(i)||.
  *   
