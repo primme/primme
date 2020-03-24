@@ -273,7 +273,7 @@ STATIC int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
      
       if (norms[i] <= tol) {
          PRINTF(5, " PRACTICALLY_CONVERGED %d norm(I-BQQt)r %e",
-               left + iev[i], (double)blockNorms[i]);
+               left + iev[i], (double)norms[i]);
          flags[left+iev[i]] = PRACTICALLY_CONVERGED;
       }
       else {
