@@ -320,6 +320,7 @@ end interface primme_set_member
 interface
    function primme_set_member_matvec_double(primme, label, value) bind(c, name="primme_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_eigs_matvec_double
       type(c_ptr), value :: primme
       integer(c_int), value :: label
       procedure(primme_eigs_matvec_double) :: value
@@ -328,6 +329,7 @@ interface
 
    function primme_set_member_matvec_complexdouble(primme, label, value) bind(c, name="primme_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_eigs_matvec_complexdouble
       type(c_ptr), value :: primme
       integer(c_int), value :: label
       procedure(primme_eigs_matvec_complexdouble) :: value
@@ -336,6 +338,7 @@ interface
 
    function primme_set_member_matvec_single(primme, label, value) bind(c, name="primme_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_eigs_matvec_single
       type(c_ptr), value :: primme
       integer(c_int), value :: label
       procedure(primme_eigs_matvec_single) :: value
@@ -344,6 +347,7 @@ interface
 
    function primme_set_member_matvec_complexsingle(primme, label, value) bind(c, name="primme_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_eigs_matvec_complexsingle
       type(c_ptr), value :: primme
       integer(c_int), value :: label
       procedure(primme_eigs_matvec_complexsingle) :: value

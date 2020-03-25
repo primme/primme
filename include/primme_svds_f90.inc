@@ -253,6 +253,7 @@ end interface primme_svds_set_member
 interface
     function primme_svds_set_member_matvec_double(primme_svds, label, value) bind(c, name="primme_svds_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_svds_matvec_double
       type(c_ptr), value :: primme_svds
       integer(c_int), value :: label
       procedure(primme_svds_matvec_double) :: value
@@ -261,6 +262,7 @@ interface
 
    function primme_svds_set_member_matvec_complexdouble(primme_svds, label, value) bind(c, name="primme_svds_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_svds_matvec_complexdouble
       type(c_ptr), value :: primme_svds
       integer(c_int), value :: label
       procedure(primme_svds_matvec_complexdouble) :: value
@@ -268,6 +270,7 @@ interface
    end function
     function primme_svds_set_member_matvec_single(primme_svds, label, value) bind(c, name="primme_svds_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_svds_matvec_single
       type(c_ptr), value :: primme_svds
       integer(c_int), value :: label
       procedure(primme_svds_matvec_single) :: value
@@ -275,6 +278,7 @@ interface
    end function
     function primme_svds_set_member_matvec_complexsingle(primme_svds, label, value) bind(c, name="primme_svds_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_svds_matvec_complexsingle
       type(c_ptr), value :: primme_svds
       integer(c_int), value :: label
       procedure(primme_svds_matvec_complexsingle) :: value

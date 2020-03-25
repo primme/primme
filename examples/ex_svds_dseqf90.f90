@@ -165,7 +165,6 @@ contains
       implicit none
    
       intrinsic min
-      include 'primme_f90.inc'
       integer(c_int64_t) :: ldx,ldy
       real(c_double) :: x(ldx,*), y(ldy,*)
       type(c_ptr), value :: primme_svds
@@ -221,7 +220,6 @@ contains
       implicit none
    
       intrinsic min
-      include 'primme_f90.inc'
       integer(c_int64_t) :: ldx,ldy,m,n
       real(c_double) :: x(ldx,*), y(ldy,*)
       type(c_ptr), value :: primme_svds
