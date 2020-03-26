@@ -147,11 +147,14 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    /* QMR parameters */
 
    PRIMME_INT nLocal = primme->nLocal;
+   PRIMME_INT ldg = primme->ldOPs, ldd = primme->ldOPs, ldw = primme->ldOPs,
+              lddelta = nLocal;
+   CHKERR(Num_recommended_ld_Sprimme(&lddelta, ctx));
    SCALAR *g, *d, *delta, *w;
-   CHKERR(Num_malloc_Sprimme(nLocal * blockSize, &g, ctx));
-   CHKERR(Num_malloc_Sprimme(nLocal * blockSize, &d, ctx));
-   CHKERR(Num_malloc_Sprimme(nLocal * blockSize, &delta, ctx));
-   CHKERR(Num_malloc_Sprimme(nLocal * blockSize, &w, ctx));
+   CHKERR(Num_malloc_Sprimme(ldg * blockSize, &g, ctx));
+   CHKERR(Num_malloc_Sprimme(ldd * blockSize, &d, ctx));
+   CHKERR(Num_malloc_Sprimme(lddelta * blockSize, &delta, ctx));
+   CHKERR(Num_malloc_Sprimme(ldw * blockSize, &w, ctx));
    HREAL *sigma_prev, *rho_prev, *rho;
    CHKERR(Num_malloc_RHprimme(blockSize, &sigma_prev, ctx));
    CHKERR(Num_malloc_RHprimme(blockSize, &rho_prev, ctx));
@@ -272,16 +275,16 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    /* --------------------------------------------------------*/
 
    /* Assume zero initial guess */
-   CHKERR(Num_copy_matrix_Sprimme(r, nLocal, blockSize, ldr, g, nLocal, ctx));
+   CHKERR(Num_copy_matrix_Sprimme(r, nLocal, blockSize, ldr, g, ldg, ctx));
 
-   CHKERR(apply_projected_preconditioner(g, nLocal, evecs, ldevecs, RprojectorQ,
+   CHKERR(apply_projected_preconditioner(g, ldg, evecs, ldevecs, RprojectorQ,
          ldRprojectorQ, x, ldx, RprojectorX, ldRprojectorX, sizeRprojectorQ,
-         sizeRprojectorX, xKinvBx, Mfact, ipivot, d, nLocal, blockSize, ctx));
+         sizeRprojectorX, xKinvBx, Mfact, ipivot, d, ldd, blockSize, ctx));
 
    for (i=0; i<blockSize; i++) Theta_prev[i] = 0.0L;
    for (i=0; i<blockSize; i++) eval_prev[i] = eval[i];
    CHKERR(Num_dist_dots_real_Sprimme(
-         g, nLocal, d, nLocal, nLocal, blockSize, rho_prev, ctx));
+         g, ldg, d, ldd, nLocal, blockSize, rho_prev, ctx));
 
    /* Initialize recurrences used to dynamically update the eigenpair */
 
@@ -290,8 +293,8 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
    /* other initializations */
 
-   Num_zero_matrix_Sprimme(delta, nLocal, blockSize, nLocal, ctx);
-   Num_zero_matrix_Sprimme(sol, nLocal, blockSize, ldsol, ctx);
+   CHKERR(Num_zero_matrix_Sprimme(delta, nLocal, blockSize, lddelta, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(sol, nLocal, blockSize, ldsol, ctx));
 
    if ((primme->correctionParams.convTest == primme_adaptive ||
              primme->correctionParams.convTest == primme_adaptive_ETolerance) &&
@@ -310,12 +313,12 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    int numIts;        /* Number of inner iterations                          */
    for (numIts = 0; numIts < maxIterations && blockSize > 0; numIts++) {
 
-      CHKERR(apply_projected_matrix(d, nLocal, shift, LprojectorQ,
+      CHKERR(apply_projected_matrix(d, ldd, shift, LprojectorQ,
             ldLprojectorQ, sizeLprojectorQ, LprojectorBQ, ldLprojectorBQ,
             LprojectorX, ldLprojectorX, LprojectorBX,
-            ldLprojectorBX, sizeLprojectorX, blockSize, w, nLocal, ctx));
+            ldLprojectorBX, sizeLprojectorX, blockSize, w, ldw, ctx));
       CHKERR(Num_dist_dots_real_Sprimme(
-            d, nLocal, w, nLocal, nLocal, blockSize, sigma_prev, ctx));
+            d, ldd, w, ldw, nLocal, blockSize, sigma_prev, ctx));
 
       int conv;
       for (i=0; i<blockSize; i++) p0[i] = i;
@@ -347,20 +350,36 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
             continue;
          }
 
-         Num_axpy_Sprimme(nLocal, -alpha_prev[p[i]], &w[nLocal * i], 1,
-               &g[nLocal * i], 1, ctx);
+         CHKERR(Num_axpy_Sprimme(
+               nLocal, -alpha_prev[p[i]], &w[ldw * i], 1, &g[ldg * i], 1, ctx));
+      }
+
+      CHKERR(Num_dist_dots_real_Sprimme(
+            g, ldg, g, ldg, nLocal, blockSize, Theta, ctx));
+
+      for (i = 0; i < blockSize - conv; i++) {
+         if (!ISFINITE(Theta[p0[i]])) {
+            PRINTF(5,
+                  "Exiting because the proposed update is not finite in block "
+                  "vector %d",
+                  p[p0[i]]);
+            CHKERR(perm_set_value_on_pos(
+                  p0, p0[i], blockSize - ++conv, blockSize));
+            i--;
+         }
       }
 
       /* Apply permutation p0 and shrink blockSize */
       CHKERR(permute_vecs_iprimme(p, blockSize, p0, ctx));
       CHKERR(permute_vecs_dprimme(shift, 1, blockSize, 1, p0, ctx));
       CHKERR(permute_vecs_RHprimme(sigma_prev, 1, blockSize, 1, p0, ctx));
+      CHKERR(permute_vecs_RHprimme(Theta, 1, blockSize, 1, p0, ctx));
       CHKERR(permute_vecs_SHprimme(xKinvBx, 1, blockSize, 1, p0, ctx));
-      CHKERR(permute_vecs_Sprimme(g, nLocal, blockSize, nLocal, p0, ctx));
-      CHKERR(permute_vecs_Sprimme(d, nLocal, blockSize, nLocal, p0, ctx));
-      CHKERR(permute_vecs_Sprimme(delta, nLocal, blockSize, nLocal, p0, ctx));
-      if (sizeLprojectorX) CHKERR(permute_vecs_Sprimme(LprojectorX, nLocal, blockSize, nLocal, p0, ctx));
-      if (sizeRprojectorX) CHKERR(permute_vecs_Sprimme(RprojectorX, nLocal, blockSize, nLocal, p0, ctx));
+      CHKERR(permute_vecs_Sprimme(g, nLocal, blockSize, ldg, p0, ctx));
+      CHKERR(permute_vecs_Sprimme(d, nLocal, blockSize, ldd, p0, ctx));
+      CHKERR(permute_vecs_Sprimme(delta, nLocal, blockSize, lddelta, p0, ctx));
+      if (sizeLprojectorX) CHKERR(permute_vecs_Sprimme(LprojectorX, nLocal, blockSize, ldLprojectorX, p0, ctx));
+      if (sizeRprojectorX) CHKERR(permute_vecs_Sprimme(RprojectorX, nLocal, blockSize, ldRprojectorX, p0, ctx));
       CHKERR(permute_vecs_Sprimme(r, nLocal, blockSize, ldr, p0, ctx));
       CHKERR(permute_vecs_Sprimme(x, nLocal, blockSize, ldx, p0, ctx));
       CHKERR(permute_vecs_Sprimme(sol, nLocal, blockSize, ldsol, p0, ctx));
@@ -368,9 +387,6 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       if (sizeLprojectorX) sizeLprojectorX -= conv;
       if (sizeRprojectorX) sizeRprojectorX -= conv;
       if (blockSize <= 0) break;
-
-      CHKERR(Num_dist_dots_real_Sprimme(
-            g, nLocal, g, nLocal, nLocal, blockSize, Theta, ctx));
 
       for (i = 0; i < blockSize; i++) {
          double Theta_i = sqrt(Theta[i]) / tau_prev[p[i]];
@@ -385,11 +401,11 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
          int j;
          if (dot_sol) dot_sol[i] = 0.0;
          for (j = 0; j < nLocal; j++) {
-            SET_COMPLEX(delta[i * nLocal + j],
-                  TO_COMPLEX(delta[i * nLocal + j]) * (HSCALAR)gamma[p[i]] +
-                        TO_COMPLEX(d[nLocal * i + j]) * (HSCALAR)eta[p[i]]);
+            SET_COMPLEX(delta[i * lddelta + j],
+                  TO_COMPLEX(delta[i * lddelta + j]) * (HSCALAR)gamma[p[i]] +
+                        TO_COMPLEX(d[ldd * i + j]) * (HSCALAR)eta[p[i]]);
             SET_COMPLEX(
-                  sol[ldsol * i + j], TO_COMPLEX(delta[nLocal * i + j]) +
+                  sol[ldsol * i + j], TO_COMPLEX(delta[lddelta * i + j]) +
                                             TO_COMPLEX(sol[ldsol * i + j]));
             if (dot_sol)
                dot_sol[i] += REAL_PART(CONJ(TO_COMPLEX(sol[ldsol * i + j])) *
@@ -397,11 +413,11 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
          }
 #else
          CHKERR(Num_scal_Sprimme(
-               nLocal, (HSCALAR)gamma[p[i]], &delta[i * nLocal], 1, ctx));
-         CHKERR(Num_axpy_Sprimme(nLocal, (HSCALAR)eta[p[i]], &d[i * nLocal], 1,
-               &delta[i * nLocal], 1, ctx));
+               nLocal, (HSCALAR)gamma[p[i]], &delta[i * lddelta], 1, ctx));
+         CHKERR(Num_axpy_Sprimme(nLocal, (HSCALAR)eta[p[i]], &d[i * ldd], 1,
+               &delta[i * lddelta], 1, ctx));
          CHKERR(Num_axpy_Sprimme(
-               nLocal, 1.0, &delta[i * nLocal], 1, &sol[i * ldsol], 1, ctx));
+               nLocal, 1.0, &delta[i * lddelta], 1, &sol[i * ldsol], 1, ctx));
          if (dot_sol)
             dot_sol[i] = REAL_PART(Num_dot_Sprimme(
                   nLocal, &sol[i * ldsol], 1, &sol[i * ldsol], 1, ctx));
@@ -415,10 +431,10 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
       if (Bnormsol) {
          CHKERR(massMatrixMatvec_Sprimme(
-               sol, ldsol, nLocal, w, nLocal, 0, blockSize, ctx));
+               sol, ldsol, nLocal, w, ldw, 0, blockSize, ctx));
 
          CHKERR(Num_dist_dots_real_Sprimme(
-               sol, ldsol, w, nLocal, nLocal, blockSize, Bnormsol, ctx));
+               sol, ldsol, w, ldw, nLocal, blockSize, Bnormsol, ctx));
       }
 
       for (i=0; i<blockSize; i++) p0[i] = i;
@@ -429,7 +445,17 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
             CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
-      
+
+         if ((dot_sol && !ISFINITE(dot_sol[i])) ||
+               (Bnormsol && !ISFINITE(Bnormsol[i]))) {
+            PRINTF(5,
+                  "Exiting because the solution vector has non-finite values "
+                  "in block vector %d",
+                  p[i]);
+            CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
+            continue;
+         }
+
          if (numIts > 0 && tau[p[i]] < LTolerance) {
             PRINTF(5, " tau < LTol %e %e in block vector %d", tau[p[i]],
                   LTolerance, p[i]);
@@ -623,11 +649,11 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       CHKERR(permute_vecs_iprimme(p, blockSize, p0, ctx));
       CHKERR(permute_vecs_dprimme(shift, 1, blockSize, 1, p0, ctx));
       CHKERR(permute_vecs_SHprimme(xKinvBx, 1, blockSize, 1, p0, ctx));
-      CHKERR(permute_vecs_Sprimme(g, nLocal, blockSize, nLocal, p0, ctx));
-      CHKERR(permute_vecs_Sprimme(d, nLocal, blockSize, nLocal, p0, ctx));
-      CHKERR(permute_vecs_Sprimme(delta, nLocal, blockSize, nLocal, p0, ctx));
-      if (sizeLprojectorX) CHKERR(permute_vecs_Sprimme(LprojectorX, nLocal, blockSize, nLocal, p0, ctx));
-      if (sizeRprojectorX) CHKERR(permute_vecs_Sprimme(RprojectorX, nLocal, blockSize, nLocal, p0, ctx));
+      CHKERR(permute_vecs_Sprimme(g, nLocal, blockSize, ldg, p0, ctx));
+      CHKERR(permute_vecs_Sprimme(d, nLocal, blockSize, ldd, p0, ctx));
+      CHKERR(permute_vecs_Sprimme(delta, nLocal, blockSize, lddelta, p0, ctx));
+      if (sizeLprojectorX) CHKERR(permute_vecs_Sprimme(LprojectorX, nLocal, blockSize, ldLprojectorX, p0, ctx));
+      if (sizeRprojectorX) CHKERR(permute_vecs_Sprimme(RprojectorX, nLocal, blockSize, ldRprojectorX, p0, ctx));
       CHKERR(permute_vecs_Sprimme(r, nLocal, blockSize, ldr, p0, ctx));
       CHKERR(permute_vecs_Sprimme(x, nLocal, blockSize, ldx, p0, ctx));
       CHKERR(permute_vecs_Sprimme(sol, nLocal, blockSize, ldsol, p0, ctx));
@@ -638,18 +664,18 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
       if (numIts + 1 < maxIterations) {
 
-         CHKERR(apply_projected_preconditioner(g, nLocal, evecs, ldevecs,
+         CHKERR(apply_projected_preconditioner(g, ldg, evecs, ldevecs,
                RprojectorQ, ldRprojectorQ, x, ldx, RprojectorX, ldRprojectorX,
-               sizeRprojectorQ, sizeRprojectorX, xKinvBx, Mfact, ipivot, w, nLocal,
+               sizeRprojectorQ, sizeRprojectorX, xKinvBx, Mfact, ipivot, w, ldw,
                blockSize, ctx));
 
          CHKERR(Num_dist_dots_real_Sprimme(
-               g, nLocal, w, nLocal, nLocal, blockSize, rho, ctx));
+               g, ldg, w, ldw, nLocal, blockSize, rho, ctx));
 
          for (i=0; i< blockSize; i++) {
             HREAL beta = rho[i] / rho_prev[p[i]];
             CHKERR(Num_axpy_Sprimme(
-                  nLocal, beta, &d[nLocal * i], 1, &w[nLocal * i], 1, ctx));
+                  nLocal, beta, &d[ldd * i], 1, &w[ldw * i], 1, ctx));
 
             rho_prev[p[i]] = rho[i];
             tau_prev[p[i]] = tau[p[i]];
@@ -660,6 +686,9 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
          SCALAR *ptmp = d;
          d = w;
          w = ptmp;
+         PRIMME_INT ldtmp = ldd;
+         ldd = ldw;
+         ldw = ldtmp;
       }
 
      /* --------------------------------------------------------*/
