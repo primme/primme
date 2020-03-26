@@ -663,7 +663,7 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
 #ifndef USE_HERMITIAN
                   (double)EVAL_IMAGINARY_PART(basisEvals[iblock[0]]),
 #endif
-                  (double)*LSRes, (double)basisNorms[iblock[0]]);
+                  LSRes?(double)*LSRes:0.0, (double)basisNorms[iblock[0]]);
          }
         break;
       case primme_event_converged:
