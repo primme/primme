@@ -820,8 +820,8 @@ TEMPLATE_PLEASE
 int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
       primme_context ctx) {
 
-   /* Zero dimension matrix may cause problems */
-   if (n == 0) return 0;
+   /* Quick exit */
+   if (n == 0 || alpha == (HSCALAR)1.0) return 0;
 
 #if defined(USE_HALFCOMPLEX_MAGMA)
    (void)alpha;
@@ -949,6 +949,8 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
    if (m == 0 || n == 0) return 0;
 
 #if defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)
+   if (!(*side == 'R' || *side == 'r')) return PRIMME_FUNCTION_UNAVAILABLE;
+
    int mA = (*side == 'R' || *side == 'r') ? n : m;
 
    /* Create an auxiliary matrix mxm and set the identity matrix */
@@ -964,24 +966,39 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
    CHKERR(Num_trsm_SHprimme(
          "L", uplo, transa, diag, mA, mA, 1.0, a, lda, ainv, mA, ctx));
 
+   /* Check that ainv is representable in half precision. If not, normalize */
+
+   HREAL *ainv_scale;
+   CHKERR(Num_malloc_RHprimme(n, &ainv_scale, ctx));
+   for (i = 0; i < mA; i++) {
+      HREAL max_val = 0.0;
+      int j;
+      for (j = 0; j < mA; j++) max_val = max(max_val, ABS(ainv[i * mA + j]));
+      if (max_val >= MACHINE_MAX) {
+         ainv_scale[i] = MACHINE_MAX / max_val / 3;
+      } else {
+         ainv_scale[i] = 1.0;
+      }
+   }
+   CHKERR(Num_scale_matrix_SHprimme(
+         ainv, mA, mA, mA, ainv_scale, ainv, mA, ctx));
+
    /* Compute bainv = b * ainv or ainv * b */
 
    SCALAR *bainv;
    CHKERR(Num_malloc_Sprimme(m * n, &bainv, ctx));
    CHKERR(Num_zero_matrix_Sprimme(bainv, m, n, m, ctx));
-   if (*side == 'R' || *side == 'r') {
-      CHKERR(Num_gemm_dhd_Sprimme(
-            "N", "N", m, n, n, alpha, b, ldb, ainv, n, 0.0, bainv, m, ctx));
-   } else {
-      return PRIMME_FUNCTION_UNAVAILABLE;
-   }
+   CHKERR(Num_gemm_dhd_Sprimme(
+         "N", "N", m, n, n, alpha, b, ldb, ainv, n, 0.0, bainv, m, ctx));
 
-   /* Copy bainv into b */
+   /* Copy bainv into b and undo the scale */
 
-   CHKERR(Num_copy_matrix_Sprimme(bainv, m, n, m, b, ldb, ctx));
+   for (i = 0; i < mA; i++) ainv_scale[i] = (HREAL)1.0 / ainv_scale[i];
+   CHKERR(Num_scale_matrix_Sprimme(bainv, m, n, m, ainv_scale, b, ldb, ctx));
 
    CHKERR(Num_free_Sprimme(bainv, ctx));
    CHKERR(Num_free_SHprimme(ainv, ctx));
+   CHKERR(Num_free_RHprimme(ainv_scale, ctx));
    return 0;
 
 #else
