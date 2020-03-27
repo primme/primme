@@ -915,9 +915,13 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    /* When QR are computed and there are more than one target shift, */
    /* limit blockSize and the converged values to one.               */
 
-   if (primme->numTargetShifts > *numConverged + 1 &&
+   if (primme->numTargetShifts > *numLocked + 1 &&
          primme->projectionParams.projection != primme_proj_RR) {
-      maxBlockSize = min(1, maxBlockSize);
+      if (*numConverged > *numLocked) {
+         maxBlockSize = 0;
+      } else {
+         maxBlockSize = min(1, maxBlockSize);
+      }
    }
 
    sizeBlockNorms = max(0, min(
