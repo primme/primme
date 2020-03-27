@@ -431,7 +431,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
       if (Bnormsol) {
          CHKERR(massMatrixMatvec_Sprimme(
-               sol, ldsol, nLocal, w, ldw, 0, blockSize, ctx));
+               sol, nLocal, ldsol, w, ldw, 0, blockSize, ctx));
 
          CHKERR(Num_dist_dots_real_Sprimme(
                sol, ldsol, w, ldw, nLocal, blockSize, Bnormsol, ctx));
