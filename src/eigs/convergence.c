@@ -177,8 +177,9 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       /* consider converged still.                                         */
       /* ----------------------------------------------------------------- */
 
-      else if (primme->locking && numLocked > 0 && practConvCheck >= 0) {
-         if (givenR && blockNorms[i - left] < attainableTol) {
+      else if (primme->locking && practConvCheck >= 0) {
+         if (givenR && numLocked > 0 &&
+               blockNorms[i - left] < attainableTol) {
             toProject[numToProject++] = i-left;
          }
          else if (flags[i] != PRACTICALLY_CONVERGED) {
