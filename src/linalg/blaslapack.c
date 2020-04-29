@@ -1025,19 +1025,21 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
          &dummyr,
 #  endif
          iwork, ifail, &linfo);
-   lldwork = REAL_PART(lwork0);
-
    if (linfo == 0) {
-      SCALAR *work = NULL;
-      CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
-      XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
-            &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
-#  ifdef USE_COMPLEX
-            rwork,
-#  endif
-            iwork, ifail, &linfo);
-      CHKERR(Num_free_Sprimme(work, ctx));
+      lldwork = REAL_PART(lwork0);
+   } else {
+      lldwork = 7*n;
    }
+
+   SCALAR *work = NULL;
+   CHKERR(Num_malloc_Sprimme(lldwork, &work, ctx));
+   XHEEVX(jobz, "A", uplo, &ln, a, &llda, &dummyr, &dummyr,
+         &dummyi, &dummyi, &abstol, &dummyi, w, z, &ln, work, &lldwork,
+#  ifdef USE_COMPLEX
+         rwork,
+#  endif
+         iwork, ifail, &linfo);
+   CHKERR(Num_free_Sprimme(work, ctx));
 
    /* Copy z to a */
    Num_copy_matrix_Sprimme(z, n, n, n, a, lda, ctx);
