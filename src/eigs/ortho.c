@@ -1207,9 +1207,8 @@ int update_cholesky_Sprimme(HSCALAR *VtV, int ldVtV, HSCALAR *fVtV, int ldfVtV,
             n - n0, ldVtV, A, n, ctx));
       CHKERR(Num_trsm_SHprimme("L", "U", "C", "N", n0, n - n0, 1.0, fVtV,
             ldfVtV, A, n, ctx));
-      CHKERR(Num_gemm_SHprimme("C", "N", n - n0, n - n0, n, -1.0,
-            A, n, A, n, 1.0, &fVtV[ldfVtV * n0 + n0], ldfVtV,
-            ctx));
+      CHKERR(Num_gemm_SHprimme("C", "N", n - n0, n - n0, n0, -1.0, A, n, A, n,
+            1.0, &A[n0], n, ctx));
       CHKERR(Num_potrf_SHprimme("U", n - n0, &A[n0], n, NULL, ctx));
    }
    CHKERR(broadcast_SHprimme(A, n * (n - n0), ctx));
