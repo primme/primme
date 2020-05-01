@@ -1026,7 +1026,7 @@ int Num_heev_Sprimme(const char *jobz, const char *uplo, int n, SCALAR *a,
 #  endif
          iwork, ifail, &linfo);
    lldwork = REAL_PART(lwork0);
-   // MacOS's ATLAS may suggest a wrong value to lwork for n=1
+   // ATLAS LAPACK and MacOS LAPACK may suggest a wrong value to lwork for n=1
    if (lldwork < 2 * ln) lldwork = 2 * ln;
 
    if (linfo == 0) {
