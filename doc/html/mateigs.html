@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>MATLAB Interface &mdash; PRIMME 3.0 documentation</title>
+  <title>MATLAB Interface &mdash; PRIMME 3.1 documentation</title>
   
 
   
@@ -25,7 +25,6 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script type="text/javascript" src="_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -64,7 +63,7 @@
             
             
               <div class="version">
-                3.0
+                3.1
               </div>
             
           
@@ -182,7 +181,7 @@
 <h1>MATLAB Interface<a class="headerlink" href="#matlab-interface" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt>
-<code class="sig-name descname">function [varargout] = primme_eigs(varargin)</code></dt>
+<code class="descname">function [varargout] = primme_eigs(varargin)</code></dt>
 <dd><p><code class="xref mat mat-func docutils literal notranslate"><span class="pre">primme_eigs()</span></code> finds a few eigenvalues and their corresponding eigenvectors
 of a symmetric/Hermitian matrix, <code class="docutils literal notranslate"><span class="pre">A</span></code>, or of a generalized problem <code class="docutils literal notranslate"><span class="pre">(A,B)</span></code>, by calling <a class="reference external" href="https://github.com/primme/primme">PRIMME</a>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(A)</span></code> returns a vector of <code class="docutils literal notranslate"><span class="pre">A</span></code>’s 6 largest magnitude eigenvalues.</p>
@@ -197,8 +196,9 @@ If <code class="docutils literal notranslate"><span class="pre">target</span></c
 If <code class="docutils literal notranslate"><span class="pre">target</span></code> is</p>
 <blockquote>
 <div><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">'LA'</span></code> or <code class="docutils literal notranslate"><span class="pre">'SA'</span></code>, eigenvalues with the largest or smallest algebraic value.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'LM'</span></code> or <code class="docutils literal notranslate"><span class="pre">'SM'</span></code>, eigenvalues with the largest or smallest magnitude if
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">'LA'</span></code> or <code class="docutils literal notranslate"><span class="pre">'SA'</span></code>, eigenvalues with the largest or smallest algebraic value.</p>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">'LM'</span></code> or <code class="docutils literal notranslate"><span class="pre">'SM'</span></code>, eigenvalues with the largest or smallest magnitude if
 <code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts</span></code> is empty. If <code class="docutils literal notranslate"><span class="pre">target</span></code> is a real or complex
 scalar including 0, <code class="xref mat mat-func docutils literal notranslate"><span class="pre">primme_eigs()</span></code> finds the eigenvalues closest
 to <code class="docutils literal notranslate"><span class="pre">target</span></code>.</p>
@@ -211,69 +211,70 @@ absolute value from the given values.</p>
 <code class="docutils literal notranslate"><span class="pre">k=3</span></code>, <code class="docutils literal notranslate"><span class="pre">'SM'</span></code>, <code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts=[2,</span> <span class="pre">5]</span></code> returns the closest eigenvalue in
 absolute sense to 2, and the two closest eigenvalues to 5.</p>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'CLT'</span></code> or <code class="docutils literal notranslate"><span class="pre">'CGT'</span></code>, find eigenvalues closest to but less or greater than
-the given values in <code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts</span></code>.</p></li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">'CLT'</span></code> or <code class="docutils literal notranslate"><span class="pre">'CGT'</span></code>, find eigenvalues closest to but less or greater than
+the given values in <code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts</span></code>.</p>
+</li>
 </ul>
 </div></blockquote>
 <p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(...,k,target,OPTS)</span></code> specifies extra solver parameters. Some
 default values are indicated in brackets {}:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.aNorm" title="primme_params.aNorm"><code class="xref c c-member docutils literal notranslate"><span class="pre">aNorm</span></code></a>: the estimated 2-norm of A {0.0 (estimate the norm internally)}</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tol</span></code>: convergence tolerance: <code class="docutils literal notranslate"><span class="pre">NORM(A*X(:,i)-X(:,i)*D(i,i))</span> <span class="pre">&lt;</span> <span class="pre">tol*NORM(A)</span></code>
-(see <a class="reference internal" href="appendix.html#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal notranslate"><span class="pre">eps</span></code></a>) {<span class="math notranslate nohighlight">\(10^4\)</span> times the machine precision}</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.maxBlockSize" title="primme_params.maxBlockSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxBlockSize</span></code></a>: maximum block size (useful for high multiplicities) {1}</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">disp</span></code>: different level reporting (0-3) (see HIST) {no output 0}</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">display</span></code>: toggle information display (see HIST)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">isreal</span></code>: whether A represented by <code class="docutils literal notranslate"><span class="pre">Afun</span></code> is real or complex {false}</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">isdouble</span></code>: whether the class of in/out vectors in <code class="docutils literal notranslate"><span class="pre">Afun</span></code> are
-double or single {false}</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">isgpu</span></code>: whether the class of in/out vectors in <code class="docutils literal notranslate"><span class="pre">Afun</span></code> are <code class="docutils literal notranslate"><span class="pre">gpuArray</span></code> {false}</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ishermitian</span></code>: whether <code class="docutils literal notranslate"><span class="pre">A</span></code> is Hermitian; otherwise it is considered normal {true}</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.targetShifts" title="primme_params.targetShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">targetShifts</span></code></a>: shifts for interior eigenvalues (see <code class="docutils literal notranslate"><span class="pre">target</span></code>) {[]}</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">v0</span></code>: any number of initial guesses to the eigenvectors (see <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> {[]}</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">orthoConst</span></code>: external orthogonalization constraints (see <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> {[]}</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal notranslate"><span class="pre">locking</span></code></a>: 1, hard locking; 0, soft locking</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">p</span></code>: maximum size of the search subspace (see <a class="reference internal" href="appendix.html#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxBasisSize</span></code></a>)</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">minRestartSize</span></code></a>: minimum Ritz vectors to keep in restarting</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxMatvecs</span></code></a>: maximum number of matrix vector multiplications {Inf}</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">maxit</span></code>: maximum number of outer iterations (see <a class="reference internal" href="appendix.html#c.primme_params.maxOuterIterations" title="primme_params.maxOuterIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxOuterIterations</span></code></a>) {Inf}</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.restartingParams.maxPrevRetain" title="primme_params.restartingParams.maxPrevRetain"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxPrevRetain</span></code></a>: number of Ritz vectors from previous iteration that are kept after restart {typically &gt;0}</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.robustShifts" title="primme_params.correctionParams.robustShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">robustShifts</span></code></a>: setting to true may avoid stagnation or misconvergence</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.maxInnerIterations" title="primme_params.correctionParams.maxInnerIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxInnerIterations</span></code></a>: maximum number of inner solver iterations</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.LeftQ" title="primme_params.correctionParams.projectors.LeftQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">LeftQ</span></code></a>: use the locked vectors in the left projector</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.LeftX" title="primme_params.correctionParams.projectors.LeftX"><code class="xref c c-member docutils literal notranslate"><span class="pre">LeftX</span></code></a>: use the approx. eigenvector in the left projector</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.RightQ" title="primme_params.correctionParams.projectors.RightQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">RightQ</span></code></a>: use the locked vectors in the right projector</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.RightX" title="primme_params.correctionParams.projectors.RightX"><code class="xref c c-member docutils literal notranslate"><span class="pre">RightX</span></code></a>: use the approx. eigenvector in the right projector</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.SkewQ" title="primme_params.correctionParams.projectors.SkewQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">SkewQ</span></code></a>: use the preconditioned locked vectors in the right projector</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.SkewX" title="primme_params.correctionParams.projectors.SkewX"><code class="xref c c-member docutils literal notranslate"><span class="pre">SkewX</span></code></a>: use the preconditioned approx. eigenvector in the right projector</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.relTolBase" title="primme_params.correctionParams.relTolBase"><code class="xref c c-member docutils literal notranslate"><span class="pre">relTolBase</span></code></a>: a legacy from classical JDQR (not recommended)</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTest</span></code></a>: how to stop the inner QMR Method</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>: function handler with an alternative convergence criterion.
+<li><a class="reference internal" href="appendix.html#c.primme_params.aNorm" title="primme_params.aNorm"><code class="xref c c-member docutils literal notranslate"><span class="pre">aNorm</span></code></a>: the estimated 2-norm of A {0.0 (estimate the norm internally)}</li>
+<li><code class="docutils literal notranslate"><span class="pre">tol</span></code>: convergence tolerance: <code class="docutils literal notranslate"><span class="pre">NORM(A*X(:,i)-X(:,i)*D(i,i))</span> <span class="pre">&lt;</span> <span class="pre">tol*NORM(A)</span></code>
+(see <a class="reference internal" href="appendix.html#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal notranslate"><span class="pre">eps</span></code></a>) {<span class="math notranslate nohighlight">\(10^4\)</span> times the machine precision}</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.maxBlockSize" title="primme_params.maxBlockSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxBlockSize</span></code></a>: maximum block size (useful for high multiplicities) {1}</li>
+<li><code class="docutils literal notranslate"><span class="pre">disp</span></code>: different level reporting (0-3) (see HIST) {no output 0}</li>
+<li><code class="docutils literal notranslate"><span class="pre">display</span></code>: toggle information display (see HIST)</li>
+<li><code class="docutils literal notranslate"><span class="pre">isreal</span></code>: whether A represented by <code class="docutils literal notranslate"><span class="pre">Afun</span></code> is real or complex {false}</li>
+<li><code class="docutils literal notranslate"><span class="pre">isdouble</span></code>: whether the class of in/out vectors in <code class="docutils literal notranslate"><span class="pre">Afun</span></code> are
+double or single {false}</li>
+<li><code class="docutils literal notranslate"><span class="pre">isgpu</span></code>: whether the class of in/out vectors in <code class="docutils literal notranslate"><span class="pre">Afun</span></code> are <code class="docutils literal notranslate"><span class="pre">gpuArray</span></code> {false}</li>
+<li><code class="docutils literal notranslate"><span class="pre">ishermitian</span></code>: whether <code class="docutils literal notranslate"><span class="pre">A</span></code> is Hermitian; otherwise it is considered normal {true}</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.targetShifts" title="primme_params.targetShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">targetShifts</span></code></a>: shifts for interior eigenvalues (see <code class="docutils literal notranslate"><span class="pre">target</span></code>) {[]}</li>
+<li><code class="docutils literal notranslate"><span class="pre">v0</span></code>: any number of initial guesses to the eigenvectors (see <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> {[]}</li>
+<li><code class="docutils literal notranslate"><span class="pre">orthoConst</span></code>: external orthogonalization constraints (see <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> {[]}</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal notranslate"><span class="pre">locking</span></code></a>: 1, hard locking; 0, soft locking</li>
+<li><code class="docutils literal notranslate"><span class="pre">p</span></code>: maximum size of the search subspace (see <a class="reference internal" href="appendix.html#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxBasisSize</span></code></a>)</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">minRestartSize</span></code></a>: minimum Ritz vectors to keep in restarting</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxMatvecs</span></code></a>: maximum number of matrix vector multiplications {Inf}</li>
+<li><code class="docutils literal notranslate"><span class="pre">maxit</span></code>: maximum number of outer iterations (see <a class="reference internal" href="appendix.html#c.primme_params.maxOuterIterations" title="primme_params.maxOuterIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxOuterIterations</span></code></a>) {Inf}</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.restartingParams.maxPrevRetain" title="primme_params.restartingParams.maxPrevRetain"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxPrevRetain</span></code></a>: number of Ritz vectors from previous iteration that are kept after restart {typically &gt;0}</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.robustShifts" title="primme_params.correctionParams.robustShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">robustShifts</span></code></a>: setting to true may avoid stagnation or misconvergence</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.maxInnerIterations" title="primme_params.correctionParams.maxInnerIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxInnerIterations</span></code></a>: maximum number of inner solver iterations</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.LeftQ" title="primme_params.correctionParams.projectors.LeftQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">LeftQ</span></code></a>: use the locked vectors in the left projector</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.LeftX" title="primme_params.correctionParams.projectors.LeftX"><code class="xref c c-member docutils literal notranslate"><span class="pre">LeftX</span></code></a>: use the approx. eigenvector in the left projector</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.RightQ" title="primme_params.correctionParams.projectors.RightQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">RightQ</span></code></a>: use the locked vectors in the right projector</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.RightX" title="primme_params.correctionParams.projectors.RightX"><code class="xref c c-member docutils literal notranslate"><span class="pre">RightX</span></code></a>: use the approx. eigenvector in the right projector</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.SkewQ" title="primme_params.correctionParams.projectors.SkewQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">SkewQ</span></code></a>: use the preconditioned locked vectors in the right projector</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.SkewX" title="primme_params.correctionParams.projectors.SkewX"><code class="xref c c-member docutils literal notranslate"><span class="pre">SkewX</span></code></a>: use the preconditioned approx. eigenvector in the right projector</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.relTolBase" title="primme_params.correctionParams.relTolBase"><code class="xref c c-member docutils literal notranslate"><span class="pre">relTolBase</span></code></a>: a legacy from classical JDQR (not recommended)</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTest</span></code></a>: how to stop the inner QMR Method</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>: function handler with an alternative convergence criterion.
 If <code class="docutils literal notranslate"><span class="pre">FUN(EVAL,EVEC,RNORM)</span></code> returns a nonzero value, the pair <code class="docutils literal notranslate"><span class="pre">(EVAL,EVEC)</span></code>
-with residual norm <code class="docutils literal notranslate"><span class="pre">RNORM</span></code> is considered converged.</p></li>
-<li><p><a class="reference internal" href="appendix.html#c.primme_params.iseed" title="primme_params.iseed"><code class="xref c c-member docutils literal notranslate"><span class="pre">iseed</span></code></a>: random seed</p></li>
+with residual norm <code class="docutils literal notranslate"><span class="pre">RNORM</span></code> is considered converged.</li>
+<li><a class="reference internal" href="appendix.html#c.primme_params.iseed" title="primme_params.iseed"><code class="xref c c-member docutils literal notranslate"><span class="pre">iseed</span></code></a>: random seed</li>
 </ul>
 </div></blockquote>
 <p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(A,k,target,OPTS,METHOD)</span></code> specifies the eigensolver method.
 METHOD can be one of the next strings:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DYNAMIC" title="primme_preset_method.PRIMME_DYNAMIC"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DYNAMIC</span></code></a>’, (default)        switches dynamically to the best method</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DEFAULT_MIN_TIME" title="primme_preset_method.PRIMME_DEFAULT_MIN_TIME"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_TIME</span></code></a>’,         best method for low-cost matrix-vector product</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DEFAULT_MIN_MATVECS" title="primme_preset_method.PRIMME_DEFAULT_MIN_MATVECS"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_MATVECS</span></code></a>’,      best method for heavy matvec/preconditioner</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_Arnoldi" title="primme_preset_method.PRIMME_Arnoldi"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_Arnoldi</span></code></a>’,                  Arnoldi not implemented efficiently</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_GD" title="primme_preset_method.PRIMME_GD"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_GD</span></code></a>’,                       classical block Generalized Davidson</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_GD_plusK" title="primme_preset_method.PRIMME_GD_plusK"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_GD_plusK</span></code></a>’,                 GD+k block GD with recurrence restarting</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_GD_Olsen_plusK" title="primme_preset_method.PRIMME_GD_Olsen_plusK"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_GD_Olsen_plusK</span></code></a>’,           GD+k with approximate Olsen precond.</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JD_Olsen_plusK" title="primme_preset_method.PRIMME_JD_Olsen_plusK"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JD_Olsen_plusK</span></code></a>’,           GD+k, exact Olsen (two precond per step)</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_RQI" title="primme_preset_method.PRIMME_RQI"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_RQI</span></code></a>’,                      Rayleigh Quotient Iteration. Also INVIT, but for INVIT provide OPTS.targetShifts</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQR" title="primme_preset_method.PRIMME_JDQR"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQR</span></code></a>’,                     Original block, Jacobi Davidson</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQMR" title="primme_preset_method.PRIMME_JDQMR"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQMR</span></code></a>’,                    Our block JDQMR method (similar to JDCG)</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQMR_ETol" title="primme_preset_method.PRIMME_JDQMR_ETol"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQMR_ETol</span></code></a>’,               Slight, but efficient JDQMR modification</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_STEEPEST_DESCENT" title="primme_preset_method.PRIMME_STEEPEST_DESCENT"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_STEEPEST_DESCENT</span></code></a>’,         equivalent to GD(block,2*block)</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_LOBPCG_OrthoBasis" title="primme_preset_method.PRIMME_LOBPCG_OrthoBasis"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_LOBPCG_OrthoBasis</span></code></a>’,        equivalent to GD(nev,3*nev)+nev</p></li>
-<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_LOBPCG_OrthoBasis_Window" title="primme_preset_method.PRIMME_LOBPCG_OrthoBasis_Window"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_LOBPCG_OrthoBasis_Window</span></code></a>’  equivalent to GD(block,3*block)+block nev&gt;block</p></li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DYNAMIC" title="primme_preset_method.PRIMME_DYNAMIC"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DYNAMIC</span></code></a>’, (default)        switches dynamically to the best method</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DEFAULT_MIN_TIME" title="primme_preset_method.PRIMME_DEFAULT_MIN_TIME"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_TIME</span></code></a>’,         best method for low-cost matrix-vector product</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DEFAULT_MIN_MATVECS" title="primme_preset_method.PRIMME_DEFAULT_MIN_MATVECS"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_MATVECS</span></code></a>’,      best method for heavy matvec/preconditioner</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_Arnoldi" title="primme_preset_method.PRIMME_Arnoldi"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_Arnoldi</span></code></a>’,                  Arnoldi not implemented efficiently</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_GD" title="primme_preset_method.PRIMME_GD"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_GD</span></code></a>’,                       classical block Generalized Davidson</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_GD_plusK" title="primme_preset_method.PRIMME_GD_plusK"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_GD_plusK</span></code></a>’,                 GD+k block GD with recurrence restarting</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_GD_Olsen_plusK" title="primme_preset_method.PRIMME_GD_Olsen_plusK"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_GD_Olsen_plusK</span></code></a>’,           GD+k with approximate Olsen precond.</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JD_Olsen_plusK" title="primme_preset_method.PRIMME_JD_Olsen_plusK"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JD_Olsen_plusK</span></code></a>’,           GD+k, exact Olsen (two precond per step)</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_RQI" title="primme_preset_method.PRIMME_RQI"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_RQI</span></code></a>’,                      Rayleigh Quotient Iteration. Also INVIT, but for INVIT provide OPTS.targetShifts</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQR" title="primme_preset_method.PRIMME_JDQR"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQR</span></code></a>’,                     Original block, Jacobi Davidson</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQMR" title="primme_preset_method.PRIMME_JDQMR"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQMR</span></code></a>’,                    Our block JDQMR method (similar to JDCG)</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQMR_ETol" title="primme_preset_method.PRIMME_JDQMR_ETol"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQMR_ETol</span></code></a>’,               Slight, but efficient JDQMR modification</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_STEEPEST_DESCENT" title="primme_preset_method.PRIMME_STEEPEST_DESCENT"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_STEEPEST_DESCENT</span></code></a>’,         equivalent to GD(block,2*block)</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_LOBPCG_OrthoBasis" title="primme_preset_method.PRIMME_LOBPCG_OrthoBasis"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_LOBPCG_OrthoBasis</span></code></a>’,        equivalent to GD(nev,3*nev)+nev</li>
+<li>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_LOBPCG_OrthoBasis_Window" title="primme_preset_method.PRIMME_LOBPCG_OrthoBasis_Window"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_LOBPCG_OrthoBasis_Window</span></code></a>’  equivalent to GD(block,3*block)+block nev&gt;block</li>
 </ul>
 </div></blockquote>
 <p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(A,k,target,OPTS,METHOD,P)</span></code></p>
@@ -293,13 +294,13 @@ largest and smallest algebraic eigenvalues of <code class="docutils literal notr
 instead of printing it. Every row is a record, and the columns report:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,1)</span></code>: number of matvecs</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,2)</span></code>: time</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,3)</span></code>: number of converged/locked pairs</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,4)</span></code>: block index</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,5)</span></code>: approximate eigenvalue</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,6)</span></code>: residual norm</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,7)</span></code>: QMR residual norm</p></li>
+<li><code class="docutils literal notranslate"><span class="pre">HIST(:,1)</span></code>: number of matvecs</li>
+<li><code class="docutils literal notranslate"><span class="pre">HIST(:,2)</span></code>: time</li>
+<li><code class="docutils literal notranslate"><span class="pre">HIST(:,3)</span></code>: number of converged/locked pairs</li>
+<li><code class="docutils literal notranslate"><span class="pre">HIST(:,4)</span></code>: block index</li>
+<li><code class="docutils literal notranslate"><span class="pre">HIST(:,5)</span></code>: approximate eigenvalue</li>
+<li><code class="docutils literal notranslate"><span class="pre">HIST(:,6)</span></code>: residual norm</li>
+<li><code class="docutils literal notranslate"><span class="pre">HIST(:,7)</span></code>: QMR residual norm</li>
 </ul>
 </div></blockquote>
 <p><code class="docutils literal notranslate"><span class="pre">OPTS.disp</span></code> controls the granularity of the record. If <code class="docutils literal notranslate"><span class="pre">OPTS.disp</span> <span class="pre">==</span> <span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">HIST</span></code>

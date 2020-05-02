@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>FORTRAN 77 Library Interface &mdash; PRIMME 3.0 documentation</title>
+  <title>FORTRAN 77 Library Interface &mdash; PRIMME 3.1 documentation</title>
   
 
   
@@ -25,7 +25,6 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script type="text/javascript" src="_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -64,7 +63,7 @@
             
             
               <div class="version">
-                3.0
+                3.1
               </div>
             
           
@@ -205,7 +204,7 @@
 <p>The next enumerations and functions are declared in <code class="docutils literal notranslate"><span class="pre">primme_f77.h</span></code>.</p>
 <dl class="type">
 <dt id="c.ptr">
-<code class="sig-name descname">ptr</code><a class="headerlink" href="#c.ptr" title="Permalink to this definition">¶</a></dt>
+<code class="descname">ptr</code><a class="headerlink" href="#c.ptr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fortran datatype with the same size as a pointer.
 Use <code class="docutils literal notranslate"><span class="pre">integer*4</span></code> when compiling in 32 bits and <code class="docutils literal notranslate"><span class="pre">integer*8</span></code> in 64 bits.</p>
 </dd></dl>
@@ -214,16 +213,20 @@ Use <code class="docutils literal notranslate"><span class="pre">integer*4</span
 <h2>primme_initialize_f77<a class="headerlink" href="#primme-initialize-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.primme_initialize_f77">
-<code class="sig-name descname">primme_initialize_f77</code><span class="sig-paren">(</span>primme<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_initialize_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">primme_initialize_f77</code><span class="sig-paren">(</span>primme<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_initialize_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocate and initialize a PRIMME parameters structure to the default values.</p>
 <p>After calling <a class="reference internal" href="#c.dprimme_f77" title="dprimme_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a> (or a variant), call <a class="reference internal" href="#c.primme_free_f77" title="primme_free_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_free_f77()</span></code></a> to release allocated resources by PRIMME.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (output) parameters structure.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (output) parameters structure.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -231,12 +234,14 @@ Use <code class="docutils literal notranslate"><span class="pre">integer*4</span
 <h2>primme_set_method_f77<a class="headerlink" href="#primme-set-method-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.primme_set_method_f77">
-<code class="sig-name descname">primme_set_method_f77</code><span class="sig-paren">(</span>method, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_set_method_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">primme_set_method_f77</code><span class="sig-paren">(</span>method, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_set_method_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set PRIMME parameters to one of the preset configurations.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>method</strong> (<em>integer</em>) – <p>(input) preset configuration. One of:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>method</strong> (<em>integer</em>) – <p>(input) preset configuration. One of:</p>
 <div class="line-block">
 <div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_DYNAMIC</span></code></div>
 <div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_TIME</span></code></div>
@@ -255,12 +260,14 @@ Use <code class="docutils literal notranslate"><span class="pre">integer*4</span
 <div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_LOBPCG_OrthoBasis_Window</span></code></div>
 </div>
 <p>See <a class="reference internal" href="appendix.html#c.primme_preset_method" title="primme_preset_method"><code class="xref c c-type docutils literal notranslate"><span class="pre">primme_preset_method</span></code></a>.</p>
-</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) if 0, successful; if negative, something went wrong.</p></li>
+</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) if 0, successful; if negative, something went wrong.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -268,15 +275,19 @@ Use <code class="docutils literal notranslate"><span class="pre">integer*4</span
 <h2>primme_free_f77<a class="headerlink" href="#primme-free-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.primme_free_f77">
-<code class="sig-name descname">primme_free_f77</code><span class="sig-paren">(</span>primme<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_free_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">primme_free_f77</code><span class="sig-paren">(</span>primme<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_free_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Free memory allocated by PRIMME and delete all values set.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input/output) parameters structure.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input/output) parameters structure.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -284,23 +295,27 @@ Use <code class="docutils literal notranslate"><span class="pre">integer*4</span
 <h2>sprimme_f77<a class="headerlink" href="#sprimme-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.sprimme_f77">
-<code class="sig-name descname">sprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.sprimme_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.sprimme_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a real symmetric standard or generalized eigenproblem.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="primmec.html#c.magma_sprimme" title="magma_sprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">magma_sprimme()</span></code></a> for using GPUs).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>real</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>real</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -308,7 +323,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 2.0.</span></p>
+<p><span class="versionmodified">New in version 2.0.</span></p>
 </div>
 </dd></dl>
 
@@ -317,23 +332,27 @@ The first vector has index i=1.</p>
 <h2>cprimme_f77<a class="headerlink" href="#cprimme-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.cprimme_f77">
-<code class="sig-name descname">cprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a Hermitian standard or generalized eigenproblem.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="primmec.html#c.magma_cprimme" title="magma_cprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">magma_cprimme()</span></code></a> for using GPUs).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>complex real</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>complex real</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -341,7 +360,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 2.0.</span></p>
+<p><span class="versionmodified">New in version 2.0.</span></p>
 </div>
 </dd></dl>
 
@@ -350,23 +369,27 @@ The first vector has index i=1.</p>
 <h2>dprimme_f77<a class="headerlink" href="#dprimme-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.dprimme_f77">
-<code class="sig-name descname">dprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.dprimme_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.dprimme_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a real symmetric standard or generalized eigenproblem.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="primmec.html#c.magma_dprimme" title="magma_dprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">magma_dprimme()</span></code></a> for using GPUs).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>double precision</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>double precision</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -380,23 +403,27 @@ The first vector has index i=1.</p>
 <h2>zprimme_f77<a class="headerlink" href="#zprimme-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.zprimme_f77">
-<code class="sig-name descname">zprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">zprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a Hermitian standard or generalized eigenproblem.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="primmec.html#c.magma_zprimme" title="magma_zprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">magma_zprimme()</span></code></a> for using GPUs).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>complex double precision</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>complex double precision</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -410,23 +437,27 @@ The first vector has index i=1.</p>
 <h2>magma_sprimme_f77<a class="headerlink" href="#magma-sprimme-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.magma_sprimme_f77">
-<code class="sig-name descname">magma_sprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_sprimme_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">magma_sprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_sprimme_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a real symmetric standard or generalized eigenproblem.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="primmec.html#c.sprimme" title="sprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">sprimme()</span></code></a> for using only the CPU).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>real</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>real</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -434,7 +465,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified">New in version 3.0.</span></p>
 </div>
 </dd></dl>
 
@@ -443,23 +474,27 @@ The first vector has index i=1.</p>
 <h2>magma_cprimme_f77<a class="headerlink" href="#magma-cprimme-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.magma_cprimme_f77">
-<code class="sig-name descname">magma_cprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_cprimme_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">magma_cprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_cprimme_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a Hermitian standard or generalized eigenproblem.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="primmec.html#c.cprimme" title="cprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">cprimme()</span></code></a> for using only the CPU).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>complex real</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>complex real</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -467,7 +502,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified">New in version 3.0.</span></p>
 </div>
 </dd></dl>
 
@@ -476,23 +511,27 @@ The first vector has index i=1.</p>
 <h2>magma_dprimme_f77<a class="headerlink" href="#magma-dprimme-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.magma_dprimme_f77">
-<code class="sig-name descname">magma_dprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_dprimme_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">magma_dprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_dprimme_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a real symmetric standard or generalized eigenproblem.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="primmec.html#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">dprimme()</span></code></a> for using only the CPU).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>double precision</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>double precision</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -500,7 +539,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified">New in version 3.0.</span></p>
 </div>
 </dd></dl>
 
@@ -509,23 +548,27 @@ The first vector has index i=1.</p>
 <h2>magma_zprimme_f77<a class="headerlink" href="#magma-zprimme-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.magma_zprimme_f77">
-<code class="sig-name descname">magma_zprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_zprimme_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">magma_zprimme_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_zprimme_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a Hermitian standard or generalized eigenproblem.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="primmec.html#c.zprimme" title="zprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">zprimme()</span></code></a> for using only the CPU).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>complex double precision</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>complex double precision</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -533,7 +576,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified">New in version 3.0.</span></p>
 </div>
 </dd></dl>
 
@@ -542,23 +585,27 @@ The first vector has index i=1.</p>
 <h2>cprimme_normal_f77<a class="headerlink" href="#cprimme-normal-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.cprimme_normal_f77">
-<code class="sig-name descname">cprimme_normal_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cprimme_normal_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#c.magma_cprimme_normal_f77" title="magma_cprimme_normal_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">magma_cprimme_normal_f77()</span></code></a> for using GPUs).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>complex real</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>complex real</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -566,7 +613,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified">New in version 3.0.</span></p>
 </div>
 </dd></dl>
 
@@ -575,23 +622,27 @@ The first vector has index i=1.</p>
 <h2>zprimme_normal_f77<a class="headerlink" href="#zprimme-normal-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.zprimme_normal_f77">
-<code class="sig-name descname">zprimme_normal_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">zprimme_normal_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#c.magma_zprimme_normal_f77" title="magma_zprimme_normal_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">magma_zprimme_normal_f77()</span></code></a> for using GPUs).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>complex double precision</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>complex double precision</em>) – (input/output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -599,7 +650,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified">New in version 3.0.</span></p>
 </div>
 </dd></dl>
 
@@ -608,23 +659,27 @@ The first vector has index i=1.</p>
 <h2>magma_cprimme_normal_f77<a class="headerlink" href="#magma-cprimme-normal-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.magma_cprimme_normal_f77">
-<code class="sig-name descname">magma_cprimme_normal_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_cprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">magma_cprimme_normal_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_cprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see <a class="reference internal" href="#c.cprimme_normal_f77" title="cprimme_normal_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">cprimme_normal_f77()</span></code></a> for using only the CPU).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>complex real</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>complex real</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>real</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -632,7 +687,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified">New in version 3.0.</span></p>
 </div>
 </dd></dl>
 
@@ -641,23 +696,27 @@ The first vector has index i=1.</p>
 <h2>magma_zprimme_normal_f77<a class="headerlink" href="#magma-zprimme-normal-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.magma_zprimme_normal_f77">
-<code class="sig-name descname">magma_zprimme_normal_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_zprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">magma_zprimme_normal_f77</code><span class="sig-paren">(</span>evals, evecs, resNorms, primme, ierr<span class="sig-paren">)</span><a class="headerlink" href="#c.magma_zprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see <a class="reference internal" href="#c.zprimme_normal_f77" title="zprimme_normal_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">zprimme_normal_f77()</span></code></a> for using only the CPU).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>evals(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-computed eigenvalues; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>evecs(*)</strong> (<em>complex double precision</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
-to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
-<li><p><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
-residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</p></li>
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>evals(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all parallel calls return the same value in this array.</li>
+<li><strong>evecs(*)</strong> (<em>complex double precision</em>) – (input/output) GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</li>
+<li><strong>resNorms(*)</strong> (<em>double precision</em>) – (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all parallel calls return the same value in this array.</li>
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>ierr</strong> (<em>integer</em>) – (output) error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
 followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
 <p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1).
@@ -665,7 +724,7 @@ The first vector has index i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks is also the same as <code class="docutils literal notranslate"><span class="pre">evecs</span></code>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified">New in version 3.0.</span></p>
 </div>
 </dd></dl>
 
@@ -674,13 +733,15 @@ The first vector has index i=1.</p>
 <h2>primme_set_member_f77<a class="headerlink" href="#primme-set-member-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.primme_set_member_f77">
-<code class="sig-name descname">primme_set_member_f77</code><span class="sig-paren">(</span>primme, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_set_member_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">primme_set_member_f77</code><span class="sig-paren">(</span>primme, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_set_member_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a value in some field of the parameter structure.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>label</strong> (<em>integer</em>) – <p>field where to set value. One of:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>label</strong> (<em>integer</em>) – <p>field where to set value. One of:</p>
 <div class="line-block">
 <div class="line"><a class="reference internal" href="appendix.html#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_n</span></code></a></div>
 <div class="line"><a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_matrixMatvec</span></code></a></div>
@@ -770,17 +831,19 @@ The first vector has index i=1.</p>
 <div class="line"><a class="reference internal" href="appendix.html#c.primme_params.monitor" title="primme_params.monitor"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_monitor</span></code></a></div>
 <div class="line"><a class="reference internal" href="appendix.html#c.primme_params.queue" title="primme_params.queue"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_queue</span></code></a></div>
 </div>
-</p></li>
-<li><p><strong>value</strong> – <p>(input) value to set.</p>
+</li>
+<li><strong>value</strong> – <p>(input) value to set.</p>
 <p>If the type of the option is integer (<code class="docutils literal notranslate"><span class="pre">int</span></code>, <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a>, <code class="docutils literal notranslate"><span class="pre">size_t</span></code>), the
 type of <code class="docutils literal notranslate"><span class="pre">value</span></code> should be as long as <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a>, which is <code class="docutils literal notranslate"><span class="pre">integer*8</span></code> by default.</p>
-</p></li>
+</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>Don’t use</strong> this function inside PRIMME’s callback functions, e.g., <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a> or
+<p class="first admonition-title">Note</p>
+<p class="last"><strong>Don’t use</strong> this function inside PRIMME’s callback functions, e.g., <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a> or
 <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, or in functions called by these functions.</p>
 </div>
 </dd></dl>
@@ -790,29 +853,33 @@ type of <code class="docutils literal notranslate"><span class="pre">value</span
 <h2>primmetop_get_member_f77<a class="headerlink" href="#primmetop-get-member-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.primmetop_get_member_f77">
-<code class="sig-name descname">primmetop_get_member_f77</code><span class="sig-paren">(</span>primme, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primmetop_get_member_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">primmetop_get_member_f77</code><span class="sig-paren">(</span>primme, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primmetop_get_member_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the value in some field of the parameter structure.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>label</strong> (<em>integer</em>) – (input) field where to get value. One of
-the detailed in function <code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_set_member_f77()</span></code>.</p></li>
-<li><p><strong>value</strong> – <p>(output) value of the field.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>label</strong> (<em>integer</em>) – (input) field where to get value. One of
+the detailed in function <code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_set_member_f77()</span></code>.</li>
+<li><strong>value</strong> – <p>(output) value of the field.</p>
 <p>If the type of the option is integer (<code class="docutils literal notranslate"><span class="pre">int</span></code>, <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a>, <code class="docutils literal notranslate"><span class="pre">size_t</span></code>), the
 type of <code class="docutils literal notranslate"><span class="pre">value</span></code> should be as long as <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a>, which is <code class="docutils literal notranslate"><span class="pre">integer*8</span></code> by default.</p>
-</p></li>
+</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>Don’t use</strong> this function inside PRIMME’s callback functions, e.g., <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a> or
+<p class="first admonition-title">Note</p>
+<p class="last"><strong>Don’t use</strong> this function inside PRIMME’s callback functions, e.g., <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a> or
 <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, or in functions called by these functions. In those cases use
 <a class="reference internal" href="#c.primme_get_member_f77" title="primme_get_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_get_member_f77()</span></code></a>.</p>
 </div>
 <div class="admonition note">
-<p class="admonition-title">Note</p>
+<p class="first admonition-title">Note</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">label</span></code> is one of <code class="docutils literal notranslate"><span class="pre">PRIMME_matrixMatvec</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_applyPreconditioner</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_commInfo</span></code>,
 <code class="docutils literal notranslate"><span class="pre">PRIMME_matrix</span></code> and <code class="docutils literal notranslate"><span class="pre">PRIMME_preconditioner</span></code>,
 the returned <code class="docutils literal notranslate"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal notranslate"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
@@ -835,7 +902,7 @@ For instance:</p>
 <span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Most users would not need to retrieve these pointers in their programs.</p>
+<p class="last">Most users would not need to retrieve these pointers in their programs.</p>
 </div>
 </dd></dl>
 
@@ -844,17 +911,21 @@ For instance:</p>
 <h2>primmetop_get_prec_shift_f77<a class="headerlink" href="#primmetop-get-prec-shift-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.primmetop_get_prec_shift_f77">
-<code class="sig-name descname">primmetop_get_prec_shift_f77</code><span class="sig-paren">(</span>primme, index, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primmetop_get_prec_shift_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">primmetop_get_prec_shift_f77</code><span class="sig-paren">(</span>primme, index, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primmetop_get_prec_shift_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the value in some position of the array <a class="reference internal" href="appendix.html#c.primme_params.ShiftsForPreconditioner" title="primme_params.ShiftsForPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">ShiftsForPreconditioner</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>index</strong> (<em>integer</em>) – (input) position of the array; the first position is 1.</p></li>
-<li><p><strong>value</strong> – (output) value of the array at that position.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>index</strong> (<em>integer</em>) – (input) position of the array; the first position is 1.</li>
+<li><strong>value</strong> – (output) value of the array at that position.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -862,29 +933,33 @@ For instance:</p>
 <h2>primme_get_member_f77<a class="headerlink" href="#primme-get-member-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.primme_get_member_f77">
-<code class="sig-name descname">primme_get_member_f77</code><span class="sig-paren">(</span>primme, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_get_member_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">primme_get_member_f77</code><span class="sig-paren">(</span>primme, label, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_get_member_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the value in some field of the parameter structure.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>label</strong> (<em>integer</em>) – (input) field where to get value. One of
-the detailed in function <code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_set_member_f77()</span></code>.</p></li>
-<li><p><strong>value</strong> – <p>(output) value of the field.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>label</strong> (<em>integer</em>) – (input) field where to get value. One of
+the detailed in function <code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_set_member_f77()</span></code>.</li>
+<li><strong>value</strong> – <p>(output) value of the field.</p>
 <p>If the type of the option is integer (<code class="docutils literal notranslate"><span class="pre">int</span></code>, <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a>, <code class="docutils literal notranslate"><span class="pre">size_t</span></code>), the
 type of <code class="docutils literal notranslate"><span class="pre">value</span></code> should be as long as <a class="reference internal" href="appendix.html#c.PRIMME_INT" title="PRIMME_INT"><code class="xref c c-type docutils literal notranslate"><span class="pre">PRIMME_INT</span></code></a>, which is <code class="docutils literal notranslate"><span class="pre">integer*8</span></code> by default.</p>
-</p></li>
+</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Use this function exclusively inside PRIMME’s callback functions, e.g., <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>
+<p class="first admonition-title">Note</p>
+<p class="last">Use this function exclusively inside PRIMME’s callback functions, e.g., <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>
 or <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, or in functions called by these functions. Otherwise, e.g.,
 from the main program, use the function <a class="reference internal" href="#c.primmetop_get_member_f77" title="primmetop_get_member_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_get_member_f77()</span></code></a>.</p>
 </div>
 <div class="admonition note">
-<p class="admonition-title">Note</p>
+<p class="first admonition-title">Note</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">label</span></code> is one of <code class="docutils literal notranslate"><span class="pre">PRIMME_matrixMatvec</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_applyPreconditioner</span></code>, <code class="docutils literal notranslate"><span class="pre">PRIMME_commInfo</span></code>,
 <code class="docutils literal notranslate"><span class="pre">PRIMME_matrix</span></code> and <code class="docutils literal notranslate"><span class="pre">PRIMME_preconditioner</span></code>,
 the returned <code class="docutils literal notranslate"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal notranslate"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
@@ -907,7 +982,7 @@ For instance:</p>
 <span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Most users would not need to retrieve these pointers in their programs.</p>
+<p class="last">Most users would not need to retrieve these pointers in their programs.</p>
 </div>
 </dd></dl>
 
@@ -916,20 +991,24 @@ For instance:</p>
 <h2>primme_get_prec_shift_f77<a class="headerlink" href="#primme-get-prec-shift-f77" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.primme_get_prec_shift_f77">
-<code class="sig-name descname">primme_get_prec_shift_f77</code><span class="sig-paren">(</span>primme, index, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_get_prec_shift_f77" title="Permalink to this definition">¶</a></dt>
+<code class="descname">primme_get_prec_shift_f77</code><span class="sig-paren">(</span>primme, index, value<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_get_prec_shift_f77" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the value in some position of the array <a class="reference internal" href="appendix.html#c.primme_params.ShiftsForPreconditioner" title="primme_params.ShiftsForPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">ShiftsForPreconditioner</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</p></li>
-<li><p><strong>index</strong> (<em>integer</em>) – (input) position of the array; the first position is 1.</p></li>
-<li><p><strong>value</strong> – (output) value of the array at that position.</p></li>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>primme</strong> (<a class="reference internal" href="#c.ptr" title="ptr"><em>ptr</em></a>) – (input) parameters structure.</li>
+<li><strong>index</strong> (<em>integer</em>) – (input) position of the array; the first position is 1.</li>
+<li><strong>value</strong> – (output) value of the array at that position.</li>
 </ul>
-</dd>
-</dl>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Use this function exclusively inside the function <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, or <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>.
+<p class="first admonition-title">Note</p>
+<p class="last">Use this function exclusively inside the function <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, or <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>.
 Otherwise use the function <a class="reference internal" href="#c.primmetop_get_prec_shift_f77" title="primmetop_get_prec_shift_f77"><code class="xref c c-func docutils literal notranslate"><span class="pre">primmetop_get_prec_shift_f77()</span></code></a>.</p>
 </div>
 </dd></dl>

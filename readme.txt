@@ -145,6 +145,14 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
+Changes in PRIMME 3.1 (released on May 2, 2020):
+
+* Fixed compilation issues in F90 interface and examples.
+
+* Fixed bug in block orthogonalization.
+
+* Updated Python interface to Python version 3.8.
+
 Changes in PRIMME 3.0 (released on December 14, 2019):
 
 * Added support for the generalized Hermitian eigenvalue problem
@@ -647,7 +655,7 @@ precisions:
 
 +-------------+----------------------+----------------------+
 | Precision   | Real                 | Complex              |
-|=============|======================|======================|
++=============+======================+======================+
 | half        | "hprimme()"          | "kprimme()"          |
 |             | "hsprimme()"         | "ksprimme()"         |
 +-------------+----------------------+----------------------+
@@ -667,7 +675,7 @@ precisions:
 
 +-------------+-----------------------------+
 | Precision   | Complex                     |
-|=============|=============================|
++=============+=============================+
 | half        | "kprimme_normal()"          |
 |             | "kcprimme_normal()"         |
 +-------------+-----------------------------+
@@ -3693,7 +3701,7 @@ primme_params
 
       +----------+---------+------------------------------------------------------------+
       | RightX   | SkewX   | D                                                          |
-      |==========|=========|============================================================|
+      +==========+=========+============================================================+
       | 0        | 0       | M^{-1}R (Classic GD)                                       |
       +----------+---------+------------------------------------------------------------+
       | 1        | 0       | M^{-1}(R-Delta X) (cheap Olsen’s Method)                   |
@@ -3730,7 +3738,7 @@ primme_params
 
       +----------+---------+---------------------------------+
       | RightQ   | SkewQ   | P_Q^r                           |
-      |==========|=========|=================================|
+      +==========+=========+=================================+
       | 0        | 0       | I                               |
       +----------+---------+---------------------------------+
       | 1        | 0       | I - QQ^*                        |
@@ -3744,7 +3752,7 @@ primme_params
 
       +----------+---------+---------------------------------+
       | RightX   | SkewX   | P_X^r                           |
-      |==========|=========|=================================|
+      +==========+=========+=================================+
       | 0        | 0       | I                               |
       +----------+---------+---------------------------------+
       | 1        | 0       | I - XX^*                        |
@@ -4863,7 +4871,7 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
    >>> M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1)), [0], 100, 100)
    >>> # the smallest eigenvalues of the eigenproblem (A,M)
    >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
-   >>> evals 
+   >>> evals # doctest: +SKIP
    array([1.0035e-07, 1.0204e-02, 2.0618e-02])
 
    >>> # Giving the matvec as a function
@@ -5188,7 +5196,7 @@ precisions:
 
 +-------------+---------------------------+---------------------------+
 | Precision   | Real                      | Complex                   |
-|=============|===========================|===========================|
++=============+===========================+===========================+
 | half        | "hprimme_svds()"          | "kprimme_svds()"          |
 |             | "hsprimme_svds()"         | "ksprimme_svds()"         |
 +-------------+---------------------------+---------------------------+
@@ -8182,7 +8190,7 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    ...           [0], 100, 100) # square diag. preconditioner
    >>> # the three smallest singular values of A, using preconditioning
    >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which='SM', tol=1e-6, precAHA=prec)
-   >>> ["%.5f" % x for x in svals.flat] 
+   >>> ["%.5f" % x for x in svals.flat] # doctest: +SKIP
    ['4.57263', '4.78752', '4.82229']
 
    >>> # Giving the matvecs as functions
@@ -8199,7 +8207,7 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    ...
    >>> B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
    >>> svecs_left, svals, svecs_right = primme.svds(B, 5, which='LM', tol=1e-6)
-   >>> svals 
+   >>> svals # doctest: +SKIP
    array([99., 98., 97., 96., 95.])
 
 MATLAB Interface
