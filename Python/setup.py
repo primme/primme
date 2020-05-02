@@ -85,7 +85,7 @@ def setup_package():
    
    # NumyTypemapTests setup
    setup(name        = "primme",
-         version     = "2.1.5",
+         version     = "3.1.0",
          description = "PRIMME wrapper for Python",
          long_description = long_description,
          url         = "https://github.com/primme/primme",

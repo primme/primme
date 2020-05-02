@@ -4,9 +4,19 @@
 \alias{eigs_sym}
 \title{Find a few eigenvalues and vectors on large, sparse Hermitian matrix}
 \usage{
-eigs_sym(A, NEig = 1, which = "LA", targetShifts = NULL,
-  tol = 1e-06, x0 = NULL, ortho = NULL, prec = NULL,
-  isreal = NULL, B = NULL, ...)
+eigs_sym(
+  A,
+  NEig = 1,
+  which = "LA",
+  targetShifts = NULL,
+  tol = 1e-06,
+  x0 = NULL,
+  ortho = NULL,
+  prec = NULL,
+  isreal = NULL,
+  B = NULL,
+  ...
+)
 }
 \arguments{
 \item{A}{symmetric/Hermitian matrix or a function with signature f(x) that
