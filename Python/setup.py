@@ -113,7 +113,7 @@ def setup_package():
    
    # NumyTypemapTests setup
    setup(name        = "primme",
-         version     = "3.0.3",
+         version     = "3.1.0",
          description = "PRIMME wrapper for Python",
          long_description = long_description,
          long_description_content_type = "text/x-rst",
