@@ -189,10 +189,37 @@ integer(kind=c_int64_t), parameter :: primme_op_int = 5
 !-------------------------------------------------------
 
 abstract interface
-   subroutine primme_eigs_matvec(x, ldx, y, ldy, blockSize, primme, ierr) bind(c)
+   subroutine primme_eigs_matvec_double(x, ldx, y, ldy, blockSize, primme, ierr) bind(c)
       use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
       integer(c_int64_t) :: ldx, ldy
-      type(*) :: x(ldx,*), y(ldy,*)
+      real(c_double) :: x(ldx,*), y(ldy,*)
+      type(c_ptr), value :: primme
+      integer(c_int), intent(in) :: blockSize
+      integer(c_int) :: ierr
+   end subroutine
+
+   subroutine primme_eigs_matvec_complexdouble(x, ldx, y, ldy, blockSize, primme, ierr) bind(c)
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_double
+      integer(c_int64_t) :: ldx, ldy
+      complex(c_double) :: x(ldx,*), y(ldy,*)
+      type(c_ptr), value :: primme
+      integer(c_int), intent(in) :: blockSize
+      integer(c_int) :: ierr
+   end subroutine
+
+   subroutine primme_eigs_matvec_single(x, ldx, y, ldy, blockSize, primme, ierr) bind(c)
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_float
+      integer(c_int64_t) :: ldx, ldy
+      real(c_float) :: x(ldx,*), y(ldy,*)
+      type(c_ptr), value :: primme
+      integer(c_int), intent(in) :: blockSize
+      integer(c_int) :: ierr
+   end subroutine
+
+   subroutine primme_eigs_matvec_complexsingle(x, ldx, y, ldy, blockSize, primme, ierr) bind(c)
+      use iso_c_binding, only: c_ptr, c_int, c_int64_t, c_float
+      integer(c_int64_t) :: ldx, ldy
+      complex(c_float) :: x(ldx,*), y(ldy,*)
       type(c_ptr), value :: primme
       integer(c_int), intent(in) :: blockSize
       integer(c_int) :: ierr
@@ -286,15 +313,47 @@ interface primme_set_member
       type(c_funptr), intent(in), value :: value
       integer(c_int) :: primme_set_member_fun
    end function
+end interface primme_set_member
 
-   function primme_set_member_matvec(primme, label, value) bind(c, name="primme_set_member")
+! NOTE: The following functions will be part of the interface primme_set_member as soon as
+!       gfortran supports it
+interface
+   function primme_set_member_matvec_double(primme, label, value) bind(c, name="primme_set_member")
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_eigs_matvec_double
       type(c_ptr), value :: primme
       integer(c_int), value :: label
-      procedure(primme_eigs_matvec) :: value
-      integer(c_int) :: primme_set_member_matvec
+      procedure(primme_eigs_matvec_double) :: value
+      integer(c_int) :: primme_set_member_matvec_double
    end function
-end interface primme_set_member
+
+   function primme_set_member_matvec_complexdouble(primme, label, value) bind(c, name="primme_set_member")
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_eigs_matvec_complexdouble
+      type(c_ptr), value :: primme
+      integer(c_int), value :: label
+      procedure(primme_eigs_matvec_complexdouble) :: value
+      integer(c_int) :: primme_set_member_matvec_complexdouble
+   end function
+
+   function primme_set_member_matvec_single(primme, label, value) bind(c, name="primme_set_member")
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_eigs_matvec_single
+      type(c_ptr), value :: primme
+      integer(c_int), value :: label
+      procedure(primme_eigs_matvec_single) :: value
+      integer(c_int) :: primme_set_member_matvec_single
+   end function
+
+   function primme_set_member_matvec_complexsingle(primme, label, value) bind(c, name="primme_set_member")
+      use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t
+      import :: primme_eigs_matvec_complexsingle
+      type(c_ptr), value :: primme
+      integer(c_int), value :: label
+      procedure(primme_eigs_matvec_complexsingle) :: value
+      integer(c_int) :: primme_set_member_matvec_complexsingle
+   end function
+end interface
 
 interface
    function primme_set_method(method, primme) bind(c)
@@ -386,12 +445,12 @@ interface xprimme_normal
    function cprimme_normal(evals, evecs, rnorms, primme) bind(c)
       use iso_c_binding, only: c_ptr, c_funptr, c_int, c_int64_t, c_float
       real(c_float), dimension(*), intent(out) :: rnorms
-      complex(c_real), dimension(*), intent(out) :: evals
+      complex(c_float), dimension(*), intent(out) :: evals
       complex(c_float), dimension(*) :: evecs
       type(c_ptr), value :: primme
       integer(c_int) :: cprimme_normal
    end function
-end interface xprimme
+end interface xprimme_normal
 
 interface magma_xprimme_normal
    function magma_zprimme_normal(evals, evecs, rnorms, primme) bind(c)
@@ -411,6 +470,6 @@ interface magma_xprimme_normal
       type(c_ptr), value :: primme
       integer(c_int) :: magma_cprimme_normal
    end function
-end interface magma_xprimme
+end interface magma_xprimme_normal
 
 

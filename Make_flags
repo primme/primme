@@ -27,7 +27,8 @@ SOLIBRARY = libprimme.$(SLIB)
 # POSIX systems (e.g., Linux, MinGW, Cygwin)
 #---------------------------------------------------------------
 CC       ?= cc
-F77      ?= gfortran
+F77      := gfortran
+FC       := gfortran
 DEFINES  ?= -DF77UNDERSCORE 
 CFLAGS   ?= -O -fPIC -DNDEBUG
 FFLAGS   ?= -fno-second-underscore -O
