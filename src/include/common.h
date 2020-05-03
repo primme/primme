@@ -150,6 +150,10 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
    ARITH(65504.0, 65504.0, FLT_MAX, FLT_MAX, DBL_MAX, DBL_MAX, FLT128_MAX,     \
          FLT128_MAX)
 
+#define HOST_MACHINE_MAX                                                       \
+   ARITH(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, DBL_MAX, DBL_MAX, FLT128_MAX,     \
+         FLT128_MAX)
+
 #define PRIMME_OP_SCALAR                                                       \
    ARITH(primme_op_half, primme_op_half, primme_op_float, primme_op_float,     \
          primme_op_double, primme_op_double, primme_op_quad, primme_op_quad)
@@ -168,7 +172,12 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
 #endif
 
 #ifndef __cplusplus
-#include <tgmath.h>   /* select proper function abs from fabs, cabs... */
+/* pgcc does not provide tgmath.h and the system's one may not support PGI */
+#  ifdef __PGI
+#    include <math.h>
+#  else
+#    include <tgmath.h>   /* select proper function abs from fabs, cabs... */
+#  endif
 #endif
 
 /* exp and log macros cause warnings on some systems. PRIMME only uses  */
