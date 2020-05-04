@@ -8,7 +8,8 @@ include ../Link_flags
 
 SOBJS= COMMON/shared_utils.o COMMON/ioandtest.o
 COMMON_INCLUDE = -I./COMMON -I../include
-override INCLUDE += $(COMMON_INCLUDE)
+INCLUDE := $(COMMON_INCLUDE)
+FINCLUDE := $(COMMON_INCLUDE)
 LIBS := ../lib/libprimme.a $(LIBS)
 
 USE_NATIVE    ?= yes
@@ -34,7 +35,7 @@ ifeq ($(USE_PARASAILS), yes)
   endif
   DEFINES += -DUSE_PARASAILS
   SOBJS += COMMON/parasailsw.o COMMON/csr.o COMMON/ssrcsr.o COMMON/mmio.o
-  override INCLUDE += -I$(PARASAILS_INCLUDE_DIR)
+  INCLUDE += -I$(PARASAILS_INCLUDE_DIR)
   LIBDIRS += -L$(PARASAILS_LIB_DIR)
   LIBS += -lParaSails
 endif
@@ -43,7 +44,7 @@ ifeq ($(USE_PETSC), yes)
   include ${PETSC_DIR}/lib/petsc/conf/variables
   DEFINES += -DUSE_PETSC
   SOBJS += COMMON/petscw.o COMMON/mmio.o
-  override INCLUDE += $(PETSC_CCPPFLAGS)
+  INCLUDE += $(PETSC_CCPPFLAGS)
   FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
   LIBS += $(PETSC_LIB)
@@ -52,7 +53,7 @@ endif
 ifeq ($(USE_RSB), yes)
   DEFINES += -DUSE_RSB
   SOBJS += COMMON/rsbw.o
-  override INCLUDE += -I$(LIBRSB_INCLUDE_DIR)
+  INCLUDE += -I$(LIBRSB_INCLUDE_DIR)
   LIBDIRS += -L$(LIBRSB_LIB_DIR)
   override LIBS += -lrsb
   override LDFLAGS += -fopenmp
@@ -83,7 +84,7 @@ primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o
 	$(CC) $(CFLAGS) $(DEFINES) -DUSE_DOUBLECOMPLEX $(INCLUDE) -c $< -o $@
 
 .f.o .F.o:
-	$(F77) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
+	$(F77) $(FFLAGS) $(FINCLUDE) -c $< -o $@
 
 all: drivers
 
