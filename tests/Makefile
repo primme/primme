@@ -10,7 +10,7 @@ SOBJS= COMMON/shared_utils.o COMMON/ioandtest.o
 COMMON_INCLUDE = -I./COMMON -I../include
 INCLUDE := $(COMMON_INCLUDE)
 FINCLUDE := $(COMMON_INCLUDE)
-LIBS := ../lib/libprimme.a $(LIBS)
+LIBRARIES := ../lib/libprimme.a $(LIBS)
 
 USE_NATIVE    ?= yes
 USE_PETSC     ?= $(if $(findstring undefined,$(origin PETSC_DIR)),no,yes)
@@ -37,7 +37,7 @@ ifeq ($(USE_PARASAILS), yes)
   SOBJS += COMMON/parasailsw.o COMMON/csr.o COMMON/ssrcsr.o COMMON/mmio.o
   INCLUDE += -I$(PARASAILS_INCLUDE_DIR)
   LIBDIRS += -L$(PARASAILS_LIB_DIR)
-  LIBS += -lParaSails
+  LIBRARIES += -lParaSails
 endif
 
 ifeq ($(USE_PETSC), yes)
@@ -47,7 +47,7 @@ ifeq ($(USE_PETSC), yes)
   INCLUDE += $(PETSC_CCPPFLAGS)
   FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
-  LIBS += $(PETSC_LIB)
+  LIBRARIES += $(PETSC_LIB)
 endif
 
 ifeq ($(USE_RSB), yes)
@@ -55,7 +55,7 @@ ifeq ($(USE_RSB), yes)
   SOBJS += COMMON/rsbw.o
   INCLUDE += -I$(LIBRSB_INCLUDE_DIR)
   LIBDIRS += -L$(LIBRSB_LIB_DIR)
-  override LIBS += -lrsb
+  LIBRARIES += -lrsb
   override LDFLAGS += -fopenmp
   override CFLAGS += -fopenmp
 endif
@@ -66,16 +66,16 @@ OBJSdouble = $(sort $(SOBJSdouble)) $(patsubst %.o,%double.o,$(OBJS))
 OBJSdoublecomplex = $(sort $(SOBJSdoublecomplex)) $(patsubst %.o,%doublecomplex.o,$(OBJS))
 
 primme_double: $(OBJSdouble) driverdouble.o
-	$(CLDR) -o primme_double $(OBJSdouble) driverdouble.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CLDR) -o primme_double $(OBJSdouble) driverdouble.o $(LIBDIRS) $(INCLUDE) $(LDFLAGS) $(LIBRARIES) 
 
 primme_doublecomplex: $(OBJSdoublecomplex) driverdoublecomplex.o
-	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) driverdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CLDR) -o primme_doublecomplex $(OBJSdoublecomplex) driverdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LDFLAGS) $(LIBRARIES) 
 
 primmesvds_double: $(OBJSdouble) driversvdsdouble.o
-	$(CLDR) -o primmesvds_double $(OBJSdouble) driversvdsdouble.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CLDR) -o primmesvds_double $(OBJSdouble) driversvdsdouble.o $(LIBDIRS) $(INCLUDE) $(LDFLAGS) $(LIBRARIES) 
 
 primmesvds_doublecomplex: $(OBJSdoublecomplex) driversvdsdoublecomplex.o
-	$(CLDR) -o primmesvds_doublecomplex $(OBJSdoublecomplex) driversvdsdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CLDR) -o primmesvds_doublecomplex $(OBJSdoublecomplex) driversvdsdoublecomplex.o $(LIBDIRS) $(INCLUDE) $(LDFLAGS) $(LIBRARIES) 
 
 %double.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) -DUSE_DOUBLE $(INCLUDE) -c $< -o $@

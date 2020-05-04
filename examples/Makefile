@@ -8,7 +8,7 @@ include ../Link_flags
 
 INCLUDE := -I../include
 FINCLUDE := -I../include
-LIBS := ../lib/libprimme.a $(LIBS)
+LIBRARIES := ../lib/libprimme.a $(LIBS)
 
 EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_eigs_zseq_normal ex_svds_dseq ex_svds_zseq
 EXAMPLES_CXX = ex_eigs_zseqxx ex_svds_zseqxx
@@ -22,7 +22,7 @@ ifeq ($(USE_PETSC), yes)
   INCLUDE += $(PETSC_CCPPFLAGS)
   FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
-  LIBS += $(PETSC_LIB)
+  LIBRARIES += $(PETSC_LIB)
   EXAMPLES_C += ex_eigs_petsc ex_svds_petsc ex_eigs_mpi
   EXAMPLES_F += ex_eigs_petscf77 ex_eigs_petscf77ptr ex_svds_petscf77 ex_svds_petscf77ptr
   MPIRUN ?= mpirun -np 4
@@ -39,13 +39,13 @@ ifeq ($(PRIMME_WITH_MAGMA),yes)
 endif
 
 $(EXAMPLES_C): %: %.o
-	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LDFLAGS) $(LIBRARIES)
 
 $(EXAMPLES_CXX): %: %.o
-	$(CXX) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CXX) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LDFLAGS) $(LIBRARIES)
 
 $(EXAMPLES_F): % : %.o
-	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LDFLAGS) $(LIBRARIES)
 
 .c.o:
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
