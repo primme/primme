@@ -436,6 +436,10 @@ int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    if (x == y && ldx == ldy)
       return 0;
 
+   /* Do nothing for zero-size matrices */
+   if (m <= 0 || n <= 0)
+      return 0;
+
    /* Copy a contiguous memory region */
    if (ldx == ldy && ldx == m) {
       memmove(y, x, sizeof(SCALAR) * m * n);

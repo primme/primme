@@ -1644,18 +1644,18 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       assert(ldV == ldW); /* This functions only works in this way */
       CHKERR(Num_update_VWXR_Sprimme(V, W, BV, nLocal, basisSize, ldV,
                hVecsBlock, basisSize, ldhVecs, hValsBlock,
-               &X[(*blockSize)*ldV], 0, computeXR?blockNormsSize:0, ldV,
+               X?&X[(*blockSize)*ldV]:NULL, 0, computeXR?blockNormsSize:0, ldV,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
-               &R[(*blockSize)*ldV], 0, computeXR?blockNormsSize:0, ldV, computeXR?&blockNorms[*blockSize]:NULL,
-               &BX[(*blockSize)*ldV], 0, BX?blockNormsSize:0, ldV,
+               R?&R[(*blockSize)*ldV]:NULL, 0, computeXR?blockNormsSize:0, ldV, computeXR?&blockNorms[*blockSize]:NULL,
+               BX?&BX[(*blockSize)*ldV]:NULL, 0, BX?blockNormsSize:0, ldV,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
                &blockNorms[*blockSize], 0, !computeXR?blockNormsSize:0,
                NULL, 0, 0,
                NULL, 0, 0,
-               &XNorms[*blockSize], 0, primme->massMatrixMatvec?blockNormsSize:0,
+               XNorms?&XNorms[*blockSize]:NULL, 0, primme->massMatrixMatvec?blockNormsSize:0,
                ctx));
 
       /* Don't trust residual norm smaller than the error in the residual norm */
