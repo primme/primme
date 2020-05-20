@@ -59,7 +59,6 @@ LEXFLAGS=-lfl
 CC="cc"
 AWK="awk"
 F2C="f2c"
-PYTHON="python"
 
 cat <<EOF > $TMP/lenscrub.l
 /* {definitions} */
@@ -103,22 +102,6 @@ EOF
 ${LEX} -o${TMP}/lenscrub.c ${TMP}/lenscrub.l
 ${CC} -o ${TMP}/lenscrub ${TMP}/lenscrub.c ${LEXFLAGS}
 
-cat << 'EOF' > $TMP/chararrayp1.py
-import re, sys
-
-# Replace var[number] by var[number + 1]
-def repl_var(m):
-        return "%s[%d]" % (m.group(1), int(m.group(2))+1)
-
-# Apply repl_var to all declared variables in 'char var_decl [, var_decl]+ ;'
-pvar = r'\s*'.join(r'(\w+) \[ (\d+) \]'.split())
-def repl_declaration(m):
-        return re.sub(pvar, repl_var, m.group(0))
-
-# Increase the length by one of all char arrays
-p = r'\s*'.join(r'char \w+ \[ \d+ \] (?:, \w+ \[ \d+ \])* ;'.split())
-sys.stdout.write(re.sub(p, repl_declaration, sys.stdin.read()))
-EOF
 
 cat << 'EOF'
 /* f2c.h  --  Standard Fortran to C header file */
@@ -336,7 +319,7 @@ typedef struct Namelist Namelist;
 #define pow_zz(R,A,B) {pCd(R) = cpow(Cd(A),*(B));}
 #define s_cat(lpp, rpp, rnp, np, llp) { 	ftnlen i, nc, ll; char *f__rp, *lp; 	ll = (llp); lp = (lpp); 	for(i=0; i < (int)*(np); ++i) {         	nc = ll; 	        if((rnp)[i] < nc) nc = (rnp)[i]; 	        ll -= nc;         	f__rp = (rpp)[i]; 	        while(--nc >= 0) *lp++ = *(f__rp)++;         } 	while(--ll >= 0) *lp++ = ' '; }
 #define s_cmp(a,b,c,d) ((integer)strncmp((a),(b),f2cmin((c),(d))))
-#define s_copy(A,B,C,D) { strncpy((A),(B),f2cmin((C),(D))); }
+#define s_copy(A,B,C,D) { int __i,__m; for (__i=0, __m=f2cmin((C),(D)); __i<__m && (B)[__i] != 0; ++__i) (A)[__i] = (B)[__i]; }
 #define sig_die(s, kill) { exit(1); }
 #define s_stop(s, n) {exit(0);}
 static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
@@ -526,7 +509,6 @@ $AWK '
 	}
 	/^$/ {	a=1; }' |
 $SED -e "
-	s/#include \"f2c.h\"//g"  |
-$PYTHON $TMP/chararrayp1.py
+	s/#include \"f2c.h\"//g" 
 
 rm -rf $TMP
