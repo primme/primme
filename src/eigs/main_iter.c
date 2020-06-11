@@ -741,43 +741,45 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             if (primme->locking && !primme->massMatrixMatvec &&
                   !primme->correctionParams.precondition &&
                   primme->correctionParams.maxInnerIterations == 0) {
-               for (i = 0; i < blockSize0 && numConverged < primme->numEvals;
-                     i++) {
-                  HREAL normXx = 0.0;
-                  if (primme->orth == primme_orth_explicit_I) {
-                     HSCALAR *Xx = NULL;
-                     CHKERR(Num_malloc_SHprimme(numLocked, &Xx, ctx));
-                     CHKERR(Num_zero_matrix_SHprimme(
-                           Xx, numLocked, 1, numLocked, ctx));
-                     CHKERR(Num_gemv_SHprimme("N", numLocked, basisSize, 1.0,
-                           &VtBV[ldVtBV * numLocked], ldVtBV,
-                           &hVecs[iev[i] * basisSize], 1, 0.0, Xx, 1, ctx));
-                     normXx =
-                           ABS(Num_dot_SHprimme(numLocked, Xx, 1, Xx, 1, ctx));
-                     CHKERR(Num_free_SHprimme(Xx, ctx));
-                  }
-                  HREAL normRlockedi =
-                        ABS(Num_dot_SHprimme(ldRlocked, &Rlocked[ldRlocked * i],
-                              1, &Rlocked[ldRlocked * i], 1, ctx));
-                  HREAL newBlockNorm =
-                        sqrt(max(blockNorms[i] * blockNorms[i] -
-                                       normRlockedi * (1. + normXx),
-                              0.0));
-                  CHKERR(check_convergence_Sprimme(&V[(basisSize + i) * ldV],
-                        ldV, 1 /* given X */, NULL, 0, 0 /* not given R */,
-                        evecs, numLocked, ldevecs, Bevecs, ldBevecs, VtBV,
-                        ldVtBV, 0, 1, &flags[iev[i]], &newBlockNorm,
-                        &hVals[iev[i]], &reset,
-                        -1 /* don't check practically convergence */, ctx));
-                  basisNorms[iev[i]] = newBlockNorm;
-                  if (flags[iev[i]] == CONVERGED) {
-                     flags[iev[i]] = PRACTICALLY_CONVERGED;
-                     numConverged++;
-                     /* Report a pair was soft converged */
-                     CHKERR(monitorFun_Sprimme(hVals, basisSize, flags, &iev[i],
-                           1, basisNorms, numConverged, NULL, 0, NULL, NULL,
-                           -1, -1.0, NULL, 0.0, primme_event_converged,
-                           startTime, ctx));
+               if (numLocked > 0) {
+                  for (i = 0; i < blockSize0 && numConverged < primme->numEvals;
+                        i++) {
+                     HREAL normXx = 0.0;
+                     if (primme->orth == primme_orth_explicit_I) {
+                        HSCALAR *Xx = NULL;
+                        CHKERR(Num_malloc_SHprimme(numLocked, &Xx, ctx));
+                        CHKERR(Num_zero_matrix_SHprimme(
+                              Xx, numLocked, 1, numLocked, ctx));
+                        CHKERR(Num_gemv_SHprimme("N", numLocked, basisSize, 1.0,
+                              &VtBV[ldVtBV * numLocked], ldVtBV,
+                              &hVecs[iev[i] * basisSize], 1, 0.0, Xx, 1, ctx));
+                        normXx = ABS(
+                              Num_dot_SHprimme(numLocked, Xx, 1, Xx, 1, ctx));
+                        CHKERR(Num_free_SHprimme(Xx, ctx));
+                     }
+                     HREAL normRlockedi = ABS(
+                           Num_dot_SHprimme(ldRlocked, &Rlocked[ldRlocked * i],
+                                 1, &Rlocked[ldRlocked * i], 1, ctx));
+                     HREAL newBlockNorm =
+                           sqrt(max(blockNorms[i] * blockNorms[i] -
+                                          normRlockedi * (1. + normXx),
+                                 0.0));
+                     CHKERR(check_convergence_Sprimme(&V[(basisSize + i) * ldV],
+                           ldV, 1 /* given X */, NULL, 0, 0 /* not given R */,
+                           evecs, numLocked, ldevecs, Bevecs, ldBevecs, VtBV,
+                           ldVtBV, 0, 1, &flags[iev[i]], &newBlockNorm,
+                           &hVals[iev[i]], &reset,
+                           -1 /* don't check practically convergence */, ctx));
+                     basisNorms[iev[i]] = newBlockNorm;
+                     if (flags[iev[i]] == CONVERGED) {
+                        flags[iev[i]] = PRACTICALLY_CONVERGED;
+                        numConverged++;
+                        /* Report a pair was soft converged */
+                        CHKERR(monitorFun_Sprimme(hVals, basisSize, flags,
+                              &iev[i], 1, basisNorms, numConverged, NULL, 0,
+                              NULL, NULL, -1, -1.0, NULL, 0.0,
+                              primme_event_converged, startTime, ctx));
+                     }
                   }
                }
                CHKERR(Num_free_SHprimme(Rlocked, ctx));
@@ -1513,11 +1515,12 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i=*blockSize; i<blockNormsSize; i++)
          flagsBlock[i-*blockSize] = flags[iev[i]];
-      CHKERR(check_convergence_Sprimme(&X[(*blockSize) * ldV], ldV, computeXR,
-            &R[(*blockSize) * ldW], ldW, computeXR, evecs, numLocked, ldevecs,
-            Bevecs, ldBevecs, VtBV, ldVtBV, 0, blockNormsSize, flagsBlock,
-            &blockNorms[*blockSize], hValsBlock, reset, practConvChecking,
-            ctx));
+      CHKERR(check_convergence_Sprimme(X ? &X[(*blockSize) * ldV] : NULL, ldV,
+            computeXR, R ? &R[(*blockSize) * ldW] : NULL, ldW, computeXR, evecs,
+            numLocked, ldevecs, Bevecs, ldBevecs, VtBV, ldVtBV, 0,
+            blockNormsSize, flagsBlock,
+            blockNorms ? &blockNorms[*blockSize] : NULL, hValsBlock, reset,
+            practConvChecking, ctx));
 
       /* Compact blockNorms, X and R for the unconverged pairs in    */
       /* iev(*blockSize:*blockSize+blockNormsize). Do the proper     */
