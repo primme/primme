@@ -1249,7 +1249,7 @@ int primme_set_member(primme_params *primme, primme_params_label label,
               primme->correctionParams.projectors.SkewX = (int)*(PRIMME_INT*)value;
       break;
       case PRIMME_correctionParams_convTest:
-              primme->correctionParams.convTest = *(PRIMME_INT*)value;
+              primme->correctionParams.convTest = (primme_convergencetest)*(PRIMME_INT*)value;
       break;
       case PRIMME_correctionParams_relTolBase:
               primme->correctionParams.relTolBase = *(double*)value;
