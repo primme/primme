@@ -787,17 +787,29 @@ HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
    cublasHandle_t cublas_handle =
          magma_queue_get_cublas_handle(*(magma_queue_t *)ctx.queue);
    assert(PRIMME_OP_HSCALAR == primme_op_float);
-   HSCALAR result = 0.0;
+   XSCALAR result0;
+   SET_ZERO(result0);
    cublasPointerMode_t mode;
    CHKERRCUBLAS(cublasGetPointerMode(cublas_handle, &mode));
    CHKERRCUBLAS(cublasSetPointerMode(cublas_handle, CUBLAS_POINTER_MODE_HOST));
-   cublasStatus_t ret = cublasDotEx(cublas_handle, n, x, CUDA_R_16F, incx, y,
-         CUDA_R_16F, incy, &result, CUDA_R_32F, CUDA_R_32F);
+   cublasStatus_t ret;
+   HSCALAR result;
+   if (x == y) {
+      ret = cublasNrm2Ex(cublas_handle, n, x, CUDA_R_16F, incx, &result0,
+            CUDA_R_16F, CUDA_R_32F);
+      result = TO_COMPLEX(result0) * TO_COMPLEX(result0);
+   } else {
+      ret = cublasDotEx(cublas_handle, n, x, CUDA_R_16F, incx, y, CUDA_R_16F,
+            incy, &result0, CUDA_R_16F, CUDA_R_32F);
+      result = TO_COMPLEX(result0);
+   }
    CHKERRCUBLAS(cublasSetPointerMode(cublas_handle, mode));
    if (ret == CUBLAS_STATUS_NOT_SUPPORTED) {
       CHKERR(Num_gemm_ddh_Sprimme("N", "T", 1, 1, n, (HSCALAR)1.0, x, incx, y,
             incy, (HSCALAR)0.0, &result, 1, ctx));
-   } else CHKERRCUBLAS(ret);
+   } else {
+      CHKERRCUBLAS(ret);
+   }
  
    CHKERRM(cudaSuccess != cudaGetLastError(), (HSCALAR)NAN,
          "Unexpected CUDA error!");
