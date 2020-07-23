@@ -1,6 +1,5 @@
 # cython: language_level=2, c_string_type=bytes, c_string_encoding=ascii, embedsignature=True
 
-from inspect import signature
 import traceback
 import numpy as np
 cimport numpy as np
@@ -18,6 +17,15 @@ except Exception as e:
     gpuarray_exception = e
     gpuarray = None
 
+try:
+    from inspect import signature
+    def __getnumargs(f):
+            return len(signature(f).parameters)
+except:
+    from inspect import getargspec
+    def __getnumargs(f):
+            return len(getargspec(f).args)
+
 class LinearOperator:
     def __init__(self, shape, matvec, rmatvec=None, support_matmat=True, dtype=None):
 
@@ -31,7 +39,7 @@ class LinearOperator:
             return Y
 
         def __process_matvec(matvec):
-            if len(signature(matvec).parameters) <= 1:
+            if __getnumargs(matvec) <= 1:
                 matvec2 = lambda X,_: matvec(X)
             else:
                 matvec2 = matvec
@@ -425,7 +433,6 @@ cdef void c_matvec_gen_gpuarray(cython.p_char operator, numerics *x, np.int64_t 
         magma_queue_sync(__queue)
         x_py = gpuarray.GPUArray((n,blockSize[0]), get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
         y_py = gpuarray.GPUArray((n,blockSize[0]), get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
-        y_py.fill(0)
         pycuda.autoinit.context.synchronize()
         y0_py = matvec(x_py, y_py)
         if y0_py.ptr != y_py.ptr:
@@ -460,7 +467,7 @@ cdef void c_convtest_gpuarray(double *eval, numerics *evec, double *resNorm, int
  
 
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
-          ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
+          ncv=None, maxiter=None, tol=None, reltol=None, return_eigenvectors=True,
           Minv=None, OPinv=None, mode='normal', lock=None, use_gpuarray=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
           maxPrevRetain=0, method=None, return_history=False, convtest=None,
@@ -523,8 +530,14 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
         An eigenpair ``(lamba,v)`` is marked as converged when ||A*v - lambda*B*v|| < max(|eig(A,B)|)*tol.
 
-        The value is ignored if convtest is provided.
+        An error is raised if convtest is also provided.
+    reltol : float
+        Relative tolerance for eigenpairs (stopping criterion). The default value is None.
 
+        An eigenpair ``(lamba,v)`` is marked as converged when ||A*v - lambda*B*v|| < max(|eig(A,B)|)*tol (if given)
+        and ||A*v - lambda*B*v|| < |lambda|*reltol.
+
+        An error is raised if convtest is also provided.
     Minv : (not supported yet)
         The inverse of M in the generalized eigenproblem.
     OPinv : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator.OperatorBase, or function
@@ -691,7 +704,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     # destination array, that is, the signature is y = A(x, y). Modify the
     # input A to allow a second input parameter.
 
-    if use_gpuarray and len(signature(A).parameters) == 1:
+    if use_gpuarray and __getnumargs(A) == 1:
         def A(x, y=None, A=A): return A(x)
  
     __primme_params_set(PP, "matrix", A)
@@ -748,7 +761,24 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         __primme_params_set(PP, "numTargetShifts", 1)
         primme_params_set_doubles(pp, "targetShifts", &sigma_c)
 
-    __primme_params_set(PP, "eps", tol)
+    if tol is not None:
+        if convtest is not None:
+            raise ValueError('Giving tol and convtest is not allowed.')
+        __primme_params_set(PP, "eps", tol)
+
+    if reltol is not None:
+        if convtest is not None:
+            raise ValueError('Giving reltol and convtest is not allowed.')
+        def check_convergence(eval, evec, resNorm):
+            if resNorm is None: return True
+            if tol is not None:
+                aNorm = __primme_params_get(PP, "stats_estimateLargestSVal")
+                if resNorm > aNorm*tol: return False
+            if eval is not None and resNorm > abs(eval)*reltol:
+                return False
+            return True
+
+        convtest = check_convergence
 
     if ncv is not None:
         __primme_params_set(PP, "maxBasisSize", ncv)
@@ -1278,17 +1308,14 @@ cdef void c_svds_matvec_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.i
         n = primme_svds_params_get_int(primme_svds, "nLocal")
         x_shape = (n if transpose[0] == 0 else m, blockSize[0])
         y_shape = (m if transpose[0] == 0 else n, blockSize[0])
+        magma_queue_sync(__queue)
         x_py = gpuarray.GPUArray(x_shape, dtype=get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
         y_py = gpuarray.GPUArray(y_shape, dtype=get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
-        y_py.fill(0)
-        #cudaMemset2D(y, ldy[0]*sizeof(numerics), 0, y_shape[0]*sizeof(numerics), blockSize[0])
-        #magma_queue_sync(__queue)
-        #print(blockSize[0], ldx[0], ldy[0], m, n)
         pycuda.autoinit.context.synchronize()
         if transpose[0] == 0:
-            y0_py = A.matvec(x_py, y_py)
+            y0_py = A.matmat(x_py, y_py)
         else:
-            y0_py = A.rmatvec(x_py, y_py)
+            y0_py = A.rmatmat(x_py, y_py)
         if y_py.ptr != y0_py.ptr:
             y_py.set(y0_py)
         pycuda.autoinit.context.synchronize()
@@ -1359,7 +1386,7 @@ def __get_svds_method(method):
 def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
-         u0=None, orthou0=None, orthov0=None, use_gpuarray=None,
+         u0=None, orthou0=None, orthov0=None, reltol=None, use_gpuarray=None,
          return_stats=False, maxBlockSize=0,
          method=None, methodStage1=None, methodStage2=None,
          return_history=False, convtest=None, **kargs):
@@ -1381,10 +1408,19 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         A triplet ``(u,sigma,v)`` is marked as converged when
         (||A*v - sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5
         is less than "tol" * ||A||, or close to the minimum tolerance that
-        the method can achieve. See the note.
+        the method can achieve.
 
-        The value is ignored if convtest is provided.
+        An error is raised if convtest is also provided.
+    reltol : float, optional
+        Relative tolerance for singular values. The default value is None.
 
+        A triplet ``(u,sigma,v)`` is marked as converged when
+        (||A*v - sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5
+        is less than "tol" * ||A|| if "tol" is given, and
+        (||A*v - sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5
+        is less than "reltol" * sigma.
+
+        An error is raised if convtest is also provided.
     which : str ['LM' | 'SM'] or number, optional
         Which `k` singular values to find:
 
@@ -1546,6 +1582,23 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         else:
             raise RuntimeError("Error trying to coerce A as scipy's LinearOperator. A is not is not a list, np.ndarray, scipy.sparse.linalg.interface.LinearOperator or pycuda.sparse.operator.OperatorBase, and use_gpuarray is not set") from numpy_exception
 
+    if use_gpuarray:
+        class Agpu:
+            def __init__(self, A):
+                self.shape = A.shape
+                self.dtype = A.dtype
+                if __getnumargs(A.matmat) == 1:
+                    self._matmat = lambda x,_: A.matmat(x)
+                else:
+                    self._matmat = lambda x,y: A.matmat(x,y)
+                if __getnumargs(A.rmatmat) == 1:
+                    self._rmatmat = lambda x,_: A.rmatmat(x)
+                else:
+                    self._rmatmat = lambda x,y: A.rmatmat(x,y)
+            def matmat(self,x,y): return self._matmat(x,y)
+            def rmatmat(self,x,y): return self._rmatmat(x,y)
+        A = Agpu(A)
+ 
     cdef int m, n
     m, n = A.shape
     __primme_svds_params_set(PP, "matrix", A)
@@ -1629,7 +1682,10 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         primme_svds_params_set_doubles(pp, "targetShifts", &sigma_c)
         __primme_svds_params_set(PP, "target", "primme_svds_closest_abs")
 
-    __primme_svds_params_set(PP, "eps", tol)
+    if tol is not None:
+        if convtest is not None:
+            raise ValueError('Giving tol and convtest is not allowed.')
+        __primme_svds_params_set(PP, "eps", tol)
 
     if ncv:
         __primme_svds_params_set(PP, "maxBasisSize", ncv)
@@ -1637,6 +1693,21 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if maxiter:
         # NOTE: every eigensolver iteration spend two matvecs*blockSize
         __primme_svds_params_set(PP, "maxMatvecs", maxiter*(maxBlockSize if maxBlockSize else 1)/2)
+
+    if reltol is not None:
+        if convtest is not None:
+            raise ValueError('Giving reltol and convtest is not allowed.')
+        def check_convergence(sval, lsvec, rsvec, resNorm):
+            if resNorm is None: return True
+            if tol is not None:
+                aNorm = __primme_svds_params_get(PP, "aNorm")
+                if resNorm > aNorm*tol: return False
+            if sval is not None and resNorm > sval*reltol:
+                return False
+            return True
+
+        convtest = check_convergence
+
 
     if maxBlockSize:
         __primme_svds_params_set(PP, "maxBlockSize", maxBlockSize)
@@ -1655,7 +1726,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             raise ValueError("%s don't have the same number of columns." % var_names)
 
         if u is not None and v is None:
-            v, _ = np.linalg.qr(A.H.matmult(u))
+            v, _ = np.linalg.qr(A.rmatmult(u))
 
         if v is not None and u is None:
             u, _ = np.linalg.qr(A.matmult(v))
@@ -1773,7 +1844,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             svecs_z = svecs
             svecs_p = <void*>&svecs_z[0]
     else:
-        svecs = gpuarray.zeros((m+n)*(numOrthoConst+k), dtype)
+        svecs = gpuarray.zeros(((m+n)*(numOrthoConst+k),), dtype, order='F')
         svecs_p = <void*>(<size_t>svecs.ptr)
 
     u0, v0 = check_pair(u0, v0, "v0 or u0")
@@ -1851,7 +1922,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     norms = norms[0:initSize]
 
     # Make copies and transpose conjugate svecsr
-    svecsl = svecs[m*numOrthoConst:m*(numOrthoConst+initSize)].reshape((m,initSize), order='F').copy()
+    svecsl = svecs[m*numOrthoConst:m*(numOrthoConst+initSize)].reshape((m,initSize), order='F').T.copy().T
     svecsr = svecs[m*(numOrthoConst+initSize)+n*numOrthoConst:(m+n)*(numOrthoConst+initSize)].reshape((n,initSize), order='F').T.conj().copy()
 
     if not return_stats:
