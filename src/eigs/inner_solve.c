@@ -323,9 +323,9 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       int conv;
       for (i=0; i<blockSize; i++) p0[i] = i;
       for (i = conv = 0; i < blockSize; i++) {
-         if (!ISFINITE(sigma_prev[i]) || sigma_prev[i] == 0.0L) {
+         if (!ISFINITE(sigma_prev[i]) || fabs(sigma_prev[i]) == 0.0) {
             PRINTF(5, "Exiting because SIGMA %e in block vector %d",
-                  sigma_prev[i], p[i]);
+                  (double)sigma_prev[i], p[i]);
 
             /* sol = r if first iteration */
             if (numIts == 0) {
@@ -339,7 +339,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
          alpha_prev[p[i]] = rho_prev[p[i]] / sigma_prev[i];
          if (!ISFINITE(alpha_prev[p[i]])) {
             PRINTF(5, "Exiting because ALPHA %e in block vector %d",
-                  alpha_prev[p[i]], p[i]);
+                  (double)alpha_prev[p[i]], p[i]);
 
             /* sol = r if first iteration */
             if (numIts == 0) {
@@ -441,7 +441,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       for (i = conv = 0; i < blockSize; i++) {
          if (fabs(rho_prev[p[i]]) == 0.0L ) {
             PRINTF(5, "Exiting because abs(rho) %e in block vector %d",
-                  fabs(rho_prev[p[i]]), p[i]);
+                  (double)fabs(rho_prev[p[i]]), p[i]);
             CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
@@ -452,12 +452,14 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
                   "Exiting because the solution vector has non-finite values "
                   "in block vector %d",
                   p[i]);
+            CHKERR(Num_zero_matrix_Sprimme(
+                  &sol[ldsol * i], nLocal, 1, ldsol, ctx));
             CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
          }
 
          if (numIts > 0 && tau[p[i]] < LTolerance) {
-            PRINTF(5, " tau < LTol %e %e in block vector %d", tau[p[i]],
+            PRINTF(5, " tau < LTol %e %e in block vector %d", (double)tau[p[i]],
                   LTolerance, p[i]);
             CHKERR(perm_set_value_on_pos(p0, i, blockSize - ++conv, blockSize));
             continue;
