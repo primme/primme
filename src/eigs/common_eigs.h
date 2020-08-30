@@ -41,6 +41,7 @@
 enum conv_flags {
    UNCONVERGED,
    SKIP_UNTIL_RESTART,
+   SKIP,
    CONVERGED,
    PRACTICALLY_CONVERGED
 };

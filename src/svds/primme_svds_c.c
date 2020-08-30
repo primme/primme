@@ -68,6 +68,7 @@
    (PRIMME_SVDS_STATS).timeOrtho          OP  (PRIMME_STATS).timeOrtho         ;\
    (PRIMME_SVDS_STATS).timeGlobalSum      OP  (PRIMME_STATS).timeGlobalSum     ;\
    (PRIMME_SVDS_STATS).timeBroadcast      OP  (PRIMME_STATS).timeBroadcast     ;\
+   (PRIMME_SVDS_STATS).timeDense          OP  (PRIMME_STATS).timeDense         ;\
    (PRIMME_SVDS_STATS).lockingIssue       OP  (PRIMME_STATS).lockingIssue      ;\
 }
 
@@ -456,6 +457,12 @@ int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,
    primme_svds->stats.timePrecond                   = 0.0;
    primme_svds->stats.timeOrtho                     = 0.0;
    primme_svds->stats.timeGlobalSum                 = 0.0;
+   primme_svds->stats.timeBroadcast                 = 0.0;
+   primme_svds->stats.timeDense                     = 0.0;
+   primme_svds->stats.estimateErrorOnA              = 0.0;
+   primme_svds->stats.maxConvTol                    = 0.0;
+   primme_svds->stats.estimateResidualError         = 0.0;
+   primme_svds->stats.estimateOrthoError            = 0.0;
    primme_svds->stats.lockingIssue                  = 0;
 
    /* Cast svals, svecs and resNorms to working precision */
@@ -742,10 +749,13 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
       /*    d'^2 - d^2 <= |r_AtA| -> sqrt(d'^2-|r_AtA|) <= d               */
       /*                             sqrt(d'^2-|r|*d')  <= d               */
 
-      double min_val = primme_svds->aNorm * MACHINE_EPSILON;
+      double min_val = max(primme_svds->aNorm * MACHINE_EPSILON,
+            primme_svds->stats.estimateErrorOnA * 2);
       for (i = 0; i < primme_svds->initSize; i++) {
          primme->targetShifts[i] =
-            max(sqrt(fabs(max(svals[i] - rnorms[i], 0.0) * svals[i])), min_val);
+               max(sqrt(fabs(max(svals[i] - max(rnorms[i], min_val), 0.0) *
+                             svals[i])),
+                     min_val);
       }
       for (; i < primme_svds->numSvals; i++) {
          primme->targetShifts[i] = min_val;
@@ -755,7 +765,12 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
 
       qsort(primme->targetShifts, primme_svds->numSvals, sizeof(double),
             comp_double);
-      primme->numTargetShifts = primme_svds->numSvals;
+
+      if (primme_svds->numSvals > 0 && primme->targetShifts[0] <= min_val) {
+         primme->numTargetShifts = 1;
+      } else {
+         primme->numTargetShifts = primme_svds->numSvals;
+      }
 
    } else if (primme_svds->target == primme_svds_smallest &&
               primme->targetShifts == NULL) {
@@ -836,6 +851,13 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
          primme->numOrthoConst++;
          primme->initSize--;
          primme->numEvals--;
+         if (primme->numTargetShifts > 1) {
+            int j;
+            for (j = 1; j < primme->numTargetShifts; j++) {
+               primme->targetShifts[j - 1] = primme->targetShifts[j];
+            }
+            primme->numTargetShifts--;
+         }
       }
 
       CHKERR(Num_free_iprimme(flags, ctx));
@@ -1039,6 +1061,35 @@ STATIC int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
       case primme_svds_op_none:
          break;
    }
+
+   // Transfer the estimate errors. If solving normal equation, then the error
+   // on A and the residual error are approximating
+   //    ||(A+E)^H * (A+E) - A^H * A||_2,
+   // which is less or equal than
+   //    2*||A||*||E|| + ||E||^2.
+   // Equating the error to the above bound one gets:
+   //    ||E|| = -||A|| + sqrt(||A||^2 + error^2) \approx error / ||A|| / 2
+
+   switch (method) {
+      case primme_svds_op_AtA:
+      case primme_svds_op_AAt:
+         primme_svds->stats.estimateErrorOnA =
+               primme->stats.estimateErrorOnA /
+               sqrt(primme->stats.estimateLargestSVal) / 2;
+         primme_svds->stats.estimateResidualError =
+               primme->stats.estimateResidualError /
+               sqrt(primme->stats.estimateLargestSVal) / 2;
+         break;
+      case primme_svds_op_augmented:
+         primme_svds->stats.estimateErrorOnA =
+               primme->stats.estimateErrorOnA / 2;
+         primme_svds->stats.estimateResidualError =
+               primme->stats.estimateResidualError / 2;
+         break;
+      case primme_svds_op_none:
+         break;
+   }
+   primme_svds->stats.estimateOrthoError = primme->stats.estimateOrthoError;
 
 
    return 0;

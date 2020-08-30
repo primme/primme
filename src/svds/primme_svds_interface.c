@@ -151,6 +151,12 @@ void primme_svds_initialize(primme_svds_params *primme_svds) {
    primme_svds->stats.timeOrtho                     = 0.0;
    primme_svds->stats.timeGlobalSum                 = 0.0;
    primme_svds->stats.timeBroadcast                 = 0.0;
+   primme_svds->stats.timeDense                     = 0.0;
+   primme_svds->stats.estimateErrorOnA              = 0.0;
+   primme_svds->stats.maxConvTol                    = 0.0;
+   primme_svds->stats.estimateResidualError         = 0.0;
+   primme_svds->stats.estimateOrthoError            = 0.0;
+   primme_svds->stats.lockingIssue                  = 0;
 
    /* Internally used variables */
    primme_svds->iseed[0] = -1;   /* To set iseed, we first need procID           */ 
@@ -746,6 +752,24 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_timeBroadcast:
          v->double_v = primme_svds->stats.timeBroadcast;
          break;
+      case PRIMME_SVDS_stats_timeDense:
+         v->double_v = primme_svds->stats.timeDense;
+         break;
+      case PRIMME_SVDS_stats_estimateErrorOnA:
+         v->double_v = primme_svds->stats.estimateErrorOnA;
+         break;
+      case PRIMME_SVDS_stats_maxConvTol:
+         v->double_v = primme_svds->stats.maxConvTol;
+         break;
+      case PRIMME_SVDS_stats_estimateResidualError:
+         v->double_v = primme_svds->stats.estimateResidualError;
+         break;
+      case PRIMME_SVDS_stats_estimateOrthoError:
+         v->double_v = primme_svds->stats.estimateOrthoError;
+         break;
+      case PRIMME_SVDS_stats_lockingIssue:
+         v->int_v = primme_svds->stats.lockingIssue;
+         break;
       case PRIMME_SVDS_convTestFun:
          v->convTestFun_v = primme_svds->convTestFun;
          break;
@@ -985,6 +1009,21 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_timeBroadcast:
          primme_svds->stats.timeBroadcast = *v.double_v;
          break;
+      case PRIMME_SVDS_stats_timeDense:
+         primme_svds->stats.timeDense = *v.double_v;
+         break;
+      case PRIMME_SVDS_stats_estimateErrorOnA:
+         primme_svds->stats.estimateErrorOnA = *v.double_v;
+         break;
+      case PRIMME_SVDS_stats_estimateResidualError:
+         primme_svds->stats.estimateResidualError = *v.double_v;
+         break;
+      case PRIMME_SVDS_stats_estimateOrthoError:
+         primme_svds->stats.estimateOrthoError = *v.double_v;
+         break;
+      case PRIMME_SVDS_stats_lockingIssue:
+         primme_svds->stats.lockingIssue = *v.int_v;
+         break;
       case PRIMME_SVDS_convTestFun:
          primme_svds->convTestFun = v.convTestFun_v;
          break;
@@ -1108,6 +1147,12 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(stats_timeOrtho);
    IF_IS(stats_timeGlobalSum);
    IF_IS(stats_timeBroadcast);
+   IF_IS(stats_timeDense);
+   IF_IS(stats_estimateErrorOnA);
+   IF_IS(stats_maxConvTol);
+   IF_IS(stats_estimateResidualError);
+   IF_IS(stats_estimateOrthoError);
+   IF_IS(stats_lockingIssue);
    IF_IS(convTestFun);
    IF_IS(convTestFun_type);
    IF_IS(convtest);
@@ -1155,6 +1200,7 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_stats_volumeGlobalSum:
       case PRIMME_SVDS_stats_numBroadcast:
       case PRIMME_SVDS_stats_volumeBroadcast:
+      case PRIMME_SVDS_stats_lockingIssue:
       case PRIMME_SVDS_iseed:
       case PRIMME_SVDS_numProcs: 
       case PRIMME_SVDS_procID: 
@@ -1178,6 +1224,12 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_stats_timeOrtho:
       case PRIMME_SVDS_stats_timeGlobalSum:
       case PRIMME_SVDS_stats_timeBroadcast:
+      case PRIMME_SVDS_stats_timeDense:
+      case PRIMME_SVDS_stats_estimateErrorOnA:
+      case PRIMME_SVDS_stats_maxConvTol:
+      case PRIMME_SVDS_stats_estimateResidualError:
+      case PRIMME_SVDS_stats_estimateOrthoError:
+
       if (type) *type = primme_double;
       if (arity) *arity = 1;
       break;

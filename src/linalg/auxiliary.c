@@ -68,7 +68,8 @@
  * ldx         The leading dimension of x
  * xt          The datatype of x
  * y           On output y = x
- * ldy         The leading dimension of y
+ * ldy         The leading dimension of y; if ldy == 0 on input and y is created,
+ *             y is created with ldy == m
  * yt          The datatype of y
  *
  * NOTE: x and y *cannot* partially overlap
@@ -121,10 +122,11 @@ int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
    if (do_alloc > 0) {
       Mem_keep_frame(
             ctx); /* The next allocation will not be freed in this function */
-      CHKERR(Num_malloc_Sprimme(m * n, &y0, ctx));
+      // ldy0 = (ldy && *ldy > 0) ? *ldy : m;
+     ldy0 = m;
+      CHKERR(Num_malloc_Sprimme(ldy0 * n, &y0, ctx));
       *y = (void*)y0;
-      ldy0 = m;
-      if (ldy) *ldy = m;
+      if (ldy) *ldy = ldy0;
    } else {
       y0 = (SCALAR*)*y;
       ldy0 = (ldy ? *ldy : 1);

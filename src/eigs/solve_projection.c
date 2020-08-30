@@ -1152,16 +1152,22 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
          /* NOTE: we don't want to check hVecs(end,i) just after restart, so  */
          /* we don't use the value when it is zero.                           */
 
-         double minDiff = sqrt(2.0)*hSVals[basisSize-1]*MACHINE_EPSILON/
-            (aNorm*eps/EVAL_ABS(hVals[i]-hVals[i-1]));
-         double ip0 = ABS(hVecs[(i-1)*ldhVecs+basisSize-1]);
-         double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
+         // double minDiff = sqrt(2.0)*hSVals[basisSize-1]*MACHINE_EPSILON/
+         //    (aNorm*eps/EVAL_ABS(hVals[i]-hVals[i-1]));
+         // double ip0 = ABS(hVecs[(i-1)*ldhVecs+basisSize-1]);
+         // double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
 
          someCandidate = 1;
 
-         if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff
-               && (smallestResNorm >= HUGE_VAL
-                  || sqrt(ip1) >= smallestResNorm/aNorm/3.16)) 
+         // if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff
+         //       && (smallestResNorm >= HUGE_VAL
+         //          || sqrt(ip1) >= smallestResNorm/aNorm/3.16)) 
+         //    break;
+         HREAL sval0_i = min(0.0, hSVals[i] - primme->stats.estimateErrorOnA);
+         HREAL sval1_i = hSVals[i] + primme->stats.estimateErrorOnA;
+         HREAL sval1_j = hSVals[j] + primme->stats.estimateErrorOnA;
+         if (max(0.0, sval0_i * sval0_i - sval1_j * sval1_j) >=
+               2 * sval1_i * sval1_i * primme->stats.estimateOrthoError)
             break;
       }
       i = min(i, basisSize);

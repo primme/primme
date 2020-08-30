@@ -34,7 +34,7 @@ else ifeq ($(USE_MPI),yes)
 endif
 
 ifeq ($(PRIMME_WITH_MAGMA),yes)
-  EXAMPLES_C += ex_eigs_dmagma ex_svds_dmagma
+  EXAMPLES_C += ex_eigs_dmagma ex_eigs_zmagma ex_svds_dmagma
   override INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
 endif
 
@@ -53,7 +53,7 @@ $(EXAMPLES_F): % : %.o
 %.o: %.cxx
 	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
-.f.o .F.o:
+.f.o .F.o: 
 	$(F77) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
 
 %.o: %.f90

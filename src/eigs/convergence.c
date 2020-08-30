@@ -131,18 +131,24 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
                                  ? primme->targetShifts[min(primme->initSize,
                                          primme->numTargetShifts - 1)]
                                  : 0.0;
+      double res = blockNorms[i - left] + primme->stats.estimateResidualError +
+                   EVAL_ABS(hVals[i]) * primme->stats.estimateOrthoError;
 
-      if ((primme->target == primme_closest_leq
-               && hVals[i]-blockNorms[i-left] > targetShift) ||
-            (primme->target == primme_closest_geq
-             && hVals[i]+blockNorms[i-left] < targetShift)) {
-         flags[i] = UNCONVERGED;
+      if ((primme->target == primme_closest_leq &&
+                hVals[i] > targetShift + res) ||
+            (primme->target == primme_closest_geq &&
+                  hVals[i] + res < targetShift)) {
+         flags[i] = SKIP;
          continue;
       }
 #endif
 
       if (blockNorms[i-left] <= primme->stats.maxConvTol) {
          flags[i] = CONVERGED;
+         PRINTF(5,
+               "Mark pair as converged because the residual norm %g is "
+               "smaller than the residual of a converged pair %g\n",
+               (double)blockNorms[i - left], primme->stats.maxConvTol);
          continue;
       }
 
@@ -151,6 +157,8 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
 
       if (isConv) {
          flags[i] = CONVERGED;
+         PRINTF(5, "Mark pair as convergence because it passed the user "
+                   "criterion\n");
       }
 
       /* ----------------------------------------------------------------- */
@@ -168,6 +176,10 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
                "higher than some residual %g\n",
                primme->stats.estimateResidualError,
                (double)blockNorms[i - left]);
+      }
+
+      else if (practConvCheck >= 2) {
+         flags[i] = PRACTICALLY_CONVERGED;
       }
 
       /* ----------------------------------------------------------------- */

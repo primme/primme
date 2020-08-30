@@ -219,18 +219,19 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                      ? primme->targetShifts[min(
                              primme->numTargetShifts - 1, numLocked)]
                      : 0.0;
+         double res =
+               (blockNorms[blockIndex] + primme->stats.estimateResidualError) *
+               sqrt(primme->stats.estimateInvBNorm);
          int sortedIndex = ilev[blockIndex];
-         if (EVAL_ABS(sortedRitzVals[sortedIndex] - (HEVAL)targetShift) <
-               blockNorms[blockIndex] * sqrt(primme->stats.estimateInvBNorm)) {
+         if (EVAL_ABS(sortedRitzVals[sortedIndex] - (HEVAL)targetShift) < res) {
             blockOfShifts[blockIndex] = targetShift;
-         } else if (primme->projectionParams.projection ==
-                    primme_proj_refined) {
-            blockOfShifts[blockIndex] = sortedRitzVals[sortedIndex];
+         // } else if (primme->projectionParams.projection ==
+         //            primme_proj_refined) {
+         //    blockOfShifts[blockIndex] = sortedRitzVals[sortedIndex];
          } else {
             blockOfShifts[blockIndex] =
                   sortedRitzVals[sortedIndex] +
-                  ((HEVAL)(blockNorms[blockIndex] *
-                           sqrt(primme->stats.estimateInvBNorm))) *
+                  ((HEVAL)res) *
                         ((HEVAL)targetShift - sortedRitzVals[sortedIndex]) /
                         EVAL_ABS(
                               (HEVAL)targetShift - sortedRitzVals[sortedIndex]);
@@ -241,8 +242,7 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                   prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
          }  
          else {
-            approxOlsenEps[blockIndex] =
-                  blockNorms[blockIndex] * sqrt(primme->stats.estimateInvBNorm);
+            approxOlsenEps[blockIndex] = res;
          }  
       } /* for loop */
 

@@ -633,6 +633,98 @@ int decompositiondprimme(dummy_type_dprimme *H, int n, int ldH, dummy_type_dprim
 #  define rank_estimation CONCAT(rank_estimation,SCALAR_SUF)
 #endif
 int rank_estimationdprimme(dummy_type_dprimme *V, int n0, int n1, int n, int ldV);
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Sprimme)
+#  define orthogonality_error_Sprimme CONCAT(orthogonality_error_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Rprimme)
+#  define orthogonality_error_Rprimme CONCAT(orthogonality_error_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SHprimme)
+#  define orthogonality_error_SHprimme CONCAT(orthogonality_error_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RHprimme)
+#  define orthogonality_error_RHprimme CONCAT(orthogonality_error_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SXprimme)
+#  define orthogonality_error_SXprimme CONCAT(orthogonality_error_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RXprimme)
+#  define orthogonality_error_RXprimme CONCAT(orthogonality_error_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Shprimme)
+#  define orthogonality_error_Shprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Rhprimme)
+#  define orthogonality_error_Rhprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Ssprimme)
+#  define orthogonality_error_Ssprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Rsprimme)
+#  define orthogonality_error_Rsprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Sdprimme)
+#  define orthogonality_error_Sdprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Rdprimme)
+#  define orthogonality_error_Rdprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Sqprimme)
+#  define orthogonality_error_Sqprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_Rqprimme)
+#  define orthogonality_error_Rqprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SXhprimme)
+#  define orthogonality_error_SXhprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RXhprimme)
+#  define orthogonality_error_RXhprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SXsprimme)
+#  define orthogonality_error_SXsprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RXsprimme)
+#  define orthogonality_error_RXsprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SXdprimme)
+#  define orthogonality_error_SXdprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RXdprimme)
+#  define orthogonality_error_RXdprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SXqprimme)
+#  define orthogonality_error_SXqprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RXqprimme)
+#  define orthogonality_error_RXqprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SHhprimme)
+#  define orthogonality_error_SHhprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RHhprimme)
+#  define orthogonality_error_RHhprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SHsprimme)
+#  define orthogonality_error_SHsprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RHsprimme)
+#  define orthogonality_error_RHsprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SHdprimme)
+#  define orthogonality_error_SHdprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RHdprimme)
+#  define orthogonality_error_RHdprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_SHqprimme)
+#  define orthogonality_error_SHqprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(orthogonality_error_RHqprimme)
+#  define orthogonality_error_RHqprimme CONCAT(orthogonality_error_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int orthogonality_error_dprimme(
+      dummy_type_dprimme *VtV, int n, int ldVtV, dummy_type_dprimme *level, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(update_cholesky_Sprimme)
 #  define update_cholesky_Sprimme CONCAT(update_cholesky_,SCALAR_SUF)
 #endif
@@ -767,6 +859,8 @@ int Num_ortho_kernelhprimme(dummy_type_hprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositionhprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationhprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_hprimme(
+      dummy_type_sprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_hprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_kprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
@@ -811,6 +905,8 @@ int Num_ortho_kernelkprimme(dummy_type_kprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositionkprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationkprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_kprimme(
+      dummy_type_cprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_kprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_sprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
@@ -855,6 +951,8 @@ int Num_ortho_kernelsprimme(dummy_type_sprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositionsprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationsprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_sprimme(
+      dummy_type_sprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_sprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_cprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
@@ -899,6 +997,8 @@ int Num_ortho_kernelcprimme(dummy_type_cprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositioncprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationcprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_cprimme(
+      dummy_type_cprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_cprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_zprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *R, int ldR,
@@ -943,6 +1043,8 @@ int Num_ortho_kernelzprimme(dummy_type_zprimme *Q, PRIMME_INT M, int nQ, PRIMME_
 int decompositionzprimme(dummy_type_zprimme *H, int n, int ldH, dummy_type_zprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationzprimme(dummy_type_zprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_zprimme(
+      dummy_type_zprimme *VtV, int n, int ldVtV, dummy_type_dprimme *level, primme_context ctx);
 int update_cholesky_zprimme(dummy_type_zprimme *VtV, int ldVtV, dummy_type_zprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
@@ -981,6 +1083,8 @@ int Num_ortho_kernelmagma_hprimme(dummy_type_magma_hprimme *Q, PRIMME_INT M, int
 int decompositionmagma_hprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_hprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_magma_hprimme(
+      dummy_type_sprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_magma_hprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
@@ -1019,6 +1123,8 @@ int Num_ortho_kernelmagma_kprimme(dummy_type_magma_kprimme *Q, PRIMME_INT M, int
 int decompositionmagma_kprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_kprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_magma_kprimme(
+      dummy_type_cprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_magma_kprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
@@ -1057,6 +1163,8 @@ int Num_ortho_kernelmagma_sprimme(dummy_type_magma_sprimme *Q, PRIMME_INT M, int
 int decompositionmagma_sprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_sprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_magma_sprimme(
+      dummy_type_sprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_magma_sprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
@@ -1095,6 +1203,8 @@ int Num_ortho_kernelmagma_cprimme(dummy_type_magma_cprimme *Q, PRIMME_INT M, int
 int decompositionmagma_cprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_cprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_magma_cprimme(
+      dummy_type_cprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_magma_cprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *R, int ldR,
@@ -1133,6 +1243,8 @@ int Num_ortho_kernelmagma_dprimme(dummy_type_magma_dprimme *Q, PRIMME_INT M, int
 int decompositionmagma_dprimme(dummy_type_dprimme *H, int n, int ldH, dummy_type_dprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_dprimme(dummy_type_dprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_magma_dprimme(
+      dummy_type_dprimme *VtV, int n, int ldVtV, dummy_type_dprimme *level, primme_context ctx);
 int update_cholesky_magma_dprimme(dummy_type_dprimme *VtV, int ldVtV, dummy_type_dprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *R, int ldR,
@@ -1171,6 +1283,8 @@ int Num_ortho_kernelmagma_zprimme(dummy_type_magma_zprimme *Q, PRIMME_INT M, int
 int decompositionmagma_zprimme(dummy_type_zprimme *H, int n, int ldH, dummy_type_zprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationmagma_zprimme(dummy_type_zprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_magma_zprimme(
+      dummy_type_zprimme *VtV, int n, int ldVtV, dummy_type_dprimme *level, primme_context ctx);
 int update_cholesky_magma_zprimme(dummy_type_zprimme *VtV, int ldVtV, dummy_type_zprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 #endif

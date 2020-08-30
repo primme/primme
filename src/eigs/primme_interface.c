@@ -176,6 +176,7 @@ void primme_initialize(primme_params *primme) {
    primme->stats.estimateErrorOnB              = -HUGE_VAL;
    primme->stats.maxConvTol                    = 0.0;
    primme->stats.estimateResidualError         = 0.0;
+   primme->stats.estimateOrthoError            = 0.0;
    primme->stats.lockingIssue                  = 0;
 
    /* Optional user defined structures */

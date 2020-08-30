@@ -50,22 +50,6 @@ evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
 assert_allclose(evals, [ 96.,  95.,  94.], atol=1e-6*100)
 print(evals) # [ 96.,  95.,  94.]
 
-try:
-    import pycuda.autoinit
-    import pycuda.sparse.packeted
-    import pycuda.sparse.coordinate
-    with_gpuarray = True
-except Exception:
-    with_gpuarray = False
-    print("Not testing GPU examples")
-
-if with_gpuarray:
-    A = scipy.sparse.spdiags(np.asarray(range(100), dtype=np.float32), [0], 100, 100)
-    Agpu = pycuda.sparse.packeted.PacketedSpMV(A, True, A.dtype)
-    evals, evecs = primme.eigsh(Agpu, 3, tol=1e-6, which='LA', maxBlockSize=1)
-    assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
-    print(evals) # [ 99.,  98.,  97.]
-    
 # Compute the three closest eigenvalues to 50.1
 evals, evecs = primme.eigsh(A, 3, tol=1e-6, which=50.1)
 assert_allclose(evals, [ 50.,  51.,  49.], atol=1e-6*100)
@@ -77,6 +61,33 @@ def convtest_lm(eval, evecl, rnorm):
 eval, evec = primme.eigsh(A, 1, which='LM', convtest=convtest_lm)
 assert_allclose(eval, [ 99.], atol=.1)
 
+
+try:
+    import pycuda.autoinit
+    import pycuda.sparse.packeted
+    import pycuda.sparse.coordinate
+    with_gpuarray = True
+except Exception:
+    with_gpuarray = False
+    print("Not testing GPU examples")
+
+if with_gpuarray:
+    import cupy, cupyx
+    A = cupyx.sparse.spdiags(np.asarray(range(100), dtype=np.float32), [0], 100, 100)
+    A = cupy.diag(cupy.asarray(range(100), dtype=np.float32))
+    def Afgpu(x, y):
+        x0 = cupy.ndarray(x.shape, x.dtype, cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(x.ptr,0,None),0), order='F')
+        y0 = cupy.matmul(A,x0)
+        y1 = pycuda.gpuarray.GPUArray(y0.shape, y0.dtype, gpudata=int(y0.data.ptr), strides=y0.strides, order=y0.order)
+        y[:,:] = y1[:,:]
+        return y
+    Afgpu.shape = A.shape
+    Afgpu.dtype = A.dtype
+    #Agpu = pycuda.sparse.packeted.PacketedSpMV(A, True, A.dtype)
+    evals, evecs = primme.eigsh(Afgpu, 3, tol=1e-6, which='LA', maxBlockSize=1, use_gpuarray=True)
+    assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
+    print(evals) # [ 99.,  98.,  97.]
+    
 # User-defined matvec: implicit diagonal matrix
 Adiag = np.arange(0, 100).reshape((100,1))
 def Amatmat(x):

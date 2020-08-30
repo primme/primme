@@ -79,6 +79,13 @@ typedef struct primme_svds_stats {
    double timeOrtho;                /* time expend by ortho  */
    double timeGlobalSum;            /* time expend by globalSumReal  */
    double timeBroadcast;            /* time expend by broadcastReal  */
+   double timeDense;                /* time expend by Num_update_VWXR_Sprimme */
+   double estimateSmallestSVal;     /* the smallest singular value seen */
+   double estimateLargestSVal;      /* the largest singular value seen */
+   double estimateErrorOnA;         /* estimate numerical errors on matvec */
+   double maxConvTol;               /* largest norm residual of a locked eigenpair */
+   double estimateResidualError;    /* accumulated error in V and W */
+   double estimateOrthoError;       /* estimate of |V^H*V - I|_2 */
    PRIMME_INT lockingIssue;         /* Some converged with a weak criterion */
 } primme_svds_stats;
 
@@ -217,15 +224,20 @@ typedef enum {
    PRIMME_SVDS_stats_timeOrtho              = 51,
    PRIMME_SVDS_stats_timeGlobalSum          = 52,
    PRIMME_SVDS_stats_timeBroadcast          = 53,
-   PRIMME_SVDS_stats_lockingIssue           = 54,
-   PRIMME_SVDS_convTestFun                  = 55,
-   PRIMME_SVDS_convTestFun_type             = 56,
-   PRIMME_SVDS_convtest                     = 57,
-   PRIMME_SVDS_monitorFun                   = 58,
-   PRIMME_SVDS_monitorFun_type              = 59,
-   PRIMME_SVDS_monitor                      = 60,
-   PRIMME_SVDS_queue                        = 61,
-   PRIMME_SVDS_profile                      = 62 
+   PRIMME_SVDS_stats_timeDense              = 54,
+   PRIMME_SVDS_stats_estimateErrorOnA       = 55,
+   PRIMME_SVDS_stats_maxConvTol             = 56,
+   PRIMME_SVDS_stats_estimateResidualError  = 57,
+   PRIMME_SVDS_stats_estimateOrthoError     = 58,
+   PRIMME_SVDS_stats_lockingIssue           = 59,
+   PRIMME_SVDS_convTestFun                  = 60,
+   PRIMME_SVDS_convTestFun_type             = 61,
+   PRIMME_SVDS_convtest                     = 62,
+   PRIMME_SVDS_monitorFun                   = 63,
+   PRIMME_SVDS_monitorFun_type              = 64,
+   PRIMME_SVDS_monitor                      = 65,
+   PRIMME_SVDS_queue                        = 66,
+   PRIMME_SVDS_profile                      = 67
 } primme_svds_params_label;
 
 int hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms,

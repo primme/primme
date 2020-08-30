@@ -1275,7 +1275,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Copy initial vectors
 
    if (primme->numOrthoConst + primme->initSize > 0) {
-      ASSERT_NUMERIC(0);
+      //ASSERT_NUMERIC(0);
       copy_mxArray(prhs[0], evecs, primme->n,
             (PRIMME_INT)primme->numOrthoConst + primme->initSize, primme->n,
             CPUGPU());

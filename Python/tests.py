@@ -7,7 +7,8 @@ see https://github.com/scipy/scipy
 
 import warnings
 import numpy as np
-from numpy.testing import run_module_suite, assert_allclose
+from numpy.testing import run_module_suite, assert_allclose, assert_
+from nose.tools import nottest
 from scipy import ones, r_, diag
 from scipy.sparse.linalg import aslinearoperator
 from scipy.sparse import csr_matrix
@@ -16,6 +17,22 @@ import primme
 from primme import eigsh, svds
 from compare import stats as st
 from builtins import str
+
+TEST_THIS_CASE = None
+#TEST_THIS_CASE = "A=MikotaPair(3, <class 'numpy.float64'>), k=2, M=False, which=LM, tol=0.044444444444444474, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=True"
+#TEST_THIS_CASE = "A=Lauchli_like_hori(3, <class 'numpy.complex64'>), k=3, M=False, which=1.2799817155687567, tol=2.8909999208648626e-06, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
+#TEST_THIS_CASE = "A=MikotaPair(3, <class 'numpy.float64'>), k=1, M=True, which=SM, tol=0.011111111111111124, bs=1, method=DEFAULT_MIN_TIME, with_gpuarray=True"
+#TEST_THIS_CASE = "A=Lauchli_like_hori(5, <class 'numpy.complex64'>), k=5, M=False, which=1.63749139677171, tol=2.8909999208648626e-06, bs=1, method=DEFAULT_MIN_TIME, with_gpuarray=False"
+#TEST_THIS_CASE = "A=MikotaPair(10, <class 'numpy.float16'>), k=10, M=True, which=SM, tol=0.0039062499999999987, bs=3, method=DEFAULT_MIN_TIME, with_gpuarray=False"
+#TEST_THIS_CASE = "A=Lauchli_like_hori(10, <class 'numpy.float16'>), k=10, M=True, which=SM, tol=0.0039062499999999987, bs=3, method=DEFAULT_MIN_TIME, with_gpuarray=True"
+#TEST_THIS_CASE = "A=MikotaPair(10, <class 'numpy.float32'>), k=10, M=False, which=SM, tol=2.8909999208648626e-06, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
+#TEST_THIS_CASE = "A=MikotaPair(10, <class 'numpy.float16'>), k=10, M=False, which=0.5149, tol=0.0039062499999999987, bs=3, method=DEFAULT_MIN_MATVECS, with_gpuarray=True"
+#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float16'>), k=5, M=False, which=SM, tol=0.0039062499999999987, bs=5, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
+#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float16'>), k=5, M=True, which=SM, tol=0.0039062499999999987, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
+#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float16'>), k=1, M=False, which=SM, tol=0.0039062499999999987, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=True"
+#TEST_THIS_CASE = "A=MikotaPair(10, <class 'numpy.float32'>), k=10, M=False, which=SM, tol=2.8909999208648626e-06, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
+#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float32'>), k=1, M=True, which=SM, tol=4.0000000000000125e-05, bs=1, method=DEFAULT_MIN_TIME, with_gpuarray=False"
+#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float16'>), k=3, M=False, which=SM, tol=0.0039062499999999987, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=True"
 
 #
 # GPU stuff
@@ -34,21 +51,48 @@ def togpu(A, dtype=None):
    to_cupy_dtype = dict((f, getattr(cupy, f)) for f in ('float16', 'float32', 'float64', 'complex64', 'complex128'))
    def Afgpu(x, y):
       size = x.shape[0] * x.shape[1] * x.dtype.itemsize
-      x_cupy = cupy.ndarray(x.shape, to_cupy_dtype[str(x.dtype)], cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(x.ptr,size,x),0), order='F')
-      y_cupy = cupy.ndarray(y.shape, to_cupy_dtype[str(y.dtype)], cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(y.ptr,size,y),0), order='F')
+      x_cupy = cupy.ndarray(x.shape, to_cupy_dtype[str(x.dtype)], cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(x.ptr,size,x),0), strides=x.strides, order='F')
+      y_cupy = cupy.ndarray(y.shape, to_cupy_dtype[str(y.dtype)], cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(y.ptr,size,y),0), strides=y.strides, order='F')
       y_cupy[:,:] = cupy.matmul(Agpu,x_cupy)[:,:]
       cupy.cuda.runtime.deviceSynchronize()
       return y
    Afgpu.shape = A.shape
    Afgpu.dtype = A.dtype if dtype is None else dtype
    # Test
-   x = np.ones((A.shape[0],2), A.dtype, order='F')
-   y = Afgpu(pycuda.gpuarray.to_gpu(x), pycuda.gpuarray.empty(x.shape, A.dtype, order='F'))
+   x = np.ones((A.shape[1],2), A.dtype, order='F')
+   y = Afgpu(pycuda.gpuarray.to_gpu(x), pycuda.gpuarray.empty((A.shape[0],2), A.dtype, order='F'))
    pycuda.autoinit.context.synchronize()
    yref = A.dot(x)
    assert_allclose(np.linalg.norm(y.get() - yref, axis=0), np.zeros(2), atol=np.linalg.norm(yref[:,1], axis=0)*np.finfo(A.dtype).eps*100, rtol=1)
    return Afgpu
 
+class togpusvd:
+   def __init__(self, A, dtype=None):
+      self.shape = A.shape
+      self.dtype = A.dtype if dtype is None else dtype
+      self._matmat = togpu(A, dtype)
+      self._rmatmat = togpu(A.T.conj(), dtype)
+      togpusvd.__test(self, A)
+
+   def matmat(self, x, y=None):
+      return self._matmat(x, y)
+
+   def rmatmat(self, x, y=None):
+      return self._rmatmat(x, y)
+
+   @staticmethod
+   def __test(A, Aref):
+      x = np.ones((A.shape[1],2), A.dtype, order='F')
+      y = A.matmat(pycuda.gpuarray.to_gpu(x), pycuda.gpuarray.empty((A.shape[0],2), A.dtype, order='F'))
+      pycuda.autoinit.context.synchronize()
+      yref = Aref.dot(x)
+      assert_allclose(np.linalg.norm(y.get() - yref, axis=0), np.zeros(2), atol=np.linalg.norm(yref[:,1], axis=0)*np.finfo(A.dtype).eps*100, rtol=1)
+      x = np.ones((A.shape[0],2), A.dtype, order='F')
+      y = A.rmatmat(pycuda.gpuarray.to_gpu(x), pycuda.gpuarray.empty((A.shape[1],2), A.dtype, order='F'))
+      pycuda.autoinit.context.synchronize()
+      yref = Aref.T.conj().dot(x)
+      assert_allclose(np.linalg.norm(y.get() - yref, axis=0), np.zeros(2), atol=np.linalg.norm(yref[:,1], axis=0)*np.finfo(A.dtype).eps*100, rtol=1)
+  
 def tocpu(A):
    if isinstance(A, pycuda.gpuarray.GPUArray):
       return A.get()
@@ -163,7 +207,13 @@ def select_pairs_eigsh(k, sigma, which, evals):
       raise ValueError("which='%s' not supported" % which)
 
    n = max(evals.shape)
-   return np.array(sorted(evals, key=f)[0:k])
+   sorted_evals = sorted(evals, key=f)
+   sel_evals = np.array(sorted_evals[0:k])
+   if k < n:
+      gap = f(sorted_evals[k]) - f(sorted_evals[k-1])
+   else:
+      gap = 0
+   return sel_evals, gap
 
 def to_primme_datatype(dtype):
    if isinstance(dtype, (str,bytes)):
@@ -184,25 +234,52 @@ def dtype_to_str(precision, complexity):
         return "<class 'numpy.complex64'>"
     if precision == np.float64:
         return "<class 'numpy.complex128'>"
+
+def get_tol_eigsh(k, sigma, which, evals, precision):
+    """Return a tolerance considering the spectrum"""
+
+    # Get the smallest eigenvalue (in absolute value) that is going to converge
+    # and the smallest distance between the converged values and the rest of
+    # the spectrum, gap
+    sel_evals, gap = select_pairs_eigsh(k, sigma, which, evals)
+    smallest_eval = np.fabs(sel_evals).min()
+
+    # A good tolerance is smaller than the smallest eigenvalue and the gap
+    nA = np.fabs(evals).max()
+    tol = np.min([smallest_eval*.1, gap])/nA
+
+    # Limit the tolerance to be larger than the used precision's machine epsilon 
+    return np.max([tol, np.finfo(precision).eps**.8])
     
-def eigsh_check(eigsh_solver, A, B, normInvB, k, M, which, sigma, tol,
+def eigsh_check(eigsh_solver, A, B, normInvB, k, M, which, sigma, tol, bs, method,
                 exact_evals, dtype, case_desc, with_gpu=False, add_stats=True):
    """
    Test eigsh
    """
 
+   if TEST_THIS_CASE and TEST_THIS_CASE != case_desc:
+      return
+
+   extra = {'printLevel': 5 } if TEST_THIS_CASE == case_desc else {}
+
+   import sys
+   sys.stdout.write("Case %s\n" % case_desc)
+   sys.stdout.flush()
+
    f = togpu if with_gpu else lambda x:x 
    try:
-      evals, evecs, stats = eigsh_solver(f(A), k, f(B), sigma, which, tol=tol, OPinv=f(M),
-            maxMatvecs=70000, return_stats=True, internalPrecision=to_primme_datatype(dtype), use_gpuarray=with_gpu)
+      evals, evecs, stats = eigsh_solver(f(A), k, f(B), sigma, which, tol=tol, reltol=.5,
+            OPinv=f(M), maxBlockSize=bs, method=method, maxMatvecs=70000 if B is None else 700000,
+            return_stats=True, internalPrecision=to_primme_datatype(dtype),
+            use_gpuarray=with_gpu, **extra)
    except Exception as e:
       raise Exception("Ups! Case %s\n%s" % (case_desc, e))
    evecs = tocpu(evecs)
-   sol_evals = select_pairs_eigsh(k, sigma, which, exact_evals)
+   sol_evals, _ = select_pairs_eigsh(k, sigma, which, exact_evals)
 
    # Check eigenvalues are close enough to the exact ones
    ANorm = np.amax(np.fabs(exact_evals))
-   assert_allclose(evals, sol_evals, atol=ANorm*tol*normInvB, rtol=1, err_msg=case_desc)
+   assert_allclose(np.sort(evals), np.sort(sol_evals), atol=ANorm*tol*normInvB, rtol=1, err_msg=case_desc)
 
    # Check the residual norm associated to the returned pairs
    if B is None: 
@@ -211,12 +288,21 @@ def eigsh_check(eigsh_solver, A, B, normInvB, k, M, which, sigma, tol,
       R = A.dot(evecs) - B.dot(evecs.dot(np.diag(evals)))
    Rnorms = np.linalg.norm(R, axis=0)
    eps = np.finfo(dtype).eps
-   assert_allclose(Rnorms, np.zeros(k), atol=ANorm*(tol+eps)*(k**.5), rtol=1, err_msg=case_desc + (" |A|=%s tol=%f" % (ANorm, tol)))
-
+   for i in range(k):
+      if Rnorms[i] >= ANorm*(tol+eps)*(k**.5):
+         if B is None:
+            res_defl_i = np.linalg.norm(R[:,i] - evecs.dot(evecs.T.conj().dot(R[:,i])), axis=0)
+         else:
+            res_defl_i = np.linalg.norm(R[:,i] - B.dot(evecs.dot(evecs.T.conj().dot(R[:,i]))), axis=0)
+         assert_(res_defl_i < ANorm*(tol+eps),
+            "The pair %d failed the error checking for case_desc %s:\n|r|=%g  |(I-XX')r|=%g that should be <= %g"
+               % (i, case_desc, Rnorms[i], res_defl_i, ANorm*tol))
+         
    # Add stats
    if add_stats:
       st.add("eigsh: " + case_desc, ("eigsh",), mv=stats['numMatvecs'], time=stats['elapsedTime'])
 
+@nottest
 def test_primme_eigsh():
    """
    Test cases for primme.eighs for standard problems.
@@ -229,30 +315,36 @@ def test_primme_eigsh():
             A = toStandardProblem(gen(n, dtype=complexity))
             sigma0 = evals[0]*.51 + evals[-1]*.49
             nA = np.max(np.fabs(evals))
+            cA = nA/np.min(np.fabs(evals)[np.fabs(evals) > 0])
             for with_gpu in ((False, True) if test_gpu else (False,)):
                for precision in (np.float16, np.float32, np.float64):
-                  tol = np.finfo(precision).eps**.5 * 0.1
                   for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
+                     # CUBLAS does not support complex half with gpus
+                     if with_gpu and complexity is np.complex128 and precision is np.float16:
+                        continue
+                     # Normalize the problem in half precision to avoid overflows
+                     if precision is np.float16:
+                        A0, evals0, nA0 = A/nA, evals/nA, 1
+                        sigma = sigma/nA if sigma is not None else None
+                     else:
+                        A0, evals0, nA0 = A, evals, nA
+                     # Jacobi preconditioner is terrible for ElasticRod
                      if gen.__name__ != "ElasticRod" and sigma is not None:
                         precs = (None, jacobi_prec(A, sigma))
                      else:
                         precs = (None,)
-                     if precision is np.float16 and which != 'LM':
-                        continue
-                     if precision is np.float16:
-                        A0, evals0 = A/nA, evals/nA
-                        sigma = sigma/nA if sigma is not None else None
-                     else:
-                        A0, evals0 = A, evals
-                     if with_gpu and complexity is np.complex128 and (precision is np.float16 or precision is np.float64):
-                        continue
-                     for prec in precs:
-                        for k in (1, 2, 3, 5, 10, 70):
-                           if k > n: continue
-                           case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s, with_gpuarray=%s" %
-                                 (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma, with_gpu))
-                           yield (eigsh_check, eigsh, A0, None, 1, k, prec, which, sigma, tol, evals0, precision, case_desc, with_gpu)
+                     for method in ("DEFAULT_MIN_MATVECS", "DEFAULT_MIN_TIME"):
+                        for prec in precs:
+                           for k in (1, 2, 3, 5, 10, 70):
+                              if k > n: continue
+                              tol = get_tol_eigsh(k, sigma, which, evals0, precision)
+                              for bs in (1, 2, 3, 5, 10, 70):
+                                 if bs*3 > n: continue
+                                 case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s, tol=%g, bs=%d, method=%s, with_gpuarray=%s" %
+                                       (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma, tol, bs, method, with_gpu))
+                                 yield (eigsh_check, eigsh, A0, None, 1, k, prec, which, sigma, tol, bs, method, evals0, precision, case_desc, with_gpu)
 
+@nottest
 def test_primme_eigsh_gen():
    """
    Test cases for primme.eighs for generalized problems.
@@ -270,28 +362,33 @@ def test_primme_eigsh_gen():
             stdP = toStandardProblem((A,B))
             for with_gpu in ((False, True) if test_gpu else (False,)):
                for precision in (np.float16, np.float32, np.float64):
-                  tol = np.finfo(precision).eps**.5 * 0.1
                   for which, sigma in [(w, None) for w in ('LM', 'SM', 'LA', 'SA')] + [('SM', sigma0)] :
-                     if gen.__name__ != "ElasticRod" and sigma is not None:
-                        precs = (None, jacobi_prec(stdP, sigma))
-                     else:
-                        precs = (None,)
-                     if precision is np.float16 and which != 'LM':
+                     # CUBLAS does not support complex half with gpus
+                     if with_gpu and complexity is np.complex128 and precision is np.float16:
                         continue
+                     # Normalize the problem in half precision to avoid overflows
                      if precision is np.float16:
-                        A0, evals0 = A/nA, evals/nA
+                        A0, evals0, nA0 = A/nA, evals/nA, 1
                         sigma = sigma/nA if sigma is not None else None
                      else:
-                        A0, evals0 = A, evals
-                     if with_gpu and complexity is np.complex128 and (precision is np.float16 or precision is np.float64):
-                        continue
-                     for prec in precs:
-                        for k in (1, 2, 3, 5, 10, 50):
-                           if k > n: continue
-                           case_desc = ("A,B=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s, with_gpuarray=%s" %
-                                 (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma, with_gpu))
-                           yield (eigsh_check, eigsh, A0, B, normInvB, k, prec, which, sigma, tol, evals0, precision, case_desc, with_gpu)
+                        A0, evals0, nA0 = A, evals, nA
+                     # Jacobi preconditioner is terrible for ElasticRod
+                     if gen.__name__ != "ElasticRod" and sigma is not None:
+                        precs = (None, jacobi_prec(stdP/nA0, sigma))
+                     else:
+                        precs = (None,)
+                     for method in ("DEFAULT_MIN_MATVECS", "DEFAULT_MIN_TIME"):
+                        for prec in precs:
+                           for k in (1, 2, 3, 5, 10, 50):
+                              if k > n: continue
+                              tol = get_tol_eigsh(k, sigma, which, evals0, precision)
+                              for bs in (1, 2, 3, 5, 10, 70):
+                                 if bs*3 > n: continue
+                                 case_desc = ("A,B=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s, bs=%d, method=%s, with_gpuarray=%s" %
+                                       (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma, bs, method, with_gpu))
+                                 yield (eigsh_check, eigsh, A0, B, normInvB, k, prec, which, sigma, tol, bs, method, evals0, precision, case_desc, with_gpu)
 
+#@nottest
 def test_primme_eigsh_matrix_types():
    """
    Test cases for primme.eighs with csr and LinearOperator matrix types.
@@ -306,9 +403,9 @@ def test_primme_eigsh_matrix_types():
          prec = jacobi_prec(A, sigma)
          k = 5
          M = op(prec) if prec is not None else None
-         case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s" %
-                      (MikotaPair.__name__, n, dtype, k, prec is None, which, sigma))
-         yield (eigsh_check, eigsh, op(A), None, 1, k, M, which, sigma, 1e-6, evals, dtype, case_desc, False, False)
+         case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, sigma=%s, bs=%d, method=%s" %
+                      (MikotaPair.__name__, n, dtype, k, prec is None, which, sigma, 1, 'DYNAMIC'))
+         yield (eigsh_check, eigsh, op(A), None, 1, k, M, which, sigma, 1e-6, 1, 'DYNAMIC', evals, dtype, case_desc, False, False)
 
 
 def select_pairs_svds(k, which, svals):
@@ -325,30 +422,84 @@ def select_pairs_svds(k, which, svals):
       f = lambda x : abs(x - sigma)
 
    n = max(svals.shape)
-   return np.array(sorted(svals, key=f)[0:k])
+   sorted_svals = sorted(svals, key=f)
+   sel_svals = np.array(sorted_svals[0:k])
+   if k < n:
+      gap = f(sorted_svals[k]) - f(sorted_svals[k-1])
+   else:
+      gap = 0
+   return sel_svals, gap
+
+
+def get_tol_svds(k, which, svals, precision):
+    """Return a tolerance considering the spectrum"""
+
+    # Get the smallest singular value (in absolute value) that is going to converge
+    # and the smallest distance between the converged values and the rest of
+    # the spectrum, gap
+    sel_svals, gap = select_pairs_svds(k, which, svals)
+    smallest_sval = np.fabs(sel_svals).min()
+
+    # A good tolerance is smaller than the smallest singular value and the gap
+    nA = np.fabs(svals).max()
+    tol = np.min([smallest_sval*.1, gap])/nA
+
+    # Limit the tolerance to be larger than the used precision's machine epsilon 
+    return np.max([tol, np.finfo(precision).eps**.8])
  
-def svds_check(svds_solver, A, k, M, which, tol, exact_svals, dtype, case_desc, add_stats=True):
+def svds_check(svds_solver, A, k, M, which, tol, bs, methodStage1, exact_svals, dtype,
+               case_desc, with_gpu=False, add_stats=True):
    """
    Test svds
    """
 
+   if TEST_THIS_CASE and TEST_THIS_CASE != case_desc:
+      return
+
+   if TEST_THIS_CASE:
+      if M is None: M = {}
+      M['printLevel'] = 5
+
+   import sys
+   sys.stdout.write("Case %s\n" % case_desc)
+   sys.stdout.flush()
+
+   f = togpusvd if with_gpu else lambda x:x 
+
+   if with_gpu and M:
+      M = M.copy()
+      if 'precAHA' in M:
+         M['precAHA'] = togpu(M['precAHA'])
+      if 'precAAH' in M:
+         M['precAAH'] = togpu(M['precAAH'])
+
+   #M['primme'] = {'projection_projection': 'primme_proj_refined', 'target': 'primme_closest_abs'}
    try:
-      svl, sva, svr, stats = svds_solver(A, k, None, which=which, tol=tol,
-            maxMatvecs=30000, return_stats=True, internalPrecision=to_primme_datatype(dtype), **M)
+      svl, sva, svr, stats = svds_solver(f(A), k, None, which=which, tol=tol, reltol=.1,
+            maxBlockSize=bs, methodStage1=methodStage1,
+            maxMatvecs=3000000, return_stats=True,
+            internalPrecision=to_primme_datatype(dtype),
+            use_gpuarray=with_gpu, **M)
    except Exception as e:
       raise Exception("Ups! Case %s\n%s" % (case_desc, e))
-   sol_svals = select_pairs_svds(k, which, exact_svals)
-   svr = svr.T.conj()
-
-   # Check singular values are close enough to the exact ones
-   ANorm = np.amax(exact_svals)
-   assert_allclose(sorted(sva), sorted(sol_svals), atol=ANorm*tol, rtol=1, err_msg=case_desc)
+   sol_svals, _ = select_pairs_svds(k, which, exact_svals)
+   svl = tocpu(svl)
+   svr = tocpu(svr).T.conj()
 
    # Check the residual norm associated to the returned pairs
-   R = A.dot(svr) - svl.dot(np.diag(sva))
-   Rnorms = np.linalg.norm(R, axis=0)
+   ANorm = np.amax(exact_svals)
+   #print(np.linalg.norm(svl.T.conj().dot(svl) - np.eye(k)),
+   #      np.linalg.norm(svr.T.conj().dot(svr) - np.eye(k)))
+   #print(stats)
+   Rnorms = np.sqrt(
+      np.linalg.norm(A.dot(svr) - svl.dot(np.diag(sva)), axis=0)**2 +
+      np.linalg.norm(A.T.conj().dot(svl) - svr.dot(np.diag(sva)), axis=0)**2)
+
    eps = np.finfo(dtype).eps
-   assert_allclose(Rnorms, np.zeros(k), atol=ANorm*(tol+eps)*(k**.5), rtol=1, err_msg=case_desc)
+   assert_allclose(Rnorms, np.zeros(k), atol=ANorm*(tol+eps)*max(k**.5,4), rtol=1, err_msg=case_desc)
+
+   # Check singular values are close enough to the exact ones
+   assert_allclose(sorted(sva), sorted(sol_svals), atol=ANorm*tol, rtol=1, err_msg=case_desc)
 
    # Add stats
    if add_stats:
@@ -359,36 +510,52 @@ def test_primme_svds():
    Generate all test cases for primme.svds.
    """
 
-   for n in (2, 3, 5, 10, 50, 100):
-      for precision in (np.float16, np.float32, np.float64):
+   for n in (2, 3, 5, 10, 50, 100, 200):
+      for precision in (np.float64, np.float32, np.float16):
          c = np.finfo(precision).eps**.333
          for gen_name, gen in (("MikotaPair", (lambda n, d: toStandardProblem(MikotaPair(n, dtype=d)))),
                             ("Lauchli_like_vert", (lambda n, d: Lauchli_like(n*2, n, c, dtype=d))),
                             ("Lauchli_like_hori", (lambda n, d: Lauchli_like(n, n*2, c, dtype=d)))):
             sva = np.linalg.svd(gen(n, np.float64), full_matrices=False, compute_uv=False)
+            nA = np.max(np.fabs(sva))
             sigma0 = sva[0]*.51 + sva[-1]*.49
             for complexity in (np.float64, np.complex128):
                A = gen(n, complexity)
-               tol = np.finfo(precision).eps**.5 * 0.1
-               for which, sigma in [('LM', 0), ('SM', 0), (sigma0, sigma0)]:
-                  for prec in (({},) if which == 'LM' else ({}, sqr_diagonal_prec(A, sigma))):
-                     # If the condition number is too large, the first stage may end
-                     # with approximations of larger values than the actual smallest
-                     if (gen_name == "MikotaPair" and n > 50
-                              and (precision is np.float32 or precision is np.complex64)
-                              and which != 'LM'):
-                        continue
-                     if precision is np.float16 and which != 'LM':
-                        continue
-                     if (n >= 50 and
-                         precision is np.float16 and which == 'LM'):
-                        continue
-                     for k in (1, 2, 3, 5, 10, 15):
-                        if k > n: continue
-                        case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, tol=%g" %
-                              (gen_name, n, dtype_to_str(precision, complexity), k, bool(prec), which, tol))
-                        yield (svds_check, svds, A, k, prec, which, tol, sva, precision, case_desc)
+               #tol = np.finfo(precision).eps**.5 * 0.1
+               for with_gpu in ((False, True) if test_gpu else (False,)):
+                  if with_gpu and complexity is np.complex128 and precision is np.float16:
+                      continue
+                  for which, sigma in [('LM', None), ('SM', 0), (sigma0, sigma0)]:
+                      if precision is np.float16:
+                          A0, sva0 = A/nA, sva/nA
+                          if sigma is not None:
+                             sigma = sigma/nA
+                          if which not in frozenset(('LM', 'SM')):
+                             which = which/nA
+                      else:
+                          A0, sva0 = A, sva
+                      for prec in (({},) if which == 'LM' else ({}, sqr_diagonal_prec(A0, sigma))):
+                        for k in (1, 2, 3, 5, 10, 15):
+                           if k > n: continue
+                           tol = get_tol_svds(k, which, sva0, precision)
+                           for method in ("DEFAULT_MIN_MATVECS", "DEFAULT_MIN_TIME"):
+                              for bs in (1, 2, 3, 5, 10, 70):
+                                 prec0 = prec.copy()
+                                 if gen_name == "MikotaPair" and n >= 50 and precision is np.float16 and which != 'LM':
+                                    if bs >= 2: continue
+                                    #if prec0:
+                                    #   prec0['primmeStage2'] = {'projection_projection': 'primme_proj_RR'}
+                                 if which != 'LM' and which != 'SM' and bs > 1:
+                                    continue
+                                 # if gen_name == "Lauchli_like_hori" and n >= 200 and not bool(prec) and which == sigma and k >= 15 and bs >= 2:
+                                 #    continue
+                                 if bs*3 > n: break
+                                 case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s, tol=%s, bs=%d, method=%s, with_gpuarray=%s" %
+                                       (gen_name, n, dtype_to_str(precision, complexity), k, bool(prec), which, tol, bs, method, with_gpu))
+                                 yield (svds_check, svds, A0, k, prec0, which, tol, bs, method, sva0, precision, case_desc, with_gpu)
+                                 if bs > k: break
 
+#@nottest
 def test_primme_svds_matrix_types():
    """
    Generate all test cases for primme.svds with csr and LinearOperator matrix types.
@@ -405,12 +572,14 @@ def test_primme_svds_matrix_types():
          k = 2
          case_desc = ("A=%s(%d, %s), k=%d, M=%s, which=%s" %
                       ("Lauchli_like_vert", n, dtype, k, bool(prec), which))
-         yield (svds_check, svds, op(A), k, prec, which, 1e-5, sva, dtype, case_desc, False)
+         yield (svds_check, svds, op(A), k, prec, which, 1e-5, 1, 'DYNAMIC', sva, dtype, case_desc, False, False)
 
+@nottest
 def test_examples_from_doc():
    import doctest
    doctest.testmod(primme, raise_on_error=True, optionflags=doctest.NORMALIZE_WHITESPACE)
 
+@nottest
 def test_return_stats():
     A, _ = diagonal(100)
     evals, evecs, stats = primme.eigsh(A, 3, tol=1e-6, which='LA',
@@ -423,5 +592,11 @@ def test_return_stats():
 
 
 if __name__ == "__main__":
+    #c = np.finfo(np.float16).eps**.333
+    #A = Lauchli_like(2, 4, c, np.float16)
+    #A=toStandardProblem(MikotaPair(50))
+    #import scipy.io, scipy.sparse
+    #scipy.io.mmwrite('mikota_50.mtx', scipy.sparse.csr_matrix(A))
+    #print(A)
     run_module_suite()
-    st.dump('tests.json')
+    #st.dump('tests.json')

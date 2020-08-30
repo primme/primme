@@ -198,7 +198,7 @@ int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
    SCALAR *Vb = &V[ldV * basisSize], *Wb = &W[ldW * basisSize];
    void *V0, *W0;
-   PRIMME_INT ldV0, ldW0;
+   PRIMME_INT ldV0 = primme->ldOPs, ldW0 = primme->ldOPs;
    CHKERR(Num_matrix_astype_Sprimme(Vb, nLocal, blockSize, ldV,
          PRIMME_OP_SCALAR, &V0, &ldV0, primme->matrixMatvec_type, 1 /* alloc */,
          1 /* copy */, ctx));
@@ -265,7 +265,7 @@ int massMatrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
 
    SCALAR *Vb = &V[ldV * basisSize], *BVb = &BV[ldBV * basisSize];
    void *V0, *BV0;
-   PRIMME_INT ldV0, ldBV0;
+   PRIMME_INT ldV0 = primme->ldOPs, ldBV0;
    CHKERR(Num_matrix_astype_Sprimme(Vb, nLocal, blockSize, ldV,
          PRIMME_OP_SCALAR, &V0, &ldV0, primme->massMatrixMatvec_type,
          1 /* alloc */, 1 /* copy */, ctx));

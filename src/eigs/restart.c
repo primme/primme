@@ -226,21 +226,21 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    /* Remove the SKIP_UNTIL_RESTART flags.                        */
    /* ----------------------------------------------------------- */
 
-   for (i=0, *numConverged=*numLocked; i<basisSize; i++) {
+   for (i=0 /*, *numConverged=*numLocked */; i<basisSize; i++) {
       if (flags[i] == SKIP_UNTIL_RESTART) {
          flags[i] = UNCONVERGED;
       }
-      else if (flags[i] != UNCONVERGED &&
-            /* Don't check more than numEvals */
-               *numConverged < primme->numEvals &&
-            /* Check only the first pairs, except if finding closest_leq/geq  */
-            /* because with refined extraction the pairs may not be ordered   */
-            /* by this criterion.                                             */
-               (i < primme->numEvals-*numLocked
-                || primme->target == primme_closest_geq
-                || primme->target == primme_closest_leq)) {
-         (*numConverged)++;
-      }
+      // else if (flags[i] != UNCONVERGED &&
+      //       /* Don't check more than numEvals */
+      //          *numConverged < primme->numEvals &&
+      //       /* Check only the first pairs, except if finding closest_leq/geq  */
+      //       /* because with refined extraction the pairs may not be ordered   */
+      //       /* by this criterion.                                             */
+      //          (i < primme->numEvals-*numLocked
+      //           || primme->target == primme_closest_geq
+      //           || primme->target == primme_closest_leq)) {
+      //    (*numConverged)++;
+      // }
    }
 
    /* ----------------------------------------------------------- */
@@ -283,6 +283,24 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
 
    if (primme->locking)
       restartSize = min(restartSize, basisSize-(*numConverged-*numLocked));
+
+   for (i=0 /*, *numConverged=*numLocked */; i<basisSize; i++) {
+      if (flags[i] == SKIP_UNTIL_RESTART) {
+         flags[i] = UNCONVERGED;
+      }
+      // else if (flags[i] != UNCONVERGED &&
+      //       /* Don't check more than numEvals */
+      //          *numConverged < primme->numEvals &&
+      //       /* Check only the first pairs, except if finding closest_leq/geq  */
+      //       /* because with refined extraction the pairs may not be ordered   */
+      //       /* by this criterion.                                             */
+      //          (i < primme->numEvals-*numLocked
+      //           || primme->target == primme_closest_geq
+      //           || primme->target == primme_closest_leq)) {
+      //    (*numConverged)++;
+      // }
+   }
+
 
    /* ----------------------------------------------------------------------- */
    /* Limit the number of previous retained vectors such that the final basis */
@@ -431,49 +449,63 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    /* ||I - V'*B*V||_F * problemNorm. Use this value to estimate the residual error */
    /* and to bound the minimum residual error norm the solver can converge    */
 
-   HREAL fn = 0.0; /* = max(|I - VtBV|_F, |I - QtQ|_F) * problemNorm */
-
-   if (ctx.procID == 0) {
-      if (VtBV) {
-         HREAL n = 0;
-         int i,j, nVtBV = primme->numOrthoConst + *numLocked + restartSize;
-         for (i = 0; i < nVtBV; i++) {
-            for (j = 0; j < i; j++)
-               n += 2 * REAL_PART(CONJ(VtBV[i * ldVtBV + j]) *
-                                  VtBV[i * ldVtBV + j]) /
-                    ABS(VtBV[i * ldVtBV + i]) / ABS(VtBV[j * ldVtBV + j]);
-         }
-         fn = sqrt(n);
-      }
-
-      if (QtQ) {
-         HREAL n = 0;
-         int i,j;
-         for (i = 0; i < restartSize; i++) {
-            for (j = 0; j < i; j++)
-               n += 2 * REAL_PART(CONJ(QtQ[i * ldQtQ + j]) *
-                                  QtQ[i * ldQtQ + j]) /
-                    ABS(QtQ[i * ldQtQ + i]) / ABS(QtQ[j * ldQtQ + j]);
-         }
-         fn = max(fn, sqrt(n));
-      }
+   HREAL VtBV_error = 0.0, QtQ_error = 0.0;
+   if (VtBV) {
+      int nVtBV = primme->numOrthoConst + *numLocked + restartSize;
+      CHKERR(
+            orthogonality_error_Sprimme(VtBV, nVtBV, ldVtBV, &VtBV_error, ctx));
    }
-   CHKERR(broadcast_RHprimme(&fn, 1, ctx));
+   if (QtQ) {
+      CHKERR(orthogonality_error_Sprimme(
+            QtQ, restartSize, ldQtQ, &QtQ_error, ctx));
+   }
+
+
+   // HREAL fn = 0.0; /* = max(|I - VtBV|_F, |I - QtQ|_F) * problemNorm */
+   // if (ctx.procID == 0) {
+   //    if (VtBV) {
+   //       HREAL n = 0;
+   //       int i,j, nVtBV = primme->numOrthoConst + *numLocked + restartSize;
+   //       for (i = 0; i < nVtBV; i++) {
+   //          for (j = 0; j < i; j++)
+   //             n += 2 * REAL_PART(CONJ(VtBV[i * ldVtBV + j]) *
+   //                                VtBV[i * ldVtBV + j]) /
+   //                  ABS(VtBV[i * ldVtBV + i]) / ABS(VtBV[j * ldVtBV + j]);
+   //       }
+   //       fn = sqrt(n);
+   //    }
+
+   //    if (QtQ) {
+   //       HREAL n = 0;
+   //       int i,j;
+   //       for (i = 0; i < restartSize; i++) {
+   //          for (j = 0; j < i; j++)
+   //             n += 2 * REAL_PART(CONJ(QtQ[i * ldQtQ + j]) *
+   //                                QtQ[i * ldQtQ + j]) /
+   //                  ABS(QtQ[i * ldQtQ + i]) / ABS(QtQ[j * ldQtQ + j]);
+   //       }
+   //       fn = max(fn, sqrt(n));
+   //    }
+   // }
+   // CHKERR(broadcast_RHprimme(&fn, 1, ctx));
       
-   if (fn > 0.0) {
-      PRINTF(5, "Orthogonalization level: %g", (double)fn);
-   }
+   //if (fn > 0.0) {
+   primme->stats.estimateOrthoError = VtBV_error + QtQ_error;
+   PRINTF(5, "Orthogonalization level: %g", (double)primme->stats.estimateOrthoError);
+   //}
 
    double residualError =
          primme->stats.estimateErrorOnA +
          primme->stats.estimateErrorOnB * primme->stats.estimateLargestSVal;
+   //      (VtBV_error + QtQ_error) * primme->stats.estimateLargestSVal;
+   PRINTF(5, "Residual error level: %g", residualError);
 
    if (*restartsSinceReset <= 1) {
       primme->stats.maxConvTol = max(primme->stats.maxConvTol, residualError);
    }
 
    primme->stats.estimateResidualError =
-         sqrt((double)*restartsSinceReset) * residualError;
+         /*sqrt((double)*restartsSinceReset) * */ residualError;
 
    /* Check VtBV */
 
@@ -924,17 +956,8 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
       }
    }
 
-   sizeBlockNorms = max(0, min(
-         maxBlockSize,
-         primme->maxBasisSize-*restartSize-numPrevRetained
-               -*numConverged+*numLocked));
-
-   *indexOfPreviousVecs = *restartSize;
-
-   left = *restartSize + numPrevRetained;
-
-   for (i=k=numPacked=0; i<basisSize; i++) {
-      if (flags[i] != UNCONVERGED
+   for (i=numPacked=left=0; i<basisSize; i++) {
+      if (flags[i] >= CONVERGED
             /* Otherwise don't check more than numEvals-numLocked             */
                   && numPacked < primme->numEvals-*numLocked
             /* Check only the first pairs, except if finding closest_leq/geq  */
@@ -943,17 +966,42 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
                   && (i < primme->numEvals-*numLocked
                      || primme->target == primme_closest_geq
                      || primme->target == primme_closest_leq)) {
-         restartPerm[left + numPacked++] = i;
+         numPacked++;
       }
-      else if (k < left) {
+      else if (left < *restartSize && flags[i] == UNCONVERGED) {
+         left++;
+      }
+   }
+   *indexOfPreviousVecs = left;
+   left += numPrevRetained;
+
+   int p,s;
+   for (i = k = p = s = 0; i < basisSize; i++) {
+      if (flags[i] >= CONVERGED
+            /* Otherwise don't check more than numEvals-numLocked             */
+                  && p < primme->numEvals-*numLocked
+            /* Check only the first pairs, except if finding closest_leq/geq  */
+            /* because with refined extraction the pairs may not be ordered   */
+            /* by this criterion.                                             */
+                  && (i < primme->numEvals-*numLocked
+                     || primme->target == primme_closest_geq
+                     || primme->target == primme_closest_leq)) {
+         restartPerm[left + p++] = i;
+      }
+      else if (k < *indexOfPreviousVecs && flags[i] == UNCONVERGED) {
          restartPerm[k++] = i;
       }
-      else {
-         restartPerm[min(*numConverged, primme->numEvals)-*numLocked + k++] = i;
+      else if (s < numPrevRetained) {
+         restartPerm[*indexOfPreviousVecs + s++] = i;
+      } else {
+         restartPerm[left + numPacked - numPrevRetained + s++] = i;
       }
    }
 
    *restartSize = left + numPacked;
+
+   sizeBlockNorms =
+         max(0, min(maxBlockSize, primme->maxBasisSize - *restartSize));
 
    KIND(permute_vecs_RHprimme, permute_vecs_SHprimme)
    (hVals, 1, basisSize, 1, restartPerm, ctx);
@@ -969,7 +1017,7 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    SCALAR *X = &V[*restartSize*ldV];
    SCALAR *R = &W[*restartSize*ldV];
    SCALAR *BX = BV ? &BV[*restartSize*ldV] : NULL;
-   assert(*restartSize <= primme->maxBasisSize);
+   assert(*restartSize + sizeBlockNorms <= primme->maxBasisSize);
    CHKERR(Num_aux_update_VWXR_Sprimme(V, W, BV, nLocal, basisSize, ldV,
             hVecs, *restartSize, ldhVecs, hVals,
             V, 0, *restartSize, ldV,
@@ -1004,11 +1052,8 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    /* -------------------------------------------------------------- */
 
    for (i=left, j=0; i < left+numPacked; i++) {
-      if (flags[i] != UNCONVERGED && *numLocked+j < primme->numEvals) {
+      if (flags[i] >= CONVERGED && *numLocked+j < primme->numEvals) {
          evals[*numLocked+j++] = hVals[i];
-      }
-      else {
-         flags[i] = UNCONVERGED;
       }
    }
 
@@ -1175,19 +1220,19 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    /* the converged Ritz value within the evals array.         */ 
 
    for (i=left; i < left+numPacked; i++) {
-       if (flags[i] != UNCONVERGED && *numLocked < primme->numEvals) {
+       if (flags[i] >= CONVERGED && *numLocked < primme->numEvals) {
          HREAL resNorm = resNorms[*numLocked] = lockedResNorms[i-left];
          HEVAL eval = evals[*numLocked];
          CHKERR(Num_copy_matrix_Sprimme(
                &evecs[(numLocked0 + i - left + primme->numOrthoConst) *
-               ldevecs],
+                      ldevecs],
                nLocal, 1, ldevecs,
                &evecs[(*numLocked + primme->numOrthoConst) * ldevecs], ldevecs,
                ctx));
          if (Bevecs) {
             CHKERR(Num_copy_matrix_Sprimme(
                   &Bevecs[(numLocked0 + i - left + primme->numOrthoConst) *
-                  ldBevecs],
+                          ldBevecs],
                   nLocal, 1, ldBevecs,
                   &Bevecs[(*numLocked + primme->numOrthoConst) * ldBevecs],
                   ldBevecs, ctx));

@@ -1167,13 +1167,13 @@ STATIC int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,
 STATIC int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
 
    int i, j;
-
+   HREAL threashold = max(.8 / n, MACHINE_EPSILON);
    for(i=n0; i<n1; i++) {
       HREAL Vii = REAL_PART(V[i * ldV + i]);
       if (!ISFINITE(Vii) || Vii <= (HREAL)0.0) break;
       for (j = 0; j < i; j++) {
          if (ABS(V[i * ldV + j]) >
-               .8 / n * sqrt(Vii * REAL_PART(V[j * ldV + j])))
+               threashold * sqrt(Vii * REAL_PART(V[j * ldV + j])))
             break;
       }
       if (j < i) break;
@@ -1181,6 +1181,49 @@ STATIC int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
 
    return i;
 }
+
+/*******************************************************************************
+ * Subroutine orthogonality_error - Return an estimation of ||I-VtV||_2
+ *
+ * INPUT/OUTPUT PARAMETERS
+ * ----------------
+ * VtV           The inner-product matrix, of size n x n
+ * n             The size of the matrix VtV
+ * ldVtV         The leading dimension of VtV
+ * level         The value of ||I-VtV|_2
+ *
+ * NOTE: Only the upper triangular part of VtV is accessed.
+ *
+ * Return Value
+ * ------------
+ * int       error code
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int orthogonality_error_Sprimme(
+      HSCALAR *VtV, int n, int ldVtV, HREAL *level, primme_context ctx) {
+
+   int i, j;
+
+   HREAL norm = 0.0;
+   if (ctx.procID == 0) {
+      for (i = 0; i < n; i++) {
+         HREAL norm_i = 0.0;
+         for (j = 0; j < i; j++)
+            norm_i += REAL_PART(VtV[i * ldVtV + j] * CONJ(VtV[i * ldVtV + j]));
+         norm_i += REAL_PART((VtV[i * ldVtV + i] - (HSCALAR)1.0) *
+                             CONJ(VtV[i * ldVtV + i] - (HSCALAR)1.0));
+         for (j = i + 1; j < n; j++)
+            norm_i += REAL_PART(VtV[j * ldVtV + i] * CONJ(VtV[j * ldVtV + i]));
+         norm = max(norm, sqrt(norm_i));
+      }
+   }
+   CHKERR(broadcast_RHprimme(&norm, 1, ctx));
+   if (level) *level = norm;
+
+   return 0;
+}
+
 
 /*******************************************************************************
  * Subroutine update_cholesky - update the Cholesky factor given new columns
