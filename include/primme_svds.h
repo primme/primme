@@ -278,6 +278,8 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
 int primme_svds_member_info(primme_svds_params_label *label,
       const char** label_name, primme_type *type, int *arity);
 int primme_svds_constant_info(const char* label_name, int *value);
+int primme_svds_enum_member_info(
+      primme_svds_params_label label, int *value, const char **value_name);
 
 #ifdef __cplusplus
 }

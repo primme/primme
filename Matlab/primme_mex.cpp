@@ -998,7 +998,14 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
          if (ptype == primme_int) {
             PRIMME_INT v;
             CHKERR(primme_get_member(primme, label, &v));
-            plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
+            // Return the constant name if it is an enum
+            int vi = (int)v;
+            const char *vs = NULL;
+            if (primme_enum_member_info(label, &vi, &vs) == 0) {
+               plhs[0] = mxCreateString(vs);
+            } else {
+               plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
+            }
          }
 
          // Get members with type double
@@ -1693,7 +1700,13 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
          if (ptype == primme_int) {
             PRIMME_INT v;
             CHKERR(primme_svds_get_member(primme_svds, label, &v));
-            plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
+            int vi = (int)v;
+            const char *vs = NULL;
+            if (primme_svds_enum_member_info(label, &vi, &vs) == 0) {
+               plhs[0] = mxCreateString(vs);
+            } else {
+               plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
+            }
          }
 
          // Set members with type double

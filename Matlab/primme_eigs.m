@@ -120,7 +120,10 @@ function [varargout] = primme_eigs(varargin)
 %   [X,D,R,STATS] = PRIMME_EIGS(...) returns a struct to report statistical
 %   information about number of matvecs, elapsed time, and estimates for the
 %   largest and smallest algebraic eigenvalues of A, and functions selected
-%   OPTS.profile.
+%   OPTS.profile. Also, the field 'primme_params' returns the state of all
+%   parameters after calling the solver. For detailed descriptions of the
+%   options, visit:
+%   http://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide
 %
 %   [X,D,R,STATS,HIST] = PRIMME_EIGS(...) it returns the convergence history,
 %   instead of printing it. Every row is a record, and the columns report:
@@ -514,7 +517,11 @@ function [varargout] = primme_eigs(varargin)
       primme_set_members(opts, primme);
 
       % Set method
-      primme_mex('primme_set_method', method, primme);
+      try
+         primme_mex('primme_set_method', method, primme);
+      catch ME
+         error(['Not valid method ' method]);
+      end
 
       % Set monitor and shared variables with the monitor
       hist = [];
@@ -605,6 +612,7 @@ function [varargout] = primme_eigs(varargin)
          stats.estimateMinEVal = primme_mex('primme_get_member', primme, 'stats_estimateMinEVal');
          stats.estimateMaxEVal = primme_mex('primme_get_member', primme, 'stats_estimateMaxEVal');
          stats.estimateLargestSVal = primme_mex('primme_get_member', primme, 'stats_estimateLargestSVal');
+         stats.primme_params = primme_get_all_members(primme);
          varargout{4} = stats;
       end
       if (nargout >= 5)
@@ -742,6 +750,77 @@ function primme_set_members(opts, primme, prefix)
           end
         end
       end
+   end
+end
+
+function s = primme_get_all_members(primme)
+   members = {
+      'n', 
+      'matrixMatvec_type', 
+      'massMatrixMatvec_type', 
+      'applyPreconditioner_type', 
+      'numEvals', 
+      'target', 
+      'targetShifts', 
+      'locking', 
+      'initSize', 
+      'numOrthoConst', 
+      'dynamicMethodSwitch', 
+      'maxBasisSize', 
+      'minRestartSize', 
+      'maxBlockSize', 
+      'maxMatvecs', 
+      'maxOuterIterations', 
+      'aNorm', 
+      'BNorm', 
+      'invBNorm', 
+      'eps', 
+      'orth', 
+      'internalPrecision', 
+      'printLevel', 
+      'initBasisMode', 
+      'projection_projection', 
+      'restarting_maxPrevRetain', 
+      'correction_precondition', 
+      'correction_robustShifts', 
+      'correction_maxInnerIterations', 
+      'correction_projectors_LeftQ', 
+      'correction_projectors_LeftX', 
+      'correction_projectors_RightQ', 
+      'correction_projectors_RightX', 
+      'correction_projectors_SkewQ', 
+      'correction_projectors_SkewX', 
+      'correction_convTest', 
+      'correction_relTolBase', 
+      'stats_numOuterIterations', 
+      'stats_numRestarts', 
+      'stats_numMatvecs', 
+      'stats_numPreconds', 
+      'stats_numGlobalSum', 
+      'stats_volumeGlobalSum', 
+      'stats_numBroadcast', 
+      'stats_volumeBroadcast', 
+      'stats_flopsDense', 
+      'stats_numOrthoInnerProds', 
+      'stats_elapsedTime', 
+      'stats_timeMatvec', 
+      'stats_timePrecond', 
+      'stats_timeOrtho', 
+      'stats_timeGlobalSum', 
+      'stats_timeBroadcast', 
+      'stats_timeDense', 
+      'stats_estimateMinEVal', 
+      'stats_estimateMaxEVal', 
+      'stats_estimateLargestSVal', 
+      'stats_estimateBNorm', 
+      'stats_estimateInvBNorm', 
+      'stats_maxConvTol', 
+      'stats_lockingIssue'
+   };
+
+   s = struct();
+   for i=1:length(members)
+     s.(members{i}) = primme_mex('primme_get_member', primme, members{i});
    end
 end
 

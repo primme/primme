@@ -740,6 +740,9 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       case PRIMME_SVDS_stats_timeBroadcast:
          *(double*)value = primme_svds->stats.timeBroadcast;
          break;
+      case PRIMME_SVDS_stats_lockingIssue:
+         *(PRIMME_INT*)value = primme_svds->stats.lockingIssue;
+         break;
       case PRIMME_SVDS_convTestFun:
          v->convTestFun_v = primme_svds->convTestFun;
          break;
@@ -1084,6 +1087,7 @@ int primme_svds_member_info(primme_svds_params_label *label_,
    IF_IS(stats_timeOrtho);
    IF_IS(stats_timeGlobalSum);
    IF_IS(stats_timeBroadcast);
+   IF_IS(stats_lockingIssue);
    IF_IS(convTestFun);
    IF_IS(convTestFun_type);
    IF_IS(convtest);
@@ -1131,6 +1135,7 @@ int primme_svds_member_info(primme_svds_params_label *label_,
       case PRIMME_SVDS_stats_volumeGlobalSum:
       case PRIMME_SVDS_stats_numBroadcast:
       case PRIMME_SVDS_stats_volumeBroadcast:
+      case PRIMME_SVDS_stats_lockingIssue:
       case PRIMME_SVDS_iseed:
       case PRIMME_SVDS_numProcs: 
       case PRIMME_SVDS_procID: 
@@ -1241,4 +1246,72 @@ int primme_svds_constant_info(const char* label_name, int *value) {
    return primme_constant_info(label_name, value);
 }
 
+/*******************************************************************************
+ * Subroutine primme_svds_enum_member_info - return the value of a string
+ * representing an enum constant, or vice versa.
+ *
+ * INPUT/OUTPUT PARAMETERS
+ * -----------------------
+ * label       member to which the constant relates
+ * value       (in) if *value >= 0, value to get the associated string,
+ *             (in/out) if *value < 0, return the value associated to
+ *             value_name.
+ * value_name  (in) if *value_name > 0, string for which to seek the value
+ *             (in/out) if *value_name == 0, return the associated to value.
+ *
+ * RETURN
+ * ------
+ * error code   0: OK
+ *             -1: Invalid input
+ *             -2: either value or value_name was not found
+ *
+ ******************************************************************************/
+
+int primme_svds_enum_member_info(
+      primme_svds_params_label label, int *value, const char **value_name) {
+
+   if (!value || !value_name || (*value >= 0 && *value_name) ||
+         (*value < 0 && !*value_name)) {
+      return -1;
+   }
+
+#define IF_IS(F)                                                               \
+   if (*value == (int)(F) || (*value_name && strcmp(#F, *value_name) == 0)) {  \
+      *value = (int)(F);                                                       \
+      *value_name = #F;                                                        \
+      return 0;                                                                \
+   }
+
+   switch(label) {
+   // Hack: Check method
+   case PRIMME_SVDS_commInfo:
+   IF_IS(primme_svds_default);
+   IF_IS(primme_svds_hybrid);
+   IF_IS(primme_svds_normalequations);
+   IF_IS(primme_svds_augmented);
+   break;
+   
+   case PRIMME_SVDS_target:
+   IF_IS(primme_svds_largest);
+   IF_IS(primme_svds_smallest);
+   IF_IS(primme_svds_closest_abs);
+   break;
+
+   case PRIMME_SVDS_method:
+   case PRIMME_SVDS_methodStage2:
+   IF_IS(primme_svds_op_none);
+   IF_IS(primme_svds_op_AtA);
+   IF_IS(primme_svds_op_AAt);
+   IF_IS(primme_svds_op_augmented);
+   break;
+
+   default: break;
+   }
+#undef IF_IS
+
+   /* return error if label not found */
+
+   return -2;
+}
+ 
 #endif /* USE_DOUBLE */

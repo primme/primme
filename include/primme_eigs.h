@@ -445,6 +445,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
 int primme_member_info(primme_params_label *label, const char** label_name,
       primme_type *type, int *arity);
 int primme_constant_info(const char* label_name, int *value);
+int primme_enum_member_info(
+      primme_params_label label, int *value, const char **value_name);
+
 
 #ifdef __cplusplus
 }

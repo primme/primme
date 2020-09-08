@@ -95,7 +95,10 @@ function [varargout] = primme_svds(varargin)
 %
 %   [U,S,V,R,STATS] = PRIMME_SVDS(...) returns how many times A and P were
 %   used and elapsed time. The application of A is counted independently from
-%   the application of A', and functions selected OPTIONS.profile.
+%   the application of A', and functions selected OPTIONS.profile. Also, the
+%   field 'primme_svds_params' returns the state of all parameters after
+%   calling the solver. For detailed descriptions of the options, visit:
+%   http://www.cs.wm.edu/~andreas/software/doc/svdsc.html#parameters-guide
 %
 %   [U,S,V,R,STATS,HIST] = PRIMME_SVDS(...) returns the convergence history,
 %   instead of printing it. Every row is a record, and the columns report:
@@ -583,6 +586,7 @@ function [varargout] = primme_svds(varargin)
          stats.numMatvecs = primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs');
          stats.elapsedTime = primme_mex('primme_svds_get_member', primme_svds, 'stats_elapsedTime');
          stats.aNorm = primme_mex('primme_svds_get_member', primme_svds, 'aNorm');
+         stats.primme_svds_params = primme_svds_get_all_members(primme_svds);
          varargout{5} = stats;
       end
       if (nargout >= 6)
@@ -799,6 +803,128 @@ function primme_svds_set_members(opts, primme_svds, f, prefix)
    end
 end
 
+function s = primme_svds_get_all_members(primme_svds)
+   members = {
+      'm',
+      'n',
+      'matrixMatvec_type',
+      'applyPreconditioner_type',
+      'globalSumReal_type',
+      'broadcastReal_type',
+      'numSvals',
+      'target',
+      'targetShifts',
+      'method',
+      'methodStage2',
+      'locking',
+      'numOrthoConst',
+      'aNorm',
+      'eps',
+      'precondition',
+      'initSize',
+      'maxBasisSize',
+      'maxBlockSize',
+      'maxMatvecs',
+      'iseed',
+      'printLevel',
+      'internalPrecision',
+      'stats_numOuterIterations',
+      'stats_numRestarts',
+      'stats_numMatvecs',
+      'stats_numPreconds',
+      'stats_numGlobalSum',
+      'stats_volumeGlobalSum',
+      'stats_numBroadcast',
+      'stats_volumeBroadcast',
+      'stats_numOrthoInnerProds',
+      'stats_elapsedTime',
+      'stats_timeMatvec',
+      'stats_timePrecond',
+      'stats_timeOrtho',
+      'stats_timeGlobalSum',
+      'stats_timeBroadcast',
+      'stats_lockingIssue',
+      'convTestFun_type'
+   };
+
+   s = struct();
+   s.primme = primme_get_all_members(primme_mex('primme_svds_get_member', primme_svds, 'primme'));
+   s.primmeStage2 = primme_get_all_members(primme_mex('primme_svds_get_member', primme_svds, 'primmeStage2'));
+   for i=1:length(members)
+     s.(members{i}) = primme_mex('primme_svds_get_member', primme_svds, members{i});
+   end
+end
+
+function s = primme_get_all_members(primme)
+   members = {
+      'n', 
+      'matrixMatvec_type', 
+      'massMatrixMatvec_type', 
+      'applyPreconditioner_type', 
+      'numEvals', 
+      'target', 
+      'targetShifts', 
+      'locking', 
+      'initSize', 
+      'numOrthoConst', 
+      'dynamicMethodSwitch', 
+      'maxBasisSize', 
+      'minRestartSize', 
+      'maxBlockSize', 
+      'maxMatvecs', 
+      'maxOuterIterations', 
+      'aNorm', 
+      'BNorm', 
+      'invBNorm', 
+      'eps', 
+      'orth', 
+      'internalPrecision', 
+      'printLevel', 
+      'initBasisMode', 
+      'projection_projection', 
+      'restarting_maxPrevRetain', 
+      'correction_precondition', 
+      'correction_robustShifts', 
+      'correction_maxInnerIterations', 
+      'correction_projectors_LeftQ', 
+      'correction_projectors_LeftX', 
+      'correction_projectors_RightQ', 
+      'correction_projectors_RightX', 
+      'correction_projectors_SkewQ', 
+      'correction_projectors_SkewX', 
+      'correction_convTest', 
+      'correction_relTolBase', 
+      'stats_numOuterIterations', 
+      'stats_numRestarts', 
+      'stats_numMatvecs', 
+      'stats_numPreconds', 
+      'stats_numGlobalSum', 
+      'stats_volumeGlobalSum', 
+      'stats_numBroadcast', 
+      'stats_volumeBroadcast', 
+      'stats_flopsDense', 
+      'stats_numOrthoInnerProds', 
+      'stats_elapsedTime', 
+      'stats_timeMatvec', 
+      'stats_timePrecond', 
+      'stats_timeOrtho', 
+      'stats_timeGlobalSum', 
+      'stats_timeBroadcast', 
+      'stats_timeDense', 
+      'stats_estimateMinEVal', 
+      'stats_estimateMaxEVal', 
+      'stats_estimateLargestSVal', 
+      'stats_estimateBNorm', 
+      'stats_estimateInvBNorm', 
+      'stats_maxConvTol', 
+      'stats_lockingIssue'
+   };
+
+   s = struct();
+   for i=1:length(members)
+     s.(members{i}) = primme_mex('primme_get_member', primme, members{i});
+   end
+end
 
 function s = primme_error_msg(errorCode)
 

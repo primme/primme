@@ -899,6 +899,12 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_preconditioner:
               *(ptr_v*)value = primme->preconditioner;
       break;
+      case PRIMME_initBasisMode:
+              *(PRIMME_INT*)value = primme->initBasisMode;
+      break;
+      case PRIMME_projectionParams_projection:
+              *(PRIMME_INT*)value = primme->projectionParams.projection;
+      break;
       case PRIMME_restartingParams_maxPrevRetain:
               *(PRIMME_INT*)value = primme->restartingParams.maxPrevRetain;
       break;
@@ -1000,6 +1006,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_stats_estimateInvBNorm:
               *(double*)value = primme->stats.estimateInvBNorm;
+      break;
+      case PRIMME_stats_maxConvTol:
+              *(double*)value = primme->stats.maxConvTol;
       break;
       case PRIMME_stats_lockingIssue:
               *(PRIMME_INT*)value = primme->stats.lockingIssue;
@@ -1533,6 +1542,8 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       case PRIMME_stats_numPreconds:
       case PRIMME_stats_numGlobalSum:
       case PRIMME_stats_volumeGlobalSum:
+      case PRIMME_stats_numBroadcast:
+      case PRIMME_stats_volumeBroadcast:
       case PRIMME_stats_lockingIssue:
       case PRIMME_numProcs:
       case PRIMME_procID:
@@ -1555,6 +1566,8 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
       /* members with type double */
 
       case PRIMME_aNorm:
+      case PRIMME_BNorm:
+      case PRIMME_invBNorm:
       case PRIMME_eps:
       case PRIMME_correctionParams_relTolBase:
       case PRIMME_stats_numOrthoInnerProds:
@@ -1705,6 +1718,121 @@ int primme_constant_info(const char* label_name, int *value) {
    /* return error if label not found */
 
    return 1;   
+}
+
+/*******************************************************************************
+ * Subroutine primme_enum_member_info - return the value of a string
+ * representing an enum constant, or vice versa.
+ *
+ * INPUT/OUTPUT PARAMETERS
+ * -----------------------
+ * label       member to which the constant relates
+ * value       (in) if *value >= 0, value to get the associated string,
+ *             (in/out) if *value < 0, return the value associated to
+ *             value_name.
+ * value_name  (in) if *value_name > 0, string for which to seek the value
+ *             (in/out) if *value_name == 0, return the associated to value.
+ *
+ * RETURN
+ * ------
+ * error code   0: OK
+ *             -1: Invalid input
+ *             -2: either value or value_name was not found
+ *
+ ******************************************************************************/
+
+int primme_enum_member_info(
+      primme_params_label label, int *value, const char **value_name) {
+
+   if (!value || !value_name || (*value >= 0 && *value_name) ||
+         (*value < 0 && !*value_name)) {
+      return -1;
+   }
+
+#define IF_IS(F)                                                               \
+   if (*value == (int)(F) || (*value_name && strcmp(#F, *value_name) == 0)) {  \
+      *value = (int)(F);                                                       \
+      *value_name = #F;                                                        \
+      return 0;                                                                \
+   }
+
+   switch(label) {
+   // Hack: Check method
+   case PRIMME_commInfo:
+   IF_IS(PRIMME_DEFAULT_METHOD);
+   IF_IS(PRIMME_DYNAMIC);
+   IF_IS(PRIMME_DEFAULT_MIN_TIME);
+   IF_IS(PRIMME_DEFAULT_MIN_MATVECS);
+   IF_IS(PRIMME_Arnoldi);
+   IF_IS(PRIMME_GD);
+   IF_IS(PRIMME_GD_plusK);
+   IF_IS(PRIMME_GD_Olsen_plusK);
+   IF_IS(PRIMME_JD_Olsen_plusK);
+   IF_IS(PRIMME_RQI);
+   IF_IS(PRIMME_JDQR);
+   IF_IS(PRIMME_JDQMR);
+   IF_IS(PRIMME_JDQMR_ETol);
+   IF_IS(PRIMME_STEEPEST_DESCENT);
+   IF_IS(PRIMME_LOBPCG_OrthoBasis);
+   IF_IS(PRIMME_LOBPCG_OrthoBasis_Window);
+   break;
+
+   case PRIMME_target: 
+   IF_IS(primme_smallest);
+   IF_IS(primme_largest);
+   IF_IS(primme_closest_geq);
+   IF_IS(primme_closest_leq);
+   IF_IS(primme_closest_abs);
+   IF_IS(primme_largest_abs);
+   break;
+
+   case PRIMME_projectionParams_projection:
+   IF_IS(primme_proj_default);
+   IF_IS(primme_proj_RR);
+   IF_IS(primme_proj_harmonic);
+   IF_IS(primme_proj_refined);
+   break;
+
+   case PRIMME_initBasisMode:
+   IF_IS(primme_init_default);
+   IF_IS(primme_init_krylov);
+   IF_IS(primme_init_random);
+   IF_IS(primme_init_user);
+   break;
+
+   case PRIMME_correctionParams_convTest:
+   IF_IS(primme_full_LTolerance);
+   IF_IS(primme_decreasing_LTolerance);
+   IF_IS(primme_adaptive_ETolerance);
+   IF_IS(primme_adaptive);
+   break;
+
+   case PRIMME_orth:
+   IF_IS(primme_orth_default);
+   IF_IS(primme_orth_explicit_I);
+   IF_IS(primme_orth_implicit_I);
+   break;
+
+   case PRIMME_matrixMatvec_type:
+   case PRIMME_applyPreconditioner_type:
+   case PRIMME_globalSumReal_type:
+   case PRIMME_broadcastReal_type:
+   case PRIMME_massMatrixMatvec_type:
+   IF_IS(primme_op_default);   
+   IF_IS(primme_op_quad);
+   IF_IS(primme_op_double);
+   IF_IS(primme_op_float);
+   IF_IS(primme_op_half);
+   IF_IS(primme_op_int);
+   break;
+
+   default: break;
+   }
+#undef IF_IS
+
+   /* return error if label not found */
+
+   return -2;
 }
 
 #endif /* USE_DOUBLE */
