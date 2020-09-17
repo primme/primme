@@ -1,8 +1,6 @@
 
 .. highlight:: Fortran
 
-.. f:currentmodule::
-
 FORTRAN 90 Library Interface
 ----------------------------
 
@@ -28,7 +26,7 @@ The next enumerations and functions are declared in ``primme_f90.inc``.
 primme_svds_params_create
 """""""""""""""""""""""""
 
-.. f:function:: c_ptr primme_svds_params_create()
+.. f:function:: primme_svds_params_create()
 
    Allocate and initialize a parameters structure to the default values.
 
@@ -40,7 +38,7 @@ primme_svds_params_create
 primme_svds_set_method
 """"""""""""""""""""""
 
-.. f:function:: c_int primme_svds_set_method(method, methodStage1, methodStage2, primme_svds)
+.. f:function:: primme_svds_set_method(method, methodStage1, methodStage2, primme_svds)
 
    Set PRIMME SVDS parameters to one of the preset configurations.
 
@@ -65,7 +63,7 @@ primme_svds_set_method
 xprimme_svds
 """"""""""""
 
-.. f:function:: c_int xprimme_svds(svals, svecs, resNorms, primme_svds)
+.. f:function:: xprimme_svds(svals, svecs, resNorms, primme_svds)
 
    Solve a real or complex singular value problem.
 
@@ -106,7 +104,7 @@ xprimme_svds
 magma_xprimme_svds
 """"""""""""""""""
 
-.. f:function:: c_int magma_xprimme_svds(svals, svecs, resNorms, primme_svds)
+.. f:function:: magma_xprimme_svds(svals, svecs, resNorms, primme_svds)
 
    Solve a real or complex singular value problem.
 
@@ -147,7 +145,7 @@ magma_xprimme_svds
 primme_svds_params_destroy
 """"""""""""""""""""""""""
 
-.. f:function:: c_int primme_svds_params_destroy(primme_svds)
+.. f:function:: primme_svds_params_destroy(primme_svds)
 
    Free memory allocated by PRIMME associated to a parameters structure created
    with :f:func:`primme_svds_params_create`.
@@ -159,7 +157,7 @@ primme_svds_params_destroy
 primme_svds_set_member
 """"""""""""""""""""""
 
-.. f:function:: c_int primme_svds_set_member(primme_svds, label, value)
+.. f:function:: primme_svds_set_member(primme_svds, label, value)
 
    Set a value in some field of the parameter structure.
 
@@ -267,7 +265,7 @@ primme_svds_set_member
 primme_get_member
 """""""""""""""""
 
-.. f:function:: c_int primme_svds_get_member(primme, label, value)
+.. f:function:: primme_svds_get_member(primme, label, value)
 
    Get the value in some field of the parameter structure.
 

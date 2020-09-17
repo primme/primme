@@ -79,8 +79,10 @@ MATLAB Interface
       * |convTest|: how to stop the inner QMR Method
       * |convTestFun|: function handler with an alternative convergence criterion.
         If ``FUN(EVAL,EVEC,RNORM)`` returns a nonzero value, the pair ``(EVAL,EVEC)``
-        with residual norm ``RNORM`` is considered converged.
+        with residual norm ``RNORM`` is considered converged
       * |iseed|: random seed
+      * ``returnUnconverged``: whether to return unconverged pairs if maximum
+        iterations or matvecs is reached.
 
    ``D = primme_eigs(A,k,target,OPTS,METHOD)`` specifies the eigensolver method.
    METHOD can be one of the next strings:
