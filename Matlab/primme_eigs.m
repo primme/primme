@@ -71,6 +71,8 @@ function [varargout] = primme_eigs(varargin)
 %          If FUN(EVAL,EVEC,RNORM) returns a nonzero value, the pair (EVAL,EVEC)
 %          with residual norm RNORM is considered converged.
 %     OPTS.iseed: random seed
+%     OPTS.returnUnconverged: whether to return unconverged pairs if maximum
+%          iterations or matvecs is reached
 %     OPTS.profiler: return times from selected PRIMME's internal functions.
 %          If 1, STATS returns times for the main functions. If it is a cell,
 %          STATS returns times for those functions only. For instance,
@@ -446,6 +448,17 @@ function [varargout] = primme_eigs(varargin)
       showHist = dispLevel > 0;
    end
 
+   % Process 'returnUnconverged' in opts
+   if isfield(opts, 'returnUnconverged')
+      returnUnconverged = opts.returnUnconverged;
+      if ~isbool(returnUnconverged)
+         error('opts.returnUnconverged should be true or false');
+      end
+      opts = rmfield(opts, 'returnUnconverged');
+   else
+      returnUnconverged = false;
+   end
+
    % Process profile
    profile0 = {};
    if isfield(opts, 'profile')
@@ -571,6 +584,14 @@ function [varargout] = primme_eigs(varargin)
 
       % Call xprimme
       [ierr, evals, norms, evecs] = primme_mex(xprimme, init, primme); 
+
+      % Remove unconverged pairs unless the user asked for that
+      if ierr == -3 && ~returnUnconverged
+         initSize = primme_mex('primme_get_member', primme, 'initSize');
+         evals = evals(1:initSize);
+         norms = norms(1:initSize);
+         evecs = evecs(:,1:initSize);
+      end
 
       % Process error code and return the required arguments
       if ierr == -3

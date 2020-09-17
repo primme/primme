@@ -1332,15 +1332,18 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
 
    plhs[0] = create_mxArray(&ret, 1, 1, 1, CPU());
 
+   // Returns all pairs with non-negative residual
+   int numRet = 0;
+   while (numRet < primme->numEvals && rnorms[numRet] >= 0.0) numRet++;
+
    // Return evals
 
    if (nlhs >= 2) {
       if (!mxEvals) {
-         mxEvals = create_mxArray(evals, (int)primme->initSize, 1,
-               (int)primme->initSize, CPUGPU());
+         mxEvals = create_mxArray(evals, numRet, 1, numRet, CPUGPU());
          delete [] evals;
       }
-      mxSetM(mxEvals, primme->initSize);
+      mxSetM(mxEvals, numRet);
       plhs[1] = mxEvals;
    }
    else {
@@ -1350,7 +1353,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Return rnorms
 
    if (nlhs >= 3) {
-      mxSetM(mxRnorms, primme->initSize);
+      mxSetM(mxRnorms, numRet);
       plhs[2] = mxRnorms;
    }
    else {
@@ -1362,7 +1365,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    if (nlhs >= 4) {
       if (primme->numOrthoConst > 0 || (isCPU(CPUGPU()) && !mxEvecs)) {
          mxEvecs = create_mxArray(&evecs[primme->n * primme->numOrthoConst],
-               primme->n, (PRIMME_INT)primme->initSize, primme->n, CPUGPU());
+               primme->n, (PRIMME_INT)numRet, primme->n, CPUGPU());
          if (isCPU(CPUGPU()) && evecs) {
             delete[] evecs;
          }

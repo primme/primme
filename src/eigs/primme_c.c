@@ -392,25 +392,25 @@ int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,
 
    /* Call the solver */
 
-   int ret;
-   CHKERR(coordinated_exit(
-         main_iter_Sprimme(evals0, evecs0, ldevecs0, resNorms0, t0, &ret, ctx),
+   int ret, numRet;
+   CHKERR(coordinated_exit(main_iter_Sprimme(evals0, evecs0, ldevecs0,
+                                 resNorms0, t0, &ret, &numRet, ctx),
          ctx));
 
    /* Copy back evals, evecs and resNorms */
 
    CHKERR(KIND(Num_matrix_astype_RHprimme, Num_matrix_astype_SHprimme)(evals0,
-         1, primme->initSize, 1, PRIMME_OP_HREAL, (void **)&evals, NULL,
+         1, numRet, 1, PRIMME_OP_HREAL, (void **)&evals, NULL,
          evals_resNorms_type, -1 /* destroy */, 1 /* copy */, ctx));
    CHKERR(Num_copy_matrix_astype_Sprimme(evecs0, 0, primme->numOrthoConst,
-         primme->nLocal, primme->initSize, ldevecs0, PRIMME_OP_SCALAR, evecs, 0,
+         primme->nLocal, numRet, ldevecs0, PRIMME_OP_SCALAR, evecs, 0,
          primme->numOrthoConst, primme->ldevecs, evecs_type, ctx));
    if (evecs != evecs0) {
       CHKERR(Num_free_Sprimme(evecs0, ctx));
    }
-   CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, primme->initSize, 1,
-         PRIMME_OP_HREAL, (void **)&resNorms, NULL, evals_resNorms_type,
-         -1 /* destroy */, 1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_RHprimme(resNorms0, 1, numRet, 1, PRIMME_OP_HREAL,
+         (void **)&resNorms, NULL, evals_resNorms_type, -1 /* destroy */,
+         1 /* copy */, ctx));
 
    /* If no error, return initSize */
 
