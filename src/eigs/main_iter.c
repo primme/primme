@@ -441,9 +441,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Without locking, restarting can cause converged Ritz values to become  */
    /* unconverged. Keep performing JD iterations until they remain converged */
    /* ---------------------------------------------------------------------- */
-   numConverged = 0;
    while (
-         numConverged < primme->numEvals &&
          primme->stats.numMatvecs < primme->maxMatvecs &&
          (primme->maxOuterIterations == 0 ||
                primme->stats.numOuterIterations < primme->maxOuterIterations)) {
