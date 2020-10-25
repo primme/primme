@@ -65,7 +65,7 @@ typedef union {
          void *lockedNorms, int *inner_its, void *LSRes, const char *msg,
          double *time, primme_event *event, int *stage,
          struct primme_svds_params *primme_svds, int *err);
-} value_t;
+} svds_value_t;
 typedef void *ptr_v;
 typedef const char *str_v;
 
@@ -576,7 +576,7 @@ int primme_svds_get_member(primme_svds_params *primme_svds,
       primme_svds_params_label label, void *value) {
 
    int i;
-   value_t *v = (value_t*)value;
+   svds_value_t *v = (svds_value_t*)value;
 
    switch(label) {
       case PRIMME_SVDS_primme :
@@ -796,7 +796,7 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
       primme_svds_params_label label, void *value) {
    int i;
    // Workaround to avoid warnings assigning void* pointers to function pointers
-   value_t v = *(value_t*)&value;
+   svds_value_t v = *(svds_value_t*)&value;
    switch(label) {
       case PRIMME_SVDS_primme :
          return 1;

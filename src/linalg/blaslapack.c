@@ -277,7 +277,7 @@ int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
    PRIMME_BLASINT lincx = incx;
    PRIMME_BLASINT lincy = incy;
 
-      XCOPY(&ln, x, &lincx, y, &lincy);
+   XCOPY(&ln, (const BLASSCALAR *)x, &lincx, (BLASSCALAR *)y, &lincy);
    return 0;
 #else
    return Num_copy_matrix_Sprimme(x, 1, n, incx, y, incy, ctx);
@@ -540,8 +540,9 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
             transa, mA, nA, alpha, a, lda, b, incb, beta, c, 1, ctx);
    }
 
-   XGEMM(transa, transb, &lm, &ln, &lk, &alpha, a, &llda, b, &lldb, &beta, c,
-         &lldc);
+   XGEMM(transa, transb, &lm, &ln, &lk, (const BLASSCALAR *)&alpha,
+         (const BLASSCALAR *)a, &llda, (const BLASSCALAR *)b, &lldb,
+         (const BLASSCALAR *)&beta, (BLASSCALAR *)c, &lldc);
 
    return 0;
 
@@ -662,7 +663,9 @@ int Num_hemm_Sprimme(const char *side, const char *uplo, int m, int n,
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return 0;
 
-   XHEMM(side, uplo, &lm, &ln, &alpha, a, &llda, b, &lldb, &beta, c, &lldc);
+   XHEMM(side, uplo, &lm, &ln, (const BLASSCALAR *)&alpha,
+         (const BLASSCALAR *)a, &llda, (const BLASSCALAR *)b, &lldb,
+         (const BLASSCALAR *)&beta, (BLASSCALAR *)c, &lldc);
 
    return 0;
 }
@@ -688,7 +691,8 @@ int Num_trmm_Sprimme(const char *side, const char *uplo,
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return 0;
 
-   XTRMM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+   XTRMM(side, uplo, transa, diag, &lm, &ln, (const BLASSCALAR *)&alpha,
+         (const BLASSCALAR *)a, &llda, (BLASSCALAR *)b, &lldb);
 
    return 0;
 }
@@ -740,7 +744,9 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
 
    while(m > 0) {
       lm = (PRIMME_BLASINT)min(m, PRIMME_BLASINT_MAX-1);
-      XGEMV(transa, &lm, &ln, &alpha, a, &llda, x, &lincx, &beta, y, &lincy);
+      XGEMV(transa, &lm, &ln, (const BLASSCALAR *)&alpha, (const BLASSCALAR *)a,
+            &llda, (const BLASSCALAR *)x, &lincx, (const BLASSCALAR *)&beta,
+            (BLASSCALAR *)y, &lincy);
       m -= (PRIMME_INT)lm;
       a += lm;
       if (!tA) {
@@ -842,7 +848,8 @@ int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
 
    while(n > 0) {
       ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
-      XAXPY(&ln, &alpha, x, &lincx, y, &lincy);
+      XAXPY(&ln, (const BLASSCALAR *)&alpha, (const BLASSCALAR *)x, &lincx,
+            (BLASSCALAR *)y, &lincy);
       n -= (PRIMME_INT)ln;
       x += ln;
       y += ln;
@@ -890,7 +897,7 @@ HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
 
    while(n > 0) {
       ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
-      r += XDOT(&ln, x, &lincx, y, &lincy);
+      r += XDOT(&ln, (const BLASSCALAR *)x, &lincx, (BLASSCALAR *)y, &lincy);
       n -= (PRIMME_INT)ln;
       x += ln;
       y += ln;
@@ -971,7 +978,7 @@ int Num_scal_Sprimme(
 
    while(n > 0) {
       ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
-      XSCAL(&ln, &alpha, x, &lincx);
+      XSCAL(&ln, (const BLASSCALAR *)&alpha, (BLASSCALAR *)x, &lincx);
       n -= (PRIMME_INT)ln;
       x += ln;
    }
@@ -1547,7 +1554,8 @@ int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return 0;
 
-   XTRSM(side, uplo, transa, diag, &lm, &ln, &alpha, a, &llda, b, &lldb);
+   XTRSM(side, uplo, transa, diag, &lm, &ln, (BLASSCALAR *)&alpha,
+         (BLASSCALAR *)a, &llda, (BLASSCALAR *)b, &lldb);
 
    return 0;
 }

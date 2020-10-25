@@ -28,7 +28,6 @@ Suggests: Matrix
 SystemRequirements:
     A POSIX system. Currently Linux and OS X are known to work.
     GNU make.
-UseLTO: FALSE
 NeedsCompilation: yes
 License: GPL-3
 Encoding: UTF-8
