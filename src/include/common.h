@@ -172,8 +172,10 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_magma_wprimme;
 #endif
 
 #ifndef __cplusplus
-/* pgcc does not provide tgmath.h and the system's one may not support PGI */
-#  ifdef __PGI
+/* pgcc does not provide tgmath.h and the system's one may not support PGI. */
+/* Reported issues with icc version 2021 on Ubuntu:
+ * https://www.sourceware.org/bugzilla/show_bug.cgi?id=26621 */
+#  if defined(__PGI) || (__ICC >= 2021)
 #    include <math.h>
 #  else
 #    include <tgmath.h>   /* select proper function abs from fabs, cabs... */
