@@ -285,6 +285,7 @@ typedef enum {
 
 typedef enum {
    /* NOTE: you can maintain the column of numbers with g+Ctrl-A in vim */
+   PRIMME_invalid_label                          = 0  ,
    PRIMME_n                                      = 1  ,
    PRIMME_matrixMatvec                           = 2  ,
    PRIMME_matrixMatvec_type                      = 3  ,

@@ -1385,24 +1385,25 @@ int primme_set_member(primme_params *primme, primme_params_label label,
  *
  ******************************************************************************/
 
-int primme_member_info(primme_params_label *label_, const char** label_name_,
+int primme_member_info(primme_params_label *label, const char **label_name,
       primme_type *type, int *arity) {
-   primme_params_label label = (primme_params_label)1000;
-   const char *label_name;
 
    /* Quick exit when neither label nor label_name is given */
 
-   if (label_ == NULL && (label_name_ == NULL || *label_name_ == NULL)) {
+   if (label == NULL && (label_name == NULL || *label_name == NULL)) {
       return 1;
    }
 
    /* Get the label from label_name_ and label_name from label_ */
 
-#define IF_IS(F,O) \
-   if ((label_name_ && *label_name_ && strcmp(#F, *label_name_) == 0) \
-         || (label_ && *label_ == PRIMME_ ## O)) { \
-      label = PRIMME_ ## O; \
-      label_name = #F; \
+   int set = 0;
+
+#define IF_IS(F, O)                                                            \
+   if ((label_name && *label_name && strcmp(#F, *label_name) == 0) ||          \
+         (label && *label == PRIMME_##O)) {                                    \
+      if (label) *label = PRIMME_##O;                                          \
+      if (label_name) *label_name = #F;                                        \
+      set = 1;                                                                 \
    }
 
    IF_IS(n                            , n);
@@ -1494,14 +1495,12 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
    IF_IS(profile                      , profile);
 #undef IF_IS
 
-   /* Return label/label_name */
-
-   if (label_) *label_ = label;
-   if (label_name_) *label_name_ = label_name;
+   /* Return error if no label was found */
+   if (!set) return 1;
 
    /* Return type and arity */
 
-   switch(label) {
+   switch(*label) {
       /* members with type int */
 
       case PRIMME_matrixMatvec_type:
@@ -1627,7 +1626,7 @@ int primme_member_info(primme_params_label *label_, const char** label_name_,
 
    return 0;
 }
- 
+
 /*******************************************************************************
  * Subroutine primme_constant_info - return the value of a primme enum constant.
  * 
