@@ -234,8 +234,7 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
          else (inherits(A, "Matrix") && substr(class(A), 0, 1) == "d");
       if ((is.null(isreal) || isreal == isreal_suggestion) && (
                ismatrix ||
-               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A)) ||
-               any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A)) )) {
+               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix", "dtCMatrix") %in% class(A)))) {
          Af <- A;
       }
       else {
