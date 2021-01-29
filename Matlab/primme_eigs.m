@@ -40,8 +40,8 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.tol: convergence tolerance:                      {eps*1e4}
 %                NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
 %     OPTS.maxBlockSize: maximum block size (useful for high multiplicities) {1}
-%     OPTS.disp: different level reporting (0-3) (see HIST) {no output 0}
-%     OPTS.display: toggle information display (see HIST)
+%     OPTS.reportLevel: reporting level (0-3) (see HIST) {no reporting 0}
+%     OPTS.display: whether displaying reporting on screen (see HIST) {0 if HIST provided}
 %     OPTS.isreal: whether A represented by AFUN is real or complex {false}
 %     OPTS.isdouble: whether the class of in/out vectors in AFUN are
 %          double or single {false}
@@ -138,15 +138,16 @@ function [varargout] = primme_eigs(varargin)
 %   HIST(:,6): residual norm
 %   HIST(:,7): QMR residual norm
 %
-%   OPTS.disp controls the granularity of the record. If OPTS.disp == 1, HIST
-%   has one row per converged eigenpair and only the first three columns
-%   together with the fifth and the sixth are reported. If OPTS.disp == 2, HIST
-%   has one row per outer iteration and converged value, and only the first six
-%   columns are reported. Otherwise HIST has one row per QMR iteration, outer
-%   iteration and converged value, and all columns are reported.
+%   OPTS.reportLevel controls the granularity of the record. If
+%   OPTS.reportLevel == 1, HIST has one row per converged eigenpair and only
+%   the first three columns together with the fifth and the sixth are reported.
+%   If OPTS.reportLevel == 2, HIST has one row per outer iteration and
+%   converged value, and only the first six columns are reported. Otherwise
+%   HIST has one row per QMR iteration, outer iteration and converged value,
+%   and all columns are reported.
 %
-%   The convergence history is displayed if OPTS.disp > 0 and either HIST is
-%   not returned or OPTS.display == 1.
+%   The convergence history is displayed if OPTS.reportLevel > 0 and either
+%   HIST is not returned or OPTS.display == 1.
 %  
 %   Examples:
 %      A = diag(1:100);
@@ -436,11 +437,20 @@ function [varargout] = primme_eigs(varargin)
 
    % Process 'disp' in opts
    if isfield(opts, 'disp')
-      dispLevel = opts.disp;
-      if dispLevel > 3 || dispLevel < 0
-         error('Invalid value in opts.disp; it should be 0, 1, 2 or 3');
+      warning('`disp` has renamed as `reportLevel`');
+      if ~isfield(opts, 'reportLevel')
+         opts.reportLevel = opts.disp; 
       end
       opts = rmfield(opts, 'disp');
+   end
+ 
+   % Process 'reportLevel' in opts
+   if isfield(opts, 'reportLevel')
+      dispLevel = opts.reportLevel;
+      if dispLevel > 3 || dispLevel < 0
+         error('Invalid value in opts.reportLevel; it should be 0, 1, 2 or 3');
+      end
+      opts = rmfield(opts, 'reportLevel');
    elseif nargout >= 5 || (~isempty(showHist) && showHist)
       dispLevel = 1;
    end
