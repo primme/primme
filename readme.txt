@@ -146,6 +146,25 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
+Changes in PRIMME 3.2 (released on Jan 29, 2021):
+
+* Fixed Intel 2021 compiler error ""Unsupported combination of types
+  for <tgmath.h>.""
+
+* Fixed compiling issues with PGI compiler also about "tgmath.h".
+
+* Fixed "dprimme()" and other variants not returning error code
+  *PRIMME_MAIN_ITER_FAILURE* when it should do in some corner cases.
+
+* Fixed warnings from gcc/clang undefined behavior sanitizers.
+
+* Matlab: renamed *disp* to *reportLevel*.
+
+* Matlab: add flag *returnUnconverged* to return unconverged pairs
+  optionally.
+
+* Matlab: return primme_params/primme_svds_params.
+
 Changes in PRIMME 3.1 (released on May 2, 2020):
 
 * Fixed compilation issues in F90 interface and examples.
@@ -4882,10 +4901,11 @@ function [varargout] = primme_eigs(varargin)
       * "maxBlockSize": maximum block size (useful for high
         multiplicities) {1}
 
-      * "disp": different level reporting (0-3) (see HIST) {no output
+      * "reportLevel": reporting level (0-3) (see HIST) {no reporting
         0}
 
-      * "display": toggle information display (see HIST)
+      * "display": whether displaying reporting on screen (see HIST)
+        {0 if HIST provided}
 
       * "isreal": whether A represented by "Afun" is real or complex
         {false}
@@ -5044,16 +5064,17 @@ function [varargout] = primme_eigs(varargin)
 
       * "HIST(:,7)": QMR residual norm
 
-   "OPTS.disp" controls the granularity of the record. If "OPTS.disp
-   == 1", "HIST" has one row per converged eigenpair and only the
-   first three columns together with the fifth and the sixth are
-   reported. If "OPTS.disp == 2", "HIST" has one row per outer
-   iteration and converged value, and only the first six columns are
-   reported. Otherwise "HIST" has one row per QMR iteration, outer
-   iteration and converged value, and all columns are reported.
+   "OPTS.reportLevel" controls the granularity of the record. If
+   "OPTS.reportLevel == 1", "HIST" has one row per converged eigenpair
+   and only the first three columns together with the fifth and the
+   sixth are reported. If "OPTS.reportLevel == 2", "HIST" has one row
+   per outer iteration and converged value, and only the first six
+   columns are reported. Otherwise "HIST" has one row per QMR
+   iteration, outer iteration and converged value, and all columns are
+   reported.
 
-   The convergence history is displayed if "OPTS.disp > 0" and either
-   "HIST" is not returned or "OPTS.display == 1".
+   The convergence history is displayed if "OPTS.reportLevel > 0" and
+   either "HIST" is not returned or "OPTS.display == 1".
 
    Examples:
 
@@ -8201,7 +8222,11 @@ function [varargout] = primme_svds(varargin)
 
       * "p":       maximum basis size (see "maxBasisSize")
 
-      * "disp":    level of reporting 0-3 (see HIST) {0: no output}
+      * "reportLevel": reporting level (0-3) (see HIST) {no reporting
+        0}
+
+      * "display": whether displaying reporting on screen (see HIST)
+        {0 if HIST provided}
 
       * "isreal":  if 0, the matrix is complex; else it’s real {0:
         complex}
@@ -8313,12 +8338,17 @@ function [varargout] = primme_svds(varargin)
 
       * "HIST(:,8)": QMR residual norm
 
-   "OPTS.disp" controls the granularity of the record. If "OPTS.disp
-   == 1", "HIST" has one row per converged triplet and only the first
-   four columns are reported; if "OPTS.disp == 2", "HIST" has one row
-   per outer iteration and only the first seven columns are reported;
-   and otherwise "HIST" has one row per QMR iteration and all columns
-   are reported.
+   "OPTS.reportLevel" controls the granularity of the record. If
+   "OPTS.reportLevel == 1", "HIST" has one row per converged eigenpair
+   and only the first three columns together with the fifth and the
+   sixth are reported. If "OPTS.reportLevel == 2", "HIST" has one row
+   per outer iteration and converged value, and only the first six
+   columns are reported. Otherwise "HIST" has one row per QMR
+   iteration, outer iteration and converged value, and all columns are
+   reported.
+
+   The convergence history is displayed if "OPTS.reportLevel > 0" and
+   either "HIST" is not returned or "OPTS.display == 1".
 
    Examples:
 

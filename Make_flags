@@ -5,7 +5,7 @@
 
 # Define the path to the created PRIMME library
 MAJORVERSION := 3
-VERSION := 3.1
+VERSION := 3.2
 UNAME ?= $(shell uname)
 ifeq ($(UNAME), Darwin)
     SLIB ?= dylib
