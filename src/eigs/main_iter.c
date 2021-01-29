@@ -1766,7 +1766,7 @@ STATIC int copy_back_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
    if (primme->projectionParams.projection != primme_proj_RR &&
          primme->numTargetShifts > numConverged) {
-      CHKERR(solve_H_RR_Sprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs, hVals,
+      CHKERR(solve_H_RR_SHprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs, hVals,
             basisSize, numConverged, ctx));
    }
 
