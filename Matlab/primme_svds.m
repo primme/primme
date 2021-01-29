@@ -26,8 +26,8 @@ function [varargout] = primme_svds(varargin)
 %                    NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A).
 %   OPTIONS.maxit    maximum number of matvecs  (see maxMatvecs) inf
 %   OPTIONS.p        maximum basis size (see maxBasisSize)         -
-%   OPTIONS.disp     level of reporting 0-3 (see HIST)             0
-%   OPTIONS.display  toggle information display (see HIST)         0
+%   OPTIONS.reportLevel reporting level (0-3) (see HIST)           0
+%   OPTIONS.display  whether displaying report on screen(see HIST) false if HIST provided
 %   OPTIONS.isreal   if 0, the matrix is complex; else it's real   0
 %   OPTIONS.isdouble if 0, the matrix is single; else it's double  1
 %   OPTIONS.isgpu    if 0, the matrix is gpuArray; else it isn't   0
@@ -112,15 +112,16 @@ function [varargout] = primme_svds(varargin)
 %   HIST(:,7): residual norm
 %   HIST(:,8): QMR residual norm
 %
-%   OPTIONS.disp controls the granularity of the record. If OPTIONS.disp == 1,
-%   HIST has one row per converged triplet and only the first four columns
-%   together with the sixth and the seventh are reported. If OPTIONS.disp == 2,
-%   HIST has one row per outer iteration and converged value and only the first
-%   seven columns are reported. Otherwise HIST has one row per QMR iteration,
-%   outer iteration and converged value, and all columns are reported.
+%   OPTIONS.reportLevel controls the granularity of the record. If
+%   OPTIONS.reportLevel == 1, HIST has one row per converged triplet and only
+%   the first four columns together with the sixth and the seventh are
+%   reported. If OPTIONS.reportLevel == 2, HIST has one row per outer iteration
+%   and converged value and only the first seven columns are reported.
+%   Otherwise HIST has one row per QMR iteration, outer iteration and converged
+%   value, and all columns are reported.
 %
-%   The convergence history is displayed if OPTIONS.disp > 0 and either HIST is
-%   not returned or OPTIONS.display == 1.
+%   The convergence history is displayed if OPTIONS.reportLevel > 0 and either
+%   HIST is not returned or OPTIONS.display == 1.
 %
 %   Examples:
 %      A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
@@ -356,11 +357,20 @@ function [varargout] = primme_svds(varargin)
 
    % Process 'disp' in opts
    if isfield(opts, 'disp')
-      dispLevel = opts.disp;
-      if dispLevel > 3 || dispLevel < 0
-         error('Invalid value in opts.disp; it should be 0, 1, 2 or 3');
+      warning('`disp` has renamed as `reportLevel`');
+      if ~isfield(opts, 'reportLevel')
+         opts.reportLevel = opts.disp; 
       end
       opts = rmfield(opts, 'disp');
+   end
+ 
+   % Process 'reportLevel' in opts
+   if isfield(opts, 'reportLevel')
+      dispLevel = opts.reportLevel;
+      if dispLevel > 3 || dispLevel < 0
+         error('Invalid value in opts.reportLevel; it should be 0, 1, 2 or 3');
+      end
+      opts = rmfield(opts, 'reportLevel');
    elseif nargout >= 5 || (~isempty(showHist) && showHist)
       dispLevel = 1;
    end
