@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Python Interface &mdash; PRIMME 3.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MATLAB Interface" href="matsvds.html" />
+    <link rel="prev" title="FORTRAN 90 Library Interface" href="svdsf90.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+          
+
+          
+            <a href="readme.html">
+          
+
+          
+            
+            <img src="_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="apisvds.html">Singular Value Problems</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="svdsc.html">C Library Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="svdsf77.html">FORTRAN Library Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="svdsf90.html">FORTRAN 90 Library Interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Python Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="matsvds.html">MATLAB Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendixsvds.html">Parameter Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendixsvds.html#preset-methods">Preset Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendixsvds.html#error-codes">Error Codes</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="readme.html">PRIMME</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="readme.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="apisvds.html">Singular Value Problems</a> &raquo;</li>
+        
+      <li>Python Interface</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/pysvds.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="matsvds.html" class="btn btn-neutral float-right" title="MATLAB Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="svdsf90.html" class="btn btn-neutral float-left" title="FORTRAN 90 Library Interface" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="python-interface">
+<h1>Python Interface<a class="headerlink" href="#python-interface" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="primme.svds">
+<code class="sig-prename descclassname">primme.</code><code class="sig-name descname">svds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">6</span></em>, <em class="sig-param"><span class="n">ncv</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">which</span><span class="o">=</span><span class="default_value">'LM'</span></em>, <em class="sig-param"><span class="n">v0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_singular_vectors</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">precAHA</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">precAAH</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">precAug</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">u0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">orthou0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">orthov0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_stats</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">maxBlockSize</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">methodStage1</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">methodStage2</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_history</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">convtest</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#primme.svds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute k singular values and vectors of the matrix A.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>{sparse matrix</em><em>, </em><em>LinearOperator}</em>) – Array to compute the SVD on, of shape (M, N)</p></li>
+<li><p><strong>k</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of singular values and vectors to compute.
+Must be 1 &lt;= k &lt; min(A.shape).</p></li>
+<li><p><strong>ncv</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum size of the basis</p></li>
+<li><p><strong>tol</strong> (<em>float</em><em>, </em><em>optional</em>) – <p>Tolerance for singular values. Zero (default) means 10**4 times the machine precision.</p>
+<p>A triplet <code class="docutils literal notranslate"><span class="pre">(u,sigma,v)</span></code> is marked as converged when
+(||A*v - sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5
+is less than “tol” * ||A||, or close to the minimum tolerance that
+the method can achieve. See the note.</p>
+<p>The value is ignored if convtest is provided.</p>
+</p></li>
+<li><p><strong>which</strong> (<em>str</em><em> [</em><em>'LM' | 'SM'</em><em>] or </em><em>number</em><em>, </em><em>optional</em>) – <p>Which <cite>k</cite> singular values to find:</p>
+<blockquote>
+<div><ul>
+<li><p>’LM’ : largest singular values</p></li>
+<li><p>’SM’ : smallest singular values</p></li>
+<li><p>number : closest singular values to (referred as sigma later)</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>u0</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – <p>Initial guesses for the left singular vectors.</p>
+<p>If only u0 or v0 is provided, the other is computed. If both are
+provided, u0 and v0 should have the same number of columns.</p>
+</p></li>
+<li><p><strong>v0</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Initial guesses for the right singular vectors.</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of matvecs with A and A.H.</p></li>
+<li><p><strong>precAHA</strong> (<em>{N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, </em><em>LinearOperator}</em><em>, </em><em>optional</em>) – Approximate inverse of (A.H*A - sigma**2*I). If provided and M&gt;=N, it
+usually accelerates the convergence.</p></li>
+<li><p><strong>precAAH</strong> (<em>{M x M matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, </em><em>LinearOperator}</em><em>, </em><em>optional</em>) – Approximate inverse of (A*A.H - sigma**2*I). If provided and M&lt;N, it
+usually accelerates the convergence.</p></li>
+<li><p><strong>precAug</strong> (<em>{</em><em>(</em><em>M+N</em><em>) </em><em>x</em><em> (</em><em>M+N</em><em>) </em><em>matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, </em><em>LinearOperator}</em><em>, </em><em>optional</em>) – Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I).</p></li>
+<li><p><strong>orthou0</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – <p>Left orthogonal vector constrain.</p>
+<p>Seek singular triplets orthogonal to orthou0 and orthov0. The provided vectors
+<em>should</em> be orthonormal. If only orthou0 or orthov0 is provided, the other
+is computed. Useful to avoid converging to previously computed solutions.</p>
+</p></li>
+<li><p><strong>orthov0</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Right orthogonal vector constrain. See orthou0.</p></li>
+<li><p><strong>maxBlockSize</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of vectors added at every iteration.</p></li>
+<li><p><strong>convtest</strong> (<em>callable</em>) – <p>User-defined function to mark an approximate singular triplet as converged.</p>
+<p>The function is called as convtest(sval, svecleft, svecright, resNorm)
+and returns True if the triplet with value <cite>sval</cite>, left vector <cite>svecleft</cite>,
+right vector <cite>svecright</cite>, and residual norm <cite>resNorm</cite> is considered converged.</p>
+</p></li>
+<li><p><strong>return_stats</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the function returns extra information (see stats in Returns).</p></li>
+<li><p><strong>return_history</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the function returns performance information at every iteration</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>u</strong> (<em>ndarray, shape=(M, k), optional</em>) – Unitary matrix having left singular vectors as columns.
+Returned if <cite>return_singular_vectors</cite> is True.</p></li>
+<li><p><strong>s</strong> (<em>ndarray, shape=(k,)</em>) – The singular values.</p></li>
+<li><p><strong>vt</strong> (<em>ndarray, shape=(k, N), optional</em>) – Unitary matrix having right singular vectors as rows.
+Returned if <cite>return_singular_vectors</cite> is True.</p></li>
+<li><p><strong>stats</strong> (<em>dict, optional (if return_stats)</em>) – Extra information reported by PRIMME:</p>
+<ul>
+<li><p>”numOuterIterations”: number of outer iterations</p></li>
+<li><p>”numRestarts”: number of restarts</p></li>
+<li><p>”numMatvecs”: number of matvecs with A and A.H</p></li>
+<li><p>”numPreconds”: cumulative number of applications of precAHA, precAAH
+and precAug</p></li>
+<li><p>”elapsedTime”: time that took</p></li>
+<li><p>”rnorms” : (||A*v[:,i] - sigma[i]*u[:,i]||**2 + ||A.H*u[:,i] - sigma[i]*v[:,i]||**2)**.5</p></li>
+<li><p>”hist” : (if return_history) report at every outer iteration of:</p>
+<ul>
+<li><p>”elapsedTime”: time spent up to now</p></li>
+<li><p>”numMatvecs”: number of A*v and A.H*v spent up to now</p></li>
+<li><p>”nconv”: number of converged triplets</p></li>
+<li><p>”sval”: singular value of the first unconverged triplet</p></li>
+<li><p>”resNorm”: residual norm of the first unconverged triplet</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The default method used is the hybrid method, which first solves the
+equivalent eigenvalue problem A.H*A or A*A.H (normal equations) and then
+refines the solution solving the augmented problem. The minimum tolerance
+that this method can achieve is ||A||*epsilon, where epsilon is the
+machine precision. However it may not return triplets with singular values
+smaller than ||A||*epsilon if “tol” is smaller than ||A||*epsilon/sigma.</p>
+<p>This function is a wrapper to PRIMME functions to find singular values and
+vectors <a class="footnote-reference brackets" href="#id2" id="id1">1</a>.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>PRIMME Software, <a class="reference external" href="https://github.com/primme/primme">https://github.com/primme/primme</a></p>
+</dd>
+<dt class="label" id="id3"><span class="brackets">2</span></dt>
+<dd><p>L. Wu, E. Romero and A. Stathopoulos, PRIMME_SVDS: A High-
+Performance Preconditioned SVD Solver for Accurate Large-Scale
+Computations. <a class="reference external" href="https://arxiv.org/abs/1607.01404">https://arxiv.org/abs/1607.01404</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="pyeigsh.html#primme.eigsh" title="primme.eigsh"><code class="xref py py-func docutils literal notranslate"><span class="pre">primme.eigsh()</span></code></a></dt><dd><p>eigenvalue decomposition for a sparse symmetrix/complex Hermitian matrix A</p>
+</dd>
+<dt><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.sparse.linalg.eigs()</span></code></dt><dd><p>eigenvalues and eigenvectors for a general (nonsymmetric) matrix A</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">primme</span><span class="o">,</span> <span class="nn">scipy.sparse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">spdiags</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="c1"># sparse diag. rect. matrix</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">svecs_left</span><span class="p">,</span> <span class="n">svals</span><span class="p">,</span> <span class="n">svecs_right</span> <span class="o">=</span> <span class="n">primme</span><span class="o">.</span><span class="n">svds</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LM&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">svals</span> <span class="c1"># the three largest singular values of A</span>
+<span class="go">array([10., 9., 8.])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">primme</span><span class="o">,</span> <span class="nn">scipy.sparse</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prec</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">spdiags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reciprocal</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+<span class="gp">... </span>          <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="c1"># square diag. preconditioner</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># the three smallest singular values of A, using preconditioning</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">svecs_left</span><span class="p">,</span> <span class="n">svals</span><span class="p">,</span> <span class="n">svecs_right</span> <span class="o">=</span> <span class="n">primme</span><span class="o">.</span><span class="n">svds</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;SM&#39;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">precAHA</span><span class="o">=</span><span class="n">prec</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="s2">&quot;</span><span class="si">%.5f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">svals</span><span class="o">.</span><span class="n">flat</span><span class="p">]</span> 
+<span class="go">[&#39;4.57263&#39;, &#39;4.78752&#39;, &#39;4.82229&#39;]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Giving the matvecs as functions</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">primme</span><span class="o">,</span> <span class="nn">scipy.sparse</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Bdiag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Bdiagr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">200</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">Bmatmat</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">... </span>   <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">Bdiag</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)))</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">Brmatmat</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">200</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">... </span>   <span class="k">return</span> <span class="p">(</span><span class="n">Bdiagr</span> <span class="o">*</span> <span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">100</span><span class="p">,:]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinearOperator</span><span class="p">((</span><span class="mi">200</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span> <span class="n">matvec</span><span class="o">=</span><span class="n">Bmatmat</span><span class="p">,</span> <span class="n">matmat</span><span class="o">=</span><span class="n">Bmatmat</span><span class="p">,</span> <span class="n">rmatvec</span><span class="o">=</span><span class="n">Brmatmat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">svecs_left</span><span class="p">,</span> <span class="n">svals</span><span class="p">,</span> <span class="n">svecs_right</span> <span class="o">=</span> <span class="n">primme</span><span class="o">.</span><span class="n">svds</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LM&#39;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">svals</span> 
+<span class="go">array([99., 98., 97., 96., 95.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="matsvds.html" class="btn btn-neutral float-right" title="MATLAB Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="svdsf90.html" class="btn btn-neutral float-left" title="FORTRAN 90 Library Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, College of William &amp; Mary
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

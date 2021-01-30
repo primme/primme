@@ -1,0 +1,656 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FORTRAN 90 Library Interface &mdash; PRIMME 3.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Python Interface" href="pyeigsh.html" />
+    <link rel="prev" title="FORTRAN 77 Library Interface" href="primmef77.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+          
+
+          
+            <a href="readme.html">
+          
+
+          
+            
+            <img src="_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html#support">Support</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="primmec.html">C Library Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="primmef77.html">FORTRAN 77 Library Interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">FORTRAN 90 Library Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#primme-params-create">primme_params_create</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#primme-set-method">primme_set_method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#primme-params-destroy">primme_params_destroy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#xprimme">xprimme</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#magma-xprimme">magma_xprimme</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#xprimme-normal">xprimme_normal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#magma-xprimme-normal">magma_xprimme_normal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#primme-set-member">primme_set_member</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#primme-get-member">primme_get_member</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeigsh.html">Python Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mateigs.html">MATLAB Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html">Parameters Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html#preset-methods">Preset Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html#error-codes">Error Codes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apisvds.html">Singular Value Problems</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="readme.html">PRIMME</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="readme.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="apieigs.html">Eigenvalue Problems</a> &raquo;</li>
+        
+      <li>FORTRAN 90 Library Interface</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/primmef90.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="pyeigsh.html" class="btn btn-neutral float-right" title="Python Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="primmef77.html" class="btn btn-neutral float-left" title="FORTRAN 77 Library Interface" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fortran-90-library-interface">
+<h1>FORTRAN 90 Library Interface<a class="headerlink" href="#fortran-90-library-interface" title="Permalink to this headline">¶</a></h1>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 3.0.</span></p>
+</div>
+<p>The next enumerations and functions are declared in <code class="docutils literal notranslate"><span class="pre">primme_f90.inc</span></code>.</p>
+<dl class="type">
+<dt id="f/_/c_ptr">
+<em class="property">type  </em><code class="sig-name descname">c_ptr</code><a class="headerlink" href="#f/_/c_ptr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fortran datatype for C pointers in module <cite>iso_c_binding</cite>.</p>
+</dd></dl>
+
+<dl class="subroutine">
+<dt id="f/_/primme_eigs_matvec">
+<em class="property">subroutine  </em><code class="sig-name descname">primme_eigs_matvec</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">ldx</em>, <em class="sig-param">y</em>, <em class="sig-param">ldy</em>, <em class="sig-param">blockSize</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_eigs_matvec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract interface for the callbacks <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (ldx,*)<em> [</em><em>type(*)</em><em>,</em><em>in</em><em>]</em> :: matrix of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> x <code class="docutils literal notranslate"><span class="pre">blockSize</span></code> in <a class="reference external" href="https://en.wikipedia.org/wiki/Row-major_order">column-major</a> order with leading dimension <code class="docutils literal notranslate"><span class="pre">ldx</span></code>.</p></li>
+<li><p><strong>ldx</strong><em> [</em><em>c_int64_t</em><em>]</em> :: the leading dimension of the array <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+<li><p><strong>y</strong> (ldy,*)<em> [</em><em>type(*)</em><em>,</em><em>out</em><em>]</em> :: matrix of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> x <code class="docutils literal notranslate"><span class="pre">blockSize</span></code> in <a class="reference external" href="https://en.wikipedia.org/wiki/Row-major_order">column-major</a> order with leading dimension <code class="docutils literal notranslate"><span class="pre">ldy</span></code>.</p></li>
+<li><p><strong>ldy</strong><em> [</em><em>c_int64_t</em><em>]</em> :: the leading dimension of the array <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p></li>
+<li><p><strong>blockSize</strong><em> [</em><em>c_int</em><em>,</em><em>in</em><em>]</em> :: number of columns in <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p></li>
+<li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>,</em><em>in</em><em>]</em> :: parameters structure created by <a class="reference internal" href="#f/_/primme_params_create" title="f/_/primme_params_create"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p></li>
+<li><p><strong>ierr</strong><em> [</em><em>c_int</em><em>,</em><em>out</em><em>]</em> :: output error code; if it is set to non-zero, the current call to PRIMME will stop.</p></li>
+</ul>
+</dd>
+</dl>
+<p>See more details about the precision and type for <cite>x</cite> and <cite>y</cite> in the documentation of the callbacks.</p>
+</dd></dl>
+
+<div class="section" id="primme-params-create">
+<h2>primme_params_create<a class="headerlink" href="#primme-params-create" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="f/_/primme_params_create">
+<em class="property">function  </em><code class="sig-name descname">primme_params_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_params_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allocate and initialize a parameters structure to the default values.</p>
+<p>After calling <a class="reference internal" href="#f/_/xprimme" title="f/_/xprimme"><code class="xref f f-func docutils literal notranslate"><span class="pre">xprimme()</span></code></a> (or a variant), call <a class="reference internal" href="#f/_/primme_params_destroy" title="f/_/primme_params_destroy"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_destroy()</span></code></a> to release allocated resources by PRIMME.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return</dt>
+<dd class="field-odd"><p><strong>primme_params_create</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>]</em> :: pointer to a parameters structure.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-set-method">
+<h2>primme_set_method<a class="headerlink" href="#primme-set-method" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="f/_/primme_set_method">
+<em class="property">function  </em><code class="sig-name descname">primme_set_method</code><span class="sig-paren">(</span><em class="sig-param">method</em>, <em class="sig-param">primme</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_set_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set PRIMME parameters to one of the preset configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong><em> [</em><em>c_int</em><em>,</em><em>in</em><em>]</em> :: <p>preset configuration. One of:</p>
+<div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_DYNAMIC</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_TIME</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_MATVECS</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_Arnoldi</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_GD</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_GD_plusK</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_GD_Olsen_plusK</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_JD_Olsen_plusK</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_RQI</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_JDQR</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_JDQMR</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_JDQMR_ETol</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_STEEPEST_DESCENT</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_LOBPCG_OrthoBasis</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">PRIMME_LOBPCG_OrthoBasis_Window</span></code></div>
+</div>
+<p>See <a class="reference internal" href="appendix.html#c.primme_preset_method" title="primme_preset_method"><code class="xref c c-type docutils literal notranslate"><span class="pre">primme_preset_method</span></code></a>.</p>
+</p></li>
+<li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>,</em><em>in</em><em>]</em> :: parameters structure created by <a class="reference internal" href="#f/_/primme_params_create" title="f/_/primme_params_create"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return</dt>
+<dd class="field-even"><p><strong>primme_set_method</strong><em> [</em><em>c_int</em><em>]</em> :: nonzero value if the call is not successful.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-params-destroy">
+<h2>primme_params_destroy<a class="headerlink" href="#primme-params-destroy" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="f/_/primme_params_destroy">
+<em class="property">function  </em><code class="sig-name descname">primme_params_destroy</code><span class="sig-paren">(</span><em class="sig-param">primme</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_params_destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Free memory allocated by PRIMME associated to a parameters structure created
+with <a class="reference internal" href="#f/_/primme_params_create" title="f/_/primme_params_create"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>]</em> :: parameters structure.</p>
+</dd>
+<dt class="field-even">Return</dt>
+<dd class="field-even"><p><strong>primme_params_destroy</strong> :: nonzero value if the call is not successful.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="xprimme">
+<h2>xprimme<a class="headerlink" href="#xprimme" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="f/_/xprimme">
+<em class="property">function  </em><code class="sig-name descname">xprimme</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/xprimme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a real symmetric/Hermitian standard or generalized eigenproblem.</p>
+<p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_xprimme" title="f/_/magma_xprimme"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_xprimme()</span></code></a> for using GPUs).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evals</strong> (*)<em> [</em><em>real(kind)</em><em>,</em><em>out</em><em>]</em> :: array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all processes in a parallel run return this local array with the same values.</p></li>
+<li><p><strong>evecs</strong> (*)<em> [</em><em>real(kind) or complex(kind)</em><em>]</em> :: array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
+<li><p><strong>resNorms</strong> (*)<em> [</em><em>real(kind)</em><em>,</em><em>out</em><em>]</em> :: array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all processes in parallel run return this local array with
+the same values.</p></li>
+<li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>,</em><em>in</em><em>]</em> :: parameters structure created by <a class="reference internal" href="#f/_/primme_params_create" title="f/_/primme_params_create"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return</dt>
+<dd class="field-even"><p><strong>xprimme</strong><em> [</em><em>c_int</em><em>]</em> :: error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p>
+</dd>
+</dl>
+<p>The arrays <code class="docutils literal notranslate"><span class="pre">evals</span></code>, <code class="docutils literal notranslate"><span class="pre">evecs</span></code>, and <code class="docutils literal notranslate"><span class="pre">resNorms</span></code> should have the same kind.</p>
+<p>On input, <code class="docutils literal notranslate"><span class="pre">evecs</span></code> should start with the content of the <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> vectors,
+followed by the <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> vectors.</p>
+<p>On return, the i-th eigenvector starts at evecs(( <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + i - 1)* <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a> + 1), with value <cite>evals(i)</cite> and associated residual 2-norm <cite>resNorms(i)</cite>.
+The first vector has index i=1. The number of eigenpairs marked as converged (see <a class="reference internal" href="appendix.html#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal notranslate"><span class="pre">eps</span></code></a>) is returned on <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a>. Since version 4.0, if the returned error code is <cite>PRIMME_MAIN_ITER_FAILURE</cite>, PRIMME may return also unconverged eigenpairs and its residual norms in <cite>evecs</cite>, <cite>evals</cite>, and <cite>resNorms</cite> starting at i = <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> + 1 and going up to either <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> or the last <cite>resNorms(i)</cite> with non-negative value.</p>
+<p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">evecs</span></code> unless the user sets <a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
+<p>The type and precision of the callbacks is also the same as <cite>evecs</cite>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="magma-xprimme">
+<h2>magma_xprimme<a class="headerlink" href="#magma-xprimme" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="f/_/magma_xprimme">
+<em class="property">function  </em><code class="sig-name descname">magma_xprimme</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_xprimme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a real symmetric/Hermitian standard or generalized eigenproblem.</p>
+<p>Most of the computations are performed on GPU (see <a class="reference internal" href="#f/_/xprimme" title="f/_/xprimme"><code class="xref f f-func docutils literal notranslate"><span class="pre">xprimme()</span></code></a> for using only the CPU).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evals</strong> (*)<em> [</em><em>real(kind)</em><em>,</em><em>out</em><em>]</em> :: CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all processes in a parallel run return this local array with the same values.</p></li>
+<li><p><strong>evecs</strong> :: GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
+<li><p><strong>resNorms</strong> (*)<em> [</em><em>real(kind)</em><em>,</em><em>out</em><em>]</em> :: CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all processes in parallel run return this local array with
+the same values.</p></li>
+<li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>,</em><em>in</em><em>]</em> :: parameters structure created by <a class="reference internal" href="#f/_/primme_params_create" title="f/_/primme_params_create"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return</dt>
+<dd class="field-even"><p><strong>magma_xprimme</strong><em> [</em><em>c_int</em><em>]</em> :: error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p>
+</dd>
+</dl>
+<p>The arrays <code class="docutils literal notranslate"><span class="pre">evals</span></code>, <code class="docutils literal notranslate"><span class="pre">evecs</span></code>, and <code class="docutils literal notranslate"><span class="pre">resNorms</span></code> should have the same kind.</p>
+<p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in function <a class="reference internal" href="#f/_/xprimme" title="f/_/xprimme"><code class="xref f f-func docutils literal notranslate"><span class="pre">xprimme()</span></code></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="xprimme-normal">
+<h2>xprimme_normal<a class="headerlink" href="#xprimme-normal" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="f/_/xprimme_normal">
+<em class="property">function  </em><code class="sig-name descname">xprimme_normal</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/xprimme_normal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
+<p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_xprimme_normal" title="f/_/magma_xprimme_normal"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_xprimme_normal()</span></code></a> for using GPUs).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evals</strong> (*)<em> [</em><em>complex(kind)</em><em>,</em><em>out</em><em>]</em> :: array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all processes in a parallel run return this local array with the same values.</p></li>
+<li><p><strong>evecs</strong> :: array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
+<li><p><strong>resNorms</strong> (*)<em> [</em><em>real(kind)</em><em>,</em><em>out</em><em>]</em> :: array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all processes in parallel run return this local array with
+the same values.</p></li>
+<li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>,</em><em>in</em><em>]</em> :: parameters structure created by <a class="reference internal" href="#f/_/primme_params_create" title="f/_/primme_params_create"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return</dt>
+<dd class="field-even"><p><strong>xprimme_normal</strong><em> [</em><em>c_int</em><em>]</em> :: error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p>
+</dd>
+</dl>
+<p>The arrays <code class="docutils literal notranslate"><span class="pre">evals</span></code>, <code class="docutils literal notranslate"><span class="pre">evecs</span></code>, and <code class="docutils literal notranslate"><span class="pre">resNorms</span></code> should have the same kind.</p>
+<p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in function <a class="reference internal" href="#f/_/xprimme" title="f/_/xprimme"><code class="xref f f-func docutils literal notranslate"><span class="pre">xprimme()</span></code></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="magma-xprimme-normal">
+<h2>magma_xprimme_normal<a class="headerlink" href="#magma-xprimme-normal" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="f/_/magma_xprimme_normal">
+<em class="property">function  </em><code class="sig-name descname">magma_xprimme_normal</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_xprimme_normal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
+<p>Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see <a class="reference internal" href="#f/_/xprimme" title="f/_/xprimme"><code class="xref f f-func docutils literal notranslate"><span class="pre">xprimme()</span></code></a> for using only the CPU).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>evals</strong> (*)<em> [</em><em>complex(kind)</em><em>,</em><em>out</em><em>]</em> :: CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+computed eigenvalues; all processes in a parallel run return this local array with the same values.</p></li>
+<li><p><strong>evecs</strong> :: GPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">nLocal</span></code></a> times (<a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> + <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a>) with leading dimension <a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">ldevecs</span></code></a>
+to store column-wise the (local part for this process of the) computed eigenvectors.</p></li>
+<li><p><strong>resNorms</strong> (*)<em> [</em><em>real(kind)</em><em>,</em><em>out</em><em>]</em> :: CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
+residual norms of the computed eigenpairs; all processes in parallel run return this local array with
+the same values.</p></li>
+<li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>,</em><em>in</em><em>]</em> :: parameters structure created by <a class="reference internal" href="#f/_/primme_params_create" title="f/_/primme_params_create"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return</dt>
+<dd class="field-even"><p><strong>magma_xprimme_normal</strong><em> [</em><em>c_int</em><em>]</em> :: error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p>
+</dd>
+</dl>
+<p>The arrays <code class="docutils literal notranslate"><span class="pre">evals</span></code>, <code class="docutils literal notranslate"><span class="pre">evecs</span></code>, and <code class="docutils literal notranslate"><span class="pre">resNorms</span></code> should have the same kind.</p>
+<p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in function <a class="reference internal" href="#f/_/xprimme" title="f/_/xprimme"><code class="xref f f-func docutils literal notranslate"><span class="pre">xprimme()</span></code></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-set-member">
+<h2>primme_set_member<a class="headerlink" href="#primme-set-member" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="f/_/primme_set_member">
+<em class="property">function  </em><code class="sig-name descname">primme_set_member</code><span class="sig-paren">(</span><em class="sig-param">primme</em>, <em class="sig-param">label</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_set_member" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a value in some field of the parameter structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>,</em><em>in</em><em>]</em> :: parameters structure created by <a class="reference internal" href="#f/_/primme_params_create" title="f/_/primme_params_create"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p></li>
+<li><p><strong>label</strong><em> [</em><em>c_int</em><em>,</em><em>in</em><em>]</em> :: <p>field where to set value. One of:</p>
+<div class="line-block">
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.n" title="primme_params.n"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_n</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_matrixMatvec</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec_type" title="primme_params.matrixMatvec_type"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_matrixMatvec_type</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_applyPreconditioner</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner_type" title="primme_params.applyPreconditioner_type"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_applyPreconditioner_type</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_massMatrixMatvec</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec_type" title="primme_params.massMatrixMatvec_type"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_massMatrixMatvec_type</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.numProcs" title="primme_params.numProcs"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_numProcs</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.procID" title="primme_params.procID"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_procID</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.commInfo" title="primme_params.commInfo"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_commInfo</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.nLocal" title="primme_params.nLocal"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_nLocal</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_globalSumReal</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.globalSumReal_type" title="primme_params.globalSumReal_type"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_globalSumReal_type</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_broadcastReal</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.broadcastReal_type" title="primme_params.broadcastReal_type"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_broadcastReal_type</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_numEvals</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.target" title="primme_params.target"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_target</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.numTargetShifts" title="primme_params.numTargetShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_numTargetShifts</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.targetShifts" title="primme_params.targetShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_targetShifts</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_locking</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_initSize</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_numOrthoConst</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_maxBasisSize</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_minRestartSize</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.maxBlockSize" title="primme_params.maxBlockSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_maxBlockSize</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_maxMatvecs</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.maxOuterIterations" title="primme_params.maxOuterIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_maxOuterIterations</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.iseed" title="primme_params.iseed"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_iseed</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.aNorm" title="primme_params.aNorm"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_aNorm</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.BNorm" title="primme_params.BNorm"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_BNorm</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.invBNorm" title="primme_params.invBNorm"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_invBNorm</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_eps</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.orth" title="primme_params.orth"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_orth</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.internalPrecision" title="primme_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_internalPrecision</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.printLevel" title="primme_params.printLevel"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_printLevel</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.outputFile" title="primme_params.outputFile"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_outputFile</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.matrix" title="primme_params.matrix"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_matrix</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.massMatrix" title="primme_params.massMatrix"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_massMatrix</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.preconditioner" title="primme_params.preconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_preconditioner</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.initBasisMode" title="primme_params.initBasisMode"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_initBasisMode</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.projectionParams.projection" title="primme_params.projectionParams.projection"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_projectionParams_projection</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.restartingParams.maxPrevRetain" title="primme_params.restartingParams.maxPrevRetain"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_restartingParams_maxPrevRetain</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.precondition" title="primme_params.correctionParams.precondition"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_precondition</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.robustShifts" title="primme_params.correctionParams.robustShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_robustShifts</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.maxInnerIterations" title="primme_params.correctionParams.maxInnerIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_maxInnerIterations</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.LeftQ" title="primme_params.correctionParams.projectors.LeftQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_projectors_LeftQ</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.LeftX" title="primme_params.correctionParams.projectors.LeftX"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_projectors_LeftX</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.RightQ" title="primme_params.correctionParams.projectors.RightQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_projectors_RightQ</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.RightX" title="primme_params.correctionParams.projectors.RightX"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_projectors_RightX</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.SkewQ" title="primme_params.correctionParams.projectors.SkewQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_projectors_SkewQ</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.SkewX" title="primme_params.correctionParams.projectors.SkewX"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_projectors_SkewX</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_convTest</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.relTolBase" title="primme_params.correctionParams.relTolBase"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_correctionParams_relTolBase</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.numOuterIterations" title="primme_params.stats.numOuterIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_numOuterIterations</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.numRestarts" title="primme_params.stats.numRestarts"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_numRestarts</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.numMatvecs" title="primme_params.stats.numMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_numMatvecs</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.numPreconds" title="primme_params.stats.numPreconds"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_numPreconds</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.numGlobalSum" title="primme_params.stats.numGlobalSum"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_numGlobalSum</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.volumeGlobalSum" title="primme_params.stats.volumeGlobalSum"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_volumeGlobalSum</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.numBroadcast" title="primme_params.stats.numBroadcast"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_numBroadcast</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.volumeBroadcast" title="primme_params.stats.volumeBroadcast"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_volumeBroadcast</span></code></a></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_flopsDense</span></code></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.numOrthoInnerProds" title="primme_params.stats.numOrthoInnerProds"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_numOrthoInnerProds</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.elapsedTime" title="primme_params.stats.elapsedTime"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_elapsedTime</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.timeMatvec" title="primme_params.stats.timeMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_timeMatvec</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.timePrecond" title="primme_params.stats.timePrecond"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_timePrecond</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.timeOrtho" title="primme_params.stats.timeOrtho"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_timeOrtho</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.timeGlobalSum" title="primme_params.stats.timeGlobalSum"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_timeGlobalSum</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.timeBroadcast" title="primme_params.stats.timeBroadcast"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_timeBroadcast</span></code></a></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_timeDense</span></code></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.estimateMinEVal" title="primme_params.stats.estimateMinEVal"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_estimateMinEVal</span></code></a></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_estimateMaxEVal</span></code></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.estimateLargestSVal" title="primme_params.stats.estimateLargestSVal"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_estimateLargestSVal</span></code></a></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_estimateBNorm</span></code></div>
+<div class="line"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_estimateInvBNorm</span></code></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.maxConvTol" title="primme_params.stats.maxConvTol"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_maxConvTol</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.stats.lockingIssue" title="primme_params.stats.lockingIssue"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_stats_lockingIssue</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.dynamicMethodSwitch" title="primme_params.dynamicMethodSwitch"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_dynamicMethodSwitch</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_convTestFun</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.convTestFun_type" title="primme_params.convTestFun_type"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_convTestFun_type</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.convtest" title="primme_params.convtest"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_convtest</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.ldevecs" title="primme_params.ldevecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_ldevecs</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.ldOPs" title="primme_params.ldOPs"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_ldOPs</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.monitorFun" title="primme_params.monitorFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_monitorFun</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.monitorFun_type" title="primme_params.monitorFun_type"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_monitorFun_type</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.monitor" title="primme_params.monitor"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_monitor</span></code></a></div>
+<div class="line"><a class="reference internal" href="appendix.html#c.primme_params.queue" title="primme_params.queue"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_queue</span></code></a></div>
+</div>
+</p></li>
+<li><p><strong>value</strong><em> [</em><em>in</em><em>]</em> :: value to set. The allowed types are <cite>c_int64</cite>, <cite>c_double</cite>, <cite>c_ptr</cite>, <cite>c_funptr</cite> and <a class="reference internal" href="#f/_/primme_eigs_matvec" title="f/_/primme_eigs_matvec"><code class="xref f f-func docutils literal notranslate"><span class="pre">procedure(primme_eigs_matvec)</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return</dt>
+<dd class="field-even"><p><strong>primme_set_member</strong><em> [</em><em>c_int</em><em>]</em> :: <p>nonzero value if the call is not successful.</p>
+<p>Examples:</p>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">primme</span>
+<span class="kt">integer</span> <span class="kd">::</span> <span class="n">ierr</span>
+<span class="p">...</span>
+
+<span class="kt">integer</span><span class="p">(</span><span class="kt">c_int64_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">n</span>               <span class="o">=</span> <span class="mi">100</span>
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_set_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_n</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_set_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_correctionParams_precondition</span><span class="p">,</span>
+                         <span class="mi">1_c_int64_t</span><span class="p">)</span>
+
+<span class="kt">real</span><span class="p">(</span><span class="kt">c_double</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tol</span>             <span class="o">=</span> <span class="mf">1.0D-12</span>
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_set_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_eps</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
+
+<span class="kt">integer</span><span class="p">(</span><span class="kt">c_int64_t</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">numTargetShifts</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="kt">real</span><span class="p">(</span><span class="kt">c_double</span><span class="p">)</span> <span class="kd">::</span> <span class="n">TargetShifts</span><span class="p">(</span><span class="n">numTargetShifts</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="o">/</span><span class="mf">3.0D0</span><span class="p">,</span> <span class="mf">5.1D0</span><span class="o">/</span><span class="p">)</span>
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_set_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_numTargetShifts</span><span class="p">,</span> <span class="n">numTargetShifts</span><span class="p">)</span>
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_set_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_targetShifts</span><span class="p">,</span> <span class="n">TargetShifts</span><span class="p">)</span>
+
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_set_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_target</span><span class="p">,</span> <span class="n">primme_closest_abs</span><span class="p">)</span>
+
+<span class="k">procedure</span><span class="p">(</span><span class="n">primme_eigs_matvec</span><span class="p">)</span> <span class="kd">::</span> <span class="n">MV</span><span class="p">,</span> <span class="n">ApplyPrecon</span>
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_set_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_matrixMatvec</span><span class="p">,</span> <span class="n">MV</span><span class="p">)</span>
+
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_set_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_applyPreconditioner</span><span class="p">,</span>
+                         <span class="nb">c_funloc</span><span class="p">(</span><span class="n">ApplyPrecon</span><span class="p">))</span>
+</pre></div>
+</div>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="primme-get-member">
+<h2>primme_get_member<a class="headerlink" href="#primme-get-member" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="f/_/primme_get_member">
+<em class="property">function  </em><code class="sig-name descname">primme_get_member</code><span class="sig-paren">(</span><em class="sig-param">primme</em>, <em class="sig-param">label</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_get_member" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value in some field of the parameter structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/c_ptr" title="f/_/c_ptr"><em>c_ptr</em></a><em>,</em><em>in</em><em>]</em> :: parameters structure created by <a class="reference internal" href="#f/_/primme_params_create" title="f/_/primme_params_create"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p></li>
+<li><p><strong>label</strong><em> [</em><em>integer</em><em>,</em><em>in</em><em>]</em> :: field where to get value. One of the detailed in function <a class="reference internal" href="#f/_/primme_set_member" title="f/_/primme_set_member"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_set_member()</span></code></a>.</p></li>
+<li><p><strong>value</strong><em> [</em><em>out</em><em>]</em> :: value of the field.  The allowed types are <cite>c_int64</cite>, <cite>c_double</cite>, and <cite>c_ptr</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return</dt>
+<dd class="field-even"><p><strong>primme_get_member</strong><em> [</em><em>c_int</em><em>]</em> :: nonzero value if the call is not successful.</p>
+</dd>
+</dl>
+<p>Examples:</p>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">primme</span>
+<span class="kt">integer</span> <span class="kd">::</span> <span class="n">ierr</span>
+<span class="p">...</span>
+
+<span class="kt">integer</span><span class="p">(</span><span class="kt">c_int64_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">n</span>
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_get_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_n</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+<span class="kt">real</span><span class="p">(</span><span class="kt">c_double</span><span class="p">)</span> <span class="kd">::</span> <span class="n">aNorm</span>
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_get_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_aNorm</span><span class="p">,</span> <span class="n">aNorm</span><span class="p">)</span>
+
+<span class="kt">real</span><span class="p">(</span><span class="kt">c_double</span><span class="p">),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">shifts</span><span class="p">(:)</span>
+<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pshifts</span>
+<span class="n">ierr</span> <span class="o">=</span> <span class="n">primme_get_member</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_ShiftsForPreconditioner</span><span class="p">,</span> <span class="n">pshifts</span><span class="p">)</span>
+<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pshifts</span><span class="p">,</span> <span class="n">shifts</span><span class="p">,</span> <span class="nb">shape</span><span class="o">=</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pyeigsh.html" class="btn btn-neutral float-right" title="Python Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="primmef77.html" class="btn btn-neutral float-left" title="FORTRAN 77 Library Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, College of William &amp; Mary
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

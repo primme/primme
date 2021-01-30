@@ -1,0 +1,415 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MATLAB Interface &mdash; PRIMME 3.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Parameters Description" href="appendix.html" />
+    <link rel="prev" title="Python Interface" href="pyeigsh.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+          
+
+          
+            <a href="readme.html">
+          
+
+          
+            
+            <img src="_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html#support">Support</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="primmec.html">C Library Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="primmef77.html">FORTRAN 77 Library Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="primmef90.html">FORTRAN 90 Library Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeigsh.html">Python Interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">MATLAB Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html">Parameters Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html#preset-methods">Preset Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="appendix.html#error-codes">Error Codes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apisvds.html">Singular Value Problems</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="readme.html">PRIMME</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="readme.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="apieigs.html">Eigenvalue Problems</a> &raquo;</li>
+        
+      <li>MATLAB Interface</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/mateigs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="appendix.html" class="btn btn-neutral float-right" title="Parameters Description" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pyeigsh.html" class="btn btn-neutral float-left" title="Python Interface" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="matlab-interface">
+<h1>MATLAB Interface<a class="headerlink" href="#matlab-interface" title="Permalink to this headline">¶</a></h1>
+<dl class="mat function">
+<dt>
+<code class="sig-name descname">function [varargout] = primme_eigs(varargin)</code></dt>
+<dd><p><code class="xref mat mat-func docutils literal notranslate"><span class="pre">primme_eigs()</span></code> finds a few eigenvalues and their corresponding eigenvectors
+of a symmetric/Hermitian matrix, <code class="docutils literal notranslate"><span class="pre">A</span></code>, or of a generalized problem <code class="docutils literal notranslate"><span class="pre">(A,B)</span></code>, by calling <a class="reference external" href="https://github.com/primme/primme">PRIMME</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(A)</span></code> returns a vector of <code class="docutils literal notranslate"><span class="pre">A</span></code>’s 6 largest magnitude eigenvalues.</p>
+<p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(A,B)</span></code> returns a vector of the 6 largest magnitude eigenvalues of <code class="docutils literal notranslate"><span class="pre">(A,B)</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(Afun,Bfun,dim)</span></code>
+<code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(Afun,dim)</span></code> accepts a functions <code class="docutils literal notranslate"><span class="pre">Afun</span></code> and <code class="docutils literal notranslate"><span class="pre">Bfun</span></code> instead of matrices. <code class="docutils literal notranslate"><span class="pre">Afun</span></code>
+and <code class="docutils literal notranslate"><span class="pre">Bfun</span></code> are function handles. <code class="docutils literal notranslate"><span class="pre">Afun(x)</span></code> and <code class="docutils literal notranslate"><span class="pre">Bfun(x)</span></code> return the matrix-vector product <code class="docutils literal notranslate"><span class="pre">A*x</span></code> and <code class="docutils literal notranslate"><span class="pre">B*x</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(...,k)</span></code> finds the <code class="docutils literal notranslate"><span class="pre">k</span></code> largest magnitude eigenvalues. <code class="docutils literal notranslate"><span class="pre">k</span></code> must be
+less than the dimension of the matrix <code class="docutils literal notranslate"><span class="pre">A</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(...,k,target)</span></code> returns <code class="docutils literal notranslate"><span class="pre">k</span></code> eigenvalues such that:
+If <code class="docutils literal notranslate"><span class="pre">target</span></code> is a real number, it finds the closest eigenvalues to <code class="docutils literal notranslate"><span class="pre">target</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">target</span></code> is</p>
+<blockquote>
+<div><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'LA'</span></code> or <code class="docutils literal notranslate"><span class="pre">'SA'</span></code>, eigenvalues with the largest or smallest algebraic value.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'LM'</span></code> or <code class="docutils literal notranslate"><span class="pre">'SM'</span></code>, eigenvalues with the largest or smallest magnitude if
+<code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts</span></code> is empty. If <code class="docutils literal notranslate"><span class="pre">target</span></code> is a real or complex
+scalar including 0, <code class="xref mat mat-func docutils literal notranslate"><span class="pre">primme_eigs()</span></code> finds the eigenvalues closest
+to <code class="docutils literal notranslate"><span class="pre">target</span></code>.</p>
+<p>In addition, if some values are provided in <code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts</span></code>,
+it finds eigenvalues that are farthest (<code class="docutils literal notranslate"><span class="pre">'LM'</span></code>) or closest (<code class="docutils literal notranslate"><span class="pre">'SM'</span></code>) in
+absolute value from the given values.</p>
+<p>Examples:</p>
+<p><code class="docutils literal notranslate"><span class="pre">k=1</span></code>, <code class="docutils literal notranslate"><span class="pre">'LM'</span></code>, <code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts=[]</span></code> returns the largest magnitude <code class="docutils literal notranslate"><span class="pre">eig(A)</span></code>.
+<code class="docutils literal notranslate"><span class="pre">k=1</span></code>, <code class="docutils literal notranslate"><span class="pre">'SM'</span></code>, <code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts=[]</span></code> returns the smallest magnitude <code class="docutils literal notranslate"><span class="pre">eig(A)</span></code>.
+<code class="docutils literal notranslate"><span class="pre">k=3</span></code>, <code class="docutils literal notranslate"><span class="pre">'SM'</span></code>, <code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts=[2,</span> <span class="pre">5]</span></code> returns the closest eigenvalue in
+absolute sense to 2, and the two closest eigenvalues to 5.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'CLT'</span></code> or <code class="docutils literal notranslate"><span class="pre">'CGT'</span></code>, find eigenvalues closest to but less or greater than
+the given values in <code class="docutils literal notranslate"><span class="pre">OPTS.targetShifts</span></code>.</p></li>
+</ul>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(...,k,target,OPTS)</span></code> specifies extra solver parameters. Some
+default values are indicated in brackets {}:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.aNorm" title="primme_params.aNorm"><code class="xref c c-member docutils literal notranslate"><span class="pre">aNorm</span></code></a>: the estimated 2-norm of A {0.0 (estimate the norm internally)}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tol</span></code>: convergence tolerance: <code class="docutils literal notranslate"><span class="pre">NORM(A*X(:,i)-X(:,i)*D(i,i))</span> <span class="pre">&lt;</span> <span class="pre">tol*NORM(A)</span></code>
+(see <a class="reference internal" href="appendix.html#c.primme_params.eps" title="primme_params.eps"><code class="xref c c-member docutils literal notranslate"><span class="pre">eps</span></code></a>) {<span class="math notranslate nohighlight">\(10^4\)</span> times the machine precision}</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.maxBlockSize" title="primme_params.maxBlockSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxBlockSize</span></code></a>: maximum block size (useful for high multiplicities) {1}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reportLevel</span></code>: reporting level (0-3) (see HIST) {no reporting 0}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">display</span></code>: whether displaying reporting on screen (see HIST) {0 if HIST provided}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">isreal</span></code>: whether A represented by <code class="docutils literal notranslate"><span class="pre">Afun</span></code> is real or complex {false}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">isdouble</span></code>: whether the class of in/out vectors in <code class="docutils literal notranslate"><span class="pre">Afun</span></code> are
+double or single {false}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">isgpu</span></code>: whether the class of in/out vectors in <code class="docutils literal notranslate"><span class="pre">Afun</span></code> are <code class="docutils literal notranslate"><span class="pre">gpuArray</span></code> {false}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ishermitian</span></code>: whether <code class="docutils literal notranslate"><span class="pre">A</span></code> is Hermitian; otherwise it is considered normal {true}</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.targetShifts" title="primme_params.targetShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">targetShifts</span></code></a>: shifts for interior eigenvalues (see <code class="docutils literal notranslate"><span class="pre">target</span></code>) {[]}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">v0</span></code>: any number of initial guesses to the eigenvectors (see <a class="reference internal" href="appendix.html#c.primme_params.initSize" title="primme_params.initSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">initSize</span></code></a> {[]}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">orthoConst</span></code>: external orthogonalization constraints (see <a class="reference internal" href="appendix.html#c.primme_params.numOrthoConst" title="primme_params.numOrthoConst"><code class="xref c c-member docutils literal notranslate"><span class="pre">numOrthoConst</span></code></a> {[]}</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.locking" title="primme_params.locking"><code class="xref c c-member docutils literal notranslate"><span class="pre">locking</span></code></a>: 1, hard locking; 0, soft locking</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p</span></code>: maximum size of the search subspace (see <a class="reference internal" href="appendix.html#c.primme_params.maxBasisSize" title="primme_params.maxBasisSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxBasisSize</span></code></a>)</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.minRestartSize" title="primme_params.minRestartSize"><code class="xref c c-member docutils literal notranslate"><span class="pre">minRestartSize</span></code></a>: minimum Ritz vectors to keep in restarting</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.maxMatvecs" title="primme_params.maxMatvecs"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxMatvecs</span></code></a>: maximum number of matrix vector multiplications {Inf}</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maxit</span></code>: maximum number of outer iterations (see <a class="reference internal" href="appendix.html#c.primme_params.maxOuterIterations" title="primme_params.maxOuterIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxOuterIterations</span></code></a>) {Inf}</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.restartingParams.maxPrevRetain" title="primme_params.restartingParams.maxPrevRetain"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxPrevRetain</span></code></a>: number of Ritz vectors from previous iteration that are kept after restart {typically &gt;0}</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.robustShifts" title="primme_params.correctionParams.robustShifts"><code class="xref c c-member docutils literal notranslate"><span class="pre">robustShifts</span></code></a>: setting to true may avoid stagnation or misconvergence</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.maxInnerIterations" title="primme_params.correctionParams.maxInnerIterations"><code class="xref c c-member docutils literal notranslate"><span class="pre">maxInnerIterations</span></code></a>: maximum number of inner solver iterations</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.LeftQ" title="primme_params.correctionParams.projectors.LeftQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">LeftQ</span></code></a>: use the locked vectors in the left projector</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.LeftX" title="primme_params.correctionParams.projectors.LeftX"><code class="xref c c-member docutils literal notranslate"><span class="pre">LeftX</span></code></a>: use the approx. eigenvector in the left projector</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.RightQ" title="primme_params.correctionParams.projectors.RightQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">RightQ</span></code></a>: use the locked vectors in the right projector</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.RightX" title="primme_params.correctionParams.projectors.RightX"><code class="xref c c-member docutils literal notranslate"><span class="pre">RightX</span></code></a>: use the approx. eigenvector in the right projector</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.SkewQ" title="primme_params.correctionParams.projectors.SkewQ"><code class="xref c c-member docutils literal notranslate"><span class="pre">SkewQ</span></code></a>: use the preconditioned locked vectors in the right projector</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.projectors.SkewX" title="primme_params.correctionParams.projectors.SkewX"><code class="xref c c-member docutils literal notranslate"><span class="pre">SkewX</span></code></a>: use the preconditioned approx. eigenvector in the right projector</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.relTolBase" title="primme_params.correctionParams.relTolBase"><code class="xref c c-member docutils literal notranslate"><span class="pre">relTolBase</span></code></a>: a legacy from classical JDQR (not recommended)</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.correctionParams.convTest" title="primme_params.correctionParams.convTest"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTest</span></code></a>: how to stop the inner QMR Method</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>: function handler with an alternative convergence criterion.
+If <code class="docutils literal notranslate"><span class="pre">FUN(EVAL,EVEC,RNORM)</span></code> returns a nonzero value, the pair <code class="docutils literal notranslate"><span class="pre">(EVAL,EVEC)</span></code>
+with residual norm <code class="docutils literal notranslate"><span class="pre">RNORM</span></code> is considered converged</p></li>
+<li><p><a class="reference internal" href="appendix.html#c.primme_params.iseed" title="primme_params.iseed"><code class="xref c c-member docutils literal notranslate"><span class="pre">iseed</span></code></a>: random seed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">returnUnconverged</span></code>: whether to return unconverged pairs if maximum
+iterations or matvecs is reached.</p></li>
+</ul>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(A,k,target,OPTS,METHOD)</span></code> specifies the eigensolver method.
+METHOD can be one of the next strings:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DYNAMIC" title="primme_preset_method.PRIMME_DYNAMIC"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DYNAMIC</span></code></a>’, (default)        switches dynamically to the best method</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DEFAULT_MIN_TIME" title="primme_preset_method.PRIMME_DEFAULT_MIN_TIME"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_TIME</span></code></a>’,         best method for low-cost matrix-vector product</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_DEFAULT_MIN_MATVECS" title="primme_preset_method.PRIMME_DEFAULT_MIN_MATVECS"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_DEFAULT_MIN_MATVECS</span></code></a>’,      best method for heavy matvec/preconditioner</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_Arnoldi" title="primme_preset_method.PRIMME_Arnoldi"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_Arnoldi</span></code></a>’,                  Arnoldi not implemented efficiently</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_GD" title="primme_preset_method.PRIMME_GD"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_GD</span></code></a>’,                       classical block Generalized Davidson</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_GD_plusK" title="primme_preset_method.PRIMME_GD_plusK"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_GD_plusK</span></code></a>’,                 GD+k block GD with recurrence restarting</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_GD_Olsen_plusK" title="primme_preset_method.PRIMME_GD_Olsen_plusK"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_GD_Olsen_plusK</span></code></a>’,           GD+k with approximate Olsen precond.</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JD_Olsen_plusK" title="primme_preset_method.PRIMME_JD_Olsen_plusK"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JD_Olsen_plusK</span></code></a>’,           GD+k, exact Olsen (two precond per step)</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_RQI" title="primme_preset_method.PRIMME_RQI"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_RQI</span></code></a>’,                      Rayleigh Quotient Iteration. Also INVIT, but for INVIT provide OPTS.targetShifts</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQR" title="primme_preset_method.PRIMME_JDQR"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQR</span></code></a>’,                     Original block, Jacobi Davidson</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQMR" title="primme_preset_method.PRIMME_JDQMR"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQMR</span></code></a>’,                    Our block JDQMR method (similar to JDCG)</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_JDQMR_ETol" title="primme_preset_method.PRIMME_JDQMR_ETol"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_JDQMR_ETol</span></code></a>’,               Slight, but efficient JDQMR modification</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_STEEPEST_DESCENT" title="primme_preset_method.PRIMME_STEEPEST_DESCENT"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_STEEPEST_DESCENT</span></code></a>’,         equivalent to GD(block,2*block)</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_LOBPCG_OrthoBasis" title="primme_preset_method.PRIMME_LOBPCG_OrthoBasis"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_LOBPCG_OrthoBasis</span></code></a>’,        equivalent to GD(nev,3*nev)+nev</p></li>
+<li><p>‘<a class="reference internal" href="appendix.html#c.primme_preset_method.PRIMME_LOBPCG_OrthoBasis_Window" title="primme_preset_method.PRIMME_LOBPCG_OrthoBasis_Window"><code class="xref c c-member docutils literal notranslate"><span class="pre">PRIMME_LOBPCG_OrthoBasis_Window</span></code></a>’  equivalent to GD(block,3*block)+block nev&gt;block</p></li>
+</ul>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(A,k,target,OPTS,METHOD,P)</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">D</span> <span class="pre">=</span> <span class="pre">primme_eigs(A,k,target,OPTS,METHOD,P1,P2)</span></code> uses preconditioner <code class="docutils literal notranslate"><span class="pre">P</span></code> or
+<code class="docutils literal notranslate"><span class="pre">P</span> <span class="pre">=</span> <span class="pre">P1*P2</span></code> to accelerate convergence of the method. Applying <code class="docutils literal notranslate"><span class="pre">P\x</span></code> should
+approximate <code class="docutils literal notranslate"><span class="pre">(A-sigma*eye(N))\x</span></code>, for <code class="docutils literal notranslate"><span class="pre">sigma</span></code> near the wanted eigenvalue(s).
+If <code class="docutils literal notranslate"><span class="pre">P</span></code> is <code class="docutils literal notranslate"><span class="pre">[]</span></code> then a preconditioner is not applied. <code class="docutils literal notranslate"><span class="pre">P</span></code> may be a function
+handle <code class="docutils literal notranslate"><span class="pre">PFUN</span></code> such that <code class="docutils literal notranslate"><span class="pre">PFUN(x)</span></code> returns <code class="docutils literal notranslate"><span class="pre">P\x</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">[X,D]</span> <span class="pre">=</span> <span class="pre">primme_eigs(...)</span></code> returns a diagonal matrix <code class="docutils literal notranslate"><span class="pre">D</span></code> with the eigenvalues
+and a matrix <code class="docutils literal notranslate"><span class="pre">X</span></code> whose columns are the corresponding eigenvectors.</p>
+<p><code class="docutils literal notranslate"><span class="pre">[X,D,R]</span> <span class="pre">=</span> <span class="pre">primme_eigs(...)</span></code> also returns an array of the residual norms of
+the computed eigenpairs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">[X,D,R,STATS]</span> <span class="pre">=</span> <span class="pre">primme_eigs(...)</span></code> returns a <code class="docutils literal notranslate"><span class="pre">struct</span></code> to report statistical
+information about number of matvecs, elapsed time, and estimates for the
+largest and smallest algebraic eigenvalues of <code class="docutils literal notranslate"><span class="pre">A</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">[X,D,R,STATS,HIST]</span> <span class="pre">=</span> <span class="pre">primme_eigs(...)</span></code> it returns the convergence history,
+instead of printing it. Every row is a record, and the columns report:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,1)</span></code>: number of matvecs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,2)</span></code>: time</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,3)</span></code>: number of converged/locked pairs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,4)</span></code>: block index</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,5)</span></code>: approximate eigenvalue</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,6)</span></code>: residual norm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HIST(:,7)</span></code>: QMR residual norm</p></li>
+</ul>
+</div></blockquote>
+<p><code class="docutils literal notranslate"><span class="pre">OPTS.reportLevel</span></code> controls the granularity of the record. If <code class="docutils literal notranslate"><span class="pre">OPTS.reportLevel</span> <span class="pre">==</span> <span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">HIST</span></code>
+has one row per converged eigenpair and only the first three columns
+together with the fifth and the sixth are reported. If <code class="docutils literal notranslate"><span class="pre">OPTS.reportLevel</span> <span class="pre">==</span> <span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">HIST</span></code>
+has one row per outer iteration and converged value, and only the first six
+columns are reported. Otherwise <code class="docutils literal notranslate"><span class="pre">HIST</span></code> has one row per QMR iteration, outer
+iteration and converged value, and all columns are reported.</p>
+<p>The convergence history is displayed if <code class="docutils literal notranslate"><span class="pre">OPTS.reportLevel</span> <span class="pre">&gt;</span> <span class="pre">0</span></code> and either <code class="docutils literal notranslate"><span class="pre">HIST</span></code> is
+not returned or <code class="docutils literal notranslate"><span class="pre">OPTS.display</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p>
+<p>Examples:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="p">=</span> <span class="nb">diag</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">100</span><span class="p">);</span>
+
+<span class="n">d</span> <span class="p">=</span> <span class="n">primme_eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span> <span class="c">% the 10 largest magnitude eigenvalues</span>
+
+<span class="n">d</span> <span class="p">=</span> <span class="n">primme_eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="s">&#39;SM&#39;</span><span class="p">)</span> <span class="c">% the 10 smallest magnitude eigenvalues</span>
+
+<span class="n">d</span> <span class="p">=</span> <span class="n">primme_eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mf">25.0</span><span class="p">)</span> <span class="c">% the 10 closest eigenvalues to 25.0</span>
+
+<span class="n">opts</span><span class="p">.</span><span class="n">targetShifts</span> <span class="p">=</span> <span class="p">[</span><span class="mi">2</span> <span class="mi">20</span><span class="p">];</span>
+<span class="n">d</span> <span class="p">=</span> <span class="n">primme_eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="s">&#39;SM&#39;</span><span class="p">,</span><span class="n">opts</span><span class="p">)</span> <span class="c">% 1 eigenvalue closest to 2 and</span>
+                                <span class="c">% 9 eigenvalues closest to 20</span>
+
+<span class="n">B</span> <span class="p">=</span> <span class="nb">diag</span><span class="p">(</span><span class="mi">100</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">);</span>
+<span class="n">d</span> <span class="p">=</span> <span class="n">primme_eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="s">&#39;SM&#39;</span><span class="p">)</span> <span class="c">% the 10 smallest magnitude eigenvalues</span>
+
+<span class="n">opts</span> <span class="p">=</span> <span class="n">struct</span><span class="p">();</span>
+<span class="n">opts</span><span class="p">.</span><span class="n">tol</span> <span class="p">=</span> <span class="mf">1e-4</span><span class="p">;</span> <span class="c">% set tolerance</span>
+<span class="n">opts</span><span class="p">.</span><span class="n">maxBlockSize</span> <span class="p">=</span> <span class="mi">2</span><span class="p">;</span> <span class="c">% set block size</span>
+<span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">d</span><span class="p">]</span> <span class="p">=</span> <span class="n">primme_eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="s">&#39;SA&#39;</span><span class="p">,</span><span class="n">opts</span><span class="p">,</span><span class="s">&#39;DEFAULT_MIN_TIME&#39;</span><span class="p">)</span>
+
+<span class="n">opts</span><span class="p">.</span><span class="n">orthoConst</span> <span class="p">=</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">[</span><span class="n">d</span><span class="p">,</span><span class="n">rnorms</span><span class="p">]</span> <span class="p">=</span> <span class="n">primme_eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="s">&#39;SA&#39;</span><span class="p">,</span><span class="n">opts</span><span class="p">)</span> <span class="c">% find another 10 with the default method</span>
+
+<span class="c">% Compute the 6 eigenvalues closest to 30.5 using ILU(0) as a preconditioner</span>
+<span class="c">% by passing the matrices L and U.</span>
+<span class="n">A</span> <span class="p">=</span> <span class="n">sparse</span><span class="p">(</span><span class="nb">diag</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">50</span><span class="p">)</span> <span class="o">+</span> <span class="nb">diag</span><span class="p">(</span><span class="nb">ones</span><span class="p">(</span><span class="mi">49</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">diag</span><span class="p">(</span><span class="nb">ones</span><span class="p">(</span><span class="mi">49</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">));</span>
+<span class="p">[</span><span class="n">L</span><span class="p">,</span><span class="n">U</span><span class="p">]</span> <span class="p">=</span> <span class="n">ilu</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">struct</span><span class="p">(</span><span class="s">&#39;type&#39;</span><span class="p">,</span> <span class="s">&#39;nofill&#39;</span><span class="p">));</span>
+<span class="n">d</span> <span class="p">=</span> <span class="n">primme_eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="mf">30.5</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="n">L</span><span class="p">,</span> <span class="n">U</span><span class="p">);</span>
+
+<span class="c">% Compute the 6 eigenvalues closest to 30.5 using Jacobi preconditioner</span>
+<span class="c">% by passing a function.</span>
+<span class="n">Pfun</span> <span class="p">=</span> <span class="p">@(</span><span class="n">x</span><span class="p">)(</span><span class="nb">diag</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-</span> <span class="mf">30.5</span><span class="p">)</span><span class="o">\</span><span class="n">x</span><span class="p">;</span>
+<span class="n">d</span> <span class="p">=</span> <span class="n">primme_eigs</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mf">30.5</span><span class="p">,[],[],</span><span class="n">Pfun</span><span class="p">)</span> <span class="c">% find the closest 5 to 30.5</span>
+</pre></div>
+</div>
+<p>See also: <a class="reference external" href="https://www.mathworks.com/help/matlab/ref/eigs.html">MATLAB eigs</a>, <code class="xref mat mat-func docutils literal notranslate"><span class="pre">primme_svds()</span></code></p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="appendix.html" class="btn btn-neutral float-right" title="Parameters Description" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pyeigsh.html" class="btn btn-neutral float-left" title="Python Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, College of William &amp; Mary
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
