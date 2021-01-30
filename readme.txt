@@ -21,7 +21,7 @@ Table Of Contents:
 
   * Contact Information
 
-* Support
+  * Support
 
   * Directory Structure
 
@@ -430,7 +430,7 @@ on github.
 
 
 Support
-*******
+=======
 
 * National Science Foundation through grants CCF 1218349, ACI SI2-SSE
   1440700, and NSCI 1835821
