@@ -493,7 +493,9 @@ BEGIN{a=1}
 {if(a) print}
 /^ *END *$/ {a=1}
 ' |
-$F2C -a -A -R | ${TMP}/lenscrub |
+$SED -r -e "s/, INTENT\\(IN\\) :://g" |
+$F2C -a -A -R |
+${TMP}/lenscrub |
 $SED -r -e "
 	/\\/\\*  *\\.\\. .*\\*\\//d;
 	s/extern integer mymaxloc_\\([^)]*\\);//g;

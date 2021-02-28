@@ -164,6 +164,7 @@ typedef struct primme_svds_params {
 
 typedef enum {
    /* NOTE: you can maintain the column of numbers with g+Ctrl-A in vim */
+   PRIMME_SVDS_invalid_label                = 0,
    PRIMME_SVDS_primme                       = 1,
    PRIMME_SVDS_primmeStage2                 = 2,
    PRIMME_SVDS_m                            = 3,

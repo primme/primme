@@ -612,7 +612,7 @@ static void* mxArrayToPointer(const mxArray *a) {
 static primme_params_label mxArrayToLabel(const mxArray *a) {
    if (mxIsChar(a)) {
       const char *label_name = mxArrayToString(a);
-      primme_params_label label = (primme_params_label)-1;
+      primme_params_label label = PRIMME_invalid_label;
       CHKERR(primme_member_info(&label, &label_name, NULL, NULL));
       return label;
    }
@@ -628,7 +628,7 @@ static primme_params_label mxArrayToLabel(const mxArray *a) {
 static primme_svds_params_label mxArrayToLabelSvds(const mxArray *a) {
    if (mxIsChar(a)) {
       const char *label_name = mxArrayToString(a);
-      primme_svds_params_label label = (primme_svds_params_label)-1;
+      primme_svds_params_label label = PRIMME_SVDS_invalid_label;
       CHKERR(primme_svds_member_info(&label, &label_name, NULL, NULL));
       return label;
    }
