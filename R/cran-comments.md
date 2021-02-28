@@ -1,7 +1,7 @@
 ## Changes
 
-* Fix failing tests after changes from Matrix package
-* Fix ubsan warning
+* Update PRIMME to version 3.2
+* Fix warnings with clang++
 
 ## Test environments
 * Ubuntu 20.04, R 4.0.2 and devel
