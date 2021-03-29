@@ -56,6 +56,22 @@ From PRIMME 1.x to 2.0:
 Changelog
 ^^^^^^^^^
 
+Changes in PRIMME 3.2 (released on Jan 29, 2021):
+
+* Fixed Intel 2021 compiler error ``"Unsupported combination of types for <tgmath.h>."``
+
+* Fixed compiling issues with PGI compiler also about ``tgmath.h``.
+
+* Fixed :c:func:`dprimme` and other variants not returning error code `PRIMME_MAIN_ITER_FAILURE` when it should do in some corner cases.
+
+* Fixed warnings from gcc/clang undefined behavior sanitizers.
+
+* Matlab: renamed `disp` to `reportLevel`.
+
+* Matlab: add flag `returnUnconverged` to return unconverged pairs optionally.
+
+* Matlab: return primme_params/primme_svds_params. 
+
 Changes in PRIMME 3.1 (released on May 2, 2020):
 
 * Fixed compilation issues in F90 interface and examples.
@@ -317,7 +333,7 @@ email, `andreas` at `cs.wm.edu`. See further information in
 the webpage http://www.cs.wm.edu/~andreas/software and on github_.
 
 Support
--------
+^^^^^^^
 
 - National Science Foundation through grants CCF 1218349, ACI SI2-SSE 1440700, and NSCI 1835821
 - Department of Energy through grant Exascale Computing Project 17-SC-20-SC

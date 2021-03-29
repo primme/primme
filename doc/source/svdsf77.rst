@@ -11,29 +11,29 @@ The next enumerations and functions are declared in ``primme_svds_f77.h``.
 sprimme_svds_f77
 """"""""""""""""
 
-.. c:function:: sprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+.. f:subroutine:: sprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
 
    Solve a real singular value problem using single precision.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_sprimme_svds_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_sprimme_svds_f77` for using GPUs).
    
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
-   :type svals(*): real
+   :type svals: real
 
    :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
       to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
-   :type svecs(*): real
+   :type svecs: real
 
    :param resNorms(*): array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme_svds: parameters structure.
 
-   :return: error indicator; see :ref:`error-codes-svds`.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes-svds`.
 
    On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
    followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
@@ -51,29 +51,29 @@ sprimme_svds_f77
 cprimme_svds_f77
 """"""""""""""""
 
-.. c:function:: cprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+.. f:subroutine:: cprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
 
    Solve a complex singular value problem using single precision.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_cprimme_svds_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_cprimme_svds_f77` for using GPUs).
    
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
-   :type svals(*): real
+   :type svals: real
 
    :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
       to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
-   :type svecs(*): complex
+   :type svecs: complex
 
    :param resNorms(*): array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme_svds: parameters structure.
 
-   :return: error indicator; see :ref:`error-codes-svds`.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes-svds`.
 
    On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
    followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
@@ -90,29 +90,29 @@ cprimme_svds_f77
 dprimme_svds_f77
 """"""""""""""""
 
-.. c:function:: dprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+.. f:subroutine:: dprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
 
    Solve a real singular value problem using double precision.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_dprimme_svds_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_dprimme_svds_f77` for using GPUs).
    
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
-   :type svals(*): double precision
+   :type svals: double precision
 
    :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
       to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
-   :type svecs(*): double precision
+   :type svecs: double precision
 
    :param resNorms(*): array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme_svds: parameters structure.
 
-   :return: error indicator; see :ref:`error-codes-svds`.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes-svds`.
 
    On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
    followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
@@ -129,29 +129,29 @@ dprimme_svds_f77
 zprimme_svds_f77
 """"""""""""""""
 
-.. c:function:: zprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+.. f:subroutine:: zprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
 
    Solve a complex singular value problem using double precision.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_zprimme_svds_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_zprimme_svds_f77` for using GPUs).
    
    :param svals(*): (output) array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
-   :type svals(*): double precision
+   :type svals: double precision
 
    :param svecs(*): array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
       to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
-   :type svecs(*): complex*16
+   :type svecs: complex double precision
 
    :param resNorms(*): array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme_svds: parameters structure.
 
-   :return: error indicator; see :ref:`error-codes-svds`.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes-svds`.
 
    On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
    followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
@@ -168,29 +168,29 @@ zprimme_svds_f77
 magma_sprimme_svds_f77
 """"""""""""""""""""""
 
-.. c:function:: magma_sprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+.. f:subroutine:: magma_sprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
 
    Solve a real singular value problem using single precision.
 
-   Most of the computations are performed on GPU (see :c:func:`sprimme_svds_f77` for using only the CPU).
+   Most of the computations are performed on GPU (see :f:func:`sprimme_svds_f77` for using only the CPU).
    
    :param svals(*): (output) CPU array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
-   :type svals(*): real
+   :type svals: real
 
    :param svecs(*): GPU array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
       to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
-   :type svecs(*): real
+   :type svecs: real
 
    :param resNorms(*): CPU array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme_svds: parameters structure.
 
-   :return: error indicator; see :ref:`error-codes-svds`.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes-svds`.
 
    On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
    followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
@@ -209,29 +209,29 @@ magma_sprimme_svds_f77
 magma_cprimme_svds_f77
 """"""""""""""""""""""
 
-.. c:function:: magma_cprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+.. f:subroutine:: magma_cprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
 
    Solve a complex singular value problem using single precision.
 
-   Most of the computations are performed on GPU (see :c:func:`cprimme_svds_f77` for using only the CPU).
+   Most of the computations are performed on GPU (see :f:func:`cprimme_svds_f77` for using only the CPU).
    
    :param svals(*): (output) CPU array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
-   :type svals(*): real
+   :type svals: real
 
    :param svecs(*): GPU array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
       to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
-   :type svecs(*): complex
+   :type svecs: complex
 
    :param resNorms(*): CPU array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme_svds: parameters structure.
 
-   :return: error indicator; see :ref:`error-codes-svds`.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes-svds`.
 
    On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
    followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
@@ -250,29 +250,29 @@ magma_cprimme_svds_f77
 magma_dprimme_svds_f77
 """"""""""""""""""""""
 
-.. c:function:: magma_dprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+.. f:subroutine:: magma_dprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
 
    Solve a real singular value problem using double precision.
 
-   Most of the computations are performed on GPU (see :c:func:`dprimme_svds_f77` for using only the CPU).
+   Most of the computations are performed on GPU (see :f:func:`dprimme_svds_f77` for using only the CPU).
    
    :param svals(*): (output) CPU array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
-   :type svals(*): double precision
+   :type svals: double precision
 
    :param svecs(*): GPU array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
       to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
-   :type svecs(*): double precision
+   :type svecs: double precision
 
    :param resNorms(*): CPU array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme_svds: parameters structure.
 
-   :return: error indicator; see :ref:`error-codes-svds`.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes-svds`.
 
    On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
    followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
@@ -291,29 +291,29 @@ magma_dprimme_svds_f77
 magma_zprimme_svds_f77
 """"""""""""""""""""""
 
-.. c:function:: magma_zprimme_svds_f77(svals, svecs, resNorms, primme_svds)
+.. f:subroutine:: magma_zprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
 
    Solve a complex singular value problem using double precision.
 
-   Most of the computations are performed on GPU (see :c:func:`zprimme_svds_f77` for using only the CPU).
+   Most of the computations are performed on GPU (see :f:func:`zprimme_svds_f77` for using only the CPU).
    
    :param svals(*): (output) CPU array at least of size |SnumSvals| to store the
       computed singular values; all processes in a parallel run return this local array with the same values.
-   :type svals(*): double precision
+   :type svals: double precision
 
    :param svecs(*): GPU array at least of size (|SmLocal| + |SnLocal|) times (|SnumOrthoConst| + |SnumSvals|)
       to store column-wise the (local part for this process of the) computed left singular vectors
       and the right singular vectors.
-   :type svecs(*): complex*16
+   :type svecs: complex double precision
 
    :param resNorms(*): CPU array at least of size |SnumSvals| to store the
       residual norms of the computed triplets; all processes in parallel run return this local array with
       the same values.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme_svds: parameters structure.
 
-   :return: error indicator; see :ref:`error-codes-svds`.
+   :param integer ierr: (output) error indicator; see :ref:`error-codes-svds`.
 
    On input, ``svecs`` should start with the content of the |SnumOrthoConst| left vectors,
    followed by the |SinitSize| left vectors, followed by the |SnumOrthoConst| right vectors and
@@ -332,18 +332,18 @@ magma_zprimme_svds_f77
 primme_svds_initialize_f77
 """"""""""""""""""""""""""
 
-.. c:function:: primme_svds_initialize_f77(primme_svds)
+.. f:subroutine:: primme_svds_initialize_f77(primme_svds, ierr)
 
    Set PRIMME SVDS parameters structure to the default values.
 
-   After calling :c:func:`dprimme_svds_f77` (or a variant), call :c:func:`primme_svds_free_f77` to release allocated resources by PRIMME.
+   After calling :f:func:`dprimme_svds_f77` (or a variant), call :f:func:`primme_svds_free_f77` to release allocated resources by PRIMME.
 
    :param ptr primme_svds: (output) parameters structure.
 
 primme_svds_set_method_f77
 """"""""""""""""""""""""""
 
-.. c:function:: primme_svds_set_method_f77(method, methodStage1, methodStage2, primme_svds, ierr)
+.. f:subroutine:: primme_svds_set_method_f77(method, methodStage1, methodStage2, primme_svds, ierr)
 
    Set PRIMME SVDS parameters to one of the preset configurations.
 
@@ -356,10 +356,10 @@ primme_svds_set_method_f77
         resulting approximate singular vectors as initial vectors for
         |PRIMME_SVDS_augmented| if the required accuracy was not achieved.
 
-   :param primme_preset_method methodStage1: (input) preset method to compute the eigenpairs at the first stage; see available values at :c:func:`primme_set_method_f77`.
+   :param primme_preset_method methodStage1: (input) preset method to compute the eigenpairs at the first stage; see available values at :f:func:`primme_set_method_f77`.
 
    :param primme_preset_method methodStage2: (input) preset method to compute the eigenpairs with
-      the second stage of |PRIMME_SVDS_hybrid|; see available values at :c:func:`primme_set_method_f77`.
+      the second stage of |PRIMME_SVDS_hybrid|; see available values at :f:func:`primme_set_method_f77`.
 
    :param ptr primme_svds: (input/output) parameters structure.
 
@@ -368,7 +368,7 @@ primme_svds_set_method_f77
 primme_svds_display_params_f77
 """"""""""""""""""""""""""""""
 
-.. c:function:: primme_svds_display_params_f77(primme_svds)
+.. f:subroutine:: primme_svds_display_params_f77(primme_svds)
 
    Display all printable settings of ``primme_svds`` into the file descriptor |SoutputFile|.
 
@@ -377,7 +377,7 @@ primme_svds_display_params_f77
 primme_svds_free_f77
 """"""""""""""""""""
 
-.. c:function:: primme_svds_free_f77(primme_svds)
+.. f:subroutine:: primme_svds_free_f77(primme_svds, ierr)
 
    Free memory allocated by PRIMME SVDS and delete all values set.
 
@@ -386,7 +386,7 @@ primme_svds_free_f77
 primme_svds_set_member_f77
 """"""""""""""""""""""""""
 
-.. c:function:: primme_svds_set_member_f77(primme_svds, label, value)
+.. f:subroutine:: primme_svds_set_member_f77(primme_svds, label, value, ierr)
 
    Set a value in some field of the parameter structure.
 
@@ -459,28 +459,28 @@ primme_svds_set_member_f77
 
    .. note::
 
-      **Don't use** this function inside PRIMME SVDS's callback functions, e.g., |SmatrixMatvec| or
+      **Don't use** this subroutine inside PRIMME SVDS's callback functions, e.g., |SmatrixMatvec| or
       |SapplyPreconditioner|, or in functions called by these functions.
 
 primme_svdstop_get_member_f77
 """""""""""""""""""""""""""""
 
-.. c:function:: primme_svdstop_get_member_f77(primme_svds, label, value)
+.. f:subroutine:: primme_svdstop_get_member_f77(primme_svds, label, value, ierr)
 
    Get the value in some field of the parameter structure.
 
    :param ptr primme_svds: (input) parameters structure.
 
    :param integer label: (input) field where to get value. One of
-      the detailed in function :c:func:`primmesvds_top_set_member_f77`.
+      the detailed in subroutine :f:func:`primmesvds_top_set_member_f77`.
 
    :param value: (output) value of the field.
 
    .. note::
 
-      **Don't use** this function inside PRIMME SVDS's callback functions, e.g., |SmatrixMatvec| or
+      **Don't use** this subroutine inside PRIMME SVDS's callback functions, e.g., |SmatrixMatvec| or
       |SapplyPreconditioner|, or in functions called by these functions. In those cases use
-      :c:func:`primme_svds_get_member_f77`.
+      :f:func:`primme_svds_get_member_f77`.
 
    .. note::
 
@@ -511,22 +511,22 @@ primme_svdstop_get_member_f77
 primme_svds_get_member_f77
 """"""""""""""""""""""""""
 
-.. c:function:: primme_svds_get_member_f77(primme_svds, label, value)
+.. f:subroutine:: primme_svds_get_member_f77(primme_svds, label, value, ierr)
 
    Get the value in some field of the parameter structure.
 
    :param ptr primme_svds: (input) parameters structure.
 
    :param integer label: (input) field where to get value. One of
-      the detailed in function :c:func:`primme_svdstop_set_member_f77`.
+      the detailed in subroutine :f:func:`primme_svdstop_set_member_f77`.
 
    :param value: (output) value of the field.
 
    .. note::
 
-      Use this function exclusively inside PRIMME SVDS's callback functions, e.g., |SmatrixMatvec|
+      Use this subroutine exclusively inside PRIMME SVDS's callback functions, e.g., |SmatrixMatvec|
       or |SapplyPreconditioner|, or in functions called by these functions. Otherwise, e.g.,
-      from the main program, use the function :c:func:`primme_svdstop_get_member_f77`.
+      from the main program, use the subroutine :f:func:`primme_svdstop_get_member_f77`.
 
    .. note::
 

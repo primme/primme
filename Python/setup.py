@@ -113,7 +113,7 @@ def setup_package():
    
    # NumyTypemapTests setup
    setup(name        = "primme",
-         version     = "3.1.0",
+         version     = "3.2.0",
          description = "PRIMME wrapper for Python",
          long_description = long_description,
          long_description_content_type = "text/x-rst",
@@ -146,7 +146,6 @@ def setup_package():
    # Specify the Python versions you support here. In particular, ensure
    # that you indicate whether you support Python 2, Python 3 or both.
          'Programming Language :: C',
-         'Programming Language :: Python :: 2',
          'Programming Language :: Python :: 3'
          ],
          keywords = "eigenvalues singular values generalized Hermitian symmetric Davidson-type high-performance large-scale matrix",

@@ -6,7 +6,7 @@ FORTRAN 77 Library Interface
 
 The next enumerations and functions are declared in ``primme_f77.h``.
 
-.. c:type:: ptr
+.. f:type:: ptr
 
    Fortran datatype with the same size as a pointer.
    Use ``integer*4`` when compiling in 32 bits and ``integer*8`` in 64 bits.
@@ -14,18 +14,18 @@ The next enumerations and functions are declared in ``primme_f77.h``.
 primme_initialize_f77
 """""""""""""""""""""
 
-.. c:function:: primme_initialize_f77(primme)
+.. f:subroutine:: primme_initialize_f77(primme)
 
    Allocate and initialize a PRIMME parameters structure to the default values.
 
-   After calling :c:func:`dprimme_f77` (or a variant), call :c:func:`primme_free_f77` to release allocated resources by PRIMME.
+   After calling :f:func:`dprimme_f77` (or a variant), call :f:func:`primme_free_f77` to release allocated resources by PRIMME.
 
    :param ptr primme: (output) parameters structure.
 
 primme_set_method_f77
 """""""""""""""""""""
 
-.. c:function:: primme_set_method_f77(method, primme, ierr)
+.. f:subroutine:: primme_set_method_f77(method, primme, ierr)
 
    Set PRIMME parameters to one of the preset configurations.
 
@@ -56,7 +56,7 @@ primme_set_method_f77
 primme_free_f77
 """""""""""""""
 
-.. c:function:: primme_free_f77(primme)
+.. f:subroutine:: primme_free_f77(primme)
 
    Free memory allocated by PRIMME and delete all values set.
 
@@ -66,97 +66,83 @@ primme_free_f77
 sprimme_f77
 """""""""""
 
-.. c:function:: sprimme_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: sprimme_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a real symmetric standard or generalized eigenproblem.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_sprimme` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_sprimme_f77` for using GPUs).
   
    :param evals(*): (output) array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): real
+   :type evals: real
 
    :param evecs(*): (input/output) array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): real
+   :type evecs: real
 
    :param resNorms(*): (output) array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme: parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 2.0
+
+
 
 cprimme_f77
 """""""""""
 
-.. c:function:: cprimme_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: cprimme_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a Hermitian standard or generalized eigenproblem.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_cprimme` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_cprimme_f77` for using GPUs).
 
    :param evals(*): (output) array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): real
+   :type evals: real
 
    :param evecs(*): (input/output) array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): complex real
+   :type evecs: complex real
 
    :param resNorms(*): (output) array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme: (input) parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 2.0
 
 dprimme_f77
 """""""""""
 
-.. c:function:: dprimme_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: dprimme_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a real symmetric standard or generalized eigenproblem.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_dprimme` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_dprimme_f77` for using GPUs).
 
    :param evals(*): (output) array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): double precision
+   :type evals: double precision
 
    :param evecs(*): (input/output) array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): double precision
+   :type evecs: double precision
 
    :param resNorms(*): (output) array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme: parameters structure.
 
@@ -165,348 +151,277 @@ dprimme_f77
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
+   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1), with value `evals(i)` and associated residual 2-norm `resNorms(i)`.
+   The first vector has index i=1. The number of eigenpairs marked as converged (see |eps|) is returned on |initSize|. Since version 4.0, if the returned error code is `PRIMME_MAIN_ITER_FAILURE`, PRIMME may return also unconverged eigenpairs and its residual norms in `evecs`, `evals`, and `resNorms` starting at i = |initSize| + 1 and going up to either |numEvals| or the last `resNorms(i)` with non-negative value.
  
    All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
 
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   The type and precision of the callbacks is also the same as `evecs`. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+
 
 zprimme_f77
 """""""""""
 
-.. c:function:: zprimme_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: zprimme_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a Hermitian standard or generalized eigenproblem.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_zprimme` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_zprimme_f77` for using GPUs).
 
    :param evals(*): (output) array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): double precision
+   :type evals: double precision
 
    :param evecs(*): (input/output) array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): complex double precision
+   :type evecs: complex double precision
 
    :param resNorms(*): (output) array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme: parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
 magma_sprimme_f77
 """""""""""""""""
 
-.. c:function:: magma_sprimme_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: magma_sprimme_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a real symmetric standard or generalized eigenproblem.
 
-   Most of the computations are performed on GPU (see :c:func:`sprimme` for using only the CPU).
+   Most of the computations are performed on GPU (see :f:func:`sprimme_f77` for using only the CPU).
   
    :param evals(*): (output) CPU array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): real
+   :type evals: real
 
    :param evecs(*): (input/output) GPU array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): real
+   :type evecs: real
 
    :param resNorms(*): (output) CPU array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme: parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 3.0
 
 magma_cprimme_f77
 """""""""""""""""
 
-.. c:function:: magma_cprimme_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: magma_cprimme_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a Hermitian standard or generalized eigenproblem.
 
-   Most of the computations are performed on GPU (see :c:func:`cprimme` for using only the CPU).
+   Most of the computations are performed on GPU (see :f:func:`cprimme_f77` for using only the CPU).
 
    :param evals(*): (output) CPU array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): real
+   :type evals: real
 
    :param evecs(*): (input/output) GPU array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): complex real
+   :type evecs: complex real
 
    :param resNorms(*): (output) CPU array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme: (input) parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 3.0
 
 magma_dprimme_f77
 """""""""""""""""
 
-.. c:function:: magma_dprimme_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: magma_dprimme_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a real symmetric standard or generalized eigenproblem.
 
-   Most of the computations are performed on GPU (see :c:func:`dprimme` for using only the CPU).
+   Most of the computations are performed on GPU (see :f:func:`dprimme_f77` for using only the CPU).
 
    :param evals(*): (output) CPU array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): double precision
+   :type evals: double precision
 
    :param evecs(*): (input/output) GPU array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): double precision
+   :type evecs: double precision
 
    :param resNorms(*): (output) CPU array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme: parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 3.0
 
 magma_zprimme_f77
 """""""""""""""""
 
-.. c:function:: magma_zprimme_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: magma_zprimme_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a Hermitian standard or generalized eigenproblem.
 
-   Most of the computations are performed on GPU (see :c:func:`zprimme` for using only the CPU).
+   Most of the computations are performed on GPU (see :f:func:`zprimme_f77` for using only the CPU).
 
    :param evals(*): (output) CPU array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): double precision
+   :type evals: double precision
 
    :param evecs(*): (input/output) GPU array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): complex double precision
+   :type evecs: complex double precision
 
    :param resNorms(*): (output) CPU array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme: (input) parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 3.0
 
 cprimme_normal_f77
 """"""""""""""""""
 
-.. c:function:: cprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: cprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a normal standard eigenproblem, which may not be Hermitian.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_cprimme_normal_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_cprimme_normal_f77` for using GPUs).
 
    :param evals(*): (output) array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): real
+   :type evals: real
 
    :param evecs(*): (input/output) array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): complex real
+   :type evecs: complex real
 
    :param resNorms(*): (output) array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme: (input) parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 3.0
 
 zprimme_normal_f77
 """"""""""""""""""
 
-.. c:function:: zprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: zprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a normal standard eigenproblem, which may not be Hermitian.
 
-   All arrays should be hosted on CPU. The computations are performed on CPU (see :c:func:`magma_zprimme_normal_f77` for using GPUs).
+   All arrays should be hosted on CPU. The computations are performed on CPU (see :f:func:`magma_zprimme_normal_f77` for using GPUs).
 
    :param evals(*): (output) array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): double precision
+   :type evals: double precision
 
    :param evecs(*): (input/output) array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): complex double precision
+   :type evecs: complex double precision
 
    :param resNorms(*): (output) array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme: parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 3.0
 
 magma_cprimme_normal_f77
 """"""""""""""""""""""""
 
-.. c:function:: magma_cprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: magma_cprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a normal standard eigenproblem, which may not be Hermitian.
 
-   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :c:func:`cprimme_normal_f77` for using only the CPU).
+   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :f:func:`cprimme_normal_f77` for using only the CPU).
 
    :param evals(*): (output) CPU array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): real
+   :type evals: real
 
    :param evecs(*): (input/output) GPU array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): complex real
+   :type evecs: complex real
 
    :param resNorms(*): (output) CPU array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): real
+   :type resNorms: real
 
    :param ptr primme: (input) parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 3.0
 
 magma_zprimme_normal_f77
 """"""""""""""""""""""""
 
-.. c:function:: magma_zprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
+.. f:subroutine:: magma_zprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
 
    Solve a normal standard eigenproblem, which may not be Hermitian.
 
-   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :c:func:`zprimme_normal_f77` for using only the CPU).
+   Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see :f:func:`zprimme_normal_f77` for using only the CPU).
 
    :param evals(*): (output) CPU array at least of size |numEvals| to store the
       computed eigenvalues; all parallel calls return the same value in this array.
-   :type evals(*): double precision
+   :type evals: double precision
 
    :param evecs(*): (input/output) GPU array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :type evecs(*): complex double precision
+   :type evecs: complex double precision
 
    :param resNorms(*): (output) CPU array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all parallel calls return the same value in this array.
-   :type resNorms(*): double precision
+   :type resNorms: double precision
 
    :param ptr primme: (input) parameters structure.
 
    :param integer ierr: (output) error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in subroutine :f:func:`dprimme_f77`.
 
    .. versionadded:: 3.0
 
 primme_set_member_f77
 """""""""""""""""""""
 
-.. c:function:: primme_set_member_f77(primme, label, value)
+.. f:subroutine:: primme_set_member_f77(primme, label, value)
 
    Set a value in some field of the parameter structure.
 
@@ -610,21 +525,21 @@ primme_set_member_f77
 
    .. note::
 
-      **Don't use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
+      **Don't use** this subroutine inside PRIMME's callback functions, e.g., |matrixMatvec| or
       |applyPreconditioner|, or in functions called by these functions.
 
 
 primmetop_get_member_f77
 """"""""""""""""""""""""
 
-.. c:function:: primmetop_get_member_f77(primme, label, value)
+.. f:subroutine:: primmetop_get_member_f77(primme, label, value)
 
    Get the value in some field of the parameter structure.
 
    :param ptr primme: (input) parameters structure.
 
    :param integer label: (input) field where to get value. One of
-      the detailed in function :c:func:`primmetop_set_member_f77`.
+      the detailed in subroutine :f:func:`primmetop_set_member_f77`.
 
    :param value: (output) value of the field.
 
@@ -633,9 +548,9 @@ primmetop_get_member_f77
 
    .. note::
 
-      **Don't use** this function inside PRIMME's callback functions, e.g., |matrixMatvec| or
+      **Don't use** this subroutine inside PRIMME's callback functions, e.g., |matrixMatvec| or
       |applyPreconditioner|, or in functions called by these functions. In those cases use
-      :c:func:`primme_get_member_f77`.
+      :f:func:`primme_get_member_f77`.
 
    .. note::
 
@@ -666,7 +581,7 @@ primmetop_get_member_f77
 primmetop_get_prec_shift_f77
 """"""""""""""""""""""""""""
          
-.. c:function:: primmetop_get_prec_shift_f77(primme, index, value)
+.. f:subroutine:: primmetop_get_prec_shift_f77(primme, index, value)
 
    Get the value in some position of the array |ShiftsForPreconditioner|.
 
@@ -679,14 +594,14 @@ primmetop_get_prec_shift_f77
 primme_get_member_f77
 """""""""""""""""""""
 
-.. c:function:: primme_get_member_f77(primme, label, value)
+.. f:subroutine:: primme_get_member_f77(primme, label, value)
 
    Get the value in some field of the parameter structure.
 
    :param ptr primme: (input) parameters structure.
 
    :param integer label: (input) field where to get value. One of
-      the detailed in function :c:func:`primmetop_set_member_f77`.
+      the detailed in subroutine :f:func:`primmetop_set_member_f77`.
 
    :param value: (output) value of the field.
 
@@ -695,9 +610,9 @@ primme_get_member_f77
 
    .. note::
 
-      Use this function exclusively inside PRIMME's callback functions, e.g., |matrixMatvec|
+      Use this subroutine exclusively inside PRIMME's callback functions, e.g., |matrixMatvec|
       or |applyPreconditioner|, or in functions called by these functions. Otherwise, e.g.,
-      from the main program, use the function :c:func:`primmetop_get_member_f77`.
+      from the main program, use the subroutine :f:func:`primmetop_get_member_f77`.
 
    .. note::
 
@@ -728,7 +643,7 @@ primme_get_member_f77
 primme_get_prec_shift_f77
 """""""""""""""""""""""""
  
-.. c:function:: primme_get_prec_shift_f77(primme, index, value)
+.. f:subroutine:: primme_get_prec_shift_f77(primme, index, value)
 
    Get the value in some position of the array |ShiftsForPreconditioner|.
 
@@ -740,7 +655,7 @@ primme_get_prec_shift_f77
 
    .. note::
 
-      Use this function exclusively inside the function |matrixMatvec|, |massMatrixMatvec|, or |applyPreconditioner|.
-      Otherwise use the function :c:func:`primmetop_get_prec_shift_f77`.
+      Use this subroutine exclusively inside the subroutine |matrixMatvec|, |massMatrixMatvec|, or |applyPreconditioner|.
+      Otherwise use the subroutine :f:func:`primmetop_get_prec_shift_f77`.
 
 .. include:: epilog.inc

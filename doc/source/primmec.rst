@@ -378,8 +378,8 @@ The next enumerations and functions are declared in ``primme.h``.
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ].
-   The first vector has index i=0.
+   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ], with value `evals[i]` and associated residual 2-norm `resNorms[i]`.
+   The first vector has index i=0. The number of eigenpairs marked as converged (see |eps|) is returned on |initSize|. Since version 4.0, if the returned error code is `PRIMME_MAIN_ITER_FAILURE`, PRIMME may return also unconverged eigenpairs and its residual norms in `evecs`, `evals`, and `resNorms` starting at i=|initSize| and going up to either |numEvals|-1 or the last `resNorms[i]` with non-negative value.
  
    All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
    The functions :c:func:`hsprimme` and :c:func:`ksprimme` perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.
@@ -419,10 +419,13 @@ The next enumerations and functions are declared in ``primme.h``.
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ].
-   The first vector has index i=0.
+   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ], with value `evals[i]` and associated residual 2-norm `resNorms[i]`.
+   The first vector has index i=0. The number of eigenpairs marked as converged (see |eps|) is returned on |initSize|. Since version 4.0, if the returned error code is `PRIMME_MAIN_ITER_FAILURE`, PRIMME may return also unconverged eigenpairs and its residual norms in `evecs`, `evals`, and `resNorms` starting at i=|initSize| and going up to either |numEvals|-1 or the last `resNorms[i]` with non-negative value.
  
-   The type and precision of the callbacks depends on the type and precision of `evecs`. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
+   The functions :c:func:`hsprimme` and :c:func:`ksprimme` perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.
+
+   The type and precision of the callbacks is also the same as `evecs`. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
 
    .. versionadded:: 3.0
 
@@ -455,10 +458,13 @@ The next enumerations and functions are declared in ``primme.h``.
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ].
-   The first vector has index i=0.
+   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ], with value `evals[i]` and associated residual 2-norm `resNorms[i]`.
+   The first vector has index i=0. The number of eigenpairs marked as converged (see |eps|) is returned on |initSize|. Since version 4.0, if the returned error code is `PRIMME_MAIN_ITER_FAILURE`, PRIMME may return also unconverged eigenpairs and its residual norms in `evecs`, `evals`, and `resNorms` starting at i=|initSize| and going up to either |numEvals|-1 or the last `resNorms[i]` with non-negative value.
  
-   The type and precision of the callbacks depends on the type and precision of `evecs`. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
+   The functions :c:func:`hsprimme` and :c:func:`ksprimme` perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.
+
+   The type and precision of the callbacks is also the same as `evecs`. Although this can be changed. See details for |matrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
 
    .. versionadded:: 3.0
 
@@ -491,10 +497,13 @@ The next enumerations and functions are declared in ``primme.h``.
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ].
-   The first vector has index i=0.
+   On return, the i-th eigenvector starts at evecs[( |numOrthoConst| + i)\* |ldevecs| ], with value `evals[i]` and associated residual 2-norm `resNorms[i]`.
+   The first vector has index i=0. The number of eigenpairs marked as converged (see |eps|) is returned on |initSize|. Since version 4.0, if the returned error code is `PRIMME_MAIN_ITER_FAILURE`, PRIMME may return also unconverged eigenpairs and its residual norms in `evecs`, `evals`, and `resNorms` starting at i=|initSize| and going up to either |numEvals|-1 or the last `resNorms[i]` with non-negative value.
  
-   The type and precision of the callbacks depends on the type and precision of `evecs`. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
+   The functions :c:func:`hsprimme` and :c:func:`ksprimme` perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.
+
+   The type and precision of the callbacks is also the same as `evecs`. Although this can be changed. See details for |matrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
 
    .. versionadded:: 3.0
 

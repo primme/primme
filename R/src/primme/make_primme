@@ -1,36 +1,36 @@
 
 
 SOURCES := \
-   eigs/auxiliary_eigs.c \
-   eigs/auxiliary_eigs_normal.c \
-   eigs/convergence.c \
-   eigs/correction.c \
-   eigs/factorize.c \
-   eigs/init.c \
-   eigs/inner_solve.c \
-   eigs/main_iter.c \
-   eigs/ortho.c \
-   eigs/primme_c.c \
-   eigs/primme_f77.c \
-   eigs/primme_interface.c \
-   eigs/restart.c \
-   eigs/solve_projection.c \
-   eigs/update_projection.c \
-   eigs/update_W.c \
-   linalg/auxiliary.c \
-   linalg/blaslapack.c \
-   linalg/magma_wrapper.c \
-   linalg/memman.c \
-   linalg/wtime.c \
-   svds/primme_svds_c.c \
-   svds/primme_svds_f77.c \
-   svds/primme_svds_interface.c
+   eigs/auxiliary_eigs.cpp \
+   eigs/auxiliary_eigs_normal.cpp \
+   eigs/convergence.cpp \
+   eigs/correction.cpp \
+   eigs/factorize.cpp \
+   eigs/init.cpp \
+   eigs/inner_solve.cpp \
+   eigs/main_iter.cpp \
+   eigs/ortho.cpp \
+   eigs/primme_c.cpp \
+   eigs/primme_f77.cpp \
+   eigs/primme_interface.cpp \
+   eigs/restart.cpp \
+   eigs/solve_projection.cpp \
+   eigs/update_projection.cpp \
+   eigs/update_W.cpp \
+   linalg/auxiliary.cpp \
+   linalg/blaslapack.cpp \
+   linalg/magma_wrapper.cpp \
+   linalg/memman.cpp \
+   linalg/wtime.cpp \
+   svds/primme_svds_c.cpp \
+   svds/primme_svds_f77.cpp \
+   svds/primme_svds_interface.cpp
 
-OBJS := $(patsubst %.c,%.o,$(SOURCES))
+OBJS := $(patsubst %.cpp,%.o,$(SOURCES))
 
-LAPACK_SOURCES = zhegv.c
+LAPACK_SOURCES = zhegv.cpp
 
-LAPACK_OBJS = $(patsubst %.c,%.o,$(LAPACK_SOURCES))
+LAPACK_OBJS = $(patsubst %.cpp,%.o,$(LAPACK_SOURCES))
 
 INCLUDE_PRIMME = $(INCLUDE) -I../../inst/include -Iinclude
 
@@ -41,8 +41,8 @@ INCLUDE_PRIMME = $(INCLUDE) -I../../inst/include -Iinclude
 %.o: %.c
 	$(CC) $(CFLAGS) $(DEFINES) -c $< -o $@
 
-$(OBJS): %.o: %.c
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE_PRIMME) -c $< -o $@
+$(OBJS): %.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDE_PRIMME) -c $< -o $@
 
 #
 # Archive object files in the full library

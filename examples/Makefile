@@ -6,8 +6,8 @@ include ../Link_flags
 #------------------------------------------------
 
 
-override INCLUDE += -I../include
-override FINCLUDE += -I../include
+INCLUDE := -I../include
+FINCLUDE := -I../include
 LIBS := ../lib/libprimme.a $(LIBS)
 
 EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_eigs_zseq_normal ex_svds_dseq ex_svds_zseq
@@ -19,8 +19,8 @@ USE_MPI       ?= $(if $(findstring mpi,$(CC)),yes,$(USE_PETSC))
 
 ifeq ($(USE_PETSC), yes)
   include ${PETSC_DIR}/lib/petsc/conf/variables
-  override INCLUDE += $(PETSC_CCPPFLAGS)
-  override FINCLUDE += $(PETSC_FCPPFLAGS)
+  INCLUDE += $(PETSC_CCPPFLAGS)
+  FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
   LIBS += $(PETSC_LIB)
   EXAMPLES_C += ex_eigs_petsc ex_svds_petsc ex_eigs_mpi
@@ -35,7 +35,7 @@ endif
 
 ifeq ($(PRIMME_WITH_MAGMA),yes)
   EXAMPLES_C += ex_eigs_dmagma ex_svds_dmagma
-  override INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
+  INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
 endif
 
 $(EXAMPLES_C): %: %.o

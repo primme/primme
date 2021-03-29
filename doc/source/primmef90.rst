@@ -1,8 +1,6 @@
 
 .. highlight:: Fortran
 
-.. f:currentmodule::
-
 FORTRAN 90 Library Interface
 ----------------------------
 
@@ -10,9 +8,9 @@ FORTRAN 90 Library Interface
 
 The next enumerations and functions are declared in ``primme_f90.inc``.
 
-.. f:type:: iso_c_binding/c_ptr
+.. f:type:: c_ptr
 
-   Fortran datatype for C pointers.
+   Fortran datatype for C pointers in module `iso_c_binding`.
     
 .. f:subroutine:: primme_eigs_matvec(x, ldx, y, ldy, blockSize, primme, ierr)
 
@@ -31,18 +29,18 @@ The next enumerations and functions are declared in ``primme_f90.inc``.
 primme_params_create
 """"""""""""""""""""
 
-.. f:function:: c_ptr primme_params_create()
+.. f:function:: primme_params_create()
 
    Allocate and initialize a parameters structure to the default values.
 
-   After calling :f:func:`xprimme` (or a variant), call :f:func:`primme_params_destroy()` to release allocated resources by PRIMME.
+   After calling :f:func:`xprimme` (or a variant), call :f:func:`primme_params_destroy` to release allocated resources by PRIMME.
 
    :return c_ptr primme_params_create: pointer to a parameters structure.
     
 primme_set_method
 """""""""""""""""
 
-.. f:function:: c_int primme_set_method(method, primme)
+.. f:function:: primme_set_method(method, primme)
 
    Set PRIMME parameters to one of the preset configurations.
 
@@ -73,7 +71,7 @@ primme_set_method
 primme_params_destroy
 """""""""""""""""""""
 
-.. f:function:: c_int primme_params_destroy(primme)
+.. f:function:: primme_params_destroy(primme)
 
    Free memory allocated by PRIMME associated to a parameters structure created
    with :f:func:`primme_params_create`.
@@ -85,7 +83,7 @@ primme_params_destroy
 xprimme
 """""""
 
-.. f:function:: c_int xprimme(evals, evecs, resNorms, primme)
+.. f:function:: xprimme(evals, evecs, resNorms, primme)
 
    Solve a real symmetric/Hermitian standard or generalized eigenproblem.
 
@@ -94,9 +92,9 @@ xprimme
    :param real(kind) evals(*) [out]: array at least of size |numEvals| to store the
       computed eigenvalues; all processes in a parallel run return this local array with the same values.
 
-   :param evecs: array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
+   :param evecs(*): array at least of size |nLocal| times (|numOrthoConst| + |numEvals|) with leading dimension |ldevecs|
       to store column-wise the (local part for this process of the) computed eigenvectors.
-   :rtype: real(kind) or complex(kind)
+   :type evecs: real(kind) or complex(kind)
 
    :param real(kind) resNorms(*) [out]: array at least of size |numEvals| to store the
       residual norms of the computed eigenpairs; all processes in parallel run return this local array with
@@ -111,17 +109,18 @@ xprimme
    On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
    followed by the |initSize| vectors.
  
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
+   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1), with value `evals(i)` and associated residual 2-norm `resNorms(i)`.
+   The first vector has index i=1. The number of eigenpairs marked as converged (see |eps|) is returned on |initSize|. Since version 4.0, if the returned error code is `PRIMME_MAIN_ITER_FAILURE`, PRIMME may return also unconverged eigenpairs and its residual norms in `evecs`, `evals`, and `resNorms` starting at i = |initSize| + 1 and going up to either |numEvals| or the last `resNorms(i)` with non-negative value.
  
    All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
 
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   The type and precision of the callbacks is also the same as `evecs`. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+
 
 magma_xprimme
 """""""""""""
 
-.. f:function:: c_int magma_xprimme(evals, evecs, resNorms, primme)
+.. f:function:: magma_xprimme(evals, evecs, resNorms, primme)
 
    Solve a real symmetric/Hermitian standard or generalized eigenproblem.
 
@@ -142,22 +141,14 @@ magma_xprimme
 
    :return c_int magma_xprimme: error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
-
    The arrays ``evals``, ``evecs``, and ``resNorms`` should have the same kind.
 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in function :f:func:`xprimme`.
 
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
- 
 xprimme_normal
 """"""""""""""
 
-.. f:function:: c_int xprimme_normal(evals, evecs, resNorms, primme)
+.. f:function:: xprimme_normal(evals, evecs, resNorms, primme)
 
    Solve a normal standard eigenproblem, which may not be Hermitian.
 
@@ -180,20 +171,12 @@ xprimme_normal
 
    The arrays ``evals``, ``evecs``, and ``resNorms`` should have the same kind.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
- 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
-
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in function :f:func:`xprimme`.
 
 magma_xprimme_normal
 """"""""""""""""""""
 
-.. f:function:: c_int magma_xprimme_normal(evals, evecs, resNorms, primme)
+.. f:function:: magma_xprimme_normal(evals, evecs, resNorms, primme)
 
    Solve a normal standard eigenproblem, which may not be Hermitian.
 
@@ -214,22 +197,14 @@ magma_xprimme_normal
 
    :return c_int magma_xprimme_normal: error indicator; see :ref:`error-codes`.
 
-   On input, ``evecs`` should start with the content of the |numOrthoConst| vectors,
-   followed by the |initSize| vectors.
- 
-   On return, the i-th eigenvector starts at evecs(( |numOrthoConst| + i - 1)\* |ldevecs| + 1).
-   The first vector has index i=1.
-
    The arrays ``evals``, ``evecs``, and ``resNorms`` should have the same kind.
 
-   All internal operations are performed at the same precision than ``evecs`` unless the user sets |internalPrecision| otherwise.
+   Further descriptions of `evals`, `evecs`, and `resNorms` on notes in function :f:func:`xprimme`.
 
-   The type and precision of the callbacks is also the same as ``evecs``. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
- 
 primme_set_member
 """""""""""""""""
 
-.. f:function:: c_int primme_set_member(primme, label, value)
+.. f:function:: primme_set_member(primme, label, value)
 
    Set a value in some field of the parameter structure.
 
@@ -362,7 +337,7 @@ primme_set_member
 primme_get_member
 """""""""""""""""
 
-.. f:function:: c_int primme_get_member(primme, label, value)
+.. f:function:: primme_get_member(primme, label, value)
 
    Get the value in some field of the parameter structure.
 

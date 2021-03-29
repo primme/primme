@@ -1,5 +1,10 @@
+## Changes
+
+* Update PRIMME to version 3.2
+* Fix warnings with clang++
+
 ## Test environments
-* Ubuntu 18.04, R 4.0.0 and devel
+* Ubuntu 20.04, R 4.0.2 and devel
 * win-builder (devel and release)
 
 ## R CMD check results
@@ -8,4 +13,4 @@
 
 ## Reverse dependencies
 
-There are no reverse dependencies.
+* SpectralTAD

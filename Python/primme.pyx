@@ -58,7 +58,7 @@ cdef extern from "../include/primme.h":
     ctypedef int primme_preset_method
     ctypedef enum primme_type:
         primme_int, primme_double, primme_pointer
-    ctypedef int primme_params_label
+    ctypedef enum primme_params_label: PRIMME_invalid_label
     ctypedef int primme_event
     int sprimme(float *evals, void *evecs, float *resNorms, primme_params *primme)
     int cprimme(float *evals, void *evecs, float *resNorms, primme_params *primme)
@@ -94,11 +94,11 @@ def __primme_params_get(PrimmeParams pp_, field_):
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
-    cdef primme_params_label l = <primme_params_label>0
+    cdef primme_params_label l = PRIMME_invalid_label
     cdef primme_type t
-    cdef int arity
-    primme_member_info(&l, <const char **>&field, &t, &arity)
-    if l < 0 or l >= 1000 or arity != 1:
+    cdef int arity, r
+    r = primme_member_info(&l, <const char **>&field, &t, &arity)
+    if r != 0 or arity != 1:
         raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
@@ -116,13 +116,13 @@ def __primme_params_get(PrimmeParams pp_, field_):
         raise ValueError("Not supported type for member '%s'" % field)
 
 cdef object primme_params_get_object(primme_params *primme, cython.p_char field):
-    cdef primme_params_label l = <primme_params_label>0
+    cdef primme_params_label l = PRIMME_invalid_label
     cdef primme_type t
     cdef int arity, r
     cdef void *v_pvoid
     try:
         r = primme_member_info(&l, <const char **>&field, &t, &arity)
-        assert r == 0 and l >= 0 and l < 1000 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
+        assert r == 0 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
         r = primme_get_member(primme, l, &v_pvoid)
         assert r == 0, "Invalid field '%s'" % <bytes>field
         if v_pvoid is NULL: return None
@@ -131,13 +131,13 @@ cdef object primme_params_get_object(primme_params *primme, cython.p_char field)
         return None
 
 cdef np.int64_t primme_params_get_int(primme_params *primme, cython.p_char field):
-    cdef primme_params_label l = <primme_params_label>0
+    cdef primme_params_label l = PRIMME_invalid_label
     cdef primme_type t
     cdef int arity, r
     cdef np.int64_t v_int
     try:
         r = primme_member_info(&l, <const char **>&field, &t, &arity)
-        assert r == 0 and l >= 0 and l < 1000 and arity == 1 and t == primme_int, "Invalid field '%s'" % <bytes>field
+        assert r == 0 and arity == 1 and t == primme_int, "Invalid field '%s'" % <bytes>field
         r = primme_get_member(primme, l, &v_int)
         assert r == 0, "Invalid field '%s'" % <bytes>field
         return v_int
@@ -148,11 +148,11 @@ def __primme_params_set(PrimmeParams pp_, field_, value):
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
     cdef const char* field = <const char*>field_
-    cdef primme_params_label l = <primme_params_label>0
+    cdef primme_params_label l = PRIMME_invalid_label
     cdef primme_type t
     cdef int arity, r
     r = primme_member_info(&l, <const char **>&field, &t, &arity)
-    if r != 0 or l < 0 or l >= 1000 or arity != 1:
+    if r != 0  or arity != 1:
         raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
@@ -177,20 +177,20 @@ def __primme_params_set(PrimmeParams pp_, field_, value):
         raise ValueError("Not supported type for member '%s'" % field_)
    
 cdef void primme_params_set_pointer(primme_params *primme, cython.p_char field, void* value) except *:
-    cdef primme_params_label l = <primme_params_label>0
+    cdef primme_params_label l = PRIMME_invalid_label
     cdef primme_type t
     cdef int arity, r
     r = primme_member_info(&l, <const char **>&field, &t, &arity)
-    assert(r == 0 and l >= 0 and l < 1000 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field)
+    assert(r == 0 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field)
     r = primme_set_member(primme, l, value)
     assert(r == 0, "Invalid field '%s'" % <bytes>field)
 
 cdef void primme_params_set_doubles(primme_params *primme, cython.p_char field, double *value) except *:
-    cdef primme_params_label l = <primme_params_label>0
+    cdef primme_params_label l = PRIMME_invalid_label
     cdef primme_type t
     cdef int arity, r
     r = primme_member_info(&l, <const char **>&field, &t, &arity)
-    assert(r == 0 and l >= 0 and l < 1000 and arity == 0 and t == primme_double, "Invalid field '%s'" % <bytes>field)
+    assert(r == 0 and arity == 0 and t == primme_double, "Invalid field '%s'" % <bytes>field)
     r = primme_set_member(primme, l, value)
     assert(r == 0, "Invalid field '%s'" % <bytes>field)
 
@@ -265,8 +265,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
           Minv=None, OPinv=None, mode='normal', lock=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
-          maxPrevRetain=0, method=None, return_history=False, convtest=None,
-          **kargs):
+          maxPrevRetain=0, method=None, return_unconverged=False,
+          return_history=False, convtest=None, **kargs):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex Hermitian matrix A.
@@ -356,6 +356,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
         See a detailed description of the methods and other possible values
         in [2]_.
+
+    return_unconverged: bool, optional
+        If True, return all requested eigenvalues and vectors regardless of
+        being marked as converged. The default is False.
 
     convtest : callable
         User-defined function to mark an approximate eigenpair as converged.
@@ -675,10 +679,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if err != 0:
         if __user_function_exception is not None:
             raise PrimmeError(err) from __user_function_exception
-        else:
+        elif err == -3 and not return_unconverged:
             raise PrimmeError(err)
 
-    initSize = __primme_params_get(PP, "initSize")
+    initSize = k if return_unconverged else __primme_params_get(PP, "initSize")
     evals = evals[0:initSize]
     norms = norms[0:initSize]
     evecs = evecs[:, numOrthoConst:numOrthoConst+initSize]
@@ -701,7 +705,7 @@ cdef extern from "../include/primme.h":
     struct primme_svds_params:
         pass
     ctypedef int primme_svds_preset_method
-    ctypedef int primme_svds_params_label
+    ctypedef enum primme_svds_params_label: PRIMME_SVDS_invalid_label
     ctypedef enum primme_svds_operator:
         primme_svds_op_none,
         primme_svds_op_AtA,
@@ -741,11 +745,11 @@ def __primme_svds_params_get(PrimmeSvdsParams pp_, field_):
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
-    cdef primme_svds_params_label l = <primme_svds_params_label>0
+    cdef primme_svds_params_label l = PRIMME_SVDS_invalid_label
     cdef primme_type t
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
-    if r != 0 or l < 0 or l >= 1000 or arity != 1:
+    if r != 0 or arity != 1:
         raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
@@ -763,13 +767,13 @@ def __primme_svds_params_get(PrimmeSvdsParams pp_, field_):
         raise ValueError("Not supported type for member '%s'" % field)
 
 cdef object primme_svds_params_get_object(primme_svds_params *primme_svds, cython.p_char field):
-    cdef primme_svds_params_label l = <primme_svds_params_label>0
+    cdef primme_svds_params_label l = PRIMME_SVDS_invalid_label
     cdef primme_type t
     cdef int arity, r
     cdef void *v_pvoid
     try:
         r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
-        assert r == 0 and l >= 0 and l < 1000 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
+        assert r == 0 and arity == 1 and t == primme_pointer, "Invalid field '%s'" % <bytes>field
         r = primme_svds_get_member(primme_svds, l, &v_pvoid)
         assert r == 0, "Invalid field '%s'" % <bytes>field
         if v_pvoid is NULL: return None
@@ -778,13 +782,13 @@ cdef object primme_svds_params_get_object(primme_svds_params *primme_svds, cytho
         return None
 
 cdef np.int64_t primme_svds_params_get_int(primme_svds_params *primme_svds, cython.p_char field):
-    cdef primme_svds_params_label l = <primme_svds_params_label>0
+    cdef primme_svds_params_label l = PRIMME_SVDS_invalid_label
     cdef primme_type t
     cdef int arity, r
     cdef np.int64_t v_int
     try:
         r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
-        assert r == 0 and l >= 0 and l < 1000 and arity == 1 and t == primme_int, "Invalid field '%s'" % <bytes>field
+        assert r == 0 and arity == 1 and t == primme_int, "Invalid field '%s'" % <bytes>field
         r = primme_svds_get_member(primme_svds, l, &v_int)
         assert r == 0, "Invalid field '%s'" % <bytes>field
         return v_int
@@ -795,11 +799,11 @@ def __primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_svds_params *primme_svds = <primme_svds_params*>(pp_.pp)
     cdef const char* field = <const char *>field_
-    cdef primme_svds_params_label l = <primme_svds_params_label>0
+    cdef primme_svds_params_label l = PRIMME_SVDS_invalid_label
     cdef primme_type t
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
-    if r != 0 or l < 0 or l >= 1000 or arity != 1:
+    if r != 0 or arity != 1:
         raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
@@ -824,20 +828,20 @@ def __primme_svds_params_set(PrimmeSvdsParams pp_, field_, value):
         raise ValueError("Not supported type for member '%s'" % field_)
    
 cdef void primme_svds_params_set_pointer(primme_svds_params *primme_svds, cython.p_char field, void* value) except *:
-    cdef primme_svds_params_label l = <primme_svds_params_label>0
+    cdef primme_svds_params_label l = PRIMME_SVDS_invalid_label
     cdef primme_type t
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
-    assert(r == 0 and l >= 0 and l < 1000 and arity == 1 and t == primme_pointer)
+    assert(r == 0 and arity == 1 and t == primme_pointer)
     r = primme_svds_set_member(primme_svds, l, value)
     assert(r == 0, "Invalid field '%s'" % <bytes>field)
 
 cdef void primme_svds_params_set_doubles(primme_svds_params *primme_svds, cython.p_char field, double *value) except *:
-    cdef primme_svds_params_label l = <primme_svds_params_label>0
+    cdef primme_svds_params_label l = PRIMME_SVDS_invalid_label
     cdef primme_type t
     cdef int arity, r
     r = primme_svds_member_info(&l, <const char **>&field, &t, &arity)
-    assert(r == 0 and l >= 0 and l < 1000 and arity == 0 and t == primme_double)
+    assert(r == 0 and arity == 0 and t == primme_double)
     r = primme_svds_set_member(primme_svds, l, value)
     assert(r == 0, "Invalid field '%s'" % <bytes>field)
 

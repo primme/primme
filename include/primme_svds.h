@@ -164,6 +164,7 @@ typedef struct primme_svds_params {
 
 typedef enum {
    /* NOTE: you can maintain the column of numbers with g+Ctrl-A in vim */
+   PRIMME_SVDS_invalid_label                = 0,
    PRIMME_SVDS_primme                       = 1,
    PRIMME_SVDS_primmeStage2                 = 2,
    PRIMME_SVDS_m                            = 3,
@@ -278,6 +279,8 @@ int primme_svds_set_member(primme_svds_params *primme_svds,
 int primme_svds_member_info(primme_svds_params_label *label,
       const char** label_name, primme_type *type, int *arity);
 int primme_svds_constant_info(const char* label_name, int *value);
+int primme_svds_enum_member_info(
+      primme_svds_params_label label, int *value, const char **value_name);
 
 #ifdef __cplusplus
 }

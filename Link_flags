@@ -26,8 +26,12 @@ ifeq ($(origin LIBS), undefined)
     endif
     ifndef MKLROOT
         LIBS += -llapack -lblas -lm
-        ifneq ($(UNAME), Darwin)
-            LIBS += -lgfortran
+        ifneq (,$(findstring PGI,$(shell $(CC) --version)))
+            LIBS += -pgf90libs
+        else
+            ifneq ($(UNAME), Darwin)
+                LIBS += -lgfortran
+            endif
         endif
     else
         ifneq (,$(findstring icc,$(shell $(CC) --version)))

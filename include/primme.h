@@ -39,7 +39,7 @@
 /* Define version */
 
 #define PRIMME_VERSION_MAJOR      3
-#define PRIMME_VERSION_MINOR      1
+#define PRIMME_VERSION_MINOR      2
 
 #if defined(__clang__) && defined(__FLT16_EPSILON__)
 #  define PRIMME_HALF __fp16

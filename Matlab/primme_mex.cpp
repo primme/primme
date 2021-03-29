@@ -612,7 +612,7 @@ static void* mxArrayToPointer(const mxArray *a) {
 static primme_params_label mxArrayToLabel(const mxArray *a) {
    if (mxIsChar(a)) {
       const char *label_name = mxArrayToString(a);
-      primme_params_label label = (primme_params_label)-1;
+      primme_params_label label = PRIMME_invalid_label;
       CHKERR(primme_member_info(&label, &label_name, NULL, NULL));
       return label;
    }
@@ -628,7 +628,7 @@ static primme_params_label mxArrayToLabel(const mxArray *a) {
 static primme_svds_params_label mxArrayToLabelSvds(const mxArray *a) {
    if (mxIsChar(a)) {
       const char *label_name = mxArrayToString(a);
-      primme_svds_params_label label = (primme_svds_params_label)-1;
+      primme_svds_params_label label = PRIMME_SVDS_invalid_label;
       CHKERR(primme_svds_member_info(&label, &label_name, NULL, NULL));
       return label;
    }
@@ -998,7 +998,14 @@ static void mexFunction_primme_get_member(int nlhs, mxArray *plhs[], int nrhs,
          if (ptype == primme_int) {
             PRIMME_INT v;
             CHKERR(primme_get_member(primme, label, &v));
-            plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
+            // Return the constant name if it is an enum
+            int vi = (int)v;
+            const char *vs = NULL;
+            if (primme_enum_member_info(label, &vi, &vs) == 0) {
+               plhs[0] = mxCreateString(vs);
+            } else {
+               plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
+            }
          }
 
          // Get members with type double
@@ -1325,15 +1332,18 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
 
    plhs[0] = create_mxArray(&ret, 1, 1, 1, CPU());
 
+   // Returns all pairs with non-negative residual
+   int numRet = 0;
+   while (numRet < primme->numEvals && rnorms[numRet] >= 0.0) numRet++;
+
    // Return evals
 
    if (nlhs >= 2) {
       if (!mxEvals) {
-         mxEvals = create_mxArray(evals, (int)primme->initSize, 1,
-               (int)primme->initSize, CPUGPU());
+         mxEvals = create_mxArray(evals, numRet, 1, numRet, CPUGPU());
          delete [] evals;
       }
-      mxSetM(mxEvals, primme->initSize);
+      mxSetM(mxEvals, numRet);
       plhs[1] = mxEvals;
    }
    else {
@@ -1343,7 +1353,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    // Return rnorms
 
    if (nlhs >= 3) {
-      mxSetM(mxRnorms, primme->initSize);
+      mxSetM(mxRnorms, numRet);
       plhs[2] = mxRnorms;
    }
    else {
@@ -1355,7 +1365,7 @@ static void mexFunction_xprimme(int nlhs, mxArray *plhs[], int nrhs,
    if (nlhs >= 4) {
       if (primme->numOrthoConst > 0 || (isCPU(CPUGPU()) && !mxEvecs)) {
          mxEvecs = create_mxArray(&evecs[primme->n * primme->numOrthoConst],
-               primme->n, (PRIMME_INT)primme->initSize, primme->n, CPUGPU());
+               primme->n, (PRIMME_INT)numRet, primme->n, CPUGPU());
          if (isCPU(CPUGPU()) && evecs) {
             delete[] evecs;
          }
@@ -1693,7 +1703,13 @@ static void mexFunction_primme_svds_get_member(int nlhs, mxArray *plhs[],
          if (ptype == primme_int) {
             PRIMME_INT v;
             CHKERR(primme_svds_get_member(primme_svds, label, &v));
-            plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
+            int vi = (int)v;
+            const char *vs = NULL;
+            if (primme_svds_enum_member_info(label, &vi, &vs) == 0) {
+               plhs[0] = mxCreateString(vs);
+            } else {
+               plhs[0] = create_mxArray(&v, 1, 1, 1, CPU());
+            }
          }
 
          // Set members with type double

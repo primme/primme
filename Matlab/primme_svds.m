@@ -26,8 +26,8 @@ function [varargout] = primme_svds(varargin)
 %                    NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A).
 %   OPTIONS.maxit    maximum number of matvecs  (see maxMatvecs) inf
 %   OPTIONS.p        maximum basis size (see maxBasisSize)         -
-%   OPTIONS.disp     level of reporting 0-3 (see HIST)             0
-%   OPTIONS.display  toggle information display (see HIST)         0
+%   OPTIONS.reportLevel reporting level (0-3) (see HIST)           0
+%   OPTIONS.display  whether displaying report on screen(see HIST) false if HIST provided
 %   OPTIONS.isreal   if 0, the matrix is complex; else it's real   0
 %   OPTIONS.isdouble if 0, the matrix is single; else it's double  1
 %   OPTIONS.isgpu    if 0, the matrix is gpuArray; else it isn't   0
@@ -95,7 +95,10 @@ function [varargout] = primme_svds(varargin)
 %
 %   [U,S,V,R,STATS] = PRIMME_SVDS(...) returns how many times A and P were
 %   used and elapsed time. The application of A is counted independently from
-%   the application of A', and functions selected OPTIONS.profile.
+%   the application of A', and functions selected OPTIONS.profile. Also, the
+%   field 'primme_svds_params' returns the state of all parameters after
+%   calling the solver. For detailed descriptions of the options, visit:
+%   http://www.cs.wm.edu/~andreas/software/doc/svdsc.html#parameters-guide
 %
 %   [U,S,V,R,STATS,HIST] = PRIMME_SVDS(...) returns the convergence history,
 %   instead of printing it. Every row is a record, and the columns report:
@@ -109,15 +112,16 @@ function [varargout] = primme_svds(varargin)
 %   HIST(:,7): residual norm
 %   HIST(:,8): QMR residual norm
 %
-%   OPTIONS.disp controls the granularity of the record. If OPTIONS.disp == 1,
-%   HIST has one row per converged triplet and only the first four columns
-%   together with the sixth and the seventh are reported. If OPTIONS.disp == 2,
-%   HIST has one row per outer iteration and converged value and only the first
-%   seven columns are reported. Otherwise HIST has one row per QMR iteration,
-%   outer iteration and converged value, and all columns are reported.
+%   OPTIONS.reportLevel controls the granularity of the record. If
+%   OPTIONS.reportLevel == 1, HIST has one row per converged triplet and only
+%   the first four columns together with the sixth and the seventh are
+%   reported. If OPTIONS.reportLevel == 2, HIST has one row per outer iteration
+%   and converged value and only the first seven columns are reported.
+%   Otherwise HIST has one row per QMR iteration, outer iteration and converged
+%   value, and all columns are reported.
 %
-%   The convergence history is displayed if OPTIONS.disp > 0 and either HIST is
-%   not returned or OPTIONS.display == 1.
+%   The convergence history is displayed if OPTIONS.reportLevel > 0 and either
+%   HIST is not returned or OPTIONS.display == 1.
 %
 %   Examples:
 %      A = diag(1:50); A(200,1) = 0; % rectangular matrix of size 200x50
@@ -353,11 +357,20 @@ function [varargout] = primme_svds(varargin)
 
    % Process 'disp' in opts
    if isfield(opts, 'disp')
-      dispLevel = opts.disp;
-      if dispLevel > 3 || dispLevel < 0
-         error('Invalid value in opts.disp; it should be 0, 1, 2 or 3');
+      warning('`disp` has renamed as `reportLevel`');
+      if ~isfield(opts, 'reportLevel')
+         opts.reportLevel = opts.disp; 
       end
       opts = rmfield(opts, 'disp');
+   end
+ 
+   % Process 'reportLevel' in opts
+   if isfield(opts, 'reportLevel')
+      dispLevel = opts.reportLevel;
+      if dispLevel > 3 || dispLevel < 0
+         error('Invalid value in opts.reportLevel; it should be 0, 1, 2 or 3');
+      end
+      opts = rmfield(opts, 'reportLevel');
    elseif nargout >= 5 || (~isempty(showHist) && showHist)
       dispLevel = 1;
    end
@@ -583,6 +596,7 @@ function [varargout] = primme_svds(varargin)
          stats.numMatvecs = primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs');
          stats.elapsedTime = primme_mex('primme_svds_get_member', primme_svds, 'stats_elapsedTime');
          stats.aNorm = primme_mex('primme_svds_get_member', primme_svds, 'aNorm');
+         stats.primme_svds_params = primme_svds_get_all_members(primme_svds);
          varargout{5} = stats;
       end
       if (nargout >= 6)
@@ -799,6 +813,128 @@ function primme_svds_set_members(opts, primme_svds, f, prefix)
    end
 end
 
+function s = primme_svds_get_all_members(primme_svds)
+   members = {
+      'm',
+      'n',
+      'matrixMatvec_type',
+      'applyPreconditioner_type',
+      'globalSumReal_type',
+      'broadcastReal_type',
+      'numSvals',
+      'target',
+      'targetShifts',
+      'method',
+      'methodStage2',
+      'locking',
+      'numOrthoConst',
+      'aNorm',
+      'eps',
+      'precondition',
+      'initSize',
+      'maxBasisSize',
+      'maxBlockSize',
+      'maxMatvecs',
+      'iseed',
+      'printLevel',
+      'internalPrecision',
+      'stats_numOuterIterations',
+      'stats_numRestarts',
+      'stats_numMatvecs',
+      'stats_numPreconds',
+      'stats_numGlobalSum',
+      'stats_volumeGlobalSum',
+      'stats_numBroadcast',
+      'stats_volumeBroadcast',
+      'stats_numOrthoInnerProds',
+      'stats_elapsedTime',
+      'stats_timeMatvec',
+      'stats_timePrecond',
+      'stats_timeOrtho',
+      'stats_timeGlobalSum',
+      'stats_timeBroadcast',
+      'stats_lockingIssue',
+      'convTestFun_type'
+   };
+
+   s = struct();
+   s.primme = primme_get_all_members(primme_mex('primme_svds_get_member', primme_svds, 'primme'));
+   s.primmeStage2 = primme_get_all_members(primme_mex('primme_svds_get_member', primme_svds, 'primmeStage2'));
+   for i=1:length(members)
+     s.(members{i}) = primme_mex('primme_svds_get_member', primme_svds, members{i});
+   end
+end
+
+function s = primme_get_all_members(primme)
+   members = {
+      'n', 
+      'matrixMatvec_type', 
+      'massMatrixMatvec_type', 
+      'applyPreconditioner_type', 
+      'numEvals', 
+      'target', 
+      'targetShifts', 
+      'locking', 
+      'initSize', 
+      'numOrthoConst', 
+      'dynamicMethodSwitch', 
+      'maxBasisSize', 
+      'minRestartSize', 
+      'maxBlockSize', 
+      'maxMatvecs', 
+      'maxOuterIterations', 
+      'aNorm', 
+      'BNorm', 
+      'invBNorm', 
+      'eps', 
+      'orth', 
+      'internalPrecision', 
+      'printLevel', 
+      'initBasisMode', 
+      'projection_projection', 
+      'restarting_maxPrevRetain', 
+      'correction_precondition', 
+      'correction_robustShifts', 
+      'correction_maxInnerIterations', 
+      'correction_projectors_LeftQ', 
+      'correction_projectors_LeftX', 
+      'correction_projectors_RightQ', 
+      'correction_projectors_RightX', 
+      'correction_projectors_SkewQ', 
+      'correction_projectors_SkewX', 
+      'correction_convTest', 
+      'correction_relTolBase', 
+      'stats_numOuterIterations', 
+      'stats_numRestarts', 
+      'stats_numMatvecs', 
+      'stats_numPreconds', 
+      'stats_numGlobalSum', 
+      'stats_volumeGlobalSum', 
+      'stats_numBroadcast', 
+      'stats_volumeBroadcast', 
+      'stats_flopsDense', 
+      'stats_numOrthoInnerProds', 
+      'stats_elapsedTime', 
+      'stats_timeMatvec', 
+      'stats_timePrecond', 
+      'stats_timeOrtho', 
+      'stats_timeGlobalSum', 
+      'stats_timeBroadcast', 
+      'stats_timeDense', 
+      'stats_estimateMinEVal', 
+      'stats_estimateMaxEVal', 
+      'stats_estimateLargestSVal', 
+      'stats_estimateBNorm', 
+      'stats_estimateInvBNorm', 
+      'stats_maxConvTol', 
+      'stats_lockingIssue'
+   };
+
+   s = struct();
+   for i=1:length(members)
+     s.(members{i}) = primme_mex('primme_get_member', primme, members{i});
+   end
+end
 
 function s = primme_error_msg(errorCode)
 

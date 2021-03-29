@@ -40,8 +40,8 @@ function [varargout] = primme_eigs(varargin)
 %     OPTS.tol: convergence tolerance:                      {eps*1e4}
 %                NORM(A*X(:,i)-X(:,i)*D(i,i)) < tol*NORM(A)
 %     OPTS.maxBlockSize: maximum block size (useful for high multiplicities) {1}
-%     OPTS.disp: different level reporting (0-3) (see HIST) {no output 0}
-%     OPTS.display: toggle information display (see HIST)
+%     OPTS.reportLevel: reporting level (0-3) (see HIST) {no reporting 0}
+%     OPTS.display: whether displaying reporting on screen (see HIST) {0 if HIST provided}
 %     OPTS.isreal: whether A represented by AFUN is real or complex {false}
 %     OPTS.isdouble: whether the class of in/out vectors in AFUN are
 %          double or single {false}
@@ -71,6 +71,8 @@ function [varargout] = primme_eigs(varargin)
 %          If FUN(EVAL,EVEC,RNORM) returns a nonzero value, the pair (EVAL,EVEC)
 %          with residual norm RNORM is considered converged.
 %     OPTS.iseed: random seed
+%     OPTS.returnUnconverged: whether to return unconverged pairs if maximum
+%          iterations or matvecs is reached
 %     OPTS.profiler: return times from selected PRIMME's internal functions.
 %          If 1, STATS returns times for the main functions. If it is a cell,
 %          STATS returns times for those functions only. For instance,
@@ -120,7 +122,10 @@ function [varargout] = primme_eigs(varargin)
 %   [X,D,R,STATS] = PRIMME_EIGS(...) returns a struct to report statistical
 %   information about number of matvecs, elapsed time, and estimates for the
 %   largest and smallest algebraic eigenvalues of A, and functions selected
-%   OPTS.profile.
+%   OPTS.profile. Also, the field 'primme_params' returns the state of all
+%   parameters after calling the solver. For detailed descriptions of the
+%   options, visit:
+%   http://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide
 %
 %   [X,D,R,STATS,HIST] = PRIMME_EIGS(...) it returns the convergence history,
 %   instead of printing it. Every row is a record, and the columns report:
@@ -133,15 +138,16 @@ function [varargout] = primme_eigs(varargin)
 %   HIST(:,6): residual norm
 %   HIST(:,7): QMR residual norm
 %
-%   OPTS.disp controls the granularity of the record. If OPTS.disp == 1, HIST
-%   has one row per converged eigenpair and only the first three columns
-%   together with the fifth and the sixth are reported. If OPTS.disp == 2, HIST
-%   has one row per outer iteration and converged value, and only the first six
-%   columns are reported. Otherwise HIST has one row per QMR iteration, outer
-%   iteration and converged value, and all columns are reported.
+%   OPTS.reportLevel controls the granularity of the record. If
+%   OPTS.reportLevel == 1, HIST has one row per converged eigenpair and only
+%   the first three columns together with the fifth and the sixth are reported.
+%   If OPTS.reportLevel == 2, HIST has one row per outer iteration and
+%   converged value, and only the first six columns are reported. Otherwise
+%   HIST has one row per QMR iteration, outer iteration and converged value,
+%   and all columns are reported.
 %
-%   The convergence history is displayed if OPTS.disp > 0 and either HIST is
-%   not returned or OPTS.display == 1.
+%   The convergence history is displayed if OPTS.reportLevel > 0 and either
+%   HIST is not returned or OPTS.display == 1.
 %  
 %   Examples:
 %      A = diag(1:100);
@@ -431,16 +437,36 @@ function [varargout] = primme_eigs(varargin)
 
    % Process 'disp' in opts
    if isfield(opts, 'disp')
-      dispLevel = opts.disp;
-      if dispLevel > 3 || dispLevel < 0
-         error('Invalid value in opts.disp; it should be 0, 1, 2 or 3');
+      warning('`disp` has renamed as `reportLevel`');
+      if ~isfield(opts, 'reportLevel')
+         opts.reportLevel = opts.disp; 
       end
       opts = rmfield(opts, 'disp');
+   end
+ 
+   % Process 'reportLevel' in opts
+   if isfield(opts, 'reportLevel')
+      dispLevel = opts.reportLevel;
+      if dispLevel > 3 || dispLevel < 0
+         error('Invalid value in opts.reportLevel; it should be 0, 1, 2 or 3');
+      end
+      opts = rmfield(opts, 'reportLevel');
    elseif nargout >= 5 || (~isempty(showHist) && showHist)
       dispLevel = 1;
    end
    if isempty(showHist)
       showHist = dispLevel > 0;
+   end
+
+   % Process 'returnUnconverged' in opts
+   if isfield(opts, 'returnUnconverged')
+      returnUnconverged = opts.returnUnconverged;
+      if ~isbool(returnUnconverged)
+         error('opts.returnUnconverged should be true or false');
+      end
+      opts = rmfield(opts, 'returnUnconverged');
+   else
+      returnUnconverged = false;
    end
 
    % Process profile
@@ -514,7 +540,11 @@ function [varargout] = primme_eigs(varargin)
       primme_set_members(opts, primme);
 
       % Set method
-      primme_mex('primme_set_method', method, primme);
+      try
+         primme_mex('primme_set_method', method, primme);
+      catch ME
+         error(['Not valid method ' method]);
+      end
 
       % Set monitor and shared variables with the monitor
       hist = [];
@@ -565,6 +595,14 @@ function [varargout] = primme_eigs(varargin)
       % Call xprimme
       [ierr, evals, norms, evecs] = primme_mex(xprimme, init, primme); 
 
+      % Remove unconverged pairs unless the user asked for that
+      if ierr == -3 && ~returnUnconverged
+         initSize = primme_mex('primme_get_member', primme, 'initSize');
+         evals = evals(1:initSize);
+         norms = norms(1:initSize);
+         evecs = evecs(:,1:initSize);
+      end
+
       % Process error code and return the required arguments
       if ierr == -3
          warning([xprimme ' returned ' num2str(ierr) ': ' primme_error_msg(ierr)]);
@@ -605,6 +643,7 @@ function [varargout] = primme_eigs(varargin)
          stats.estimateMinEVal = primme_mex('primme_get_member', primme, 'stats_estimateMinEVal');
          stats.estimateMaxEVal = primme_mex('primme_get_member', primme, 'stats_estimateMaxEVal');
          stats.estimateLargestSVal = primme_mex('primme_get_member', primme, 'stats_estimateLargestSVal');
+         stats.primme_params = primme_get_all_members(primme);
          varargout{4} = stats;
       end
       if (nargout >= 5)
@@ -742,6 +781,77 @@ function primme_set_members(opts, primme, prefix)
           end
         end
       end
+   end
+end
+
+function s = primme_get_all_members(primme)
+   members = {
+      'n', 
+      'matrixMatvec_type', 
+      'massMatrixMatvec_type', 
+      'applyPreconditioner_type', 
+      'numEvals', 
+      'target', 
+      'targetShifts', 
+      'locking', 
+      'initSize', 
+      'numOrthoConst', 
+      'dynamicMethodSwitch', 
+      'maxBasisSize', 
+      'minRestartSize', 
+      'maxBlockSize', 
+      'maxMatvecs', 
+      'maxOuterIterations', 
+      'aNorm', 
+      'BNorm', 
+      'invBNorm', 
+      'eps', 
+      'orth', 
+      'internalPrecision', 
+      'printLevel', 
+      'initBasisMode', 
+      'projection_projection', 
+      'restarting_maxPrevRetain', 
+      'correction_precondition', 
+      'correction_robustShifts', 
+      'correction_maxInnerIterations', 
+      'correction_projectors_LeftQ', 
+      'correction_projectors_LeftX', 
+      'correction_projectors_RightQ', 
+      'correction_projectors_RightX', 
+      'correction_projectors_SkewQ', 
+      'correction_projectors_SkewX', 
+      'correction_convTest', 
+      'correction_relTolBase', 
+      'stats_numOuterIterations', 
+      'stats_numRestarts', 
+      'stats_numMatvecs', 
+      'stats_numPreconds', 
+      'stats_numGlobalSum', 
+      'stats_volumeGlobalSum', 
+      'stats_numBroadcast', 
+      'stats_volumeBroadcast', 
+      'stats_flopsDense', 
+      'stats_numOrthoInnerProds', 
+      'stats_elapsedTime', 
+      'stats_timeMatvec', 
+      'stats_timePrecond', 
+      'stats_timeOrtho', 
+      'stats_timeGlobalSum', 
+      'stats_timeBroadcast', 
+      'stats_timeDense', 
+      'stats_estimateMinEVal', 
+      'stats_estimateMaxEVal', 
+      'stats_estimateLargestSVal', 
+      'stats_estimateBNorm', 
+      'stats_estimateInvBNorm', 
+      'stats_maxConvTol', 
+      'stats_lockingIssue'
+   };
+
+   s = struct();
+   for i=1:length(members)
+     s.(members{i}) = primme_mex('primme_get_member', primme, members{i});
    end
 end
 
