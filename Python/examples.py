@@ -59,6 +59,12 @@ def convtest_lm(eval, evecl, rnorm):
 eval, evec = primme.eigsh(A, 1, which='LM', convtest=convtest_lm)
 assert_allclose(eval, [ 99.], atol=.1)
 
+# Return and show convergence history
+eval, evec, stats = primme.eigsh(A, 1, which='LM', return_stats=True, return_history=True)
+print("MV Time Eval Res") 
+import pprint
+pprint.pprint(list(zip(stats['hist']['numMatvecs'], stats['hist']['elapsedTime'], stats['hist']['eval'], stats['hist']['resNorm'])))
+
 # User-defined matvec: implicit diagonal matrix
 Adiag = np.arange(0, 100).reshape((100,1))
 def Amatmat(x):
