@@ -265,8 +265,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=0, return_eigenvectors=True,
           Minv=None, OPinv=None, mode='normal', lock=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
-          maxPrevRetain=0, method=None, return_history=False, convtest=None,
-          **kargs):
+          maxPrevRetain=0, method=None, return_unconverged=False,
+          return_history=False, convtest=None, **kargs):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex Hermitian matrix A.
@@ -356,6 +356,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
         See a detailed description of the methods and other possible values
         in [2]_.
+
+    return_unconverged: bool, optional
+        If True, return all requested eigenvalues and vectors regardless of
+        being marked as converged. The default is False.
 
     convtest : callable
         User-defined function to mark an approximate eigenpair as converged.
@@ -675,10 +679,10 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if err != 0:
         if __user_function_exception is not None:
             raise PrimmeError(err) from __user_function_exception
-        else:
+        elif err == -3 and not return_unconverged:
             raise PrimmeError(err)
 
-    initSize = __primme_params_get(PP, "initSize")
+    initSize = k if return_unconverged else __primme_params_get(PP, "initSize")
     evals = evals[0:initSize]
     norms = norms[0:initSize]
     evecs = evecs[:, numOrthoConst:numOrthoConst+initSize]
