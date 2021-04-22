@@ -42,6 +42,10 @@ evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
 assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
 print(evals) # [ 99.,  98.,  97.]
 
+# Return only the eigenvalues
+evals = primme.eigsh(A, 3, tol=1e-6, which='LA', return_eigenvectors=False)
+assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
+
 # Compute the three largest eigenvalues of A orthogonal to the previous computed
 # eigenvectors, i.e., the next three eigenvalues
 evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
