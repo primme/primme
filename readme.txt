@@ -4741,9 +4741,9 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **w** (*array*) – Array of k eigenvalues ordered to best
         satisfy “which”.
 
-      * **v** (*array*) – An array representing the *k* eigenvectors.
-        The column "v[:, i]" is the eigenvector corresponding to the
-        eigenvalue "w[i]".
+      * **v** (*array, optional (if return_eigenvectors)*) – An array
+        representing the *k* eigenvectors.  The column "v[:, i]" is
+        the eigenvector corresponding to the eigenvalue "w[i]".
 
       * **stats** (*dict, optional (if return_stats)*) – Extra
         information reported by PRIMME:
