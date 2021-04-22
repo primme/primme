@@ -378,7 +378,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     -------
     w : array
         Array of k eigenvalues ordered to best satisfy "which".
-    v : array
+    v : array, optional (if return_eigenvectors)
         An array representing the `k` eigenvectors.  The column ``v[:, i]`` is
         the eigenvector corresponding to the eigenvalue ``w[i]``.
     stats : dict, optional (if return_stats)
@@ -683,11 +683,17 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             raise PrimmeError(err)
 
     initSize = k if return_unconverged else __primme_params_get(PP, "initSize")
+
+    # Always return eigenvalues
     evals = evals[0:initSize]
-    norms = norms[0:initSize]
-    evecs = evecs[:, numOrthoConst:numOrthoConst+initSize]
+    result = [evals]
+
+    if return_eigenvectors:
+        evecs = evecs[:, numOrthoConst:numOrthoConst+initSize]
+        result.append(evecs)
 
     if return_stats:
+        norms = norms[0:initSize]
         stats = dict((f, __primme_params_get(PP, "stats_" + f)) for f in [
             "numOuterIterations", "numRestarts", "numMatvecs",
             "numPreconds", "elapsedTime", "estimateMinEVal",
@@ -695,10 +701,13 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         stats['rnorms'] = norms
         if return_history:
             stats["hist"] = hist
-        return evals, evecs, stats
-    else:
-        return evals, evecs
+        result.append(stats)
 
+    if len(result) == 1:
+        # Don't return tuple if just eigenvalues
+        return result[0]
+
+    return tuple(result)
 
 
 cdef extern from "../include/primme.h":
