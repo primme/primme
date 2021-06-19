@@ -432,32 +432,65 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     --------
     >>> import primme, scipy.sparse
     >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
-    >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
-    >>> evals # the three largest eigenvalues of A
+    >>> # Find the 3 largest algebraic eigenvalues and eigenvectors
+    >>> evals, evecs = primme.eigsh(A, k=3, tol=1e-6, which='LA')
+    >>> print(evals) # the three largest eigenvalues of A
     array([99., 98., 97.])
-    >>> new_evals, new_evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
-    >>> new_evals # the next three largest eigenvalues
+    
+    -------
+    >>> # Compute the three largest eigenvalues of A orthogonal to the previous computed eigenvectors, i.e., the next three eigenvalues
+    >>> new_evals, new_evecs = primme.eigsh(A, k=3, tol=1e-6, which='LA', lock=evecs)
+    >>> print(new_evals)
     array([96., 95., 94.])
-    >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which=50.1)
-    >>> evals # the three closest eigenvalues to 50.1
+
+    -------
+    >>> # Find the three closest eigenvalues to 50.1
+    >>> evals, evecs = primme.eigsh(A, k=3, tol=1e-6, which=50.1)
+    >>> print(evals)
     array([50.,  51.,  49.])
+
+    -------
+    >>> # Find the smallest three eigenvalues of the eigenproblem (A,M)
     >>> M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1)), [0], 100, 100)
-    >>> # the smallest eigenvalues of the eigenproblem (A,M)
-    >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
-    >>> evals # doctest: +SKIP
+    >>> evals, evecs = primme.eigsh(A, k=3, M=M, tol=1e-6, which='SA')
+    >>> print(evals) # doctest: +SKIP
     array([1.0035e-07, 1.0204e-02, 2.0618e-02])
 
+    -------
     >>> # Giving the matvec as a function
     >>> import primme, scipy.sparse, numpy as np
     >>> Adiag = np.arange(0, 100).reshape((100,1))
+    >>> 
+    >>> #Define Amatmat to perform Adiag * x
     >>> def Amatmat(x):
     ...    if len(x.shape) == 1: x = x.reshape((100,1))
     ...    return Adiag * x   # equivalent to diag(Adiag).dot(x)
     ...
     >>> A = scipy.sparse.linalg.LinearOperator((100,100), matvec=Amatmat, matmat=Amatmat)
+    >>> # This will find the 3 largest eigenvalues and eigenvectors using the given matvec function
     >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
-    >>> evals
+    >>> print(evals)
     array([99., 98., 97.])
+
+    ------
+    >>> # Estimation of the largest eigenvalue in magnitude, using user function to determine convergence
+    >>> def convtest_lm(eval, evecl, rnorm):
+    >>> return np.abs(eval) > 0.1 * rnorm
+    >>> eval, evec = primme.eigsh(A, k=1, which='LM', convtest=convtest_lm)
+    >>> assert_allclose(eval, [ 99.], atol=.1)
+
+    -------
+    >>> # Return and show convergence history
+    >>> eval, evec, stats = primme.eigsh(A, 1, which='LM', return_stats=True, return_history=True)
+    >>> print("MV Time Eval Res") 
+    >>> import pprint
+    >>> pprint.pprint(list(zip(stats['hist']['numMatvecs'], stats['hist']['elapsedTime'], stats['hist']['eval'], stats['hist']['resNorm'])))
+    MV Time Eval Res
+    [(21, 0.0012998580932617188, 98.9905014038086, 0.2848190367221832),
+    (22, 0.0014698505401611328, 98.99333190917969, 0.253761351108551),
+    (23, 0.0016298294067382812, 98.9958724975586, 0.2150377482175827),
+    (24, 0.0018029212951660156, 98.99748229980469, 0.1834801435470581),
+    (25, 0.0019969940185546875, 98.9985122680664, 0.13201949000358582)]
     """
 
     A = aslinearoperator(A)
