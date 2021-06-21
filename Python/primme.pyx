@@ -1132,7 +1132,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     >>> svecs_left, svals, svecs_right = primme.svds(A, k=3, tol=1e-6, which=4.1)
     >>> assert_allclose(sorted(svals), [ 3.,  4.,  5.], atol=1e-6*10)
     >>> print(svals)
-    [ 4.,  3.,  5.]
+    [ 4.,  5.,  3.]
 
     Estimation of the smallest singular value
     
