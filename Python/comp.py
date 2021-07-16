@@ -70,12 +70,15 @@ print(tabulate(table, headers=headers, tablefmt= "rst"), "\n")
 A = np.random.normal(size=(6000,6000))
 normA = 154.8
 lin = scipy.sparse.linalg.LinearOperator(shape = (6000, 6000), matvec=eigMatVec, matmat=eigMatVec)
-k = [2,100]
+k = [2, 100]
 for n in k:
   table = list()
+
   #PRIMME performance test
+  #Because A is a dense matrix we use a large maxBlockSize to take advantage of BLAS3.
+  #For sparse matirices much smaller maxBlockSize. Experiment based on you problem. 
   start = timeit.default_timer()
-  u, sdvals, vt, stats = primme.svds(A, n, tol=tolerance, return_stats=True)
+  u, sdvals, vt, stats = primme.svds(A, n, tol=tolerance, maxBlockSize = n, return_stats=True)
   end = timeit.default_timer()
   table.append(["Primme", end - start, stats["numMatvecs"], max(stats['rnorms'])])
   
