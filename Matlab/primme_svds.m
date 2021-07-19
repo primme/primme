@@ -626,13 +626,13 @@ function [varargout] = primme_svds(varargin)
       end
 
       numMatvecs = double(primme_mex('primme_svds_get_member', primme_svds, 'stats_numMatvecs'));
-      methodStage2 = double(primme_mex('primme_svds_get_member', primme_svds, 'methodStage2'));
+      methodStage2 = primme_mex('primme_svds_get_member', primme_svds, 'methodStage2');
       if stage == 0
          primme = primme_mex('primme_svds_get_member', primme_svds, 'primme');
       else
          primme = primme_mex('primme_svds_get_member', primme_svds, 'primmeStage2');
       end
-      if stage == 0 && methodStage2 ~= 0
+      if stage == 0 && ~strcmp(methodStage2,'primme_svds_op_none')
          locking = 1;
       else
          locking = primme_mex('primme_get_member', primme, 'locking');
