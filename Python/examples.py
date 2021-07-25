@@ -85,7 +85,26 @@ evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
 assert_allclose(evals, [ 0./99.,  1./98.,  2./97.], atol=1e-6*100)
 print(evals)
 
+# Get PRIMME properties within a callback
+def convtest_rel_Anorm(eval, evec, rnorm):
+   estimateAnorm = primme.get_eigsh_param('stats_estimateLargestSVal')
+   return rnorm <= estimateAnorm * 1e-3
+evals, evecs = primme.eigsh(A, 3, which='LA', convtest=convtest_rel_Anorm)
+assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-3*3)
 
+def P(x):
+   # The scipy.sparse.linalg.LinearOperator constructor may call this function giving a vector
+   # as input; detect that case and return whatever
+   if x.ndim == 1:
+      return x / A.diagonal()
+   shifts = primme.get_eigsh_param('ShiftsForPreconditioner')
+   y = np.copy(x)
+   for i in range(x.shape[1]): y[:,i] = x[:,i] / (A.diagonal() - shifts[i])
+   return y
+Pop = scipy.sparse.linalg.LinearOperator(A.shape, matvec=P, matmat=P)
+evals, evecs = primme.eigsh(A, 3, OPinv=Pop, tol=1e-3, which='LA')
+assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-3*3)
+ 
 # Sparse rectangular matrix 100x10 with non-zeros on the main diagonal
 A = scipy.sparse.spdiags(range(10), [0], 100, 10)
 
