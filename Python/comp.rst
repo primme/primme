@@ -1,5 +1,6 @@
 PRIMME Python comparison
 ========================
+All tests were run on a Ryzen 2700X with 32GB of RAM available
 
 Eigensolver Comparison
 ----------------------
@@ -44,7 +45,7 @@ For SVD problems, the package provides a similar interface::
 PRIMME svds may perform as good as similar methods in the packages scipy.linalg.sparse and irlb in solving few singular values. PRIMME can take advantage of a light matrix-vector product::
     
     A = np.random.normal(size=(6000,6000))    
-    u, sdvals, vt, stats = primme.svds(A, 2, tol=tolerance, return_stats=True)
+    u, sdvals, vt, stats = primme.svds(A, 2, tol=tolerance, maxBlockSize = 2, return_stats=True)
     u, sdvals, vt = scipy.sparse.linalg.svds(A, 2, tol=tolerance*normA, return_singular_vectors=True)
     u, sdvals, v, it, mprod  = irlb.irlb(A, 2, tol=tolerance, maxit = 1000)
     svdals = sklearn.decomposition.TruncatedSVD(n_components=2, tol=tolerance, n_iter = 1000)
@@ -65,14 +66,14 @@ Large Singular Value Comparison
 PRIMME performs similarly for larger problems::
     
     A = np.random.normal(size=(6000,6000))    
-    u, sdvals, vt, stats = primme.svds(A, 100, tol=tolerance, return_stats=True)
+    u, sdvals, vt, stats = primme.svds(A, 100, tol=tolerance, maxBloackSize = 100, return_stats=True)
     u, sdvals, vt = scipy.sparse.linalg.svds(A, 100, tol=tolerance*normA, return_singular_vectors=True)
     u, sdvals, v, it, mprod  = irlb.irlb(A, 100, tol=tolerance, maxit = 1000)
 
-=====================  ========  ========  ===========
-test                       time  matvec          rnorm
-=====================  ========  ========  ===========
-Primme                 233.415   7992      0.00217966
-sp.sparse.linalg.svds   31.1763  ---       6.59921e-14
-irlb                    38.0845  ---       0.00125854
-=====================  ========  ========  =========== 
+=====================  =======  ========  ==========
+test                      time  matvec         rnorm
+=====================  =======  ========  ==========
+Primme                 26.944   5672      0.00212836
+sp.sparse.linalg.svds  33.9405  ---       7.8088e-11
+irlb                   41.0081  ---       0.00132166
+=====================  =======  ========  ========== 
