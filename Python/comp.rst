@@ -62,7 +62,7 @@ sklearn                141.192    ---       ---
 Large Singular Value Comparison
 -------------------------------
 
-PRIMME however performs singifigantly worse on large problems::
+PRIMME performs similarly for larger problems::
     
     A = np.random.normal(size=(6000,6000))    
     u, sdvals, vt, stats = primme.svds(A, 100, tol=tolerance, return_stats=True)

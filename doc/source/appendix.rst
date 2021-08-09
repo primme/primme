@@ -92,6 +92,8 @@ primme_params
       calling  :c:func:`dprimme` (or a variant), unless the user sets |matrixMatvec_type| to
       another precision.
 
+      See more :ref:`exampleCode`.
+
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
@@ -140,6 +142,8 @@ primme_params
       The actual type of ``x`` and ``y`` matches the type of ``evecs`` of the
       calling  :c:func:`dprimme` (or a variant), unless the user sets |applyPreconditioner_type| to
       another precision.
+
+      See more :ref:`exampleCode`.
 
       Input/output:
 
@@ -215,6 +219,8 @@ primme_params
 
       Number of processes calling :c:func:`dprimme` or :c:func:`zprimme` in parallel.
 
+      See an svds example :ref:`svdsParallel` or an eigs example :ref:`parallel`.
+
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to 1;
@@ -226,6 +232,8 @@ primme_params
       :c:func:`zprimme`.
       Only the process with id 0 prints information.
 
+      See an svds example :ref:`svdsParallel` or an eigs example :ref:`parallel`.
+
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to 0;
@@ -235,6 +243,8 @@ primme_params
    .. c:member:: int nLocal
 
       Number of local rows on this process.
+
+      See an svds example :ref:`svdsParallel` or an eigs example :ref:`parallel`.
 
       Input/output:
 
@@ -429,6 +439,8 @@ primme_params
       ``primme_largest_abs``
          Furthest in absolute value to the shifts in |targetShifts|.
 
+      See an svds example :ref:`svdsSimple` or an eigs example :ref:`simple`.
+
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to |primme_smallest|;
@@ -442,6 +454,8 @@ primme_params
       Used only when |target| is |primme_closest_geq|,
       |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs|.
       The default values is 0.
+
+      See an svds example :ref:`svdsSimple` or an eigs example :ref:`simple`.
 
       Input/output:
 
@@ -460,6 +474,8 @@ primme_params
       i-th eigenvalue is the closest (or closest but left or closest but right, see |target|)
       to the i-th shift. If |numTargetShifts| < |numEvals|, the last shift given
       is used for all the remaining i's.
+      
+      See an svds example :ref:`svdsSimple` or an eigs example :ref:`simple`.
 
       Input/output:
 
@@ -1453,6 +1469,8 @@ primme_params
       calling  :c:func:`dprimme` (or a variant), unless the user sets |convTestFun_type| to
       another precision.
 
+      See more examples here :ref:`simple`.
+
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to NULL;
@@ -1496,7 +1514,7 @@ primme_params
       If the main call is :c:func:`dprimme_magma` or a variant, this field
       should have the pointer to an initialized ``magma_queue_t``.
 
-      See example :file:`examples/ex_eigs_dmagma.c`.
+      See more examples here :ref:`dmagaEigs`.
 
       Input/output:
 
