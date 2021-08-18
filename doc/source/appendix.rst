@@ -219,7 +219,7 @@ primme_params
 
       Number of processes calling :c:func:`dprimme` or :c:func:`zprimme` in parallel.
 
-      See an svds example :ref:`svdsParallel` or an eigs example :ref:`parallel`.
+      See an example :ref:`parallel`.
 
       Input/output:
 
@@ -232,7 +232,7 @@ primme_params
       :c:func:`zprimme`.
       Only the process with id 0 prints information.
 
-      See an svds example :ref:`svdsParallel` or an eigs example :ref:`parallel`.
+      See an example :ref:`parallel`.
 
       Input/output:
 
@@ -244,7 +244,7 @@ primme_params
 
       Number of local rows on this process.
 
-      See an svds example :ref:`svdsParallel` or an eigs example :ref:`parallel`.
+      See an example :ref:`parallel`.
 
       Input/output:
 
@@ -439,7 +439,7 @@ primme_params
       ``primme_largest_abs``
          Furthest in absolute value to the shifts in |targetShifts|.
 
-      See an svds example :ref:`svdsSimple` or an eigs example :ref:`simple`.
+      See a C example :ref:`simple` or a Fortran 90 example :ref:`f90Simple`.
 
       Input/output:
 
@@ -455,7 +455,7 @@ primme_params
       |primme_closest_leq|, |primme_closest_abs| or |primme_largest_abs|.
       The default values is 0.
 
-      See an svds example :ref:`svdsSimple` or an eigs example :ref:`simple`.
+      See a C example :ref:`simple` or a Fortran 90 example :ref:`f90Simple`.
 
       Input/output:
 
@@ -475,7 +475,7 @@ primme_params
       to the i-th shift. If |numTargetShifts| < |numEvals|, the last shift given
       is used for all the remaining i's.
       
-      See an svds example :ref:`svdsSimple` or an eigs example :ref:`simple`.
+      See a C example :ref:`simple` or a Fortran 90 example :ref:`f90Simple`.
 
       Input/output:
 

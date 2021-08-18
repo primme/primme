@@ -35,10 +35,10 @@ int main (int argc, char *argv[]) {
   
    /* Set problem parameters */
    primme.n = 100; /* set problem dimension */
+   primme.printLevel = 3; /*  report every iteration  */
    primme.numEvals = 10;   /* Number of wanted eigenpairs */
-   primme.eps = 1e-9;      /* ||r|| <= eps * ||matrix|| */
    primme.convTestFun = convtest_sm;
-   primme.target = primme_smallest;
+   primme.target = primme_largest;
                            /* Wanted the smallest eigenvalues */
 
    /* Set preconditioner (optional) */
@@ -70,6 +70,47 @@ int main (int argc, char *argv[]) {
    /* Call primme  */
    ret = dprimme(evals, evecs, rnorms, &primme);
 
+   if (ret != 0) {
+      fprintf(primme.outputFile, 
+         "Error: primme returned with nonzero exit status: %d \n",ret);
+      return -1;
+   }
+
+   /* Reporting (optional) */
+   for (i=0; i < primme.initSize; i++) {
+      fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
+         evals[i], rnorms[i]); 
+   }
+   fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
+   fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
+                                                 primme.stats.numOuterIterations); 
+   fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+   fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+   fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
+   if (primme.stats.lockingIssue) {
+      fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+      fprintf(primme.outputFile,
+         "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+      fprintf(primme.outputFile,
+         "However, the subspace of evecs is accurate to the required tolerance.\n");
+   }
+
+   switch (primme.dynamicMethodSwitch) {
+      case -1: fprintf(primme.outputFile,
+            "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
+      case -2: fprintf(primme.outputFile,
+            "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
+      case -3: fprintf(primme.outputFile,
+            "Recommended method for next run: DYNAMIC (close call)\n"); break;
+   }
+
+   primme_free(&primme);
+   free(evals);
+   free(evecs);
+   free(rnorms);
+
+  return(0);
+
 }
 
 void LaplacianMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
@@ -100,7 +141,7 @@ void LaplacianMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, i
 */
 
 void convtest_sm(double *eval, void *evec, double *resNorm, int *isconv, primme_params *primme, int *ierr){
-	*isconv = abs(*eval) > 0.1 * (*resNorm);
+	*isconv = (resNorm && eval && (abs(*eval) > 0.1 * (*resNorm)));
 	*ierr = 0;
 }
 

@@ -47,8 +47,8 @@ Simple C Eigs Example
      
       /* Set problem parameters */
       primme.n = 100; /* set problem dimension */
+      primme.printLevel = 3; /*  report every iteration  */
       primme.numEvals = 10;   /* Number of wanted eigenpairs */
-      primme.eps = 1e-9;      /* ||r|| <= eps * ||matrix|| */
       primme.convTestFun = convtest_sm;
       primme.target = primme_smallest;
                               /* Wanted the smallest eigenvalues */
@@ -112,8 +112,8 @@ Simple C Eigs Example
    */
    
    void convtest_sm(double *eval, void *evec, double *resNorm, int *isconv, primme_params *primme, int *ierr){
-      *isconv = abs(*eval) > 0.1 * (*resNorm);
-      *ierr = 0;
+	   *isconv = (resNorm && eval && (abs(*eval) > 0.1 * (*resNorm)));
+	   *ierr = 0;
    }
    
    void LaplacianApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
