@@ -1,0 +1,52 @@
+name: Unit Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        host-os: ["ubuntu-latest", "macos-latest"]
+        python-version: ["3.7", "3.8", "3.9"]
+      fail-fast: false
+
+    runs-on: ${{ matrix.host-os }}
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: testenv
+          allow-softlinks: true
+          auto-activate-base: false
+          auto-update-conda: true
+          channel-priority: flexible
+          channels: conda-forge
+          miniconda-version: "latest"
+          python-version: ${{ matrix.python-version }}
+          show-channel-urls: true
+          use-only-tar-bz2: false
+
+      - name: Install build requirements
+        run: |
+          set -vxeuo pipefail
+          pip install cython numpy scipy
+
+      - name: Build sdist and wheel and install *.whl
+        if: runner.os != 'Windows'
+        run: |
+          set -vxeuo pipefail
+          make lib
+          cd Python
+          python -VV
+          python setup.py sdist bdist_wheel
+          ls -la dist/*
+          pip install -v dist/*.whl
+          python -m pip list

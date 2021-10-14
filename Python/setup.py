@@ -59,8 +59,7 @@ def get_numpy_options():
 
 def setup_package():
    import sys
-   from distutils.core import setup
-   from distutils.extension import Extension
+   from setuptools import setup, Extension
    from Cython.Build import cythonize
    
    try:
