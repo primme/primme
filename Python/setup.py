@@ -85,8 +85,7 @@ def get_basic_options():
 
 def setup_package():
    import sys
-   from distutils.core import setup
-   from distutils.extension import Extension
+   from setuptools import setup, Extension
    
    try:
       import numpy
@@ -113,7 +112,7 @@ def setup_package():
    
    # NumyTypemapTests setup
    setup(name        = "primme",
-         version     = "3.2.0",
+         version     = "3.2.1",
          description = "PRIMME wrapper for Python",
          long_description = long_description,
          long_description_content_type = "text/x-rst",

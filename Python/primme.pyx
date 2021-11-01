@@ -79,6 +79,11 @@ cdef extern from "../include/primme.h":
     int primme_member_info(primme_params_label *label, const char** label_name, primme_type *t, int *arity)
     int primme_constant_info(const char* label_name, int *value)
 
+# Block size passed in a callback such as matrixMatvec, massMatrixMatvec, applyPreconditioner
+cpdef int __current_block_size  = -1
+# Current primme_params running
+__current_primme_params = None
+
 cdef class PrimmeParams:
     cpdef primme_params *pp
     def __cinit__(self):
@@ -89,7 +94,7 @@ cdef class PrimmeParams:
     def __dealloc__(self):
         if self.pp is not NULL:
             primme_params_destroy(self.pp)
-    
+
 def __primme_params_get(PrimmeParams pp_, field_):
     field_ = bytesp23(field_, 'ASCII')
     cdef primme_params *primme = <primme_params*>(pp_.pp)
@@ -97,12 +102,22 @@ def __primme_params_get(PrimmeParams pp_, field_):
     cdef primme_params_label l = PRIMME_invalid_label
     cdef primme_type t
     cdef int arity, r
+    cdef void *v_pvoid
+
     r = primme_member_info(&l, <const char **>&field, &t, &arity)
+    if field_ == bytesp23(b'ShiftsForPreconditioner'):
+        if r != 0:
+            raise ValueError("Invalid field '%s'" % field_)
+        global __current_block_size
+        if __current_block_size < 0: raise ValueError('Getting ShiftsForPreconditioner from an invalid callback')
+        if __current_block_size == 0: return []
+        primme_get_member(primme, l, &v_pvoid)
+        return <double[:__current_block_size]> <double *>v_pvoid
+
     if r != 0 or arity != 1:
         raise ValueError("Invalid field '%s'" % field_)
     cdef np.int64_t v_int
     cdef double v_double
-    cdef void *v_pvoid
     if t == primme_int:
         primme_get_member(primme, l, &v_int)
         return v_int
@@ -196,22 +211,27 @@ cdef void primme_params_set_doubles(primme_params *primme, cython.p_char field, 
 
 
 cdef void c_matvec_gen_numpy(cython.p_char operator, numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+    global __current_block_size
     if blockSize[0] <= 0:
         ierr[0] = 0
+        __current_block_size = -1
         return
     ierr[0] = 1
     cdef object matvec 
     cdef numerics[::1, :] x_view
     global __user_function_exception
     try:
+        __current_block_size = blockSize[0]
         matvec = primme_params_get_object(primme, operator)
         if matvec is None: raise RuntimeError("Not defined function for %s" % <bytes>operator)
         n = primme_params_get_int(primme, "nLocal")
         x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
         (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(x_view[0:n,:]).astype(get_np_type(x), order='F', copy=False)
         ierr[0] = 0
+        __current_block_size = -1
     except Exception as e:
         __user_function_exception = e
+        __current_block_size = -1
 
 cdef void c_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
     c_matvec_gen_numpy("matrix", x, ldx, y, ldy, blockSize, primme, ierr)
@@ -266,7 +286,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           Minv=None, OPinv=None, mode='normal', lock=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
           maxPrevRetain=0, method=None, return_unconverged=False,
-          return_history=False, convtest=None, **kargs):
+          return_history=False, convtest=None, raise_for_unconverged=True, **kargs):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex Hermitian matrix A.
@@ -356,17 +376,18 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
         See a detailed description of the methods and other possible values
         in [2]_.
-
     return_unconverged: bool, optional
         If True, return all requested eigenvalues and vectors regardless of
         being marked as converged. The default is False.
-
     convtest : callable
         User-defined function to mark an approximate eigenpair as converged.
 
         The function is called as convtest(eval, evec, resNorm) and returns
         True if the eigenpair with value `eval`, vector `evec` and residual
         norm `resNorm` is considered converged.
+    raise_for_unconverged: bool, optional
+        If True and return_unconverged is False, raise an exception when not
+        all requested eigenvalues and vectors converged. The default is True.
 
     return_stats : bool, optional
         If True, the function returns extra information (see stats in Returns).
@@ -378,7 +399,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     -------
     w : array
         Array of k eigenvalues ordered to best satisfy "which".
-    v : array
+    v : array, optional (if return_eigenvectors)
         An array representing the `k` eigenvectors.  The column ``v[:, i]`` is
         the eigenvector corresponding to the eigenvalue ``w[i]``.
     stats : dict, optional (if return_stats)
@@ -667,6 +688,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
  
     global __user_function_exception
     __user_function_exception = None
+    global __current_primme_params
+    __current_primme_params = PP
     if dtype.type is np.complex64:
         err = cprimme(&evals_s[0], &evecs_c[0,0], &norms_s[0], pp)
     elif dtype.type is np.float32:
@@ -675,19 +698,26 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         err = dprimme(&evals_d[0], &evecs_d[0,0], &norms_d[0], pp)
     else:
         err = zprimme(&evals_d[0], &evecs_z[0,0], &norms_d[0], pp)
+    __current_primme_params = None
 
     if err != 0:
         if __user_function_exception is not None:
             raise PrimmeError(err) from __user_function_exception
-        elif err == -3 and not return_unconverged:
+        elif err == -3 and not return_unconverged and raise_for_unconverged:
             raise PrimmeError(err)
 
     initSize = k if return_unconverged else __primme_params_get(PP, "initSize")
+
+    # Always return eigenvalues
     evals = evals[0:initSize]
-    norms = norms[0:initSize]
-    evecs = evecs[:, numOrthoConst:numOrthoConst+initSize]
+    result = [evals]
+
+    if return_eigenvectors:
+        evecs = evecs[:, numOrthoConst:numOrthoConst+initSize]
+        result.append(evecs)
 
     if return_stats:
+        norms = norms[0:initSize]
         stats = dict((f, __primme_params_get(PP, "stats_" + f)) for f in [
             "numOuterIterations", "numRestarts", "numMatvecs",
             "numPreconds", "elapsedTime", "estimateMinEVal",
@@ -695,12 +725,119 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         stats['rnorms'] = norms
         if return_history:
             stats["hist"] = hist
-        return evals, evecs, stats
-    else:
-        return evals, evecs
+        result.append(stats)
 
+    if len(result) == 1:
+        # Don't return tuple if just eigenvalues
+        return result[0]
 
+    return tuple(result)
 
+def get_eigsh_param(field):
+    """
+    Get the value of a PRIMME parameter within a callback function.
+
+    Parameters
+    ----------
+    field : parameter name
+      'n'
+      'numEvals'
+      'target'
+      'locking'
+      'initSize'
+      'numOrthoConst'
+      'maxBasisSize'
+      'minRestartSize'
+      'maxBlockSize'
+      'maxMatvecs'
+      'maxOuterIterations'
+      'aNorm'
+      'BNorm'
+      'invBNorm'
+      'eps'
+      'orth'
+      'internalPrecision'
+      'printLevel'
+      'matrix'
+      'massMatrix'
+      'preconditioner'
+      'initBasisMode'
+      'projectionParams_projection'
+      'restartingParams_maxPrevRetain'
+      'correctionParams_precondition'
+      'correctionParams_robustShifts'
+      'correctionParams_maxInnerIterations'
+      'correctionParams_projectors_LeftQ'
+      'correctionParams_projectors_LeftX'
+      'correctionParams_projectors_RightQ'
+      'correctionParams_projectors_RightX'
+      'correctionParams_projectors_SkewQ'
+      'correctionParams_projectors_SkewX'
+      'correctionParams_convTest'
+      'correctionParams_relTolBase'
+      'stats_numOuterIterations'
+      'stats_numRestarts'
+      'stats_numMatvecs'
+      'stats_numPreconds'
+      'stats_numGlobalSum'
+      'stats_volumeGlobalSum'
+      'stats_numBroadcast'
+      'stats_volumeBroadcast'
+      'stats_flopsDense'
+      'stats_numOrthoInnerProds'
+      'stats_elapsedTime'
+      'stats_timeMatvec'
+      'stats_timePrecond'
+      'stats_timeOrtho'
+      'stats_timeGlobalSum'
+      'stats_timeBroadcast'
+      'stats_timeDense'
+      'stats_estimateMinEVal'
+      'stats_estimateMaxEVal'
+      'stats_estimateLargestSVal'
+      'stats_estimateBNorm'
+      'stats_estimateInvBNorm'
+      'stats_maxConvTol'
+      'stats_lockingIssue'
+      'dynamicMethodSwitch'
+      'convtest'
+      'ldevecs'
+      'ldOPs'
+      'monitor'
+
+    See http://www.cs.wm.edu/~andreas/software/doc/appendix.html#primme-params for a
+    description of each parameter.
+ 
+    Examples
+    --------
+    >>> import primme, scipy.sparse
+    >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
+    >>> def convtest(eval, evec, rnorm):
+    ...   estimateAnorm = primme.get_eigsh_param('stats_estimateLargestSVal')
+    ...   return rnorm <= estimateAnorm * 1e-3
+    ...
+    >>> evals, evecs = primme.eigsh(A, 3, which='LA', convtest=convtest)
+ 
+    >>> import primme, scipy.sparse
+    >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
+    >>> def P(x):
+    ...    # The scipy.sparse.linalg.LinearOperator constructor may call this function giving a vector
+    ...    # as input; detect that case and return whatever
+    ...    if x.ndim == 1:
+    ...       return x / A.diagonal()
+    ...    shifts = primme.get_eigsh_param('ShiftsForPreconditioner')
+    ...    y = np.copy(x)
+    ...    for i in range(x.shape[1]): y[:,i] = x[:,i] / (A.diagonal() - shifts[i])
+    ...    return y
+    ...
+    >>> Pop = scipy.sparse.linalg.LinearOperator(A.shape, matvec=P, matmat=P)
+    >>> evals, evecs = primme.eigsh(A, 3, OPinv=Pop, tol=1e-3, which='LA')
+    """ 
+    if __current_primme_params is None:
+        raise RuntimeError("no eigsh running; call this function within a callback function while `eigsh` is running")
+
+    return __primme_params_get(__current_primme_params, field)
+ 
 cdef extern from "../include/primme.h":
     struct primme_svds_params:
         pass
@@ -940,7 +1077,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          u0=None, orthou0=None, orthov0=None,
          return_stats=False, maxBlockSize=0,
          method=None, methodStage1=None, methodStage2=None,
-         return_history=False, convtest=None, **kargs):
+         return_history=False, convtest=None, raise_for_unconverged=True, **kargs):
     """
     Compute k singular values and vectors of the matrix A.
 
@@ -1003,6 +1140,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         The function is called as convtest(sval, svecleft, svecright, resNorm)
         and returns True if the triplet with value `sval`, left vector `svecleft`,
         right vector `svecright`, and residual norm `resNorm` is considered converged.
+    raise_for_unconverged: bool, optional
+        If True, raise an exception when not all requested singular values
+        converged. The default is True.
 
     return_stats : bool, optional
         If True, the function returns extra information (see stats in Returns).
@@ -1321,7 +1461,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if err != 0:
         if __user_function_exception is not None:
             raise PrimmeSvdsError(err) from __user_function_exception
-        else:
+        elif err == -3 and raise_for_unconverged:
             raise PrimmeSvdsError(err)
 
     if return_stats:
