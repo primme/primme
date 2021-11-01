@@ -4599,7 +4599,7 @@ indicated in brackets.
 Python Interface
 ****************
 
-primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, return_unconverged=False, return_history=False, convtest=None, **kargs)
+primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, return_unconverged=False, return_history=False, convtest=None, raise_for_unconverged=True, **kargs)
 
    Find k eigenvalues and eigenvectors of the real symmetric square
    matrix or complex Hermitian matrix A.
@@ -4729,6 +4729,11 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
         The function is called as convtest(eval, evec, resNorm) and
         returns True if the eigenpair with value *eval*, vector *evec*
         and residual norm *resNorm* is considered converged.
+
+      * **raise_for_unconverged** (*bool**, **optional*) – If True and
+        return_unconverged is False, raise an exception when not all
+        requested eigenvalues and vectors converged. The default is
+        True.
 
       * **return_stats** (*bool**, **optional*) – If True, the
         function returns extra information (see stats in Returns).
@@ -7979,7 +7984,7 @@ which is indicated in brackets.
 Python Interface
 ****************
 
-primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, orthou0=None, orthov0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, convtest=None, **kargs)
+primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, orthou0=None, orthov0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, convtest=None, raise_for_unconverged=True, **kargs)
 
    Compute k singular values and vectors of the matrix A.
 
@@ -8069,6 +8074,10 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
         resNorm) and returns True if the triplet with value *sval*,
         left vector *svecleft*, right vector *svecright*, and residual
         norm *resNorm* is considered converged.
+
+      * **raise_for_unconverged** (*bool**, **optional*) – If True,
+        raise an exception when not all requested singular values
+        converged. The default is True.
 
       * **return_stats** (*bool**, **optional*) – If True, the
         function returns extra information (see stats in Returns).

@@ -78,6 +78,11 @@ A = scipy.sparse.linalg.LinearOperator((100,100), matvec=Amatmat, matmat=Amatmat
 evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
 assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
 
+# Don't raise exception if some values were not found
+evals, evecs = primme.eigsh(A, 10, tol=1e-3, which='LA', maxiter=30, raise_for_unconverged=False)
+assert(len(evals) > 0)
+print(evals) # [ 98.9]
+
 # Sparse singular mass matrix
 A = scipy.sparse.spdiags(np.asarray(range(100), dtype=np.float32), [0], 100, 100)
 M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1), dtype=np.float32), [0], 100, 100)

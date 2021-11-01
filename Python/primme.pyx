@@ -286,7 +286,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           Minv=None, OPinv=None, mode='normal', lock=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
           maxPrevRetain=0, method=None, return_unconverged=False,
-          return_history=False, convtest=None, **kargs):
+          return_history=False, convtest=None, raise_for_unconverged=True, **kargs):
     """
     Find k eigenvalues and eigenvectors of the real symmetric square matrix
     or complex Hermitian matrix A.
@@ -376,17 +376,18 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
         See a detailed description of the methods and other possible values
         in [2]_.
-
     return_unconverged: bool, optional
         If True, return all requested eigenvalues and vectors regardless of
         being marked as converged. The default is False.
-
     convtest : callable
         User-defined function to mark an approximate eigenpair as converged.
 
         The function is called as convtest(eval, evec, resNorm) and returns
         True if the eigenpair with value `eval`, vector `evec` and residual
         norm `resNorm` is considered converged.
+    raise_for_unconverged: bool, optional
+        If True and return_unconverged is False, raise an exception when not
+        all requested eigenvalues and vectors converged. The default is True.
 
     return_stats : bool, optional
         If True, the function returns extra information (see stats in Returns).
@@ -702,7 +703,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if err != 0:
         if __user_function_exception is not None:
             raise PrimmeError(err) from __user_function_exception
-        elif err == -3 and not return_unconverged:
+        elif err == -3 and not return_unconverged and raise_for_unconverged:
             raise PrimmeError(err)
 
     initSize = k if return_unconverged else __primme_params_get(PP, "initSize")
@@ -1076,7 +1077,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          u0=None, orthou0=None, orthov0=None,
          return_stats=False, maxBlockSize=0,
          method=None, methodStage1=None, methodStage2=None,
-         return_history=False, convtest=None, **kargs):
+         return_history=False, convtest=None, raise_for_unconverged=True, **kargs):
     """
     Compute k singular values and vectors of the matrix A.
 
@@ -1139,6 +1140,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         The function is called as convtest(sval, svecleft, svecright, resNorm)
         and returns True if the triplet with value `sval`, left vector `svecleft`,
         right vector `svecright`, and residual norm `resNorm` is considered converged.
+    raise_for_unconverged: bool, optional
+        If True, raise an exception when not all requested singular values
+        converged. The default is True.
 
     return_stats : bool, optional
         If True, the function returns extra information (see stats in Returns).
@@ -1457,7 +1461,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     if err != 0:
         if __user_function_exception is not None:
             raise PrimmeSvdsError(err) from __user_function_exception
-        else:
+        elif err == -3 and raise_for_unconverged:
             raise PrimmeSvdsError(err)
 
     if return_stats:
