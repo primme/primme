@@ -128,9 +128,96 @@ int solve_H_dprimme(dummy_type_dprimme *H, int basisSize, int ldH, dummy_type_dp
       dummy_type_dprimme *hU, int ldhU, dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals,
       dummy_type_dprimme *hSVals, int numConverged, int *partial, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Sprimme)
-#  define solve_H_RR_Sprimme CONCAT(solve_H_RR_Sprimme,WITH_KIND(SCALAR_SUF))
+#  define solve_H_RR_Sprimme CONCAT(solve_H_RR_,WITH_KIND(SCALAR_SUF))
 #endif
-int solve_H_RR_Sprimmedprimme(dummy_type_dprimme *H, int ldH, dummy_type_dprimme *VtBV, int ldVtBV,
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Rprimme)
+#  define solve_H_RR_Rprimme CONCAT(solve_H_RR_,WITH_KIND(REAL_SUF))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SHprimme)
+#  define solve_H_RR_SHprimme CONCAT(solve_H_RR_,WITH_KIND(HOST_SCALAR_SUF))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RHprimme)
+#  define solve_H_RR_RHprimme CONCAT(solve_H_RR_,WITH_KIND(HOST_REAL_SUF))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SXprimme)
+#  define solve_H_RR_SXprimme CONCAT(solve_H_RR_,WITH_KIND(XSCALAR_SUF))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RXprimme)
+#  define solve_H_RR_RXprimme CONCAT(solve_H_RR_,WITH_KIND(XREAL_SUF))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Shprimme)
+#  define solve_H_RR_Shprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Rhprimme)
+#  define solve_H_RR_Rhprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Ssprimme)
+#  define solve_H_RR_Ssprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Rsprimme)
+#  define solve_H_RR_Rsprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Sdprimme)
+#  define solve_H_RR_Sdprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Rdprimme)
+#  define solve_H_RR_Rdprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Sqprimme)
+#  define solve_H_RR_Sqprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_Rqprimme)
+#  define solve_H_RR_Rqprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SXhprimme)
+#  define solve_H_RR_SXhprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RXhprimme)
+#  define solve_H_RR_RXhprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,h),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SXsprimme)
+#  define solve_H_RR_SXsprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RXsprimme)
+#  define solve_H_RR_RXsprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SXdprimme)
+#  define solve_H_RR_SXdprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RXdprimme)
+#  define solve_H_RR_RXdprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SXqprimme)
+#  define solve_H_RR_SXqprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RXqprimme)
+#  define solve_H_RR_RXqprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SHhprimme)
+#  define solve_H_RR_SHhprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RHhprimme)
+#  define solve_H_RR_RHhprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SHsprimme)
+#  define solve_H_RR_SHsprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RHsprimme)
+#  define solve_H_RR_RHsprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,s),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SHdprimme)
+#  define solve_H_RR_SHdprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RHdprimme)
+#  define solve_H_RR_RHdprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,d),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_SHqprimme)
+#  define solve_H_RR_SHqprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),KIND_C))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_RHqprimme)
+#  define solve_H_RR_RHqprimme CONCAT(solve_H_RR_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
+#endif
+int solve_H_RR_dprimme(dummy_type_dprimme *H, int ldH, dummy_type_dprimme *VtBV, int ldVtBV,
       dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, int basisSize, int numConverged,
       primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(solve_H_RR_partial_Sprimme)
@@ -350,7 +437,7 @@ int solve_H_sprimme(dummy_type_sprimme *H, int basisSize, int ldH, dummy_type_sp
       dummy_type_sprimme *R, int ldR, dummy_type_sprimme *QtV, int ldQtV, dummy_type_sprimme *QtQ, int ldQtQ,
       dummy_type_sprimme *hU, int ldhU, dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals,
       dummy_type_sprimme *hSVals, int numConverged, int *partial, primme_context ctx);
-int solve_H_RR_Sprimmesprimme(dummy_type_sprimme *H, int ldH, dummy_type_sprimme *VtBV, int ldVtBV,
+int solve_H_RR_sprimme(dummy_type_sprimme *H, int ldH, dummy_type_sprimme *VtBV, int ldVtBV,
       dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, int basisSize, int numConverged,
       primme_context ctx);
 int solve_H_RR_partial_Sprimmesprimme(dummy_type_sprimme *H, int ldH, dummy_type_sprimme *VtBV,
@@ -378,7 +465,7 @@ int solve_H_cprimme_normal(dummy_type_cprimme *H, int basisSize, int ldH, dummy_
       dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtV, int ldQtV, dummy_type_cprimme *QtQ, int ldQtQ,
       dummy_type_cprimme *hU, int ldhU, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals,
       dummy_type_sprimme *hSVals, int numConverged, int *partial, primme_context ctx);
-int solve_H_RR_Sprimmecprimme_normal(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
+int solve_H_RR_cprimme_normal(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
       dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, int basisSize, int numConverged,
       primme_context ctx);
 int solve_H_RR_partial_Sprimmecprimme_normal(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *VtBV,
@@ -406,7 +493,7 @@ int solve_H_cprimme(dummy_type_cprimme *H, int basisSize, int ldH, dummy_type_cp
       dummy_type_cprimme *R, int ldR, dummy_type_cprimme *QtV, int ldQtV, dummy_type_cprimme *QtQ, int ldQtQ,
       dummy_type_cprimme *hU, int ldhU, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals,
       dummy_type_sprimme *hSVals, int numConverged, int *partial, primme_context ctx);
-int solve_H_RR_Sprimmecprimme(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
+int solve_H_RR_cprimme(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *VtBV, int ldVtBV,
       dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, int basisSize, int numConverged,
       primme_context ctx);
 int solve_H_RR_partial_Sprimmecprimme(dummy_type_cprimme *H, int ldH, dummy_type_cprimme *VtBV,
@@ -434,7 +521,7 @@ int solve_H_zprimme_normal(dummy_type_zprimme *H, int basisSize, int ldH, dummy_
       dummy_type_zprimme *R, int ldR, dummy_type_zprimme *QtV, int ldQtV, dummy_type_zprimme *QtQ, int ldQtQ,
       dummy_type_zprimme *hU, int ldhU, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals,
       dummy_type_dprimme *hSVals, int numConverged, int *partial, primme_context ctx);
-int solve_H_RR_Sprimmezprimme_normal(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *VtBV, int ldVtBV,
+int solve_H_RR_zprimme_normal(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *VtBV, int ldVtBV,
       dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals, int basisSize, int numConverged,
       primme_context ctx);
 int solve_H_RR_partial_Sprimmezprimme_normal(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *VtBV,
@@ -462,7 +549,7 @@ int solve_H_zprimme(dummy_type_zprimme *H, int basisSize, int ldH, dummy_type_zp
       dummy_type_zprimme *R, int ldR, dummy_type_zprimme *QtV, int ldQtV, dummy_type_zprimme *QtQ, int ldQtQ,
       dummy_type_zprimme *hU, int ldhU, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals,
       dummy_type_dprimme *hSVals, int numConverged, int *partial, primme_context ctx);
-int solve_H_RR_Sprimmezprimme(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *VtBV, int ldVtBV,
+int solve_H_RR_zprimme(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *VtBV, int ldVtBV,
       dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, int basisSize, int numConverged,
       primme_context ctx);
 int solve_H_RR_partial_Sprimmezprimme(dummy_type_zprimme *H, int ldH, dummy_type_zprimme *VtBV,

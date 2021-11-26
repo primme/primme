@@ -5,7 +5,7 @@
 
 # Define the path to the created PRIMME library
 MAJORVERSION := 3
-VERSION := 3.0
+VERSION := 3.2
 UNAME ?= $(shell uname)
 ifeq ($(UNAME), Darwin)
     SLIB ?= dylib
@@ -28,6 +28,7 @@ SOLIBRARY = libprimme.$(SLIB)
 #---------------------------------------------------------------
 CC       ?= cc
 F77      ?= gfortran
+FC       ?= gfortran
 DEFINES  ?= -DF77UNDERSCORE 
 CFLAGS   ?= -O -fPIC -DNDEBUG
 FFLAGS   ?= -fno-second-underscore -O

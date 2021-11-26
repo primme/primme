@@ -164,16 +164,18 @@ STATIC void displayModel(primme_CostModel *model);
  *           During the execution, access to primme.initSize gives 
  *              the number of converged pairs up to that point. The pairs
  *              are available in evals and evecs, but only when locking is used
+ * ret      successful state
+ * numRet   number of returned pairs in evals, evecs, and resNorms
  *
  * Return Value
  * ------------
- * ret      successful state
  * error code      
  ******************************************************************************/
 
 TEMPLATE_PLEASE
 int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
-      HREAL *resNorms, double startTime, int *ret, primme_context ctx) {
+      HREAL *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx) {
 
    /* Default error is something is wrong in this function */
    *ret = PRIMME_MAIN_ITER_FAILURE;
@@ -194,7 +196,6 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    int maxRecentlyConverged;/* Maximum value allowed for recentlyConverged   */
    int numConvergedStored;  /* Numb of Ritzvecs temporarily stored in evecs  */
                             /*    to allow for skew projectors w/o locking   */
-   int converged;           /* True when all required Ritz vals. converged   */
    int LockingProblem;      /* Flag==1 if practically converged pairs locked */
    int restartLimitReached; /* True when maximum restarts performed          */
    int nprevhVecs;          /* Number of vectors stored in prevhVecs         */
@@ -395,10 +396,10 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.lockingIssue                  = 0;
 
    numLocked = 0;
-   converged = 0;
    LockingProblem = 0;
 
    blockSize = 0; 
+   *numRet = 0;
 
    for (i=0; i<primme->numEvals; i++) perm[i] = i;
 
@@ -445,10 +446,10 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Without locking, restarting can cause converged Ritz values to become  */
    /* unconverged. Keep performing JD iterations until they remain converged */
    /* ---------------------------------------------------------------------- */
-   while (!converged &&
-          primme->stats.numMatvecs < primme->maxMatvecs &&
-          ( primme->maxOuterIterations == 0 ||
-            primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
+   while (
+         primme->stats.numMatvecs < primme->maxMatvecs &&
+         (primme->maxOuterIterations == 0 ||
+               primme->stats.numOuterIterations < primme->maxOuterIterations)) {
 
 
       /* Reset convergence flags. This may only reoccur without locking */
@@ -783,51 +784,53 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             if (primme->locking && !primme->massMatrixMatvec &&
                   !primme->correctionParams.precondition &&
                   primme->correctionParams.maxInnerIterations == 0) {
-               for (i = 0;
-                     i < blockSize0 && numConverged + i < primme->numEvals;
-                     i++) {
-                  HREAL normXx = 0.0;
-                  if (primme->orth == primme_orth_explicit_I) {
-                     HSCALAR *Xx = NULL;
-                     CHKERR(Num_malloc_SHprimme(numLocked, &Xx, ctx));
-                     CHKERR(Num_zero_matrix_SHprimme(
-                           Xx, numLocked, 1, numLocked, ctx));
-                     CHKERR(Num_gemv_SHprimme("N", numLocked, basisSize, 1.0,
-                           &VtBV[ldVtBV * numLocked], ldVtBV,
-                           &hVecs[iev[i] * basisSize], 1, 0.0, Xx, 1, ctx));
-                     normXx =
-                           ABS(Num_dot_SHprimme(numLocked, Xx, 1, Xx, 1, ctx));
-                     CHKERR(Num_free_SHprimme(Xx, ctx));
-                  }
-                  HREAL normRlockedi =
-                        ABS(Num_dot_SHprimme(ldRlocked, &Rlocked[ldRlocked * i],
-                              1, &Rlocked[ldRlocked * i], 1, ctx));
-                  HREAL newBlockNorm =
-                        sqrt(max(blockNorms[i] * blockNorms[i] -
-                                       normRlockedi * (1. + normXx),
-                              0.0));
-                  CHKERR(check_convergence_Sprimme(&V[(basisSize + i) * ldV],
-                        ldV, 1 /* given X */, NULL, 0, 0 /* not given R */,
-                        evecs, numLocked, ldevecs, Bevecs, ldBevecs, VtBV,
-                        ldVtBV, 0, 1, &flags[iev[i]], &newBlockNorm,
-                        &hVals[iev[i]], &reset,
-                        -1 /* don't check practically convergence */, ctx));
-                  HREAL oldBlockNorm = basisNorms[iev[i]];
-                  basisNorms[iev[i]] = newBlockNorm;
-                  if (flags[iev[i]] == CONVERGED) {
-                     flags[iev[i]] = PRACTICALLY_CONVERGED;
+               if (numLocked > 0) {
+                  for (i = 0;
+                        i < blockSize0 && numConverged + i < primme->numEvals;
+                        i++) {
+                     HREAL normXx = 0.0;
+                     if (primme->orth == primme_orth_explicit_I) {
+                        HSCALAR *Xx = NULL;
+                        CHKERR(Num_malloc_SHprimme(numLocked, &Xx, ctx));
+                        CHKERR(Num_zero_matrix_SHprimme(
+                              Xx, numLocked, 1, numLocked, ctx));
+                        CHKERR(Num_gemv_SHprimme("N", numLocked, basisSize, 1.0,
+                              &VtBV[ldVtBV * numLocked], ldVtBV,
+                              &hVecs[iev[i] * basisSize], 1, 0.0, Xx, 1, ctx));
+                        normXx = ABS(
+                              Num_dot_SHprimme(numLocked, Xx, 1, Xx, 1, ctx));
+                        CHKERR(Num_free_SHprimme(Xx, ctx));
+                     }
+                     HREAL normRlockedi = ABS(
+                           Num_dot_SHprimme(ldRlocked, &Rlocked[ldRlocked * i],
+                                 1, &Rlocked[ldRlocked * i], 1, ctx));
+                     HREAL newBlockNorm =
+                           sqrt(max(blockNorms[i] * blockNorms[i] -
+                                          normRlockedi * (1. + normXx),
+                                 0.0));
+                     CHKERR(check_convergence_Sprimme(&V[(basisSize + i) * ldV],
+                           ldV, 1 /* given X */, NULL, 0, 0 /* not given R */,
+                           evecs, numLocked, ldevecs, Bevecs, ldBevecs, VtBV,
+                           ldVtBV, 0, 1, &flags[iev[i]], &newBlockNorm,
+                           &hVals[iev[i]], &reset,
+                           -1 /* don't check practically convergence */, ctx));
+                     HREAL oldBlockNorm = basisNorms[iev[i]];
+                     basisNorms[iev[i]] = newBlockNorm;
+                     if (flags[iev[i]] == CONVERGED) {
+                        flags[iev[i]] = PRACTICALLY_CONVERGED;
 
-                     PRINTF(5,
-                           " PRACTICALLY_CONVERGED (shortcut) %d norm r: %e "
-                           "norm (I-BQQt)r %e",
-                           iev[i], (double)oldBlockNorm, newBlockNorm);
+                        PRINTF(5,
+                              " PRACTICALLY_CONVERGED (shortcut) %d norm r: %e "
+                              "norm (I-BQQt)r %e",
+                              iev[i], (double)oldBlockNorm, newBlockNorm);
 
-                     numConverged++;
-                     /* Report a pair was soft converged */
-                     CHKERR(monitorFun_Sprimme(hVals, basisSize, flags, &iev[i],
-                           1, basisNorms, numConverged, NULL, 0, NULL, NULL,
-                           -1, -1.0, NULL, 0.0, primme_event_converged,
-                           startTime, ctx));
+                        numConverged++;
+                        /* Report a pair was soft converged */
+                        CHKERR(monitorFun_Sprimme(hVals, basisSize, flags,
+                              &iev[i], 1, basisNorms, numConverged, NULL, 0,
+                              NULL, NULL, -1, -1.0, NULL, 0.0,
+                              primme_event_converged, startTime, ctx));
+                     }
                   }
                }
                CHKERR(Num_free_SHprimme(Rlocked, ctx));
@@ -1226,6 +1229,18 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       if (primme->locking) {
 
+         // If maximum iterations/matvecs reached, return as many candidates as
+         // possible as converged
+
+         CHKERR(copy_back_candidates(V, ldV, W, ldW, BV, ldBV, primme->nLocal,
+               H, primme->maxBasisSize, basisSize, hVecs, primme->maxBasisSize,
+               hVals, evecs, ldevecs, evals, resNorms, targetShiftIndex,
+               numConverged,
+               VtBV ? &VtBV[(primme->numOrthoConst + numLocked) * ldVtBV +
+                            primme->numOrthoConst + numLocked]
+                    : NULL,
+               ldVtBV, numRet, ctx));
+
          /* if dynamic method, give method recommendation for future runs */
          if (primme->dynamicMethodSwitch > 0 ) {
             if (CostModel.accum_jdq_gdk < 0.96) 
@@ -1253,9 +1268,16 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       }
       else {      /* no locking. Verify that everything is converged  */
 
-         /* Determine if the maximum number of matvecs has been reached */
+         /* Determine if the maximum number of matvecs or iterations has been
+          * reached */
 
-         restartLimitReached = primme->stats.numMatvecs >= primme->maxMatvecs;
+         if (primme->stats.numMatvecs < primme->maxMatvecs &&
+               (primme->maxOuterIterations == 0 ||
+                     primme->stats.numOuterIterations <
+                           primme->maxOuterIterations))
+            restartLimitReached = 0;
+         else
+            restartLimitReached = 1;
 
          /* ---------------------------------------------------------- */
          /* The norms of the converged Ritz vectors must be recomputed */
@@ -1266,8 +1288,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          /* converged state.                                           */
          /* ---------------------------------------------------------- */
 
-         CHKERR(verify_norms(V, ldV, W, ldW, BV, ldBV, hVals, numConverged,
-               resNorms, flags, &converged, ctx));
+         CHKERR(verify_norms(V, ldV, W, ldW, BV, ldBV, hVals,
+               restartLimitReached ? primme->numEvals : numConverged, resNorms,
+               flags, &numConverged, ctx));
 
          /* ---------------------------------------------------------- */
          /* If the convergence limit is reached or the target vectors  */
@@ -1276,7 +1299,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          /* iterating.                                                 */
          /* ---------------------------------------------------------- */
 
-         if (restartLimitReached || converged || wholeSpace) {
+         if (restartLimitReached || numConverged >= primme->numEvals ||
+               wholeSpace) {
             for (i=0; i < primme->numEvals; i++) {
                evals[i] = hVals[i];
                perm[i] = i;
@@ -1284,6 +1308,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
             CHKERR(Num_copy_matrix_Sprimme(V, primme->nLocal, primme->numEvals,
                   ldV, &evecs[ldevecs * primme->numOrthoConst], ldevecs, ctx));
+            *numRet = primme->numEvals;
 
             /* The target values all remained converged, then return */
             /* successfully, else return with a failure code.        */
@@ -1301,16 +1326,15 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                   primme->dynamicMethodSwitch = -3;  /* Close call.Use dynamic*/
             }
 
-            if (converged) {
+            if (numConverged >= primme->numEvals) {
                *ret = 0;
             }
             else {
                *ret = PRIMME_MAIN_ITER_FAILURE;
             }
-               goto clean;
+            goto clean;
 
-         }
-         else if (!converged) {
+         } else {
             /* ------------------------------------------------------------ */
             /* Reorthogonalize the basis, recompute W=AV, and continue the  */
             /* outer while loop, resolving the epairs. Slow, but robust!    */
@@ -1331,9 +1355,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             primme->stats.estimateOrthoError = 0.0;
             numConverged = 0;
 
-           /* ------------------------------------------------------------ */
-         } /* End of elseif(!converged). Restart and recompute all epairs
-            * ------------------------------------------------------------ */
+         } 
 
         /* ------------------------------------------------------------ */
       } /* End of non locking
@@ -1554,11 +1576,12 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i = 0; i < blockNormsSize; i++)
          flagsBlock[i] = flags[iev[*blockSize + i]];
-      CHKERR(check_convergence_Sprimme(&X[(*blockSize) * ldX], ldX,
-            1 /* X given */, &R[(*blockSize) * ldR], ldR, 1 /* R given */,
-            evecs, numLocked, ldevecs, Bevecs, ldBevecs, VtBV, ldVtBV, 0,
-            blockNormsSize, flagsBlock, &blockNorms[*blockSize], hValsBlock,
-            reset, practConvChecking, ctx));
+      CHKERR(check_convergence_Sprimme(X ? &X[(*blockSize) * ldV] : NULL, ldV,
+            computeXR, R ? &R[(*blockSize) * ldW] : NULL, ldW, computeXR, evecs,
+            numLocked, ldevecs, Bevecs, ldBevecs, VtBV, ldVtBV, 0,
+            blockNormsSize, flagsBlock,
+            blockNorms ? &blockNorms[*blockSize] : NULL, hValsBlock, reset,
+            practConvChecking, ctx));
 
       /* Compact blockNorms, X and R for the unconverged pairs in    */
       /* iev(*blockSize:*blockSize+blockNormsize). Do the proper     */
@@ -1688,18 +1711,18 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       assert(ldV == ldW); /* This functions only works in this way */
       CHKERR(Num_update_VWXR_Sprimme(V, W, BV, nLocal, basisSize, ldV,
                hVecsBlock, basisSize, ldhVecs, hValsBlock,
-               &X[(*blockSize)*ldX], 0, blockNormsSize, ldX,
+               X?&X[(*blockSize)*ldV]:NULL, 0, computeXR?blockNormsSize:0, ldV,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
-               &R[(*blockSize)*ldR], 0, blockNormsSize, ldR, &blockNorms[*blockSize],
-               &BX[(*blockSize)*ldV], 0, computeXR&&BX?blockNormsSize:0, ldV,
+               R?&R[(*blockSize)*ldR]:NULL, 0, computeXR?blockNormsSize:0, ldR, computeXR?&blockNorms[*blockSize]:NULL,
+               BX?&BX[(*blockSize)*ldV]:NULL, 0, computeXR&&BX?blockNormsSize:0, ldV,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
                NULL, 0, 0,
                NULL, 0, 0,
                NULL, 0, 0,
-               &XNorms[*blockSize], 0, primme->massMatrixMatvec?blockNormsSize:0,
+               XNorms?&XNorms[*blockSize]:NULL, 0, primme->massMatrixMatvec?blockNormsSize:0,
                ctx));
 
       /* Don't trust residual norm smaller than the error in the residual norm */
@@ -1735,6 +1758,128 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 }
 
 /*******************************************************************************
+ * Subroutine copy_back_candidates - This subroutine copy into evecs, evals
+ *    and resNorms unconverged Ritz pairs, up to numEvals. The uninitalized
+ *    returned pairs are marked setting its resNorms to -1.
+ * 
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * V              The orthonormal basis
+ * W              A*V
+ * BV             B*V
+ * nLocal         Local length of vectors in the basis
+ * basisSize      Size of the basis V and W
+ * ldV            The leading dimension of V and X
+ * ldW            The leading dimension of W and R
+ * hVecs          The projected vectors
+ * ldhVecs        The leading dimension of hVecs
+ * hVals          The Ritz values
+ * primme         Structure containing various solver parameters
+ *
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * evecs          Converged eigenvectors
+ * evals          Converged values
+ * resNorms       Converged residual norms
+ * numRet         number of returned pairs
+ *
+ * RETURN
+ * ------
+ * error code
+ * 
+ ******************************************************************************/
+
+STATIC int copy_back_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
+      PRIMME_INT ldW, SCALAR *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      HSCALAR *H, int ldH, int basisSize, HSCALAR *hVecs, int ldhVecs,
+      HEVAL *hVals, SCALAR *evecs, PRIMME_INT ldevecs, HEVAL *evals,
+      HREAL *resNorms, int targetShiftIndex, int numConverged, HSCALAR *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx) {
+
+   (void)ldBV;
+#ifndef USE_HERMITIAN
+   (void)targetShiftIndex;
+#endif
+
+   primme_params *primme = ctx.primme;
+
+   // Quick exit
+
+   if (numConverged >= primme->numEvals || basisSize <= 0) {
+      return 0;
+   }
+
+   evecs = &evecs[ldevecs * primme->numOrthoConst];
+
+   // To avoid calling prepare_vecs Use Rayleigh-Ritz instead */
+
+   if (primme->projectionParams.projection != primme_proj_RR &&
+         primme->numTargetShifts > numConverged) {
+      CHKERR(solve_H_RR_SHprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs, hVals,
+            basisSize, numConverged, ctx));
+   }
+
+   int i = 0;
+   while (i < basisSize && numConverged < primme->numEvals) {
+
+      int blockSize =
+            max(0, min(primme->numEvals - numConverged, basisSize - i));
+
+      /* Append the new blockSize vectors to evecs and compute residual norms */
+      /* evecs(numConverged+(1:blockSize)) = V*hVecs(i+(1:blockSize)) */
+      /* blockNorms(1:blockSize) = residual norms */
+
+      assert(ldV == ldW &&
+             (BV == NULL ||
+                   ldBV == ldV)); /* This functions only works in this way */
+      CHKERR(Num_update_VWXR_Sprimme(V, W, BV, nLocal, basisSize, ldV,
+               &hVecs[ldhVecs*i], basisSize, ldhVecs, &hVals[i],
+               &evecs[ldevecs * numConverged], 0, blockSize, ldevecs,
+               NULL, 0, 0, 0,
+               NULL, 0, 0, 0,
+               NULL, 0, 0, 0,
+               NULL, 0, 0, 0, NULL,
+               NULL, 0, 0, 0,
+               NULL, 0, 0, 0,
+               NULL, 0, 0, 0,
+               &resNorms[numConverged], 0, blockSize,
+               NULL, 0, 0,
+               NULL, 0, 0,
+               NULL, 0, 0,
+               ctx));
+
+      int numConverged0 = numConverged;
+      int blki;
+      for (blki = 0; blki < blockSize; blki++, i++) {
+#ifdef USE_HERMITIAN
+         double targetShift = primme->targetShifts
+            ? primme->targetShifts[targetShiftIndex]
+                                    : 0.0;
+         if ((primme->target == primme_closest_leq &&
+                   hVals[i] - resNorms[numConverged0 + blki] > targetShift) ||
+               (primme->target == primme_closest_geq &&
+                     hVals[i] + resNorms[numConverged0 + blki] < targetShift)) {
+            /* Ignore some cases */
+         } else
+#endif
+         {
+            evals[numConverged] = hVals[i];
+            resNorms[numConverged] = resNorms[numConverged0 + blki];
+            CHKERR(Num_copy_matrix_Sprimme(
+                  &evecs[(numConverged0 + blki) * ldevecs], nLocal, 1, ldevecs,
+                  &evecs[numConverged * ldevecs], ldevecs, ctx));
+            numConverged++;
+         }
+      }
+   }
+
+   for (i = numConverged; i < primme->numEvals; i++) resNorms[i] = -1;
+   *numRet = numConverged;
+
+   return 0;
+}
+
+/*******************************************************************************
  * Function verify_norms - This subroutine computes the residual norms of the 
  *    target eigenvectors before the Davidson-type main iteration terminates. 
  *    This is done to insure that the eigenvectors have remained converged. 
@@ -1761,13 +1906,13 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
  *
  * flag          Indicates which Ritz pairs have converged
  *
- * converged     Return 1 if the basisSize values are converged, and 0 otherwise
+ * numConverged  Return the number of consecutive converged pairs
  *
  ******************************************************************************/
 
 STATIC int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       SCALAR *BV, PRIMME_INT ldBV, HEVAL *hVals, int basisSize, HREAL *resNorms,
-      int *flags, int *converged, primme_context ctx) {
+      int *flags, int *numConverged, primme_context ctx) {
 
    int i;         /* Loop variable                                     */
 
@@ -1790,15 +1935,11 @@ STATIC int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
          1 /* R given */, NULL, 0, 0, NULL, 0, NULL, 0, 0, basisSize, flags,
          resNorms, hVals, NULL, 0, ctx));
 
-   /* Set converged to 1 if the first basisSize pairs are converged */
+   /* Return the number of consecutive pairs converged  */
 
-   *converged = 1;
-   for (i=0; i<basisSize; i++) {
-      if (flags[i] == UNCONVERGED) {
-         *converged = 0;
-      }
-   }
-    
+   for (i = 0; i < basisSize && flags[i] != UNCONVERGED; i++);
+   *numConverged = i;
+
    return 0;
 }
 

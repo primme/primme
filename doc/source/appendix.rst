@@ -1510,21 +1510,21 @@ primme_params
 Preset Methods
 --------------
 
-.. c:type:: primme_preset_method
+.. c:enum:: primme_preset_method
 
-   .. c:member:: PRIMME_DEFAULT_MIN_TIME
+   .. c:enumerator:: PRIMME_DEFAULT_MIN_TIME
 
       Set as |JDQMR_ETol| when |target| is either ``primme_smallest`` or
       ``primme_largest``, and as |JDQMR| otherwise. This method is usually
       the fastest if the cost of the matrix vector product is inexpensive.
 
-   .. c:member:: PRIMME_DEFAULT_MIN_MATVECS
+   .. c:enumerator:: PRIMME_DEFAULT_MIN_MATVECS
 
       Currently set as |GD_Olsen_plusK|; this method usually performs
       fewer matrix vector products than other methods, so it's a good
       choice when this operation is expensive.
 
-   .. c:member:: PRIMME_DYNAMIC
+   .. c:enumerator:: PRIMME_DYNAMIC
 
       Switches to the best method dynamically; currently, between
       methods |DEFAULT_MIN_TIME| and |DEFAULT_MIN_MATVECS|.
@@ -1533,7 +1533,7 @@ Preset Methods
       |dynamicMethodSwitch| = 1 and makes the same changes as
       for method |DEFAULT_MIN_TIME|.
 
-   .. c:member:: PRIMME_Arnoldi
+   .. c:enumerator:: PRIMME_Arnoldi
 
       Arnoldi implemented à la Generalized Davidson.
 
@@ -1546,7 +1546,7 @@ Preset Methods
          * |precondition| = 0;
          * |maxInnerIterations| = 0.
 
-   .. c:member:: PRIMME_GD
+   .. c:enumerator:: PRIMME_GD
 
       Generalized Davidson.
 
@@ -1561,7 +1561,7 @@ Preset Methods
          * |RightX| = 0;
          * |SkewX| = 0.
 
-   .. c:member:: PRIMME_GD_plusK
+   .. c:enumerator:: PRIMME_GD_plusK
 
       GD with locally optimal restarting. 
 
@@ -1576,14 +1576,14 @@ Preset Methods
          * |RightX| = 0;
          * |SkewX| = 0.
 
-   .. c:member:: PRIMME_GD_Olsen_plusK
+   .. c:enumerator:: PRIMME_GD_Olsen_plusK
 
       GD+k and the cheap Olsen's Method.
 
       With |GD_Olsen_plusK| :c:func:`primme_set_method` makes the
       same changes as for method |GD_plusK| and sets |RightX| = 1.
 
-   .. c:member:: PRIMME_JD_Olsen_plusK
+   .. c:enumerator:: PRIMME_JD_Olsen_plusK
 
       GD+k and Olsen's Method.
 
@@ -1591,7 +1591,7 @@ Preset Methods
       same changes as for method |GD_plusK| and also sets
       |robustShifts| = 1, |RightX| to 1, and |SkewX| to 1.
 
-   .. c:member:: PRIMME_RQI
+   .. c:enumerator:: PRIMME_RQI
 
       (Accelerated) Rayleigh Quotient Iteration.
 
@@ -1617,7 +1617,7 @@ Preset Methods
          solved uses these shifts in the correction equation. Therefore RQI becomes
          INVIT (inverse iteration) in that case.
 
-   .. c:member:: PRIMME_JDQR
+   .. c:enumerator:: PRIMME_JDQR
 
       Jacobi-Davidson with fixed number of inner steps.
 
@@ -1638,7 +1638,7 @@ Preset Methods
          * |relTolBase| = 1.5;
          * |convTest| = |primme_full_LTolerance|.
 
-   .. c:member:: PRIMME_JDQMR
+   .. c:enumerator:: PRIMME_JDQMR
 
       Jacobi-Davidson with adaptive stopping criterion for inner Quasi Minimum Residual (QMR).
 
@@ -1657,7 +1657,7 @@ Preset Methods
          * |SkewX|   = 1;
          * |convTest|  = |primme_adaptive|.
 
-   .. c:member:: PRIMME_JDQMR_ETol
+   .. c:enumerator:: PRIMME_JDQMR_ETol
 
       JDQMR but QMR stops after residual norm reduces by a 0.1 factor.
 
@@ -1665,7 +1665,7 @@ Preset Methods
       changes as for the method |JDQMR| and sets
       |convTest| = |primme_adaptive_ETolerance|.
 
-   .. c:member:: PRIMME_STEEPEST_DESCENT
+   .. c:enumerator:: PRIMME_STEEPEST_DESCENT
 
       Steepest descent.
 
@@ -1683,7 +1683,7 @@ Preset Methods
          * |RightX|  = 1;
          * |SkewX|   = 0.
 
-   .. c:member:: PRIMME_LOBPCG_OrthoBasis
+   .. c:enumerator:: PRIMME_LOBPCG_OrthoBasis
 
       LOBPCG with orthogonal basis.
 
@@ -1701,7 +1701,7 @@ Preset Methods
          * |RightX|  = 1;
          * |SkewX|   = 0.
 
-   .. c:member:: PRIMME_LOBPCG_OrthoBasis_Window
+   .. c:enumerator:: PRIMME_LOBPCG_OrthoBasis_Window
 
       LOBPCG with sliding window of |maxBlockSize| < 3 \* |numEvals|.
 

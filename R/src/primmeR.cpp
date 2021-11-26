@@ -267,7 +267,7 @@ void primme_set_method_rcpp(std::string methodstr, PrimmeParams primme) {
 
 // [[Rcpp::export(.primme_get_member)]]
 SEXP primme_get_member_rcpp(std::string labelstr, PrimmeParams primme) {
-   primme_params_label label = (primme_params_label)-1;
+   primme_params_label label = PRIMME_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -341,7 +341,7 @@ SEXP primme_get_member_rcpp(std::string labelstr, PrimmeParams primme) {
 
 // [[Rcpp::export(.primme_set_member)]]
 void primme_set_member_rcpp(std::string labelstr, SEXP value, PrimmeParams primme) {
-   primme_params_label label = (primme_params_label)-1;
+   primme_params_label label = PRIMME_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -778,7 +778,7 @@ void primme_svds_set_method_rcpp(std::string methodstr,
 SEXP primme_svds_get_member_rcpp(std::string labelstr,
       PrimmeSvdsParams primme_svds) {
 
-   primme_svds_params_label label = (primme_svds_params_label)-1;
+   primme_svds_params_label label = PRIMME_SVDS_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -866,7 +866,7 @@ SEXP primme_svds_get_member_rcpp(std::string labelstr,
 void primme_svds_set_member_rcpp(std::string labelstr, SEXP value,
       PrimmeSvdsParams primme_svds) {
 
-   primme_svds_params_label label = (primme_svds_params_label)-1;
+   primme_svds_params_label label = PRIMME_SVDS_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -1191,9 +1191,11 @@ static List xprimme_svds(Matrix<S> orthol, Matrix<S> orthor, Matrix<S> initl,
       M_R_cholmod_start(&chol_c);
       primme_svds->matrix = aux;
       primme_svds->matrixMatvec = matrixMatvecSvds_CHM_SP<T>;
-   } else {
+   } else if (is<Function>(A)) {
       primme_svds->matrix = Af = new Function(as<Function>(A));
       primme_svds->matrixMatvec = matrixMatvecSvds<T, S, TS, getSvdsForMatrix>;
+   } else {
+      stop("Unsupported matrix type; pass a function instead");
    }
 
    Function *fprec = NULL;

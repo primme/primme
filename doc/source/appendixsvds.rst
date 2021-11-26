@@ -1029,42 +1029,42 @@ primme_svds_params
 Preset Methods
 --------------
 
-.. c:type:: primme_svds_preset_method
+.. c:enum:: primme_svds_preset_method
 
-   .. c:member:: primme_svds_default
+   .. c:enumerator:: primme_svds_default
 
-      Set as :c:member:`primme_svds_hybrid`.
+      Set as :c:enumerator:`primme_svds_hybrid`.
 
-   .. c:member:: primme_svds_normalequations
+   .. c:enumerator:: primme_svds_normalequations
 
       Solve the equivalent eigenvalue problem :math:`A^*A V = \Sigma^2 V` and computes :math:`U` by normalizing
       the vectors :math:`AV`. If |Sm| is smaller than |Sn|, :math:`AA^*` is solved instead.
   
-      With :c:member:`primme_svds_normalequations` :c:func:`primme_svds_set_method` sets
+      With :c:enumerator:`primme_svds_normalequations` :c:func:`primme_svds_set_method` sets
       |Smethod| to ``primme_svds_op_AtA`` if |Sm| is larger or equal than |Sn|, and to ``primme_svds_op_AAt``
       otherwise; and |SmethodStage2| is set to ``primme_svds_op_none``.
 
       The minimum residual norm that this method can achieve is :math:`\|A\|\epsilon\sigma^{-1}`,
       where :math:`\epsilon` is the machine precision and :math:`\sigma` the required singular value.
  
-   .. c:member:: primme_svds_augmented
+   .. c:enumerator:: primme_svds_augmented
 
       Solve the equivalent eigenvalue problem :math:`\left(\begin{array}{cc} 0 & A^* \\ A & 0 \end{array}\right) X = \sigma X`
       with :math:`X = \left(\begin{array}{cc}V\\U\end{array}\right)`.
   
-      With :c:member:`primme_svds_augmented` :c:func:`primme_svds_set_method` sets
+      With :c:enumerator:`primme_svds_augmented` :c:func:`primme_svds_set_method` sets
       |Smethod| to ``primme_svds_op_augmented`` and |SmethodStage2| to ``primme_svds_op_none``.
  
       The minimum residual norm that this method can achieve is :math:`\|A\|\epsilon`,
       where :math:`\epsilon` is the machine precision.
       However it may not return triplets with singular values smaller than :math:`\|A\|\epsilon`.
  
-   .. c:member:: primme_svds_hybrid
+   .. c:enumerator:: primme_svds_hybrid
 
-      First solve the equivalent normal equations (see :c:member:`primme_svds_normalequations`) and then
-      refine the solution solving the augmented problem (see :c:member:`primme_svds_augmented`).
+      First solve the equivalent normal equations (see :c:enumerator:`primme_svds_normalequations`) and then
+      refine the solution solving the augmented problem (see :c:enumerator:`primme_svds_augmented`).
   
-      With :c:member:`primme_svds_normalequations` :c:func:`primme_svds_set_method` sets
+      With :c:enumerator:`primme_svds_normalequations` :c:func:`primme_svds_set_method` sets
       |Smethod| to ``primme_svds_op_AtA`` if |Sm| is larger or equal than |Sn|, and to ``primme_svds_op_AAt``
       otherwise; and |SmethodStage2| is set to ``primme_svds_op_augmented``.
  

@@ -79,10 +79,7 @@ def get_numpy_options():
 
 def setup_package():
    import sys
-   from distutils.core import setup
-   from distutils.extension import Extension
-   #from Cython.Distutils.extension import Extension
-   #from Cython.Distutils.old_build_ext import old_build_ext
+   from setuptools import setup, Extension
    from Cython.Build import cythonize
    
    try:
@@ -101,13 +98,13 @@ def setup_package():
    # Array extension module
    _Primme = Extension("primme",
                       ["primme.pyx"],
-                      extra_compile_args = ["-g", "-O0", "-Wall", "-Wextra"],
+                      #extra_compile_args = ["-g", "-O0", "-Wall", "-Wextra"],
                       **extra_options
                       )
    
    # NumyTypemapTests setup
    setup(name        = "primme",
-         version     = "2.1.5",
+         version     = "3.3.0",
          description = "PRIMME wrapper for Python",
          long_description = long_description,
          url         = "https://github.com/primme/primme",

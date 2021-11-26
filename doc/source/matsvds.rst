@@ -31,7 +31,8 @@ MATLAB Interface
       * ``tol``:     convergence tolerance ``NORM([A*V-U*S;A'*U-V*S]) <= tol * NORM(A)`` (see |Seps|) { ``1e-10`` for double precision and ``1e-3`` for single precision}
       * ``maxit``:   maximum number of matvecs with ``A`` and ``A'`` (see |SmaxMatvecs|)  {inf}
       * ``p``:       maximum basis size (see |SmaxBasisSize|)
-      * ``disp``:    level of reporting 0-3 (see HIST) {0: no output}
+      * ``reportLevel``: reporting level (0-3) (see HIST) {no reporting 0}
+      * ``display``: whether displaying reporting on screen (see HIST) {0 if HIST provided}
       * ``isreal``:  if 0, the matrix is complex; else it's real {0: complex}
       * ``isdouble``: if 0, the matrix is single; else it's double {1: double}
       * ``method``:  which equivalent eigenproblem to solve
@@ -101,11 +102,15 @@ MATLAB Interface
       * ``HIST(:,7)``: residual norm
       * ``HIST(:,8)``: QMR residual norm
 
-   ``OPTS.disp`` controls the granularity of the record. If ``OPTS.disp == 1``, ``HIST``
-   has one row per converged triplet and only the first four columns are
-   reported; if ``OPTS.disp == 2``, ``HIST`` has one row per outer iteration and only
-   the first seven columns are reported; and otherwise ``HIST`` has one row per QMR
-   iteration and all columns are reported.
+   ``OPTS.reportLevel`` controls the granularity of the record. If ``OPTS.reportLevel == 1``, ``HIST``
+   has one row per converged eigenpair and only the first three columns
+   together with the fifth and the sixth are reported. If ``OPTS.reportLevel == 2``, ``HIST``
+   has one row per outer iteration and converged value, and only the first six
+   columns are reported. Otherwise ``HIST`` has one row per QMR iteration, outer
+   iteration and converged value, and all columns are reported.
+
+   The convergence history is displayed if ``OPTS.reportLevel > 0`` and either ``HIST`` is
+   not returned or ``OPTS.display == 1``.
 
    Examples::
 

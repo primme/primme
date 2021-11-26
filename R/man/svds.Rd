@@ -4,8 +4,19 @@
 \alias{svds}
 \title{Find a few singular values and vectors on large, sparse matrix}
 \usage{
-svds(A, NSvals, which = "L", tol = 1e-06, u0 = NULL, v0 = NULL,
-  orthou = NULL, orthov = NULL, prec = NULL, isreal = NULL, ...)
+svds(
+  A,
+  NSvals,
+  which = "L",
+  tol = 1e-06,
+  u0 = NULL,
+  v0 = NULL,
+  orthou = NULL,
+  orthov = NULL,
+  prec = NULL,
+  isreal = NULL,
+  ...
+)
 }
 \arguments{
 \item{A}{matrix or a function with signature f(x, trans) that returns

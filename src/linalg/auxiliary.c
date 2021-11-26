@@ -122,8 +122,7 @@ int Num_matrix_astype_Sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
    if (do_alloc > 0) {
       Mem_keep_frame(
             ctx); /* The next allocation will not be freed in this function */
-      // ldy0 = (ldy && *ldy > 0) ? *ldy : m;
-     ldy0 = m;
+      ldy0 = m;
       CHKERR(Num_malloc_Sprimme(ldy0 * n, &y0, ctx));
       *y = (void*)y0;
       if (ldy) *ldy = ldy0;

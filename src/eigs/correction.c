@@ -551,7 +551,7 @@ STATIC HREAL computeRobustShift(int blockIndex, double resNorm,
    /* current basis is to be computed.                              */
 
    if (sortedIndex == 0 && numSorted >= 2) {
-      lowerGap = HUGE_VAL;
+      lowerGap = HOST_MACHINE_MAX;
       gap = fabs(sortedRitzVals[1] - sortedRitzVals[0]);
    }
    else if (sortedIndex > 0 && numSorted >= 2 && sortedIndex+1 < numSorted) {
@@ -577,7 +577,7 @@ STATIC HREAL computeRobustShift(int blockIndex, double resNorm,
       delta = fabs(prevRitzVals[sortedIndex] - sortedRitzVals[sortedIndex]);
    }
    else {
-      delta = HUGE_VAL;
+      delta = HOST_MACHINE_MAX;
    }
 
    /* Compute epsilon according to the theory of Davis and Kahan described */

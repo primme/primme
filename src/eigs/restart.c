@@ -226,21 +226,10 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    /* Remove the SKIP_UNTIL_RESTART flags.                        */
    /* ----------------------------------------------------------- */
 
-   for (i=0 /*, *numConverged=*numLocked */; i<basisSize; i++) {
+   for (i = 0; i < basisSize; i++) {
       if (flags[i] == SKIP_UNTIL_RESTART) {
          flags[i] = UNCONVERGED;
       }
-      // else if (flags[i] != UNCONVERGED &&
-      //       /* Don't check more than numEvals */
-      //          *numConverged < primme->numEvals &&
-      //       /* Check only the first pairs, except if finding closest_leq/geq  */
-      //       /* because with refined extraction the pairs may not be ordered   */
-      //       /* by this criterion.                                             */
-      //          (i < primme->numEvals-*numLocked
-      //           || primme->target == primme_closest_geq
-      //           || primme->target == primme_closest_leq)) {
-      //    (*numConverged)++;
-      // }
    }
 
    /* ----------------------------------------------------------- */
@@ -284,23 +273,11 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    if (primme->locking)
       restartSize = min(restartSize, basisSize-(*numConverged-*numLocked));
 
-   for (i=0 /*, *numConverged=*numLocked */; i<basisSize; i++) {
+   for (i = 0; i < basisSize; i++) {
       if (flags[i] == SKIP_UNTIL_RESTART) {
          flags[i] = UNCONVERGED;
       }
-      // else if (flags[i] != UNCONVERGED &&
-      //       /* Don't check more than numEvals */
-      //          *numConverged < primme->numEvals &&
-      //       /* Check only the first pairs, except if finding closest_leq/geq  */
-      //       /* because with refined extraction the pairs may not be ordered   */
-      //       /* by this criterion.                                             */
-      //          (i < primme->numEvals-*numLocked
-      //           || primme->target == primme_closest_geq
-      //           || primme->target == primme_closest_leq)) {
-      //    (*numConverged)++;
-      // }
    }
-
 
    /* ----------------------------------------------------------------------- */
    /* Limit the number of previous retained vectors such that the final basis */
@@ -461,51 +438,19 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    }
 
 
-   // HREAL fn = 0.0; /* = max(|I - VtBV|_F, |I - QtQ|_F) * problemNorm */
-   // if (ctx.procID == 0) {
-   //    if (VtBV) {
-   //       HREAL n = 0;
-   //       int i,j, nVtBV = primme->numOrthoConst + *numLocked + restartSize;
-   //       for (i = 0; i < nVtBV; i++) {
-   //          for (j = 0; j < i; j++)
-   //             n += 2 * REAL_PART(CONJ(VtBV[i * ldVtBV + j]) *
-   //                                VtBV[i * ldVtBV + j]) /
-   //                  ABS(VtBV[i * ldVtBV + i]) / ABS(VtBV[j * ldVtBV + j]);
-   //       }
-   //       fn = sqrt(n);
-   //    }
-
-   //    if (QtQ) {
-   //       HREAL n = 0;
-   //       int i,j;
-   //       for (i = 0; i < restartSize; i++) {
-   //          for (j = 0; j < i; j++)
-   //             n += 2 * REAL_PART(CONJ(QtQ[i * ldQtQ + j]) *
-   //                                QtQ[i * ldQtQ + j]) /
-   //                  ABS(QtQ[i * ldQtQ + i]) / ABS(QtQ[j * ldQtQ + j]);
-   //       }
-   //       fn = max(fn, sqrt(n));
-   //    }
-   // }
-   // CHKERR(broadcast_RHprimme(&fn, 1, ctx));
-      
-   //if (fn > 0.0) {
    primme->stats.estimateOrthoError = VtBV_error + QtQ_error;
    PRINTF(5, "Orthogonalization level: %g", (double)primme->stats.estimateOrthoError);
-   //}
 
    double residualError =
          primme->stats.estimateErrorOnA +
          primme->stats.estimateErrorOnB * primme->stats.estimateLargestSVal;
-   //      (VtBV_error + QtQ_error) * primme->stats.estimateLargestSVal;
    PRINTF(5, "Residual error level: %g", residualError);
 
    if (*restartsSinceReset <= 1) {
       primme->stats.maxConvTol = max(primme->stats.maxConvTol, residualError);
    }
 
-   primme->stats.estimateResidualError =
-         /*sqrt((double)*restartsSinceReset) * */ residualError;
+   primme->stats.estimateResidualError = residualError;
 
    /* Check VtBV */
 

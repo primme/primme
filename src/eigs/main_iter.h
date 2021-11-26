@@ -124,7 +124,8 @@
 #  define main_iter_RHqprimme CONCAT(main_iter_,CONCAT(CONCAT(CONCAT(,q),primme),KIND_C))
 #endif
 int main_iter_dprimme(dummy_type_dprimme *evals, dummy_type_dprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_dprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(prepare_candidates)
 #  define prepare_candidates CONCAT(prepare_candidates,WITH_KIND(SCALAR_SUF))
 #endif
@@ -141,12 +142,21 @@ int prepare_candidatesdprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_
       dummy_type_dprimme *VtBV, int ldVtBV, dummy_type_dprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(copy_back_candidates)
+#  define copy_back_candidates CONCAT(copy_back_candidates,WITH_KIND(SCALAR_SUF))
+#endif
+int copy_back_candidatesdprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *W,
+      PRIMME_INT ldW, dummy_type_dprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_dprimme *H, int ldH, int basisSize, dummy_type_dprimme *hVecs, int ldhVecs,
+      dummy_type_dprimme *hVals, dummy_type_dprimme *evecs, PRIMME_INT ldevecs, dummy_type_dprimme *evals,
+      dummy_type_dprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_dprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(verify_norms)
 #  define verify_norms CONCAT(verify_norms,WITH_KIND(SCALAR_SUF))
 #endif
 int verify_normsdprimme(dummy_type_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *W, PRIMME_INT ldW,
       dummy_type_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(switch_from_JDQMR)
 #  define switch_from_JDQMR CONCAT(switch_from_JDQMR,WITH_KIND(SCALAR_SUF))
 #endif
@@ -175,7 +185,8 @@ void update_slowdowndprimme(void *model_);
 #endif
 void initializeModeldprimme(void *model_, primme_params *primme);
 int main_iter_hprimme(dummy_type_sprimme *evals, dummy_type_hprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidateshprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_hprimme *W,
       PRIMME_INT ldW, dummy_type_hprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_hprimme *X, dummy_type_hprimme *R, dummy_type_hprimme *BX,
@@ -189,9 +200,15 @@ int prepare_candidateshprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_
       dummy_type_sprimme *VtBV, int ldVtBV, dummy_type_sprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidateshprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_hprimme *W,
+      PRIMME_INT ldW, dummy_type_hprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_sprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_hprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_sprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normshprimme(dummy_type_hprimme *V, PRIMME_INT ldV, dummy_type_hprimme *W, PRIMME_INT ldW,
       dummy_type_hprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRhprimme(void *model_, primme_context ctx);
 int switch_from_GDpkhprimme(void *model_, primme_context ctx);
 int update_statisticshprimme(void *model_, primme_params *primme,
@@ -202,7 +219,8 @@ double ratio_JDQMR_GDpkhprimme(void *model_, int numLocked,
 void update_slowdownhprimme(void *model_);
 void initializeModelhprimme(void *model_, primme_params *primme);
 int main_iter_kprimme_normal(dummy_type_cprimme *evals, dummy_type_kprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidateskprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
       PRIMME_INT ldW, dummy_type_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_kprimme *X, dummy_type_kprimme *R, dummy_type_kprimme *BX,
@@ -216,9 +234,15 @@ int prepare_candidateskprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dumm
       dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidateskprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
+      PRIMME_INT ldW, dummy_type_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_cprimme *hVals, dummy_type_kprimme *evecs, PRIMME_INT ldevecs, dummy_type_cprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normskprimme_normal(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W, PRIMME_INT ldW,
       dummy_type_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRkprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkkprimme_normal(void *model_, primme_context ctx);
 int update_statisticskprimme_normal(void *model_, primme_params *primme,
@@ -229,7 +253,8 @@ double ratio_JDQMR_GDpkkprimme_normal(void *model_, int numLocked,
 void update_slowdownkprimme_normal(void *model_);
 void initializeModelkprimme_normal(void *model_, primme_params *primme);
 int main_iter_kprimme(dummy_type_sprimme *evals, dummy_type_kprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidateskprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
       PRIMME_INT ldW, dummy_type_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_kprimme *X, dummy_type_kprimme *R, dummy_type_kprimme *BX,
@@ -243,9 +268,15 @@ int prepare_candidateskprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_
       dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidateskprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W,
+      PRIMME_INT ldW, dummy_type_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_kprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normskprimme(dummy_type_kprimme *V, PRIMME_INT ldV, dummy_type_kprimme *W, PRIMME_INT ldW,
       dummy_type_kprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRkprimme(void *model_, primme_context ctx);
 int switch_from_GDpkkprimme(void *model_, primme_context ctx);
 int update_statisticskprimme(void *model_, primme_params *primme,
@@ -256,7 +287,8 @@ double ratio_JDQMR_GDpkkprimme(void *model_, int numLocked,
 void update_slowdownkprimme(void *model_);
 void initializeModelkprimme(void *model_, primme_params *primme);
 int main_iter_sprimme(dummy_type_sprimme *evals, dummy_type_sprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatessprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *W,
       PRIMME_INT ldW, dummy_type_sprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_sprimme *X, dummy_type_sprimme *R, dummy_type_sprimme *BX,
@@ -270,9 +302,15 @@ int prepare_candidatessprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_
       dummy_type_sprimme *VtBV, int ldVtBV, dummy_type_sprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatessprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *W,
+      PRIMME_INT ldW, dummy_type_sprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_sprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_sprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_sprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normssprimme(dummy_type_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *W, PRIMME_INT ldW,
       dummy_type_sprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRsprimme(void *model_, primme_context ctx);
 int switch_from_GDpksprimme(void *model_, primme_context ctx);
 int update_statisticssprimme(void *model_, primme_params *primme,
@@ -283,7 +321,8 @@ double ratio_JDQMR_GDpksprimme(void *model_, int numLocked,
 void update_slowdownsprimme(void *model_);
 void initializeModelsprimme(void *model_, primme_params *primme);
 int main_iter_cprimme_normal(dummy_type_cprimme *evals, dummy_type_cprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatescprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
       PRIMME_INT ldW, dummy_type_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *X, dummy_type_cprimme *R, dummy_type_cprimme *BX,
@@ -297,9 +336,15 @@ int prepare_candidatescprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dumm
       dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatescprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_cprimme *hVals, dummy_type_cprimme *evecs, PRIMME_INT ldevecs, dummy_type_cprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normscprimme_normal(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W, PRIMME_INT ldW,
       dummy_type_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRcprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkcprimme_normal(void *model_, primme_context ctx);
 int update_statisticscprimme_normal(void *model_, primme_params *primme,
@@ -310,7 +355,8 @@ double ratio_JDQMR_GDpkcprimme_normal(void *model_, int numLocked,
 void update_slowdowncprimme_normal(void *model_);
 void initializeModelcprimme_normal(void *model_, primme_params *primme);
 int main_iter_cprimme(dummy_type_sprimme *evals, dummy_type_cprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatescprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
       PRIMME_INT ldW, dummy_type_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *X, dummy_type_cprimme *R, dummy_type_cprimme *BX,
@@ -324,9 +370,15 @@ int prepare_candidatescprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_
       dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatescprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_cprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normscprimme(dummy_type_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *W, PRIMME_INT ldW,
       dummy_type_cprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRcprimme(void *model_, primme_context ctx);
 int switch_from_GDpkcprimme(void *model_, primme_context ctx);
 int update_statisticscprimme(void *model_, primme_params *primme,
@@ -337,7 +389,8 @@ double ratio_JDQMR_GDpkcprimme(void *model_, int numLocked,
 void update_slowdowncprimme(void *model_);
 void initializeModelcprimme(void *model_, primme_params *primme);
 int main_iter_zprimme_normal(dummy_type_zprimme *evals, dummy_type_zprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_dprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidateszprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
       PRIMME_INT ldW, dummy_type_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *X, dummy_type_zprimme *R, dummy_type_zprimme *BX,
@@ -351,9 +404,15 @@ int prepare_candidateszprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dumm
       dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidateszprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
+      PRIMME_INT ldW, dummy_type_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *hVecs, int ldhVecs,
+      dummy_type_zprimme *hVals, dummy_type_zprimme *evecs, PRIMME_INT ldevecs, dummy_type_zprimme *evals,
+      dummy_type_dprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_zprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normszprimme_normal(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W, PRIMME_INT ldW,
       dummy_type_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRzprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkzprimme_normal(void *model_, primme_context ctx);
 int update_statisticszprimme_normal(void *model_, primme_params *primme,
@@ -364,7 +423,8 @@ double ratio_JDQMR_GDpkzprimme_normal(void *model_, int numLocked,
 void update_slowdownzprimme_normal(void *model_);
 void initializeModelzprimme_normal(void *model_, primme_params *primme);
 int main_iter_zprimme(dummy_type_dprimme *evals, dummy_type_zprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_dprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidateszprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
       PRIMME_INT ldW, dummy_type_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *X, dummy_type_zprimme *R, dummy_type_zprimme *BX,
@@ -378,9 +438,15 @@ int prepare_candidateszprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_
       dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidateszprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W,
+      PRIMME_INT ldW, dummy_type_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *hVecs, int ldhVecs,
+      dummy_type_dprimme *hVals, dummy_type_zprimme *evecs, PRIMME_INT ldevecs, dummy_type_dprimme *evals,
+      dummy_type_dprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_zprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normszprimme(dummy_type_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *W, PRIMME_INT ldW,
       dummy_type_zprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRzprimme(void *model_, primme_context ctx);
 int switch_from_GDpkzprimme(void *model_, primme_context ctx);
 int update_statisticszprimme(void *model_, primme_params *primme,
@@ -391,7 +457,8 @@ double ratio_JDQMR_GDpkzprimme(void *model_, int numLocked,
 void update_slowdownzprimme(void *model_);
 void initializeModelzprimme(void *model_, primme_params *primme);
 int main_iter_magma_hprimme(dummy_type_sprimme *evals, dummy_type_magma_hprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatesmagma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_magma_hprimme *W,
       PRIMME_INT ldW, dummy_type_magma_hprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_magma_hprimme *X, dummy_type_magma_hprimme *R, dummy_type_magma_hprimme *BX,
@@ -405,9 +472,15 @@ int prepare_candidatesmagma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV,
       dummy_type_sprimme *VtBV, int ldVtBV, dummy_type_sprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatesmagma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_magma_hprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_hprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_sprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_magma_hprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_sprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normsmagma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT ldV, dummy_type_magma_hprimme *W, PRIMME_INT ldW,
       dummy_type_magma_hprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRmagma_hprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_hprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_hprimme(void *model_, primme_params *primme,
@@ -418,7 +491,8 @@ double ratio_JDQMR_GDpkmagma_hprimme(void *model_, int numLocked,
 void update_slowdownmagma_hprimme(void *model_);
 void initializeModelmagma_hprimme(void *model_, primme_params *primme);
 int main_iter_magma_kprimme_normal(dummy_type_cprimme *evals, dummy_type_magma_kprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatesmagma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
       PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_kprimme *X, dummy_type_magma_kprimme *R, dummy_type_magma_kprimme *BX,
@@ -432,9 +506,15 @@ int prepare_candidatesmagma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_I
       dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatesmagma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_cprimme *hVals, dummy_type_magma_kprimme *evecs, PRIMME_INT ldevecs, dummy_type_cprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normsmagma_kprimme_normal(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W, PRIMME_INT ldW,
       dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRmagma_kprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_kprimme_normal(void *model_, primme_context ctx);
 int update_statisticsmagma_kprimme_normal(void *model_, primme_params *primme,
@@ -445,7 +525,8 @@ double ratio_JDQMR_GDpkmagma_kprimme_normal(void *model_, int numLocked,
 void update_slowdownmagma_kprimme_normal(void *model_);
 void initializeModelmagma_kprimme_normal(void *model_, primme_params *primme);
 int main_iter_magma_kprimme(dummy_type_sprimme *evals, dummy_type_magma_kprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatesmagma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
       PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_kprimme *X, dummy_type_magma_kprimme *R, dummy_type_magma_kprimme *BX,
@@ -459,9 +540,15 @@ int prepare_candidatesmagma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV,
       dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatesmagma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_magma_kprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normsmagma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT ldV, dummy_type_magma_kprimme *W, PRIMME_INT ldW,
       dummy_type_magma_kprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRmagma_kprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_kprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_kprimme(void *model_, primme_params *primme,
@@ -472,7 +559,8 @@ double ratio_JDQMR_GDpkmagma_kprimme(void *model_, int numLocked,
 void update_slowdownmagma_kprimme(void *model_);
 void initializeModelmagma_kprimme(void *model_, primme_params *primme);
 int main_iter_magma_sprimme(dummy_type_sprimme *evals, dummy_type_magma_sprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatesmagma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_magma_sprimme *W,
       PRIMME_INT ldW, dummy_type_magma_sprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_magma_sprimme *X, dummy_type_magma_sprimme *R, dummy_type_magma_sprimme *BX,
@@ -486,9 +574,15 @@ int prepare_candidatesmagma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV,
       dummy_type_sprimme *VtBV, int ldVtBV, dummy_type_sprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatesmagma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_magma_sprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_sprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_sprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_magma_sprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_sprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normsmagma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT ldV, dummy_type_magma_sprimme *W, PRIMME_INT ldW,
       dummy_type_magma_sprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRmagma_sprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_sprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_sprimme(void *model_, primme_params *primme,
@@ -499,7 +593,8 @@ double ratio_JDQMR_GDpkmagma_sprimme(void *model_, int numLocked,
 void update_slowdownmagma_sprimme(void *model_);
 void initializeModelmagma_sprimme(void *model_, primme_params *primme);
 int main_iter_magma_cprimme_normal(dummy_type_cprimme *evals, dummy_type_magma_cprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatesmagma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
       PRIMME_INT ldW, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_cprimme *X, dummy_type_magma_cprimme *R, dummy_type_magma_cprimme *BX,
@@ -513,9 +608,15 @@ int prepare_candidatesmagma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_I
       dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatesmagma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_cprimme *hVals, dummy_type_magma_cprimme *evecs, PRIMME_INT ldevecs, dummy_type_cprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normsmagma_cprimme_normal(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W, PRIMME_INT ldW,
       dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRmagma_cprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_cprimme_normal(void *model_, primme_context ctx);
 int update_statisticsmagma_cprimme_normal(void *model_, primme_params *primme,
@@ -526,7 +627,8 @@ double ratio_JDQMR_GDpkmagma_cprimme_normal(void *model_, int numLocked,
 void update_slowdownmagma_cprimme_normal(void *model_);
 void initializeModelmagma_cprimme_normal(void *model_, primme_params *primme);
 int main_iter_magma_cprimme(dummy_type_sprimme *evals, dummy_type_magma_cprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_sprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatesmagma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
       PRIMME_INT ldW, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_magma_cprimme *X, dummy_type_magma_cprimme *R, dummy_type_magma_cprimme *BX,
@@ -540,9 +642,15 @@ int prepare_candidatesmagma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV,
       dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatesmagma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_magma_cprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normsmagma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT ldV, dummy_type_magma_cprimme *W, PRIMME_INT ldW,
       dummy_type_magma_cprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRmagma_cprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_cprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_cprimme(void *model_, primme_params *primme,
@@ -553,7 +661,8 @@ double ratio_JDQMR_GDpkmagma_cprimme(void *model_, int numLocked,
 void update_slowdownmagma_cprimme(void *model_);
 void initializeModelmagma_cprimme(void *model_, primme_params *primme);
 int main_iter_magma_dprimme(dummy_type_dprimme *evals, dummy_type_magma_dprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_dprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatesmagma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_magma_dprimme *W,
       PRIMME_INT ldW, dummy_type_magma_dprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_dprimme *H, int ldH, int basisSize, dummy_type_magma_dprimme *X, dummy_type_magma_dprimme *R, dummy_type_magma_dprimme *BX,
@@ -567,9 +676,15 @@ int prepare_candidatesmagma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV,
       dummy_type_dprimme *VtBV, int ldVtBV, dummy_type_dprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatesmagma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_magma_dprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_dprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_dprimme *H, int ldH, int basisSize, dummy_type_dprimme *hVecs, int ldhVecs,
+      dummy_type_dprimme *hVals, dummy_type_magma_dprimme *evecs, PRIMME_INT ldevecs, dummy_type_dprimme *evals,
+      dummy_type_dprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_dprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normsmagma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT ldV, dummy_type_magma_dprimme *W, PRIMME_INT ldW,
       dummy_type_magma_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRmagma_dprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_dprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_dprimme(void *model_, primme_params *primme,
@@ -580,7 +695,8 @@ double ratio_JDQMR_GDpkmagma_dprimme(void *model_, int numLocked,
 void update_slowdownmagma_dprimme(void *model_);
 void initializeModelmagma_dprimme(void *model_, primme_params *primme);
 int main_iter_magma_zprimme_normal(dummy_type_zprimme *evals, dummy_type_magma_zprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_dprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatesmagma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
       PRIMME_INT ldW, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_magma_zprimme *X, dummy_type_magma_zprimme *R, dummy_type_magma_zprimme *BX,
@@ -594,9 +710,15 @@ int prepare_candidatesmagma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_I
       dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatesmagma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *hVecs, int ldhVecs,
+      dummy_type_zprimme *hVals, dummy_type_magma_zprimme *evecs, PRIMME_INT ldevecs, dummy_type_zprimme *evals,
+      dummy_type_dprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_zprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normsmagma_zprimme_normal(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W, PRIMME_INT ldW,
       dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRmagma_zprimme_normal(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_zprimme_normal(void *model_, primme_context ctx);
 int update_statisticsmagma_zprimme_normal(void *model_, primme_params *primme,
@@ -607,7 +729,8 @@ double ratio_JDQMR_GDpkmagma_zprimme_normal(void *model_, int numLocked,
 void update_slowdownmagma_zprimme_normal(void *model_);
 void initializeModelmagma_zprimme_normal(void *model_, primme_params *primme);
 int main_iter_magma_zprimme(dummy_type_dprimme *evals, dummy_type_magma_zprimme *evecs, PRIMME_INT ldevecs,
-      dummy_type_dprimme *resNorms, double startTime, int *ret, primme_context ctx);
+      dummy_type_dprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
 int prepare_candidatesmagma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
       PRIMME_INT ldW, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
       dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_magma_zprimme *X, dummy_type_magma_zprimme *R, dummy_type_magma_zprimme *BX,
@@ -621,9 +744,15 @@ int prepare_candidatesmagma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV,
       dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *prevhVecs, int nprevhVecs,
       int ldprevhVecs, int practConvChecking, int *map, double startTime,
       primme_context ctx);
+int copy_back_candidatesmagma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W,
+      PRIMME_INT ldW, dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *hVecs, int ldhVecs,
+      dummy_type_dprimme *hVals, dummy_type_magma_zprimme *evecs, PRIMME_INT ldevecs, dummy_type_dprimme *evals,
+      dummy_type_dprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_zprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
 int verify_normsmagma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT ldV, dummy_type_magma_zprimme *W, PRIMME_INT ldW,
       dummy_type_magma_zprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
-      int *flags, int *converged, primme_context ctx);
+      int *flags, int *numConverged, primme_context ctx);
 int switch_from_JDQMRmagma_zprimme(void *model_, primme_context ctx);
 int switch_from_GDpkmagma_zprimme(void *model_, primme_context ctx);
 int update_statisticsmagma_zprimme(void *model_, primme_params *primme,

@@ -8,7 +8,7 @@ see https://github.com/scipy/scipy
 import warnings
 import numpy as np
 from numpy.testing import run_module_suite, assert_allclose, assert_
-from nose.tools import nottest
+#from nose.tools import nottest
 from scipy import ones, r_, diag
 from scipy.sparse.linalg import aslinearoperator
 from scipy.sparse import csr_matrix
@@ -19,20 +19,6 @@ from compare import stats as st
 from builtins import str
 
 TEST_THIS_CASE = None
-#TEST_THIS_CASE = "A=MikotaPair(3, <class 'numpy.float64'>), k=2, M=False, which=LM, tol=0.044444444444444474, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=True"
-#TEST_THIS_CASE = "A=Lauchli_like_hori(3, <class 'numpy.complex64'>), k=3, M=False, which=1.2799817155687567, tol=2.8909999208648626e-06, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
-#TEST_THIS_CASE = "A=MikotaPair(3, <class 'numpy.float64'>), k=1, M=True, which=SM, tol=0.011111111111111124, bs=1, method=DEFAULT_MIN_TIME, with_gpuarray=True"
-#TEST_THIS_CASE = "A=Lauchli_like_hori(5, <class 'numpy.complex64'>), k=5, M=False, which=1.63749139677171, tol=2.8909999208648626e-06, bs=1, method=DEFAULT_MIN_TIME, with_gpuarray=False"
-#TEST_THIS_CASE = "A=MikotaPair(10, <class 'numpy.float16'>), k=10, M=True, which=SM, tol=0.0039062499999999987, bs=3, method=DEFAULT_MIN_TIME, with_gpuarray=False"
-#TEST_THIS_CASE = "A=Lauchli_like_hori(10, <class 'numpy.float16'>), k=10, M=True, which=SM, tol=0.0039062499999999987, bs=3, method=DEFAULT_MIN_TIME, with_gpuarray=True"
-#TEST_THIS_CASE = "A=MikotaPair(10, <class 'numpy.float32'>), k=10, M=False, which=SM, tol=2.8909999208648626e-06, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
-#TEST_THIS_CASE = "A=MikotaPair(10, <class 'numpy.float16'>), k=10, M=False, which=0.5149, tol=0.0039062499999999987, bs=3, method=DEFAULT_MIN_MATVECS, with_gpuarray=True"
-#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float16'>), k=5, M=False, which=SM, tol=0.0039062499999999987, bs=5, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
-#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float16'>), k=5, M=True, which=SM, tol=0.0039062499999999987, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
-#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float16'>), k=1, M=False, which=SM, tol=0.0039062499999999987, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=True"
-#TEST_THIS_CASE = "A=MikotaPair(10, <class 'numpy.float32'>), k=10, M=False, which=SM, tol=2.8909999208648626e-06, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=False"
-#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float32'>), k=1, M=True, which=SM, tol=4.0000000000000125e-05, bs=1, method=DEFAULT_MIN_TIME, with_gpuarray=False"
-#TEST_THIS_CASE = "A=MikotaPair(50, <class 'numpy.float16'>), k=3, M=False, which=SM, tol=0.0039062499999999987, bs=1, method=DEFAULT_MIN_MATVECS, with_gpuarray=True"
 
 #
 # GPU stuff
@@ -302,7 +288,6 @@ def eigsh_check(eigsh_solver, A, B, normInvB, k, M, which, sigma, tol, bs, metho
    if add_stats:
       st.add("eigsh: " + case_desc, ("eigsh",), mv=stats['numMatvecs'], time=stats['elapsedTime'])
 
-@nottest
 def test_primme_eigsh():
    """
    Test cases for primme.eighs for standard problems.
@@ -344,7 +329,6 @@ def test_primme_eigsh():
                                        (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma, tol, bs, method, with_gpu))
                                  yield (eigsh_check, eigsh, A0, None, 1, k, prec, which, sigma, tol, bs, method, evals0, precision, case_desc, with_gpu)
 
-@nottest
 def test_primme_eigsh_gen():
    """
    Test cases for primme.eighs for generalized problems.
@@ -388,7 +372,6 @@ def test_primme_eigsh_gen():
                                        (gen.__name__, n, dtype_to_str(precision, complexity), k, prec is not None, which, sigma, bs, method, with_gpu))
                                  yield (eigsh_check, eigsh, A0, B, normInvB, k, prec, which, sigma, tol, bs, method, evals0, precision, case_desc, with_gpu)
 
-#@nottest
 def test_primme_eigsh_matrix_types():
    """
    Test cases for primme.eighs with csr and LinearOperator matrix types.
@@ -555,7 +538,6 @@ def test_primme_svds():
                                  yield (svds_check, svds, A0, k, prec0, which, tol, bs, method, sva0, precision, case_desc, with_gpu)
                                  if bs > k: break
 
-#@nottest
 def test_primme_svds_matrix_types():
    """
    Generate all test cases for primme.svds with csr and LinearOperator matrix types.
@@ -574,12 +556,10 @@ def test_primme_svds_matrix_types():
                       ("Lauchli_like_vert", n, dtype, k, bool(prec), which))
          yield (svds_check, svds, op(A), k, prec, which, 1e-5, 1, 'DYNAMIC', sva, dtype, case_desc, False, False)
 
-@nottest
 def test_examples_from_doc():
    import doctest
    doctest.testmod(primme, raise_on_error=True, optionflags=doctest.NORMALIZE_WHITESPACE)
 
-@nottest
 def test_return_stats():
     A, _ = diagonal(100)
     evals, evecs, stats = primme.eigsh(A, 3, tol=1e-6, which='LA',
@@ -592,11 +572,5 @@ def test_return_stats():
 
 
 if __name__ == "__main__":
-    #c = np.finfo(np.float16).eps**.333
-    #A = Lauchli_like(2, 4, c, np.float16)
-    #A=toStandardProblem(MikotaPair(50))
-    #import scipy.io, scipy.sparse
-    #scipy.io.mmwrite('mikota_50.mtx', scipy.sparse.csr_matrix(A))
-    #print(A)
     run_module_suite()
-    #st.dump('tests.json')
+    st.dump('tests.json')

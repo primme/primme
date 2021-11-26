@@ -244,4 +244,11 @@ for i = 1:numel(eigs_meths)
                              eigs_meths{i});
 end
 
+% Test returning unconverged pairs
+
+l = primme_eigs(diag(1:100),5,'LA',struct('maxit',1,'tol',1e-15,'locking',1,'returnUnconverged',true));
+assert(numel(l) > 0)
+l = primme_eigs(diag(1:100),5,'LA',struct('maxit',1,'tol',1e-15,'locking',0,'returnUnconverged',true));
+assert(numel(l) == 5)
+
 disp('Success');
