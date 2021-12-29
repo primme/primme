@@ -500,7 +500,8 @@ STATIC int check_input(
       ret = -29;
    else if (evals == NULL)
       ret = -30;
-   else if (evecs == NULL || Num_check_pointer_Sprimme(evecs))
+   else if (primme->nLocal > 0 &&
+            (evecs == NULL || Num_check_pointer_Sprimme(evecs)))
       ret = -31;
    else if (resNorms == NULL)
       ret = -32;
