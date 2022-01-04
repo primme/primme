@@ -75,7 +75,8 @@ def get_numpy_options():
          r['libraries'].append("magma")
       else:
          r['extra_objects'].append('%s/lib/libmagma.a' % MAGMADIR)
-   return r
+
+   return r, "MAGMADIR" in environ
 
 def setup_package():
    import sys
@@ -85,9 +86,13 @@ def setup_package():
    try:
       import numpy
    except:
-      raise Exception("numpy not installed; please, install numpy and scipy before primme")
+      if ('bdist_wheel' in sys.argv[1:] or 'install' in sys.argv[1:] or
+          'build_ext' in sys.argv[1:]):
+         raise Exception("numpy not installed; please, install numpy before primme")
+      extra_options = {}
+      build_with_gpu = False
    else:
-      extra_options = get_numpy_options()
+      extra_options, build_with_gpu = get_numpy_options()
 
    # Get the long description from the README file
    here = path.abspath(path.dirname(__file__))
@@ -97,7 +102,7 @@ def setup_package():
    
    # Array extension module
    _Primme = Extension("primme",
-                      ["primme.pyx"],
+                      ["primme-gpu.cpp" if build_with_gpu else "primme.cpp"],
                       #extra_compile_args = ["-g", "-O0", "-Wall", "-Wextra"],
                       **extra_options
                       )
@@ -107,6 +112,7 @@ def setup_package():
          version     = "3.3.0",
          description = "PRIMME wrapper for Python",
          long_description = long_description,
+         long_description_content_type = "text/x-rst",
          url         = "https://github.com/primme/primme",
          author      = "Eloy Romero Alcalde, Andreas Stathopoulos and Lingfei Wu",
          author_email = "eloy@cs.wm.edu",
@@ -136,18 +142,12 @@ def setup_package():
    # Specify the Python versions you support here. In particular, ensure
    # that you indicate whether you support Python 2, Python 3 or both.
          'Programming Language :: C',
-         'Programming Language :: Python :: 2',
-         'Programming Language :: Python :: 2.6',
-         'Programming Language :: Python :: 2.7',
-         'Programming Language :: Python :: 3',
-         'Programming Language :: Python :: 3.2',
-         'Programming Language :: Python :: 3.3',
-         'Programming Language :: Python :: 3.4',
+         'Programming Language :: Python :: 3'
          ],
-         keywords = "eigenvalues singular values Davidson-type high-performance large-scale matrix",
+         keywords = "eigenvalues singular values generalized Hermitian symmetric Davidson-type high-performance large-scale matrix",
          setup_requires = ['numpy', 'scipy'],
          install_requires = ['future', 'numpy', 'scipy'],
-         ext_modules = cythonize([_Primme])
+         ext_modules = [_Primme]
          )
 
 if __name__ == '__main__':
