@@ -44,6 +44,7 @@ def get_numpy_options():
 
    r = dict(
                    include_dirs = [numpy_include, "primme/include", "primme/src/include"],
+                   define_macros = [("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
                    library_dirs = blaslapack_library_dirs,
                    libraries = blaslapack_libraries,
                    extra_link_args = blaslapack_extra_link_args
@@ -81,7 +82,6 @@ def get_numpy_options():
 def setup_package():
    import sys
    from setuptools import setup, Extension
-   from Cython.Build import cythonize
    
    try:
       import numpy
