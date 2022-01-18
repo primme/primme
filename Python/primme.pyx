@@ -3,19 +3,16 @@
 import traceback
 import numpy as np
 cimport numpy as np
-from scipy.sparse.linalg.interface import aslinearoperator, LinearOperator as NumPyLinearOperator
+import scipy.sparse.linalg
 cimport cython
 from cython cimport view
+
 try:
-    import pycuda.autoinit
-    import pycuda.gpuarray as gpuarray
-    import pycuda.driver
-    import pycuda.sparse.operator
-    import pycuda.sparse.coordinate
-    import pycuda.sparse.packeted 
+    import cupy, cupyx
+    __with_cupy = True
 except Exception as e:
-    gpuarray_exception = e
-    gpuarray = None
+    cupy_exception = e
+    __with_cupy = False
 
 try:
     from inspect import signature
@@ -25,40 +22,6 @@ except:
     from inspect import getargspec
     def __getnumargs(f):
             return len(getargspec(f).args)
-
-class LinearOperator:
-    def __init__(self, shape, matvec, rmatvec=None, support_matmat=True, dtype=None):
-
-        self.shape = shape
-
-        def __matmat(matvec, X, Y=None):
-            if Y is None:
-                Y = X.copy()
-            for i in range(X.shape[1]):
-                Y[:,i] = matvec(X[:,i], Y[:,i])
-            return Y
-
-        def __process_matvec(matvec):
-            if __getnumargs(matvec) <= 1:
-                matvec2 = lambda X,_: matvec(X)
-            else:
-                matvec2 = matvec
-            if not support_matmat:
-                matmat = lambda X,Y: __matmat(matvec2, X, Y)
-            else:
-                matmat = matvec2
-            return matmat
-
-        self.matvec = __process_matvec(matvec)
-        self.rmatvec = __process_matvec(rmatvec)
-        self.dtype = dtype
-
-    @property
-    def H(self):
-        return LinearOperator(self.shape, self.rmatvec, self.matvec, self.dtype)
-
-    def __repr__(self):
-        return "LinearOperator(shape=%s, matvec=%s, rmatvec=%s, dtype=%s)" %(self.shape, self.matvec, self.rmatvec, self.dtype)
 
 def __get_method(method):
     if method is None: return PRIMME_DEFAULT_METHOD
@@ -81,10 +44,6 @@ IF BUILD_WITH_MAGMA:
         int magma_finalize()
         void magma_queue_create(int device, magma_queue_t *queue)
         void magma_queue_destroy(magma_queue_t queue)
-        void magma_queue_sync(magma_queue_t queue)
-    
-    cdef extern from "cuda_runtime.h":
-        int cudaMemset2D(void * x, size_t ld, int value, size_t bytes_column, int n)
 
 try:
     from builtins import bytes as bytesp23 # bytes compatibility Py2/3
@@ -135,10 +94,10 @@ IF BUILD_WITH_MAGMA:
         magma_queue_create(device, &__queue)
         __device_id = device
     
-    if gpuarray is not None:
+    if __with_cupy:
         if magma_init() != 0:
             raise RuntimeError('MAGMA initialization failed')
-        set_device(pycuda.autoinit.context.get_device().get_attribute(pycuda.driver.device_attribute.PCI_DEVICE_ID))
+        set_device(cupy.cuda.runtime.getDevice())
 
 # Exception captured in user-defined functions
 cdef Exception __user_function_exception = None
@@ -359,16 +318,12 @@ cdef void c_matvec_gen_numpy(cython.p_char operator, numerics *x, np.int64_t *ld
         __current_block_size = -1
         return
     ierr[0] = 1
-    cdef object matvec 
-    cdef numerics[::1, :] x_view
+    cdef object matvec = primme_params_get_object(primme, operator)
+    n = primme_params_get_int(primme, "nLocal")
     global __user_function_exception
     try:
         __current_block_size = blockSize[0]
-        matvec = primme_params_get_object(primme, operator)
-        if matvec is None: raise RuntimeError("Not defined function for %s" % <bytes>operator)
-        n = primme_params_get_int(primme, "nLocal")
-        x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
-        (<numerics[:ldy[0]:1, :blockSize[0]]>y)[:n,:] = matvec(np.array(x_view[0:n,:], copy=False)).astype(get_np_type(x), order='F', copy=False)
+        matvec((<numerics[:ldx[0]:1,:blockSize[0]]>x)[:n,:], (<numerics[:ldy[0]:1,:blockSize[0]]>y)[:n,:])
         ierr[0] = 0
         __current_block_size = -1
     except Exception as e:
@@ -424,30 +379,7 @@ cdef void c_convtest_numpy(double *eval, numerics *evec, double *resNorm, int *i
         __user_function_exception = e
  
 IF BUILD_WITH_MAGMA: 
-    if gpuarray is not None:
-        import pycuda.driver
-        class Holder(pycuda.driver.PointerHolderBase):
-            def __init__(self, ptr):
-                super().__init__()
-                self.__ptr = ptr
-        
-            def get_pointer(self):
-                return self.__ptr
-        
-            def __int__(self):
-                return self.__ptr
-    
-            def __index__(self):
-                return self.__ptr
-    
-            def as_buffer(self, size, offset=0):
-                cdef char[::1] view = <char[:size]>(<char*>(<size_t>(self.__ptr + offset)))
-                return view
-    else:
-        class Holder:
-            pass
-    
-    cdef void c_matvec_gen_gpuarray(cython.p_char operator, numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+    cdef void c_matvec_gen_cupy(cython.p_char operator, void *x, np.int64_t *ldx, void *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
         if blockSize[0] <= 0:
             ierr[0] = 0
             return
@@ -456,46 +388,67 @@ IF BUILD_WITH_MAGMA:
         global __user_function_exception
         try:
             matvec = primme_params_get_object(primme, operator)
-            n = primme_params_get_int(primme, "nLocal")
-            magma_queue_sync(__queue)
-            x_py = gpuarray.GPUArray((n,blockSize[0]), get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
-            y_py = gpuarray.GPUArray((n,blockSize[0]), get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
-            pycuda.autoinit.context.synchronize()
-            y0_py = matvec(x_py, y_py)
-            if y0_py.ptr != y_py.ptr:
-                y_py.set(y0_py)
-            pycuda.autoinit.context.synchronize()
+            matvec(matvec.__toObj(<size_t>x, blockSize[0], ldx[0]), matvec.__toObj(<size_t>y, blockSize[0], ldy[0]))
             ierr[0] = 0
         except Exception as e:
             __user_function_exception = e
     
-    cdef void c_matvec_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
-        c_matvec_gen_gpuarray("matrix", x, ldx, y, ldy, blockSize, primme, ierr)
+    cdef void c_matvec_cupy(void *x, np.int64_t *ldx, void *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+        c_matvec_gen_cupy("matrix", x, ldx, y, ldy, blockSize, primme, ierr)
     
-    cdef void c_massmatvec_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
-        c_matvec_gen_gpuarray("massMatrix", x, ldx, y, ldy, blockSize, primme, ierr)
+    cdef void c_massmatvec_cupy(void *x, np.int64_t *ldx, void *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+        c_matvec_gen_cupy("massMatrix", x, ldx, y, ldy, blockSize, primme, ierr)
     
-    cdef void c_precond_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
-        c_matvec_gen_gpuarray("preconditioner", x, ldx, y, ldy, blockSize, primme, ierr)
+    cdef void c_precond_cupy(void *x, np.int64_t *ldx, void *y, np.int64_t *ldy, int *blockSize, primme_params *primme, int *ierr):
+        c_matvec_gen_cupy("preconditioner", x, ldx, y, ldy, blockSize, primme, ierr)
     
-    cdef void c_convtest_gpuarray(double *eval, numerics *evec, double *resNorm, int *isconv, primme_params *primme, int *ierr):
+    cdef void c_convtest_cupy(double *eval, void *evec, double *resNorm, int *isconv, primme_params *primme, int *ierr):
         ierr[0] = 1
         cdef object convtest = primme_params_get_object(primme, 'convtest')
-        if convtest is None: return
+        cdef object matvec = primme_params_get_object(primme, 'matrix')
         global __user_function_exception
         try:
             n = primme_params_get_int(primme, "nLocal")
             isconv[0] = 1 if convtest(eval[0] if eval is not NULL else None,
-                gpuarray.GPUArray((n,), get_np_type(evec), order='F', gpudata=Holder(<size_t>evec)) if evec is not NULL else None,
+                matvec.__toObj(<size_t>evec, 1, n) if evec is not NULL else None,
                 resNorm[0] if resNorm is not NULL else None) else 0
             ierr[0] = 0
         except Exception as e:
             __user_function_exception = e
- 
+
+def __to_eigsh_matvec(A, driver, argname):
+    if isinstance(A, (np.ndarray,scipy.sparse.spmatrix,scipy.sparse.linalg.LinearOperator)) or (__with_cupy and isinstance(A, (cupy.ndarray,cupyx.scipy.sparse.spmatrix))):
+        def matvec(x, y): y[:,:] = A.dot(x)
+    elif __getnumargs(A) == 1:
+        if driver is None: raise Exception('Please set `driver` when the valude of `%s` is a function' % argname)
+        def matvec(x, y): y[:,:] = A(x)
+    elif __getnumargs(A) == 2:
+        if driver is None: raise Exception('Please set `driver` when the valude of `%s` is a function' % argname)
+        matvec = A
+    else:
+        raise Exception('Unsupported value of `%s` as matrix or function' % argname)
+
+    n = A.shape[0]
+    dtype = A.dtype
+    itemsize = dtype.itemsize
+    if isinstance(A, (np.ndarray,scipy.sparse.spmatrix,scipy.sparse.linalg.LinearOperator)) or driver == 'numpy':
+        if driver != 'numpy' and driver is not None:
+            raise Exception('Incompatible value of `driver` with `%s`' % argname)
+        def toObj(ptr, blockSize, ld):
+            return np.ndarray((n,blockSize), dtype, ptr, strides=(itemsize,itemsize*ld), order='F')
+        matvec.__toObj = toObj
+    elif __with_cupy and (isinstance(A, (cupy.ndarray,cupyx.scipy.sparse.spmatrix)) or driver == 'cupy'):
+        if driver != 'cupy' and driver is not None:
+            raise Exception('Incompatible value of `driver` with `%s`' % argname)
+        def toObj(ptr, blockSize, ld):
+            return cupy.ndarray((n,blockSize), dtype, cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(ptr,0,None),0), strides=(itemsize,itemsize*ld), order='F')
+        matvec.__toObj = toObj
+
+    return matvec
 
 def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
           ncv=None, maxiter=None, tol=None, reltol=None, return_eigenvectors=True,
-          Minv=None, OPinv=None, mode='normal', lock=None, use_gpuarray=None,
+          Minv=None, OPinv=None, mode='normal', lock=None, driver=None,
           return_stats=False, maxBlockSize=0, minRestartSize=0,
           maxPrevRetain=0, method=None, return_unconverged=False,
           return_history=False, convtest=None, raise_for_unconverged=True, **kargs):
@@ -512,13 +465,14 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
 
     Parameters
     ----------
-    A : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator.OperatorBase, or function
+    A : matrix (numpy.ndarray, scipy.sparse.spmatrix, scipy.sparse.linalg.LinearOperator, cupy.ndarray,cupyx.scipy.sparse.spmatrix) or function with one argument
         the operation A * x, where A is a real symmetric matrix or complex
-        Hermitian.
+        Hermitian. If it is a function, A(x) returns A*x and A.shape and
+        A.dtype give the shape and the dtype of the matrix.
     k : int, optional
         The number of eigenvalues and eigenvectors to be computed. Must be
         1 <= k < min(A.shape).
-    M : An N x N matrix, array, sparse matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator.OperatorBase, or function
+    M : matrix (numpy.ndarray, scipy.sparse.spmatrix, scipy.sparse.linalg.LinearOperator, cupy.ndarray,cupyx.scipy.sparse.spmatrix) or function with one argument, optional
         the operation M * x for the generalized eigenvalue problem
 
             A * x = w * M * x.
@@ -528,7 +482,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         results, the data type of M should be the same as that of A.
     sigma : real, optional
         Find eigenvalues near sigma.
-    v0 : N x i, ndarray or GPUArray, optional
+    v0 : N x i, ndarray, optional
         Initial guesses to the eigenvectors.
     ncv : int, optional
         The maximum size of the basis
@@ -567,21 +521,24 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         An error is raised if convtest is also provided.
     Minv : (not supported yet)
         The inverse of M in the generalized eigenproblem.
-    OPinv : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator.OperatorBase, or function
+    OPinv : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator.OperatorBase, or function, optional
         Preconditioner to accelerate the convergence. Usually it is an
         approximation of the inverse of (A - sigma*M).
     return_eigenvectors : bool, optional
         Return eigenvectors (True) in addition to eigenvalues
     mode : string ['normal' | 'buckling' | 'cayley']
         Only 'normal' mode is supported.
-    lock : N x i, ndarray or GPUArray, optional
+    lock : N x i, ndarray, optional
         Seek the eigenvectors orthogonal to these ones. The provided
         vectors *should* be orthonormal. Useful to avoid converging to previously
         computed solutions.
-    use_gpuarray : bool
-        Set to True if A, M and Minv accept and return GPUArray. In that case the
-        eigenvectors evecs are also returned as GPUArray. Otherwise all operators
-        accept and return numpy.ndarray and evecs is also of that class.
+    driver : string ['numpy' | 'cupy' ]
+        Kind of object passed to A, M and OPinv, and returned as evecs. If 'numpy' or 'cupy' is given, then
+        the passed input and the expected returned object is from class `ndarray' in
+        numpy or cupy respectively.
+        
+        If no value is given, and `A' is scipy.sparse.spmatrix or cupyx.scipy.sparse.spmatrix,
+        then it is set to 'numpy' and 'cupy' respectively.
     maxBlockSize : int, optional
         Maximum number of vectors added at every iteration.
     minRestartSize : int, optional
@@ -621,7 +578,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     -------
     w : array
         Array of k eigenvalues ordered to best satisfy "which".
-<<<<<<< HEAD
     v : array, optional (if return_eigenvectors)
         An array representing the `k` eigenvectors.  The column ``v[:, i]`` is
         the eigenvector corresponding to the eigenvalue ``w[i]``.
@@ -711,20 +667,6 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     >>> evals # the three largest eigenvalues of A
 """
 
-    if use_gpuarray != True:
-        try:
-            A = aslinearoperator(A)
-        except Exception as e:
-            numpy_exception = e
-        
-    if use_gpuarray is None and not isinstance(A, (list, np.ndarray, NumPyLinearOperator)):
-        if gpuarray is None:
-            raise RuntimeError("Error trying to import pycuda.sparse.operator.OperatorBase, because use_gpuarray is not set and A is not a list, np.ndarray or scipy.sparse.linalg.interface.LinearOperator") from gpuarray_exception
-        if isinstance(A, (pycuda.sparse.operator.OperatorBase, pycuda.sparse.coordinate.CoordinateSpMV, pycuda.sparse.packeted.PacketedSpMV)):
-            use_gpuarray = True
-        else:
-            raise RuntimeError("Error trying to coerce A as scipy's LinearOperator. A is not is not a list, np.ndarray, scipy.sparse.linalg.interface.LinearOperator or pycuda.sparse.operator.OperatorBase, and use_gpuarray is not set") from numpy_exception
-
     PP = PrimmeParams()
     cdef primme_params *pp = PP.pp
  
@@ -733,23 +675,25 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if len(shape) != 2 or shape[0] != shape[1]:
         raise ValueError('A: expected square matrix (shape=%s)' % shape)
 
-    # The matvec for GPUArray accepts a second input parameter with the
-    # destination array, that is, the signature is y = A(x, y). Modify the
-    # input A to allow a second input parameter.
+    if driver is None:
+        if isinstance(A, (np.ndarray,scipy.sparse.spmatrix,scipy.sparse.linalg.LinearOperator)):
+            driver = 'numpy'
+        elif __with_cupy and isinstance(A, (cupy.ndarray,cupyx.scipy.sparse.spmatrix)):
+            driver = 'cupy'
+        else:
+            raise Exception('Please set `driver` when giving a function as `A`')
 
-    if use_gpuarray and __getnumargs(A) == 1:
-        def A(x, y=None, A=A): return A(x)
- 
-    __primme_params_set(PP, "matrix", A)
+    Af = __to_eigsh_matvec(A, driver, 'A')
+    __primme_params_set(PP, "matrix", Af)
+
     n = shape[0]
     __primme_params_set(PP, "n", n)
 
     if M is not None:
-        if not use_gpuarray:
-            M = aslinearoperator(M)
         if len(M.shape) != 2 or shape[0] != M.shape[0]:
             raise ValueError('M: expected square matrix (shape=%s)' % A.shape)
-        __primme_params_set(PP, "massMatrix", M)
+        Mf = __to_eigsh_matvec(M, driver, 'M')
+        __primme_params_set(PP, "massMatrix", Mf)
 
     if k <= 0 or k > n:
         raise ValueError("k=%d must be between 1 and %d, the order of the "
@@ -820,12 +764,11 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         __primme_params_set(PP, "maxMatvecs", maxiter)
 
     if OPinv is not None:
-        if not use_gpuarray:
-            OPinv = aslinearoperator(OPinv)
         if OPinv.shape[0] != OPinv.shape[1] or OPinv.shape[0] != A.shape[0]:
             raise ValueError('OPinv: expected square matrix with same shape as A (shape=%s)' % (OPinv.shape,n))
+        OPinvf = __to_eigsh_matvec(OPinv, driver, 'OPinv')
         __primme_params_set(PP, "correction_precondition", 1)
-        __primme_params_set(PP, "preconditioner", <object>OPinv)
+        __primme_params_set(PP, "preconditioner", OPinvf)
     else:
         __primme_params_set(PP, "correction_precondition", 0)
 
@@ -868,83 +811,48 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         dtype = A.dtype
 
 
-    if not use_gpuarray:
+    if driver == 'numpy':
         if dtype.type is np.complex64:
             primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[np.complex64_t])
-            if M: 
+            if M is not None: 
                 primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[np.complex64_t])
             primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[np.complex64_t])
             if convtest:
                 primme_params_set_pointer(pp, "convTestFun", <void*>c_convtest_numpy[np.complex64_t])
-            if return_history:
-                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
         elif dtype.type is np.float32:
             primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[float])
-            if M: 
+            if M is not None: 
                 primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[float])
             primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[float])
             if convtest:
                 primme_params_set_pointer(pp, "convTestFun", <void*>c_convtest_numpy[float])
-            if return_history:
-                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
         elif dtype.type is np.float64:
             primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[double])
-            if M: 
+            if M is not None: 
                 primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[double])
             primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[double])
             if convtest:
                 primme_params_set_pointer(pp, "convTestFun", <void*>c_convtest_numpy[double])
-            if return_history:
-                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
         else:
             primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_numpy[np.complex128_t])
-            if M: 
+            if M is not None: 
                 primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_numpy[np.complex128_t])
             primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_numpy[np.complex128_t])
             if convtest:
                 primme_params_set_pointer(pp, "convTestFun", <void*>c_convtest_numpy[np.complex128_t])
-            if return_history:
-                primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
-    else:  # Use GPU
+    elif driver == 'cupy':
         IF BUILD_WITH_MAGMA: 
-            if dtype.type is np.complex64:
-                primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_gpuarray[np.complex64_t])
-                if M: 
-                    primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_gpuarray[np.complex64_t])
-                primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_gpuarray[np.complex64_t])
-                if convtest:
-                    primme_params_set_pointer(pp, "convTestFun", <void*>c_convtest_gpuarray[np.complex64_t])
-                if return_history:
-                    primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
-            elif dtype.type is np.float32:
-                primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_gpuarray[float])
-                if M: 
-                    primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_gpuarray[float])
-                primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_gpuarray[float])
-                if convtest:
-                    primme_params_set_pointer(pp, "convTestFun", <void*>c_convtest_gpuarray[float])
-                if return_history:
-                    primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float])
-            elif dtype.type is np.float64:
-                primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_gpuarray[double])
-                if M: 
-                    primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_gpuarray[double])
-                primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_gpuarray[double])
-                if convtest:
-                    primme_params_set_pointer(pp, "convTestFun", <void*>c_convtest_gpuarray[double])
-                if return_history:
-                    primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
-            else:
-                primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_gpuarray[np.complex128_t])
-                if M: 
-                    primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_gpuarray[np.complex128_t])
-                primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_gpuarray[np.complex128_t])
-                if convtest:
-                    primme_params_set_pointer(pp, "convTestFun", <void*>c_convtest_gpuarray[np.complex128_t])
-                if return_history:
-                    primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[double])
+            primme_params_set_pointer(pp, "matrixMatvec", <void*>c_matvec_cupy)
+            if M is not None: 
+                primme_params_set_pointer(pp, "massMatrixMatvec", <void*>c_massmatvec_cupy)
+            primme_params_set_pointer(pp, "applyPreconditioner", <void*>c_precond_cupy)
+            if convtest:
+                primme_params_set_pointer(pp, "convTestFun", <void*>c_convtest_cupy)
         ELSE:
-            pass
+            raise Exception('primme is not compiled with cupy support')
+
+    if return_history:
+        primme_params_set_pointer(pp, "monitorFun", <void*>c_monitor[float] if dtype.type is np.float32 or dtype.type is np.complex64 else <void*>c_monitor[double])
 
     cdef double[::1] evals_d, norms_d
     cdef float[::1] evals_s, norms_s
@@ -957,12 +865,12 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     rtype = __get_real_dtype(dtype);
     evals = np.zeros(k, rtype)
     norms = np.zeros(k, rtype)
-    if rtype.type is np.float64:
-        evals_d, norms_d = evals, norms
-    else:
+    if rtype.type is np.float32:
         evals_s, norms_s = evals, norms
+    else:
+        evals_d, norms_d = evals, norms
     
-    if not use_gpuarray:
+    if driver == 'numpy':
         evecs = np.zeros((n, numOrthoConst+k), dtype, order='F')
         if dtype.type is np.float64:
             evecs_d = evecs
@@ -973,27 +881,20 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
         elif dtype.type is np.complex64:
             evecs_c = evecs
             evecs_p = <void*>&evecs_c[0,0]
-        elif dtype.type is np.complex128:
+        else:
             evecs_z = evecs
             evecs_p = <void*>&evecs_z[0,0]
     else:
-        evecs = gpuarray.zeros((n, numOrthoConst+k), dtype, order='F')
-        evecs_p = <void*>(<size_t>evecs.ptr)
+        evecs = cupy.zeros((n, numOrthoConst+k), dtype, order='F')
+        evecs_p = <void*>(<size_t>evecs.data.ptr)
 
     if lock is not None:
-        if not use_gpuarray:
-            np.copyto(evecs[:, 0:numOrthoConst], lock[:, 0:numOrthoConst])
-        else:
-            evecs[:, 0:numOrthoConst].set(lock[:, 0:numOrthoConst])
+        evecs[:, 0:numOrthoConst] = lock[:, 0:numOrthoConst]
 
     if v0 is not None:
         initSize = min(v0.shape[1], k)
         __primme_params_set(PP, "initSize", initSize)
-        if not use_gpuarray:
-            np.copyto(evecs[:, numOrthoConst:numOrthoConst+initSize],
-                v0[:, 0:initSize])
-        else:
-            evecs[:, numOrthoConst:numOrthoConst+initSize].set(v0[:, 0:initSize])
+        evecs[:, numOrthoConst:numOrthoConst+initSize] = v0[:, 0:initSize]
 
     if maxBlockSize:
         __primme_params_set(PP, "maxBlockSize", maxBlockSize)
@@ -1024,7 +925,8 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     __user_function_exception = None
     global __current_primme_params
     __current_primme_params = PP
-    if not use_gpuarray:
+    err = 0 # avoid warning
+    if driver == 'numpy':
         if dtype.type is np.complex64:
             err = cprimme(&evals_s[0], <PRIMME_COMPLEX_FLOAT*>evecs_p, &norms_s[0], pp)
         elif dtype.type is np.float32:
@@ -1033,7 +935,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             err = dprimme(&evals_d[0], <double*>evecs_p, &norms_d[0], pp)
         else:
             err = zprimme(&evals_d[0], <PRIMME_COMPLEX_DOUBLE*>evecs_p, &norms_d[0], pp)
-    else:
+    elif driver == 'cupy':
         if dtype.type is np.complex64:
             err = magma_cprimme(&evals_s[0], <PRIMME_COMPLEX_FLOAT*>evecs_p, &norms_s[0], pp)
         elif dtype.type is np.float32:
@@ -1047,7 +949,7 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
     if err != 0:
         if __user_function_exception is not None:
             raise PrimmeError(err) from __user_function_exception
-        elif err == -3 and not return_unconverged and raise_for_unconverged:
+        elif err != -3 or (not return_unconverged and raise_for_unconverged):
             raise PrimmeError(err)
 
     initSize = k if return_unconverged else __primme_params_get(PP, "initSize")
@@ -1364,19 +1266,13 @@ cdef void c_svds_matvec_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int6
         ierr[0] = 0
         return
     ierr[0] = 1
-    cdef object A 
-    cdef numerics[::1, :] x_view
+    cdef object matvec = primme_svds_params_get_object(primme_svds, 'matrix')
+    m = primme_svds_params_get_int(primme_svds, "mLocal")
+    n = primme_svds_params_get_int(primme_svds, "nLocal")
+    if transpose[0] != 0: m, n = n, m
     global __user_function_exception
     try:
-        A = primme_svds_params_get_object(primme_svds, 'matrix')
-        if A is None: raise RuntimeError("Not defined function for the matrix problem")
-        m = primme_svds_params_get_int(primme_svds, "mLocal")
-        n = primme_svds_params_get_int(primme_svds, "nLocal")
-        x_view = <numerics[:ldx[0]:1, :blockSize[0]]> x
-        if transpose[0] == 0:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = A.matmat(np.array(x_view[:n,:], copy=False)).astype(get_np_type(x), order='F', copy=False)
-        else:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = A.H.matmat(np.array(x_view[:m,:], copy=False)).astype(get_np_type(x), order='F', copy=False)
+        matvec((<numerics[:ldx[0]:1,:blockSize[0]]>x)[:n,:], (<numerics[:ldy[0]:1,:blockSize[0]]>y)[:m,:], transpose[0] != 0)
         ierr[0] = 0
     except Exception as e:
         __user_function_exception = e
@@ -1387,21 +1283,17 @@ cdef void c_svds_precond_numpy(numerics *x, np.int64_t *ldx, numerics *y, np.int
         ierr[0] = 0
         return
     ierr[0] = 1
-    cdef object precond 
-    cdef numerics[::1, :] x_view
+    cdef object precond = primme_svds_params_get_object(primme_svds, 'preconditioner')
+    m = primme_svds_params_get_int(primme_svds, "mLocal")
+    n = primme_svds_params_get_int(primme_svds, "nLocal")
     global __user_function_exception
     try:
-        precond = primme_svds_params_get_object(primme_svds, 'preconditioner')
-        if precond is None: raise RuntimeError("Not defined function for the preconditioner")
-        m = primme_svds_params_get_int(primme_svds, "mLocal")
-        n = primme_svds_params_get_int(primme_svds, "nLocal")
-        x_view = <numerics[:ldy[0]:1, :blockSize[0]]> x
         if mode[0] == primme_svds_op_AtA:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:n,:] = precond(np.array(x_view[:n,:], copy=False), mode[0]).astype(get_np_type(x), order='F', copy=False)
+            precond((<numerics[:ldx[0]:1,:blockSize[0]]>x)[:n,:], (<numerics[:ldy[0]:1,:blockSize[0]]>y)[:n,:], mode[0])
         elif mode[0] == primme_svds_op_AAt:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m,:] = precond(np.array(x_view[:m,:], copy=False), mode[0]).astype(get_np_type(x), order='F', copy=False)
+            precond((<numerics[:ldx[0]:1,:blockSize[0]]>x)[:m,:], (<numerics[:ldy[0]:1,:blockSize[0]]>y)[:m,:], mode[0])
         elif mode[0] == primme_svds_op_augmented:
-                (<numerics[:ldy[0]:1, :blockSize[0]]> y)[:m+n,:] = precond(np.array(x_view[:m+n,:], copy=False), mode[0]).astype(get_np_type(x), order='F', copy=False)
+            precond((<numerics[:ldx[0]:1,:blockSize[0]]>x)[:m+n,:], (<numerics[:ldy[0]:1,:blockSize[0]]>y)[:m+n,:], mode[0])
         else:
             return
         ierr[0] = 0
@@ -1448,46 +1340,32 @@ cdef void c_svds_convtest_numpy(double *sval, numerics *svecleft, numerics *svec
         __user_function_exception = e
  
 IF BUILD_WITH_MAGMA: 
-    cdef void c_svds_matvec_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr):
+    cdef void c_svds_matvec_cupy(void *x, np.int64_t *ldx, void *y, np.int64_t *ldy, int *blockSize, int *transpose, primme_svds_params *primme_svds, int *ierr):
         if blockSize[0] <= 0:
             ierr[0] = 0
             return
         ierr[0] = 1
-        cdef object A 
         global __user_function_exception
+        cdef object A = primme_svds_params_get_object(primme_svds, 'matrix')
         try:
-            A = primme_svds_params_get_object(primme_svds, 'matrix')
-            if A is None: raise RuntimeError("Not defined function for the matrix problem")
             m = primme_svds_params_get_int(primme_svds, "mLocal")
             n = primme_svds_params_get_int(primme_svds, "nLocal")
             x_shape = (n if transpose[0] == 0 else m, blockSize[0])
             y_shape = (m if transpose[0] == 0 else n, blockSize[0])
-            magma_queue_sync(__queue)
-            x_py = gpuarray.GPUArray(x_shape, dtype=get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
-            y_py = gpuarray.GPUArray(y_shape, dtype=get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
-            pycuda.autoinit.context.synchronize()
-            if transpose[0] == 0:
-                y0_py = A.matmat(x_py, y_py)
-            else:
-                y0_py = A.rmatmat(x_py, y_py)
-            if y_py.ptr != y0_py.ptr:
-                y_py.set(y0_py)
-            pycuda.autoinit.context.synchronize()
+            A(A.__toObj(<size_t>x, x_shape, ldx[0]), A.__toObj(<size_t>y, y_shape, ldy[0]), transpose[0] == 0)
             ierr[0] = 0
         except Exception as e:
             __user_function_exception = e
     
-    
-    cdef void c_svds_precond_gpuarray(numerics *x, np.int64_t *ldx, numerics *y, np.int64_t *ldy, int *blockSize, primme_svds_operator *mode, primme_svds_params *primme_svds, int *ierr):
+    cdef void c_svds_precond_cupy(void *x, np.int64_t *ldx, void *y, np.int64_t *ldy, int *blockSize, primme_svds_operator *mode, primme_svds_params *primme_svds, int *ierr):
         if blockSize[0] <= 0:
             ierr[0] = 0
             return
         ierr[0] = 1
-        cdef object precond 
         global __user_function_exception
+        cdef object precond = primme_svds_params_get_object(primme_svds, 'preconditioner')
+        cdef object A = primme_svds_params_get_object(primme_svds, 'matrix')
         try:
-            precond = primme_svds_params_get_object(primme_svds, 'preconditioner')
-            if precond is None: raise RuntimeError("Not defined function for the preconditioner")
             m = primme_svds_params_get_int(primme_svds, "mLocal")
             n = primme_svds_params_get_int(primme_svds, "nLocal")
             if mode[0] == primme_svds_op_AtA:
@@ -1498,28 +1376,23 @@ IF BUILD_WITH_MAGMA:
                 shape = (m+n, blockSize[0])
             else:
                 return
-            magma_queue_sync(__queue)
-            x_py = gpuarray.GPUArray(shape, get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldx[0]), order='F', gpudata=Holder(<size_t>x))
-            y_py = gpuarray.GPUArray(shape, get_np_type(x), strides=(get_np_type(x).itemsize, get_np_type(x).itemsize*ldy[0]), order='F', gpudata=Holder(<size_t>y))
-            y0_py = precond(x_py, y_py, mode[0])
-            if y0_py.ptr != y_py.ptr:
-                y_py.set(y0_py)
-            pycuda.autoinit.context.synchronize()
+            precond(A.__toObj(<size_t>x, shape, ldx[0]), A.__toObj(<size_t>y, shape, ldy[0]), mode[0])
             ierr[0] = 0
         except Exception as e:
             __user_function_exception = e
     
-    cdef void c_svds_convtest_gpuarray(double *sval, numerics *svecleft, numerics *svecright, double *resNorm, int *method, int *isconv, primme_svds_params *primme_svds, int *ierr):
+    cdef void c_svds_convtest_cupy(double *sval, void *svecleft, void *svecright, double *resNorm, int *method, int *isconv, primme_svds_params *primme_svds, int *ierr):
         ierr[0] = 1
         cdef object convtest = primme_svds_params_get_object(primme_svds, 'convtest')
+        cdef object A = primme_svds_params_get_object(primme_svds, 'matrix')
         if convtest is None: return
         global __user_function_exception
         try:
             m = primme_svds_params_get_int(primme_svds, "mLocal")
             n = primme_svds_params_get_int(primme_svds, "nLocal")
             isconv[0] = 1 if convtest(sval[0] if sval is not NULL else None,
-                gpuarray.GPUArray((n,), get_np_type(svecleft), order='F', gpudata=Holder(<size_t>svecleft)) if svecleft is not NULL else None,
-                gpuarray.GPUArray((n,), get_np_type(svecright), order='F', gpudata=Holder(<size_t>svecright)) if svecright is not NULL else None,
+                A.__toObj(<size_t>svecleft, (m,1), m) if svecleft is not NULL else None,
+                A.__toObj(<size_t>svecright, (n,1), n) if svecright is not NULL else None,
                 resNorm[0] if resNorm is not NULL else None) else 0
             ierr[0] = 0
         except Exception as e:
@@ -1536,11 +1409,36 @@ def __get_svds_method(method):
     if method_int < 0:
         raise ValueError('Not valid "method": %s' % method)
     return method_int
- 
+
+def __to_svds_A_matvec(A, driver):
+    m = A.shape[0]
+    n = A.shape[1]
+    dtype = A.dtype
+    itemsize = dtype.itemsize
+    if isinstance(A, (np.ndarray,scipy.sparse.spmatrix,scipy.sparse.linalg.LinearOperator)) or (__with_cupy and isinstance(A, (cupy.ndarray,cupyx.scipy.sparse.spmatrix))):
+        def matvec(x, y, transpose): y[:,:] = A.dot(x) if not transpose else A.H.dot(x)
+    elif __getnumargs(A) == 2:
+        if driver is None: raise Exception('Please set `driver` when `A` is a function')
+        def matvec(x, y, transpose): y[:,:] = A(x, transpose)
+    elif __getnumargs(A) == 3:
+        if driver is None: raise Exception('Please set `driver` when `A` is a function')
+        def matvec(x, y, transpose): A(x, transpose, y)
+    else:
+        raise Exception('Unsupported value of `A` as matrix or function')
+
+    if __with_cupy and (isinstance(A, (cupy.ndarray,cupyx.scipy.sparse.spmatrix)) or driver == 'cupy'):
+        if driver == 'numpy':
+            raise Exception('Incompatible value of `driver` with `A`')
+        def toObj(ptr, shape, ld):
+            return cupy.ndarray(shape, A.dtype, cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(ptr,0,None),0), strides=(A.dtype.itemsize,A.dtype.itemsize*ld), order='F')
+        matvec.__toObj = toObj
+
+    return matvec
+
 def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
          maxiter=None, return_singular_vectors=True,
          precAHA=None, precAAH=None, precAug=None,
-         u0=None, orthou0=None, orthov0=None, reltol=None, use_gpuarray=None,
+         u0=None, orthou0=None, orthov0=None, reltol=None, driver=None,
          return_stats=False, maxBlockSize=0,
          method=None, methodStage1=None, methodStage2=None,
          return_history=False, convtest=None, raise_for_unconverged=True, **kargs):
@@ -1549,8 +1447,12 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     Parameters
     ----------
-    A : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator, or function
-        Array to compute the SVD on, of shape (M, N)
+    A : matrix (numpy.ndarray, scipy.sparse.spmatrix, scipy.sparse.linalg.LinearOperator, cupy.ndarray,cupyx.scipy.sparse.spmatrix) or function with one argument
+        Matrix to compute the SVD on, of shape (M, N).
+
+        If it is a function, A(x) returns A*x and A.shape and
+        A.dtype give the shape and the dtype of the matrix.
+
     k : int, optional
         Number of singular values and vectors to compute.
         Must be 1 <= k < min(A.shape).
@@ -1591,13 +1493,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         Initial guesses for the right singular vectors.
     maxiter : int, optional
         Maximum number of matvecs with A and A.H. 
-    precAHA : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator, or function, optional
+    precAHA : matrix (numpy.ndarray, scipy.sparse.spmatrix, scipy.sparse.linalg.LinearOperator, cupy.ndarray,cupyx.scipy.sparse.spmatrix) or function with one argument, optional
         Approximate inverse of (A.H*A - sigma**2*I). If provided and M>=N, it
         usually accelerates the convergence.
-    precAAH : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator, or function, optional
+    precAAH : matrix (numpy.ndarray, scipy.sparse.spmatrix, scipy.sparse.linalg.LinearOperator, cupy.ndarray,cupyx.scipy.sparse.spmatrix) or function with one argument, optional
         Approximate inverse of (A*A.H - sigma**2*I). If provided and M<N, it
         usually accelerates the convergence.
-    precAug : matrix, scipy.sparse.linalg.interface.LinearOperator, pycuda.sparse.operator, or function, optional
+    precAug : matrix (numpy.ndarray, scipy.sparse.spmatrix, scipy.sparse.linalg.LinearOperator, cupy.ndarray,cupyx.scipy.sparse.spmatrix) or function with one argument, optional
         Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I).
     orthou0 : ndarray, optional
         Left orthogonal vector constrain.
@@ -1607,10 +1509,13 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         is computed. Useful to avoid converging to previously computed solutions.
     orthov0 : ndarray, optional
         Right orthogonal vector constrain. See orthou0.
-    use_gpuarray : bool
-        Set to True if A and prec* accept and return GPUArray. In that case the
-        singular vectors svecs are also returned as GPUArray. Otherwise all operators
-        accept and return numpy.ndarray and svecs is also of that class.
+    driver : string ['numpy' | 'cupy' ]
+        Kind of object passed to A, precAHA, precAAH, precAug, and returned as svecs. If 'numpy' or 'cupy' is given, then
+        the passed input and the expected returned object is from class `ndarray' in
+        numpy or cupy respectively.
+        
+        If no value is given, and `A' is scipy.sparse.spmatrix or cupyx.scipy.sparse.spmatrix,
+        then it is set to 'numpy' and 'cupy' respectively.
     maxBlockSize : int, optional
         Maximum number of vectors added at every iteration.
     convtest : callable
@@ -1630,12 +1535,12 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     Returns
     -------
-    u : ndarray or GPUArray, shape=(M, k), optional
+    u : ndarray, shape=(M, k), optional
         Unitary matrix having left singular vectors as columns.
         Returned if `return_singular_vectors` is True.
     s : ndarray, shape=(k,)
         The singular values.
-    vt : ndarray or GPUArray, shape=(k, N), optional
+    vt : ndarray, shape=(k, N), optional
         Unitary matrix having right singular vectors as rows.
         Returned if `return_singular_vectors` is True.
     stats : dict, optional (if return_stats)
@@ -1725,40 +1630,22 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     PP = PrimmeSvdsParams()
     cdef primme_svds_params *pp = PP.pp
  
-    if use_gpuarray != True:
-        try:
-            A = aslinearoperator(A)
-        except Exception as e:
-            numpy_exception = e
-        
-    if use_gpuarray is None and not isinstance(A, NumPyLinearOperator):
-        if gpuarray is None:
-            raise RuntimeError("Error trying to import pycuda.sparse.operator.OperatorBase, because use_gpuarray is not set and A is not a list, np.ndarray or scipy.sparse.linalg.interface.LinearOperator") from gpuarray_exception
-        if isinstance(A, (pycuda.sparse.operator.OperatorBase, pycuda.sparse.coordinate.CoordinateSpMV, pycuda.sparse.packeted.PacketedSpMV)):
-            use_gpuarray = True
+    if driver is None:
+        if isinstance(A, (np.ndarray,scipy.sparse.spmatrix,scipy.sparse.linalg.LinearOperator)):
+            driver = 'numpy'
+        elif __with_cupy and isinstance(A, (cupy.ndarray,cupyx.scipy.sparse.spmatrix)):
+            driver = 'cupy'
         else:
-            raise RuntimeError("Error trying to coerce A as scipy's LinearOperator. A is not is not a list, np.ndarray, scipy.sparse.linalg.interface.LinearOperator or pycuda.sparse.operator.OperatorBase, and use_gpuarray is not set") from numpy_exception
+            raise Exception('Please set `driver` when giving a function as `A`')
 
-    if use_gpuarray:
-        class Agpu:
-            def __init__(self, A):
-                self.shape = A.shape
-                self.dtype = A.dtype
-                if __getnumargs(A.matmat) == 1:
-                    self._matmat = lambda x,_: A.matmat(x)
-                else:
-                    self._matmat = lambda x,y: A.matmat(x,y)
-                if __getnumargs(A.rmatmat) == 1:
-                    self._rmatmat = lambda x,_: A.rmatmat(x)
-                else:
-                    self._rmatmat = lambda x,y: A.rmatmat(x,y)
-            def matmat(self,x,y): return self._matmat(x,y)
-            def rmatmat(self,x,y): return self._rmatmat(x,y)
-        A = Agpu(A)
- 
+    try:
+        Af = __to_svds_A_matvec(A, driver)
+    except Exception as e:
+        raise Exception('Invalid value for argument `A`)') from e
+    __primme_svds_params_set(PP, "matrix", Af)
+
     cdef int m, n
     m, n = A.shape
-    __primme_svds_params_set(PP, "matrix", A)
     __primme_svds_params_set(PP, "m", m)
     __primme_svds_params_set(PP, "n", n)
 
@@ -1766,42 +1653,31 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         raise ValueError("k=%d must be between 1 and min(A.shape)=%d" % (k, min(n, m)))
     __primme_svds_params_set(PP, "numSvals", k)
 
+    precAHAf = precAAHf = precAugf = None
     if precAHA is not None:
-        if not use_gpuarray:
-            precAHA = aslinearoperator(precAHA)
         if precAHA.shape[0] != precAHA.shape[1] or precAHA.shape[0] != n:
             raise ValueError('precAHA: expected square matrix with size %d' % n)
+        precAHAf = __to_eigsh_matvec(precAHA, driver, 'precAHA')
 
     if precAAH is not None:
-        if not use_gpuarray:
-            precAAH = aslinearoperator(precAAH)
         if precAAH.shape[0] != precAAH.shape[1] or precAAH.shape[0] != m:
             raise ValueError('precAAH: expected square matrix with size %d' % m)
+        precAAHf = __to_eigsh_matvec(precAAH, driver, 'precAAH')
 
     if precAug is not None:
-        if not use_gpuarray:
-            precAug = aslinearoperator(precAug)
         if precAug.shape[0] != precAug.shape[1] or precAug.shape[0] != m+n:
             raise ValueError('precAug: expected square matrix with size %d' % (m+n))
+        precAugf = __to_eigsh_matvec(precAug, driver, 'precAug')
 
-    if not use_gpuarray:
-        def prevec(X, mode):
-            if mode == primme_svds_op_AtA and precAHA is not None:
-                return precAHA.matmat(X)
-            elif mode == primme_svds_op_AAt and precAAH is not None:
-                return precAAH.matmat(X) 
-            elif mode == primme_svds_op_augmented and precAug is not None:
-                return precAug.matmat(X) 
-            return X
-    else:
-        def prevec(X, Y, mode):
-            if mode == primme_svds_op_AtA and precAHA is not None:
-                return precAHA(X, Y)
-            elif mode == primme_svds_op_AAt and precAAH is not None:
-                return precAAH(X, Y) 
-            elif mode == primme_svds_op_augmented and precAug is not None:
-                return precAug(X, Y) 
-            return X
+    def prevec(X, Y, mode):
+        if mode == primme_svds_op_AtA and precAHAf is not None:
+            precAHAf(X, Y)
+        elif mode == primme_svds_op_AAt and precAAHf is not None:
+            precAAHf(X, Y) 
+        elif mode == primme_svds_op_augmented and precAugf is not None:
+            precAugf(X, Y) 
+        else:
+            Y[:,:] = X[:,:]
 
     if precAHA is not None or precAAH is not None or precAug is not None:
         __primme_svds_params_set(PP, "precondition", 1)
@@ -1839,7 +1715,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         primme_svds_params_set_doubles(pp, "targetShifts", &sigma_c)
         __primme_svds_params_set(PP, "target", "primme_svds_closest_abs")
 
-    if tol is not None:
+    if tol:
         if convtest is not None:
             raise ValueError('Giving tol and convtest is not allowed.')
         __primme_svds_params_set(PP, "eps", tol)
@@ -1911,68 +1787,38 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
 
     cdef void *svecs_p = <void*>0
-    if not use_gpuarray:
+    if driver == 'numpy':
         if dtype.type is np.complex64:
             primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[np.complex64_t])
             primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[np.complex64_t])
             if convtest:
                 primme_svds_params_set_pointer(pp, "convTestFun", <void*>c_svds_convtest_numpy[np.complex64_t])
-            if return_history:
-                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
         elif dtype.type is np.float32:
             primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[float])
             primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[float])
             if convtest:
                 primme_svds_params_set_pointer(pp, "convTestFun", <void*>c_svds_convtest_numpy[float])
-            if return_history:
-                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
         elif dtype.type is np.float64:
             primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[double])
             primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[double])
             if convtest:
                 primme_svds_params_set_pointer(pp, "convTestFun", <void*>c_svds_convtest_numpy[double])
-            if return_history:
-                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
         else:
             primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_numpy[np.complex128_t])
             primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_numpy[np.complex128_t])
             if convtest:
                 primme_svds_params_set_pointer(pp, "convTestFun", <void*>c_svds_convtest_numpy[np.complex128_t])
-            if return_history:
-                primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
     else:
         IF BUILD_WITH_MAGMA: 
-            if dtype.type is np.complex64:
-                primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_gpuarray[np.complex64_t])
-                primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_gpuarray[np.complex64_t])
-                if convtest:
-                    primme_svds_params_set_pointer(pp, "convTestFun", <void*>c_svds_convtest_gpuarray[np.complex64_t])
-                if return_history:
-                    primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
-            elif dtype.type is np.float32:
-                primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_gpuarray[float])
-                primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_gpuarray[float])
-                if convtest:
-                    primme_svds_params_set_pointer(pp, "convTestFun", <void*>c_svds_convtest_gpuarray[float])
-                if return_history:
-                    primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float])
-            elif dtype.type is np.float64:
-                primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_gpuarray[double])
-                primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_gpuarray[double])
-                if convtest:
-                    primme_svds_params_set_pointer(pp, "convTestFun", <void*>c_svds_convtest_gpuarray[double])
-                if return_history:
-                    primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
-            else:
-                primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_gpuarray[np.complex128_t])
-                primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_gpuarray[np.complex128_t])
-                if convtest:
-                    primme_svds_params_set_pointer(pp, "convTestFun", <void*>c_svds_convtest_gpuarray[np.complex128_t])
-                if return_history:
-                    primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[double])
+            primme_svds_params_set_pointer(pp, "matrixMatvec", <void*>c_svds_matvec_cupy)
+            primme_svds_params_set_pointer(pp, "applyPreconditioner", <void*>c_svds_precond_cupy)
+            if convtest:
+                primme_svds_params_set_pointer(pp, "convTestFun", <void*>c_svds_convtest_cupy)
         ELSE:
-            pass
+            raise Exception('primme is not compiled with cupy support')
 
+    if return_history:
+        primme_svds_params_set_pointer(pp, "monitorFun", <void*>c_svds_monitor[float] if dtype.type is np.float32 or dtype.type is np.complex64 else <void*>c_svds_monitor[double])
 
     cdef double[::1] svals_d, norms_d
     cdef float[::1] svals_s, norms_s
@@ -1989,7 +1835,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
     else:
         svals_s, norms_s = svals, norms
  
-    if not use_gpuarray:
+    if driver == 'numpy':
         svecs = np.empty(((m+n)*(numOrthoConst+k),), dtype)
         if dtype.type is np.float64:
             svecs_d = svecs
@@ -2003,9 +1849,9 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
         elif dtype.type is np.complex128:
             svecs_z = svecs
             svecs_p = <void*>&svecs_z[0]
-    else:
-        svecs = gpuarray.zeros(((m+n)*(numOrthoConst+k),), dtype, order='F')
-        svecs_p = <void*>(<size_t>svecs.ptr)
+    elif driver == 'cupy':
+        svecs = cupy.zeros(((m+n)*(numOrthoConst+k),), dtype, order='F')
+        svecs_p = <void*>(<size_t>svecs.data.ptr)
 
     u0, v0 = check_pair(u0, v0, "v0 or u0")
     
@@ -2040,7 +1886,8 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
 
     global __user_function_exception
     __user_function_exception = None
-    if not use_gpuarray:
+    err = 0 # avoid warning
+    if driver == 'numpy':
         if dtype.type is np.complex64:
             err = cprimme_svds(&svals_s[0], <PRIMME_COMPLEX_FLOAT*>svecs_p, &norms_s[0], pp)
         elif dtype.type is np.float32:
@@ -2049,7 +1896,7 @@ def svds(A, k=6, ncv=None, tol=0, which='LM', v0=None,
             err = dprimme_svds(&svals_d[0], <double*>svecs_p, &norms_d[0], pp)
         else:
             err = zprimme_svds(&svals_d[0], <PRIMME_COMPLEX_DOUBLE*>svecs_p, &norms_d[0], pp)
-    else:
+    elif driver == 'cupy':
         if dtype.type is np.complex64:
             err = magma_cprimme_svds(&svals_s[0], <PRIMME_COMPLEX_FLOAT*>svecs_p, &norms_s[0], pp)
         elif dtype.type is np.float32:

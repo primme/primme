@@ -64,30 +64,24 @@ eval, evec = primme.eigsh(A, 1, which='LM', convtest=convtest_lm)
 assert_allclose(eval, [ 99.], atol=.1)
 
 try:
-    import pycuda.autoinit
-    import pycuda.sparse.packeted
-    import pycuda.sparse.coordinate
-    with_gpuarray = True
+    import cupy, cupyx
+    test_gpu = True
 except Exception:
-    with_gpuarray = False
+    test_gpu = False
     print("Not testing GPU examples")
 
-if with_gpuarray:
-    import cupy, cupyx
-    A = cupyx.sparse.spdiags(np.asarray(range(100), dtype=np.float32), [0], 100, 100)
-    A = cupy.diag(cupy.asarray(range(100), dtype=np.float32))
-    def Afgpu(x, y):
-        x0 = cupy.ndarray(x.shape, x.dtype, cupy.cuda.MemoryPointer(cupy.cuda.UnownedMemory(x.ptr,0,None),0), order='F')
-        y0 = cupy.matmul(A,x0)
-        y1 = pycuda.gpuarray.GPUArray(y0.shape, y0.dtype, gpudata=int(y0.data.ptr), strides=y0.strides, order=y0.order)
-        y[:,:] = y1[:,:]
-        return y
-    Afgpu.shape = A.shape
-    Afgpu.dtype = A.dtype
-    #Agpu = pycuda.sparse.packeted.PacketedSpMV(A, True, A.dtype)
-    evals, evecs = primme.eigsh(Afgpu, 3, tol=1e-6, which='LA', maxBlockSize=1, use_gpuarray=True)
+if test_gpu:
+    # Simple GPU test with a cupy matrix
+    Agpu = cupy.diag(cupy.asarray(range(100), dtype=np.float32))
+    evals, evecs = primme.eigsh(Agpu, 3, tol=1e-6, which='LA')
     assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
-    print(evals) # [ 99.,  98.,  97.]
+
+    # Simple GPU test passing the matvec function
+    def Afgpu(x): return Agpu.dot(x)
+    Afgpu.shape = Agpu.shape
+    Afgpu.dtype = Agpu.dtype
+    evals, evecs = primme.eigsh(Afgpu, 3, tol=1e-6, which='LA', driver='cupy')
+    assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
     
 # Return and show convergence history
 eval, evec, stats = primme.eigsh(A, 1, which='LM', return_stats=True, return_history=True)
@@ -110,10 +104,10 @@ assert(len(evals) > 0)
 print(evals) # [ 98.9]
 
 # Sparse singular mass matrix
-A = scipy.sparse.spdiags(np.asarray(range(100), dtype=np.float32), [0], 100, 100)
-M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1), dtype=np.float32), [0], 100, 100)
+A = scipy.sparse.spdiags(np.asarray(range(1,100), dtype=np.float32), [0], 99, 99)
+M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1), dtype=np.float32), [0], 99, 99)
 evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
-assert_allclose(evals, [ 0./99.,  1./98.,  2./97.], atol=1e-6*100)
+assert_allclose(evals, [ 1./99.,  2./98.,  3./97.], atol=1e-6*100)
 print(evals)
 
 # Get PRIMME properties within a callback
@@ -165,18 +159,12 @@ svecs_left, svals, svecs_right, stats = primme.svds(A, 3, which='SM', tol=1e-6,
 assert_allclose(svals, A_svals, atol=1e-6*100)
 print(stats["elapsedTime"], stats["numMatvecs"])
 
-if with_gpuarray:
-    # NOTE: PacketedSpMV only supports square matrices
-    A = scipy.sparse.spdiags(np.asarray([range(100),np.ones(100)], dtype=np.float32), [0,1], 100, 100)
-    ADgpu = pycuda.sparse.packeted.PacketedSpMV(A, True, A.dtype)
-    AHgpu = pycuda.sparse.packeted.PacketedSpMV(A.H, True, A.dtype)
-    #from scipy.sparse.linalg.interface import LinearOperator
-    Agpu = primme.LinearOperator(A.shape, matvec=ADgpu, rmatvec=AHgpu, dtype=A.dtype, support_matmat=False)
-    print(Agpu)
+if test_gpu:
+    # Simple GPU test with a matrix
+    Agpu = cupyx.scipy.sparse.spdiags(cupy.asarray([range(100),np.ones(100)], dtype=cupy.float32), [0,1], 100, 100)
     svecs_left, svals, svecs_right, stats = primme.svds(Agpu, 3, which='SM', tol=1e-6,
-                                           use_gpuarray=True, return_stats=True, printLevel=3)
-    assert_allclose(svals, [0.79488437, 0.85890809, 0.87174328], atol=1e-6*103)
-    print(svals) # [ 0.79488437  0.85890809  0.87174328]
+                                                        return_stats=True)
+    assert_allclose(svals, [1.283498, 2.130866, 3.08505], atol=1e-6*103)
 
 # Estimation of the smallest singular value
 def convtest_sm(sval, svecl, svecr, rnorm):
@@ -186,15 +174,13 @@ svec_left, sval, svec_right, stats = primme.svds(A, 1, which='SM',
 assert_allclose(sval, [ 1.], atol=.1)
 
 # User-defined matvec: implicit rectangular matrix with nonzero elements on the diagonal only
-Bdiag = np.arange(0, 100).reshape((100,1))
-Bdiagr = np.concatenate((np.arange(0, 100).reshape((100,1)).astype(np.float32), np.zeros((100,1), dtype=np.float32)), axis=None).reshape((200,1))
-def Bmatmat(x):
-   if len(x.shape) == 1: x = x.reshape((100,1))
-   return np.vstack((Bdiag * x, np.zeros((100, x.shape[1]), dtype=np.float32)))
-def Brmatmat(x):
-   if len(x.shape) == 1: x = x.reshape((200,1))
-   return (Bdiagr * x)[0:100,:]
-
-B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
-svecs_left, svals, svecs_right = primme.svds(B, 3, which='LM', tol=1e-6)
-assert_allclose(svals, [ 99.,  98.,  97.], atol=1e-6*100)
+A = scipy.sparse.spdiags(range(10), [0], 100, 10)
+def Amatmat(x):
+   if len(x.shape) == 1: x = x.reshape((x.shape[0],1))
+   return A.dot(x)
+def Armatmat(x):
+   if len(x.shape) == 1: x = x.reshape((x.shape[0],1))
+   return A.H.dot(x)
+Aop = scipy.sparse.linalg.LinearOperator((100,10), matvec=Amatmat, matmat=Amatmat, rmatvec=Armatmat, dtype=A.dtype)
+svecs_left, svals, svecs_right = primme.svds(Aop, 3, which='LM', tol=1e-6)
+assert_allclose(svals, [ 9.,  8.,  7.], atol=1e-6*100)
