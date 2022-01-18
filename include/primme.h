@@ -41,7 +41,7 @@
 #define PRIMME_VERSION_MAJOR      3
 #define PRIMME_VERSION_MINOR      3
 
-#if defined(__clang__) && defined(__FLT16_EPSILON__)
+#if defined(__clang__) && defined(FLT16_MAX)
 #  define PRIMME_HALF __fp16
 #  define PRIMME_WITH_NATIVE_HALF
 #else

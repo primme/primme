@@ -119,18 +119,18 @@ lib-debug-sanitize: lib
 all_tests-debug-sanitize: all_tests
 
 lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export PRIMME_WITH_HALF := yes
-lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export CC := clang
+lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export CC := ${CLANG} -x c++
 lib-clang-half matlab-clang-half: export CFLAGS += -march=native -Ofast
 lib-clang-half-debug matlab-clang-half-debug: export CFLAGS := -O0 -g -fPIC
 lib-clang-half lib-clang-half-debug: lib
-all_tests-clang-half-debug: export CC := clang
-all_tests-clang-half-debug: export CXX := clang++
+all_tests-clang-half-debug: export CC := ${CLANG}
+all_tests-clang-half-debug: export CXX := ${CLANG}
 all_tests-clang-half-debug: export LDFLAGS := -rtlib=compiler-rt -fPIC -lgcc_s
 all_tests-clang-half-debug: all_tests
-matlab-clang-half-debug: export MEXFLAGS := CXX=clang LDFLAGS='-rtlib=compiler-rt -fPIC' -g CXXFLAGS='-fPIC -O0 -g'
+matlab-clang-half-debug: export MEXFLAGS := CXX=${CLANG} LDFLAGS='-rtlib=compiler-rt -fPIC' -g CXXFLAGS='-fPIC -O0 -g'
 matlab-clang-half matlab-clang-half-debug: matlab
 
 python-clang-half-debug: clean clean_lib lib-clang-half-debug
-	@$(MAKE) -C Python clean all  CC='clang -fPIC' LDSHARED='clang -shared -rtlib=compiler-rt -lm'
+	@$(MAKE) -C Python clean all  CC='${CLANG} -fPIC' CXX='${CLANG} -fPIC' LDSHARED='${CLANG} -shared -rtlib=compiler-rt -lm -lstdc++'
 
 .NOTPARALLEL:

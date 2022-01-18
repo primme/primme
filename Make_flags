@@ -40,6 +40,7 @@ PRIMME_WITH_FLOAT ?= yes
 ifneq ($(PRIMME_WITH_FLOAT), yes)
     CFLAGS += -DPRIMME_WITHOUT_FLOAT
 endif
+CLANG ?= clang
 
 
 # GPUs compiler flags

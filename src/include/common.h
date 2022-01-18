@@ -38,6 +38,10 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+/* To include the support of float16 */
+#define __STDC_WANT_IEC_60559_TYPES_EXT__
+#include <float.h>
+
 /* Including MAGMA headers before C99 complex.h avoid compiler issues */
 
 #ifdef PRIMME_WITH_MAGMA
