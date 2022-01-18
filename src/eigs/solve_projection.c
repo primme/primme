@@ -1248,6 +1248,8 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
 
    int i;         /* Loop variable                                     */
 
+   assert(nV <= m && n0 <= n && n <= m);
+
    /* Compute V' * G * W[n0:n-1] */
 
    HSCALAR *ip = NULL;
@@ -1277,7 +1279,7 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
 
       int j, jmax=-1;
       HREAL ipmax = 0.0;
-      if (i < n) {
+      if (i < nV) {
          for (j = 0; j < nV; j++) {
             if (used[j]) continue;
             HREAL ipij = ABS(ip[nV * (i - n0) + j]);
@@ -1295,6 +1297,7 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
             break;
          }
       }
+      assert(jmax >= 0);
 
       /* Assign the map */
 

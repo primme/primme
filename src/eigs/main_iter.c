@@ -1571,6 +1571,32 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    /* Reorder the flags from previous iteration following map */
 
    CHKERR(permute_vecs_iprimme(flags, basisSize, map, ctx));
+   if (!primme->locking) {
+      HEVAL *evals0;
+      CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(
+            primme->numEvals, &evals0, ctx));
+      HREAL *resNorms0;
+      CHKERR(Num_malloc_RHprimme(primme->numEvals, &resNorms0, ctx));
+      primme->stats.maxConvTol = 0.0;
+      for (i = 0; i < primme->numEvals; i++) {
+         if (flags[i] >= CONVERGED && map[i] < primme->numEvals) {
+            evals0[i] = evals[map[i]];
+            resNorms0[i] = resNorms[map[i]];
+            primme->stats.maxConvTol =
+                  max(primme->stats.maxConvTol, resNorms0[i]);
+         } else {
+            evals0[i] = HUGE_VAL;
+            resNorms0[i] = HUGE_VAL;
+            flags[i] = UNCONVERGED;
+         }
+      }
+      for (i = 0; i < primme->numEvals; i++) {
+         evals[i] = evals0[i];
+         resNorms[i] = resNorms0[i];
+      }
+      CHKERR(Num_free_RHprimme(resNorms0, ctx));
+      CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(evals0, ctx));
+   }
 
    while (1) {
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
@@ -1590,17 +1616,16 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       for (blki = *blockSize, i = 0;
             i < blockNormsSize && *blockSize < maxBlockSize; i++, blki++) {
          /* Write back flags and residual norms */
-         flags[iev[blki]] = flagsBlock[i];
          basisNorms[iev[blki]] = blockNorms[blki];
 
          // Process flags
          int j;
-         for (j = lasti + 1; j <= iev[blki]; j++) {
+         for (j = lasti + 1; j < iev[blki]; j++) {
             if (flags[j] == UNCONVERGED || flags[j] == SKIP_UNTIL_RESTART) {
                keepConverging = 0;
             }
             if (flags[j] != SKIP) real_iev++;
-            if (j < iev[blki] && keepConverging && flags[j] >= CONVERGED &&
+            if (keepConverging && flags[j] >= CONVERGED &&
                   (*numConverged) < primme->numEvals) {
                (*numConverged)++;
             }
@@ -1622,6 +1647,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             }
 
             /* Count the new solution */
+            flags[iev[blki]] = flagsBlock[i];
             recentlyConverged++;
             (*numConverged)++;
 
@@ -1641,6 +1667,9 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                   0.0, primme_event_converged, startTime, ctx));
          }
          else if (flagsBlock[i] == UNCONVERGED) {
+            keepConverging = 0; /* stop marking as converged */
+            flags[iev[blki]] = UNCONVERGED;
+
             /* Update the smallest residual norm */
             if (*blockSize == 0) {
                *smallestResNorm = HUGE_VAL;
@@ -1658,6 +1687,12 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                      &BX[(*blockSize) * ldBV], ldBV, ctx));
             }
             (*blockSize)++;
+         }
+         else if (flagsBlock[i] >= CONVERGED) {
+            flags[iev[blki]] = UNCONVERGED;
+         }
+         else {
+            flags[iev[blki]] = flagsBlock[i];
          }
 
          lasti = iev[blki];
@@ -1715,11 +1750,11 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
-               R?&R[(*blockSize)*ldR]:NULL, 0, computeXR?blockNormsSize:0, ldR, computeXR?&blockNorms[*blockSize]:NULL,
+               computeXR?&R[(*blockSize)*ldR]:NULL, 0, computeXR?blockNormsSize:0, ldR, computeXR?&blockNorms[*blockSize]:NULL,
                BX?&BX[(*blockSize)*ldV]:NULL, 0, computeXR&&BX?blockNormsSize:0, ldV,
                NULL, 0, 0, 0,
                NULL, 0, 0, 0,
-               NULL, 0, 0,
+               computeXR?NULL:&blockNorms[*blockSize], 0, computeXR?0:blockNormsSize,
                NULL, 0, 0,
                NULL, 0, 0,
                XNorms?&XNorms[*blockSize]:NULL, 0, primme->massMatrixMatvec?blockNormsSize:0,
@@ -1743,6 +1778,8 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          }
       }
    }
+
+   for (i = lasti + 1; i < primme->maxBasisSize; i++) flags[i] = UNCONVERGED;
 
    CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(hValsBlock0, ctx));
    CHKERR(Num_free_SHprimme(hVecsBlock0, ctx));
