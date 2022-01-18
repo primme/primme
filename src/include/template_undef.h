@@ -53,6 +53,7 @@
 #undef SET_ZERO
 #undef SET_COMPLEX
 #undef TO_COMPLEX
+#undef TO_COMPLEX2
 #undef PLUS_EQUAL
 #undef MULT_EQUAL
 #undef TEMPLATE_PLEASE

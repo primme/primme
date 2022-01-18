@@ -409,7 +409,7 @@ int wrapper_svds_Sprimme(void *svals_, void *svecs_, void *resNorms_,
    /* ------------------ */
    /* Set some defaults  */
    /* ------------------ */
-   if (primme_svds->method == primme_svds_default)
+   if (primme_svds->method == primme_svds_op_none)
       primme_svds_set_defaults(primme_svds);
 
    /* Deprecated input  */

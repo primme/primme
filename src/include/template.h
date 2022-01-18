@@ -213,6 +213,7 @@
 /* SET_ZERO(A)       : set A = 0                                           */
 /* SET_COMPLEX(A, B) : set A = B                                           */
 /* TO_COMPLEX(A)     : cast A to a supported complex type                  */
+/* TO_COMPLEX2(A, B) : create complex number giving real and imag. parts   */
 /* PLUS_EQUAL(A, B)  : set A += B                                          */
 /* MULT_EQUAL(A, B)  : set A *= B                                          */
 
@@ -243,6 +244,11 @@
 #     define PLUS_EQUAL(A, B) (A) += (B)
 #     define MULT_EQUAL(A, B) (A) *= (B)
 #  endif
+#endif
+#ifndef __cplusplus
+#  define TO_COMPLEX2(A,B) ((A) + (B) * _Complex_I)
+#else
+#  define TO_COMPLEX2(A,B) (std::complex<HREAL>((HREAL)(A), (HREAL)((B))))
 #endif
 
 

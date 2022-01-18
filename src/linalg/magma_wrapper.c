@@ -124,18 +124,25 @@ static int free_fn_dummy (void *p, primme_context ctx) {
 
 #endif /* MAGMA_WRAPPER_PRIVATE */
 
+#if !defined(USE_HALFCOMPLEX_MAGMA)
+
 STATIC_DONT_DECLARE MAGMA_SCALAR toMagmaScalar(HSCALAR a) {
-   union {XSCALAR p; MAGMA_SCALAR m; } u;
-   SET_COMPLEX(u.p, a);
-   return u.m;
+#ifndef USE_COMPLEX
+   return a;
+#else
+   return (MAGMA_SCALAR){REAL_PART(a), IMAGINARY_PART(a)};
+#endif
 }
 
 STATIC_DONT_DECLARE HSCALAR toPrimmeScalar(MAGMA_SCALAR a) {
-   union {XSCALAR p; MAGMA_SCALAR m; } u;
-   u.m = a;
-   return TO_COMPLEX(u.p);
+#ifndef USE_COMPLEX
+   return a;
+#else
+   return TO_COMPLEX2(MAGMA_Z_REAL(a), MAGMA_Z_IMAG(a));
+#endif
 }
 
+#endif
 
 /******************************************************************************
  * Function Num_check_pointer - Return no error code if the pointer is on a
