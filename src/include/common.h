@@ -39,8 +39,10 @@
 #define COMMON_H
 
 /* To include the support of float16 */
-#define __STDC_WANT_IEC_60559_TYPES_EXT__
-#include <float.h>
+#if defined(__clang__)
+#  define __STDC_WANT_IEC_60559_TYPES_EXT__
+#  include <float.h>
+#endif
 
 /* Including MAGMA headers before C99 complex.h avoid compiler issues */
 

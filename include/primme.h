@@ -41,6 +41,12 @@
 #define PRIMME_VERSION_MAJOR      3
 #define PRIMME_VERSION_MINOR      3
 
+/* To include the support of float16 */
+#if defined(__clang__)
+#  define __STDC_WANT_IEC_60559_TYPES_EXT__
+#  include <float.h>
+#endif
+
 #if defined(__clang__) && defined(FLT16_MAX)
 #  define PRIMME_HALF __fp16
 #  define PRIMME_WITH_NATIVE_HALF
