@@ -1,4 +1,4 @@
-PKG_CXXFLAGS = -I../inst/include  -DPRIMME_INT_SIZE=0
+PKG_CXXFLAGS = -I../inst/include  -DPRIMME_INT_SIZE=0 -DF77UNDERSCORE -DUSE_XHEEV -DUSE_ZGESV -DUSE_XHEGV -DPRIMME_INT_SIZE=0 -DPRIMME_WITHOUT_FLOAT -DPRIMME_BLAS_RCOMPLEX
 # Linker will discard primmeext if R provides a full LAPACK
 PKG_LIBS = -Lprimme -lprimme $(LAPACK_LIBS) -lprimmeext $(BLAS_LIBS) $(FLIBS)
 
@@ -6,8 +6,7 @@ $(SHLIB): primme/libprimme.a primme/libprimmeext.a
 
 primme/libprimme.a:
 	@(cd primme && $(MAKE) -f make_primme libprimme.a \
-	  CXX="$(CXX)" CXXFLAGS="$(R_XTRA_CPPFLAGS) $(CXXFLAGS) $(CPICFLAGS) -DF77UNDERSCORE -DUSE_XHEEV -DUSE_ZGESV -DUSE_XHEGV -DPRIMME_INT_SIZE=0 -DPRIMME_WITHOUT_FLOAT -DPRIMME_BLAS_RCOMPLEX" AR="$(AR)" \
-	  RANLIB="$(RANLIB)")
+	  CXX="$(CXX)" CXXFLAGS="$(R_XTRA_CPPFLAGS) $(CXXFLAGS) $(CPICFLAGS) $(PKG_CXXFLAGS)" AR="$(AR)" RANLIB="$(RANLIB)")
 
 primme/libprimmeext.a:
 	@(cd primme && $(MAKE) -f make_primme libprimmeext.a \

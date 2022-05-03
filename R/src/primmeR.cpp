@@ -45,6 +45,12 @@
 #include "Matrix.h"
 #include "Matrix_stubs.c"
 
+#ifdef USE_FC_LEN_T                                                                                                                                         
+#    define STRING_LEN1 , 1                                                                                                                                 
+#else
+#    define STRING_LEN1                                                                                                                                     
+#endif
+
 using namespace Rcpp;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,9 +87,9 @@ void xhemm(const char *side, const char *uplo, int m, int n, const double *a,
    const int ONE=1;
    ASSERT(lda >= m && ldb >= m && ldc >= m);
    if (side[0] == 'L' && n == 1) {
-      F77_NAME(dsymv)(uplo, &m, &alpha, a, &lda, b, &ONE, &beta, c, &ONE);
+      F77_NAME(dsymv)(uplo, &m, &alpha, a, &lda, b, &ONE, &beta, c, &ONE STRING_LEN1);
    } else {
-      F77_NAME(dsymm)(side, uplo, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+      F77_NAME(dsymm)(side, uplo, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -93,9 +99,9 @@ void xhemm(const char *side, const char *uplo, int m, int n, const Rcomplex *a,
    Rcomplex alpha = {1.0, 0.0}, beta = {0.0, 0.0};
    const int ONE=1;
    if (side[0] == 'L' && n == 1) {
-      F77_NAME(zhemv)((char*)uplo, &m, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, (int*)&ONE, &beta, c, (int*)&ONE);
+      F77_NAME(zhemv)((char*)uplo, &m, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, (int*)&ONE, &beta, c, (int*)&ONE STRING_LEN1);
    } else {
-      F77_NAME(zhemm)((char*)side, (char*)uplo, &m, &n, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, &ldb, &beta, c, &ldc);
+      F77_NAME(zhemm)((char*)side, (char*)uplo, &m, &n, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -105,9 +111,9 @@ void xgemm(const char *transa, const char *transb, int m, int n, int k,
    const int ONE = 1;
    if (transb[0] == 'N' && n == 1) {
       F77_NAME(dgemv)(transa, transa[0]=='N'?&m:&k, transa[0]=='N'?&k:&m, &alpha,
-            a, &lda, b, &ONE, &beta, c, &ONE);
+            a, &lda, b, &ONE, &beta, c, &ONE STRING_LEN1);
    } else {
-      F77_NAME(dgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+      F77_NAME(dgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -117,9 +123,9 @@ void xgemm(const char *transa, const char *transb, int m, int n, int k,
    int ONE = 1;
    if (transb[0] == 'N' && n == 1) {
       F77_NAME(zgemv)((char*)transa, transa[0]=='N'?&m:&k, transa[0]=='N'?&k:&m, &alpha,
-            (Rcomplex*)a, &lda, (Rcomplex*)b, &ONE, &beta, c, &ONE);
+            (Rcomplex*)a, &lda, (Rcomplex*)b, &ONE, &beta, c, &ONE STRING_LEN1);
    } else {
-      F77_NAME(zgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+      F77_NAME(zgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 

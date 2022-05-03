@@ -1,7 +1,6 @@
 ## Changes
 
-* Update PRIMME to version 3.2
-* Fix warnings with clang++
+* Fix USE_FC_LEN_T
 
 ## Test environments
 * Ubuntu 20.04, R 4.0.2 and devel
