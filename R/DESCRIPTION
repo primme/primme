@@ -9,7 +9,7 @@ Authors@R: c(person("Eloy", "Romero", role=c("aut", "cre"), email="eloy@cs.wm.ed
              person("College of William & Mary", role="cph"))
 Maintainer: Eloy Romero <eloy@cs.wm.edu>
 Description:
-    R interface to 'PRIMME' <http://www.cs.wm.edu/~andreas/software/>, a C library for computing a few
+    R interface to 'PRIMME' <https://www.cs.wm.edu/~andreas/software/>, a C library for computing a few
     eigenvalues and their corresponding eigenvectors of a real symmetric or complex
     Hermitian matrix, or generalized Hermitian eigenproblem.  It can also compute
     singular values and vectors of a square or rectangular matrix. 'PRIMME' finds
@@ -18,7 +18,7 @@ Description:
     Stathopoulos (2010, <doi:10.1145/1731022.1731031>) and Wu (2017, <doi:10.1137/16M1082214>).
     See 'citation("PRIMME")' for details.
 URL:
-    http://www.cs.wm.edu/~andreas/software/
+    https://www.cs.wm.edu/~andreas/software/
     https://github.com/primme/primme
 BugReports: https://github.com/primme/primme/issues
 Imports:
