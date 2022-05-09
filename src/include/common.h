@@ -577,10 +577,12 @@ static inline uint32_t hash_call(const char *str, double value) {
    PROFILE_BEGIN(STR(ERRN)); \
    *(RET) = (ERRN);\
    PROFILE_END; \
-   MEM_POP_FRAME((RET)); \
-   if (*(RET)) {\
+   int __err = 0;\
+   MEM_POP_FRAME(&__err); \
+   if (__err) {\
       PRINTFALL(1, "PRIMME: Error %d in (" __FILE__ ":%d): %s\n", *(RET), __LINE__, #ERRN );\
    } \
+  assert(__err==0); \
 }
 
 /*****************************************************************************/

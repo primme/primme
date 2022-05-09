@@ -143,12 +143,13 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       }
 #endif
 
-      if (blockNorms[i-left] <= primme->stats.maxConvTol) {
+      if (blockNorms[i-left] <= tol) {
          flags[i] = CONVERGED;
          PRINTF(5,
                "Mark pair as converged because the residual norm %g is "
-               "smaller than the residual of a converged pair %g\n",
-               (double)blockNorms[i - left], primme->stats.maxConvTol);
+               "smaller than the residual of a converged pair or machine "
+               "precision %g\n",
+               (double)blockNorms[i - left], tol);
          continue;
       }
 

@@ -146,6 +146,33 @@ From PRIMME 1.x to 2.0:
 Changelog
 =========
 
+Changes in PRIMME 3.3 (released on Dic 29, 2021):
+
+* Added estimation errors of "matrixMatvec" and "massMatrixMatvec" in
+  stat fields "estimateErrorOnA" and "estimateErrorOnB", and
+  orthogonalization errors in "estimateOrthoError", and errors in the
+  residual vector norms "estimateReseidualError".
+
+* Added a heuristic to detect stagnation in QMR
+
+* Complete support for complex half precision for GPUs.
+
+* Fixed bug in "magma_zprimme()" preventing any problem to converge
+
+* Fixed bugs for "nLocal" larger than 2^{31}
+
+* Fixed bug in reporting progress for MATLAB’s *primme_svds* function.
+
+* Fixed Python’s eigsh when returning only the eigenvalues.
+
+* Added support for GPU matvec in Python.
+
+* Added option *raise_for_unconverged* in Python *eigsh* to return all
+  converged pairs even when more were asked.
+
+* Added Python function *get_eigsh_param* to get a field of
+  *primme_params* during runtime.
+
 Changes in PRIMME 3.2 (released on Jan 29, 2021):
 
 * Fixed Intel 2021 compiler error ""Unsupported combination of types
@@ -671,7 +698,7 @@ precisions:
 
 +-------------+----------------------+----------------------+
 | Precision   | Real                 | Complex              |
-+=============+======================+======================+
+|=============|======================|======================|
 | half        | "hprimme()"          | "kprimme()"          |
 |             | "hsprimme()"         | "ksprimme()"         |
 +-------------+----------------------+----------------------+
@@ -691,7 +718,7 @@ precisions:
 
 +-------------+-----------------------------+
 | Precision   | Complex                     |
-+=============+=============================+
+|=============|=============================|
 | half        | "kprimme_normal()"          |
 |             | "kcprimme_normal()"         |
 +-------------+-----------------------------+
@@ -2618,23 +2645,29 @@ type primme_params
       Block matrix-multivector multiplication, y = A x in solving A x
       = \lambda x or A x = \lambda B x.
 
-      Parameters:
-         * **x** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldx".
+      Param x:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldx".
 
-         * **ldx** – the leading dimension of the array "x".
+      Param ldx:
+         the leading dimension of the array "x".
 
-         * **y** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldy".
+      Param y:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldy".
 
-         * **ldy** – the leading dimension of the array "y".
+      Param ldy:
+         the leading dimension of the array "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "x" and "y" matches the type of "evecs" of
       the calling  "dprimme()" (or a variant), unless the user sets
@@ -2684,23 +2717,29 @@ type primme_params
       M is usually an approximation of A - \sigma I or A - \sigma B
       for finding eigenvalues close to \sigma.
 
-      Parameters:
-         * **x** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldx".
+      Param x:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldx".
 
-         * **ldx** – the leading dimension of the array "x".
+      Param ldx:
+         the leading dimension of the array "x".
 
-         * **y** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldy".
+      Param y:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldy".
 
-         * **ldy** – the leading dimension of the array "y".
+      Param ldy:
+         the leading dimension of the array "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "x" and "y" matches the type of "evecs" of
       the calling  "dprimme()" (or a variant), unless the user sets
@@ -2741,23 +2780,29 @@ type primme_params
       = \lambda B x. If it is NULL, the standard eigenvalue problem A
       x = \lambda x is solved.
 
-      Parameters:
-         * **x** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldx".
+      Param x:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldx".
 
-         * **ldx** – the leading dimension of the array "x".
+      Param ldx:
+         the leading dimension of the array "x".
 
-         * **y** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldy".
+      Param y:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldy".
 
-         * **ldy** – the leading dimension of the array "y".
+      Param ldy:
+         the leading dimension of the array "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "x" and "y" matches the type of "evecs" of
       the calling  "dprimme()" (or a variant), unless the user sets
@@ -2847,20 +2892,23 @@ type primme_params
       Global sum reduction function. No need to set for sequential
       programs.
 
-      Parameters:
-         * **sendBuf** – array of size "count" with the local input
-           values.
+      Param sendBuf:
+         array of size "count" with the local input values.
 
-         * **recvBuf** – array of size "count" with the global output
-           values so that the i-th element of recvBuf is the sum over
-           all processes of the i-th element of "sendBuf".
+      Param recvBuf:
+         array of size "count" with the global output values so that
+         the i-th element of recvBuf is the sum over all processes of
+         the i-th element of "sendBuf".
 
-         * **count** – array size of "sendBuf" and "recvBuf".
+      Param count:
+         array size of "sendBuf" and "recvBuf".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "sendBuf" and "recvBuf" matches the type of
       "evecs" of the calling  "dprimme()" (or a variant), unless the
@@ -2926,16 +2974,18 @@ type primme_params
       Broadcast function from process with ID zero. It is optional in
       parallel executions, and not needed for sequential programs.
 
-      Parameters:
-         * **buffer** – array of size "count" with the local input
-           values.
+      Param buffer:
+         array of size "count" with the local input values.
 
-         * **count** – array size of "sendBuf" and "recvBuf".
+      Param count:
+         array size of "sendBuf" and "recvBuf".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "buffer" matches the type of "evecs" of the
       calling  "dprimme()" (or a variant), unless the user sets
@@ -3655,7 +3705,7 @@ type primme_params
 
       +----------+---------+------------------------------------------------------------+
       | RightX   | SkewX   | D                                                          |
-      +==========+=========+============================================================+
+      |==========|=========|============================================================|
       | 0        | 0       | M^{-1}R (Classic GD)                                       |
       +----------+---------+------------------------------------------------------------+
       | 1        | 0       | M^{-1}(R-Delta X) (cheap Olsen’s Method)                   |
@@ -3692,7 +3742,7 @@ type primme_params
 
       +----------+---------+---------------------------------+
       | RightQ   | SkewQ   | P_Q^r                           |
-      +==========+=========+=================================+
+      |==========|=========|=================================|
       | 0        | 0       | I                               |
       +----------+---------+---------------------------------+
       | 1        | 0       | I - QQ^*                        |
@@ -3706,7 +3756,7 @@ type primme_params
 
       +----------+---------+---------------------------------+
       | RightX   | SkewX   | P_X^r                           |
-      +==========+=========+=================================+
+      |==========|=========|=================================|
       | 0        | 0       | I                               |
       +----------+---------+---------------------------------+
       | 1        | 0       | I - XX^*                        |
@@ -3747,57 +3797,68 @@ type primme_params
       unconverged and converged eigenvalues, residual norms, targets,
       etc).
 
-      Parameters:
-         * **basisEvals** – array with approximate eigenvalues of the
-           basis.
+      Param basisEvals:
+         array with approximate eigenvalues of the basis.
 
-         * **basisSize** – size of the arrays, "basisEvals",
-           "basisFlags" and "basisNorms".
+      Param basisSize:
+         size of the arrays, "basisEvals", "basisFlags" and
+         "basisNorms".
 
-         * **basisFlags** – state of every approximate pair in the
-           basis.
+      Param basisFlags:
+         state of every approximate pair in the basis.
 
-         * **iblock** – indices of the approximate pairs in the block
-           targeted during current iteration.
+      Param iblock:
+         indices of the approximate pairs in the block targeted during
+         current iteration.
 
-         * **blockSize** – size of array "iblock".
+      Param blockSize:
+         size of array "iblock".
 
-         * **basisNorms** – array with residual norms of the pairs in
-           the basis.
+      Param basisNorms:
+         array with residual norms of the pairs in the basis.
 
-         * **numConverged** – number of pairs converged in the basis
-           plus the number of the locked pairs (note that this value
-           isn’t monotonic).
+      Param numConverged:
+         number of pairs converged in the basis plus the number of the
+         locked pairs (note that this value isn’t monotonic).
 
-         * **lockedEvals** – array with the locked eigenvalues.
+      Param lockedEvals:
+         array with the locked eigenvalues.
 
-         * **numLocked** – size of the arrays "lockedEvals",
-           "lockedFlags" and "lockedNorms".
+      Param numLocked:
+         size of the arrays "lockedEvals", "lockedFlags" and
+         "lockedNorms".
 
-         * **lockedFlags** – state of each locked eigenpair.
+      Param lockedFlags:
+         state of each locked eigenpair.
 
-         * **lockedNorms** – array with the residual norms of the
-           locked pairs.
+      Param lockedNorms:
+         array with the residual norms of the locked pairs.
 
-         * **inner_its** – number of performed QMR iterations in the
-           current correction equation. It resets for each block
-           vector.
+      Param inner_its:
+         number of performed QMR iterations in the current correction
+         equation. It resets for each block vector.
 
-         * **LSRes** – residual norm of the linear system at the
-           current QMR iteration.
+      Param LSRes:
+         residual norm of the linear system at the current QMR
+         iteration.
 
-         * **msg** – output message or function name.
+      Param msg:
+         output message or function name.
 
-         * **time** – time duration.
+      Param time:
+         time duration.
 
-         * **event** – event reported.
+      Param event:
+         event reported.
 
-         * **primme** – parameters structure; the counter in "stats"
-           are updated with the current number of matrix-vector
-           products, iterations, elapsed time, etc., since start.
+      Param primme:
+         parameters structure; the counter in "stats" are updated with
+         the current number of matrix-vector products, iterations,
+         elapsed time, etc., since start.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       This function is called at the following events:
 
@@ -4118,6 +4179,57 @@ type primme_params
       Hold the maximum residual norm of the converged eigenvectors.
       The value is available during execution and at the end.
 
+      It is computed as "estimateErrorOnA" + "estimateErrorOnB" *
+      "estimateLargestSVal".
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.estimateOrthoError
+
+      Hold the estimation of the departure of the search subspace
+      basis from being orthonormal, as \|I-V^*V\|_1. The value is
+      available during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.estimateErrorOnA
+
+      Hold the estimation of the departure of the *matrixMatvec* from
+      a linear operator as \|A*v-A*V*u\|_2, where v=V*u and v, V, and
+      u are orthonormal vectors and matrices. The value is available
+      during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.estimateErrorOnB
+
+      Hold the estimation of the departure of the *massMatrixMatvec*
+      from a linear operator as \|B*v-B*V*u\|_2, where v=V*u and v, V,
+      and u are orthonormal vectors and matrices. The value is
+      available during execution and at the end.
+
+      Input/output:
+
+            "primme_initialize()" sets this field to 0;
+            written by "dprimme()".
+
+   double stats.estimateReseidualError
+
+      Hold the estimate of residual norm. The value is available
+      during execution and at the end.
+
+      It is computed as "estimateErrorOnA" + "estimateErrorOnB" *
+      "estimateLargestSVal".
+
       Input/output:
 
             "primme_initialize()" sets this field to 0;
@@ -4142,21 +4254,26 @@ type primme_params
       converged. If NULL, it is used the default convergence criteria
       (see "eps").
 
-      Parameters:
-         * **eval** – the approximate value to evaluate.
+      Param eval:
+         the approximate value to evaluate.
 
-         * **evec** – one dimensional array of size "nLocal"
-           containing the approximate vector; it can be NULL.
+      Param evec:
+         one dimensional array of size "nLocal" containing the
+         approximate vector; it can be NULL.
 
-         * **resNorm** – the norm of the residual vector.
+      Param resNorm:
+         the norm of the residual vector.
 
-         * **isconv** – (output) the function sets zero if the pair is
-           not converged and non zero otherwise.
+      Param isconv:
+         (output) the function sets zero if the pair is not converged
+         and non zero otherwise.
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "evec" matches the type of "evecs" of the
       calling  "dprimme()" (or a variant), unless the user sets
@@ -4381,7 +4498,7 @@ enum primme_preset_method
 
       * "locking" = 0;
 
-      * "maxPrevRetain" = 1 if it is 0
+      * "maxPrevRetain" = *maxBlockSize* if it is 0
 
       * "maxInnerIterations" = -1;
 
@@ -4573,11 +4690,14 @@ indicated in brackets.
 
 * -35: if "ldOPs" is not zero and less than "nLocal".
 
-* -36: if "projection" is "primme_proj_refined" but "target" is
-  either "primme_smallest" or "primme_largest".
+* -36: if "projection" is "primme_proj_refined" but "target" is either
+  "primme_smallest" or "primme_largest".
 
 * -38: if "locking" == 0 and "target" is "primme_closest_leq" or
   "primme_closest_geq".
+
+* -39: if "massMatrixMatvec" is set, only "primme_proj_RR" is
+  supported.
 
 * -40: ("PRIMME_LAPACK_FAILURE") some LAPACK function performing a
   factorization returned an error code; set "printLevel" > 0 to see
@@ -4601,284 +4721,6 @@ indicated in brackets.
 
 Python Interface
 ****************
-
-<<<<<<< HEAD
-primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, use_gpuarray=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, return_history=False, convtest=None, **kargs)
-=======
-primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=None, tol=0, return_eigenvectors=True, Minv=None, OPinv=None, mode='normal', lock=None, return_stats=False, maxBlockSize=0, minRestartSize=0, maxPrevRetain=0, method=None, return_unconverged=False, return_history=False, convtest=None, raise_for_unconverged=True, **kargs)
->>>>>>> origin/master
-
-   Find k eigenvalues and eigenvectors of the real symmetric square
-   matrix or complex Hermitian matrix A.
-
-   Solves "A * x[i] = w[i] * x[i]", the standard eigenvalue problem
-   for w[i] eigenvalues with corresponding eigenvectors x[i].
-
-   If M is specified, solves "A * x[i] = w[i] * M * x[i]", the
-   generalized eigenvalue problem for w[i] eigenvalues with
-   corresponding eigenvectors x[i]
-
-   Parameters:
-      * **A** (*matrix**,
-        **scipy.sparse.linalg.interface.LinearOperator**,
-        **pycuda.sparse.operator.OperatorBase**, or **function*) – the
-        operation A * x, where A is a real symmetric matrix or complex
-        Hermitian.
-
-      * **k** (*int**, **optional*) – The number of eigenvalues and
-        eigenvectors to be computed. Must be 1 <= k < min(A.shape).
-
-      * **M** (*An N x N matrix**, **array**, **sparse matrix**,
-        **scipy.sparse.linalg.interface.LinearOperator**,
-        **pycuda.sparse.operator.OperatorBase**, or **function*) –
-
-        the operation M * x for the generalized eigenvalue problem
-
-           A * x = w * M * x.
-
-        M must represent a real, symmetric matrix if A is real, and
-        must represent a complex, Hermitian matrix if A is complex.
-        For best results, the data type of M should be the same as
-        that of A.
-
-      * **sigma** (*real**, **optional*) – Find eigenvalues near
-        sigma.
-
-<<<<<<< HEAD
-      * **v0** (*N x i**, **ndarray** or **GPUArray**, **optional*)
-        – Initial guesses to the eigenvectors.
-=======
-      * **v0** (*N x i**, **ndarray**, **optional*) – Initial guesses
-        to the eigenvectors.
->>>>>>> origin/master
-
-      * **ncv** (*int**, **optional*) – The maximum size of the basis
-
-      * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA' | number**]*) –
-
-        Which *k* eigenvectors and eigenvalues to find:
-
-           ’LM’ : Largest in magnitude eigenvalues; the farthest from
-           sigma
-
-           ’SM’ : Smallest in magnitude eigenvalues; the closest to
-           sigma
-
-           ’LA’ : Largest algebraic eigenvalues
-
-           ’SA’ : Smallest algebraic eigenvalues
-
-           ’CLT’ : closest but left to sigma
-
-           ’CGT’ : closest but greater than sigma
-
-           number : the closest to which
-
-        When sigma == None, ‘LM’, ‘SM’, ‘CLT’, and ‘CGT’ treat sigma
-        as zero.
-
-      * **maxiter** (*int**, **optional*) – Maximum number of
-        iterations.
-
-      * **tol** (*float*) –
-
-        Tolerance for eigenpairs (stopping criterion). The default
-        value is sqrt of machine precision.
-
-        An eigenpair "(lamba,v)" is marked as converged when ||A*v -
-        lambda*B*v|| < max(>>|eig(A,B)|<<)*tol.
-
-        The value is ignored if convtest is provided.
-
-      * **Minv** (*(**not supported yet**)*) – The inverse of M in the
-        generalized eigenproblem.
-
-      * **OPinv** (*matrix**,
-        **scipy.sparse.linalg.interface.LinearOperator**,
-        **pycuda.sparse.operator.OperatorBase**, or **function*) –
-        Preconditioner to accelerate the convergence. Usually it is an
-        approximation of the inverse of (A - sigma*M).
-
-      * **return_eigenvectors** (*bool**, **optional*) – Return
-        eigenvectors (True) in addition to eigenvalues
-
-      * **mode** (*string** [**'normal' | 'buckling' | 'cayley'**]*) –
-        Only ‘normal’ mode is supported.
-
-      * **lock** (*N x i**, **ndarray** or **GPUArray**,
-        **optional*) – Seek the eigenvectors orthogonal to these ones.
-        The provided vectors *should* be orthonormal. Useful to avoid
-        converging to previously computed solutions.
-
-      * **use_gpuarray** (*bool*) – Set to True if A, M and Minv
-        accept and return GPUArray. In that case the eigenvectors
-        evecs are also returned as GPUArray. Otherwise all operators
-        accept and return numpy.ndarray and evecs is also of that
-        class.
-
-      * **maxBlockSize** (*int**, **optional*) – Maximum number of
-        vectors added at every iteration.
-
-      * **minRestartSize** (*int**, **optional*) – Number of
-        approximate eigenvectors kept during restart.
-
-      * **maxPrevRetain** (*int**, **optional*) – Number of
-        approximate eigenvectors kept from previous iteration in
-        restart. Also referred as +k vectors in GD+k.
-
-      * **method** (*int**, **optional*) –
-
-        Preset method, one of:
-
-        * DEFAULT_MIN_TIME : a variant of JDQMR,
-
-        * DEFAULT_MIN_MATVECS : GD+k
-
-        * DYNAMIC : choose dynamically between these previous methods.
-
-        See a detailed description of the methods and other possible
-        values in [2].
-
-      * **return_unconverged** (*bool**, **optional*) – If True,
-        return all requested eigenvalues and vectors regardless of
-        being marked as converged. The default is False.
-
-      * **convtest** (*callable*) –
-
-        User-defined function to mark an approximate eigenpair as
-        converged.
-
-        The function is called as convtest(eval, evec, resNorm) and
-        returns True if the eigenpair with value *eval*, vector *evec*
-        and residual norm *resNorm* is considered converged.
-
-      * **raise_for_unconverged** (*bool**, **optional*) – If True and
-        return_unconverged is False, raise an exception when not all
-        requested eigenvalues and vectors converged. The default is
-        True.
-
-      * **return_stats** (*bool**, **optional*) – If True, the
-        function returns extra information (see stats in Returns).
-
-      * **return_history** (*bool**, **optional*) – If True, the
-        function returns performance information at every iteration
-        (see hist in Returns).
-
-   Returns:
-      * **w** (*array*) – Array of k eigenvalues ordered to best
-        satisfy “which”.
-
-<<<<<<< HEAD
-      * **v** (*ndarray or GPUArray, shape=(N, k)*) – An array
-=======
-      * **v** (*array, optional (if return_eigenvectors)*) – An array
->>>>>>> origin/master
-        representing the *k* eigenvectors.  The column "v[:, i]" is
-        the eigenvector corresponding to the eigenvalue "w[i]".
-
-      * **stats** (*dict, optional (if return_stats)*) – Extra
-        information reported by PRIMME:
-
-        * ”numOuterIterations”: number of outer iterations
-
-        * ”numRestarts”: number of restarts
-
-        * ”numMatvecs”: number of A*v
-
-        * ”numPreconds”: number of OPinv*v
-
-        * ”elapsedTime”: time that took
-
-        * ”estimateMinEVal”: the leftmost Ritz value seen
-
-        * ”estimateMaxEVal”: the rightmost Ritz value seen
-
-        * ”estimateLargestSVal”: the largest singular value seen
-
-        * ”rnorms” : ||A*x[i] - x[i]*w[i]||
-
-        * ”hist” : (if return_history) report at every outer iteration
-          of:
-
-          * ”elapsedTime”: time spent up to now
-
-          * ”numMatvecs”: number of A*v spent up to now
-
-          * ”nconv”: number of converged pair
-
-          * ”eval”: eigenvalue of the first unconverged pair
-
-          * ”resNorm”: residual norm of the first unconverged pair
-
-   Raises:
-      **PrimmeError** – When the requested convergence is not
-      obtained.          The PRIMME error code can be found as "err"
-      attribute of the exception     object.
-
-   See also:
-
-     "scipy.sparse.linalg.eigs()"
-        eigenvalues and eigenvectors for a general (nonsymmetric)
-        matrix A
-
-     "primme.svds()"
-        singular value decomposition for a matrix A
-
-   -[ Notes ]-
-
-   This function is a wrapper to PRIMME functions to find the
-   eigenvalues and eigenvectors [1].
-
-   -[ References ]-
-
-   [1] PRIMME Software, https://github.com/primme/primme
-
-   [2] Preset Methods,
-       http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-
-       methods
-
-   [3] A. Stathopoulos and J. R. McCombs PRIMME: PReconditioned
-       Iterative MultiMethod Eigensolver: Methods and software
-       description, ACM Transaction on Mathematical Software Vol. 37,
-       No. 2, (2010), 21:1-21:30.
-
-   -[ Examples ]-
-
-   >>> import primme, scipy.sparse
-   >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
-   >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
-   >>> evals # the three largest eigenvalues of A
-   array([99., 98., 97.])
-   >>> new_evals, new_evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
-   >>> new_evals # the next three largest eigenvalues
-   array([96., 95., 94.])
-   >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which=50.1)
-   >>> evals # the three closest eigenvalues to 50.1
-   array([50.,  51.,  49.])
-   >>> M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1)), [0], 100, 100)
-   >>> # the smallest eigenvalues of the eigenproblem (A,M)
-   >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
-   >>> evals # doctest: +SKIP
-   array([1.0035e-07, 1.0204e-02, 2.0618e-02])
-
-   >>> # Giving the matvec as a function
-   >>> import primme, scipy.sparse, numpy as np
-   >>> Adiag = np.arange(0, 100).reshape((100,1))
-   >>> def Amatmat(x):
-   ...    if len(x.shape) == 1: x = x.reshape((100,1))
-   ...    return Adiag * x   # equivalent to diag(Adiag).dot(x)
-   ...
-   >>> A = scipy.sparse.linalg.LinearOperator((100,100), matvec=Amatmat, matmat=Amatmat)
-   >>> evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
-   >>> evals
-   array([99., 98., 97.])
-
-   >>> import primme, scipy.sparse
-   >>> import pycuda.sparse.packeted
-   >>> A = scipy.sparse.spdiags(range(100), [0], 100, 100) # sparse diag. matrix
-   >>> Agpu = pycuda.sparse.packeted.PacketedSpMV(A, True, A.dtype)
-   >>> evals, evecs = primme.eigsh(Agpu, 3, tol=1e-6, which='LA')
-   >>> evals # the three largest eigenvalues of A
 
 MATLAB Interface
 ****************
@@ -5194,7 +5036,7 @@ precisions:
 
 +-------------+---------------------------+---------------------------+
 | Precision   | Real                      | Complex                   |
-+=============+===========================+===========================+
+|=============|===========================|===========================|
 | half        | "hprimme_svds()"          | "kprimme_svds()"          |
 |             | "hsprimme_svds()"         | "ksprimme_svds()"         |
 +-------------+---------------------------+---------------------------+
@@ -6745,24 +6587,30 @@ type primme_svds_params
       Block matrix-multivector multiplication, y = A x if "transpose"
       is zero, and y = A^*x otherwise.
 
-      Parameters:
-         * **x** – input array.
+      Param x:
+         input array.
 
-         * **ldx** – leading dimension of "x".
+      Param ldx:
+         leading dimension of "x".
 
-         * **y** – output array.
+      Param y:
+         output array.
 
-         * **ldy** – leading dimension of "y".
+      Param ldy:
+         leading dimension of "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **transpose** – if non-zero, the transpose A should be
-           applied.
+      Param transpose:
+         if non-zero, the transpose A should be applied.
 
-         * **primme_svds** – parameters structure.
+      Param primme_svds:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       If "transpose" is zero, then "x" and "y" are arrays of
       dimensions "nLocal" x "blockSize" and "mLocal" x "blockSize"
@@ -6817,24 +6665,31 @@ type primme_svds_params
       * "primme_svds_op_augmented": M \approx \left(\begin{array}{cc}
         0 & A^* \\ A & 0 \end{array}\right) - \sigma I.
 
-      Parameters:
-         * **x** – input array.
+      Param x:
+         input array.
 
-         * **ldx** – leading dimension of "x".
+      Param ldx:
+         leading dimension of "x".
 
-         * **y** – output array.
+      Param y:
+         output array.
 
-         * **ldy** – leading dimension of "y".
+      Param ldy:
+         leading dimension of "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **mode** – one of "primme_svds_op_AtA",
-           "primme_svds_op_AAt" or "primme_svds_op_augmented".
+      Param mode:
+         one of "primme_svds_op_AtA", "primme_svds_op_AAt" or
+         "primme_svds_op_augmented".
 
-         * **primme_svds** – parameters structure.
+      Param primme_svds:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       If "mode" is "primme_svds_op_AtA", then "x" and "y" are arrays
       of dimensions "nLocal" x "blockSize"; if mode is
@@ -6937,20 +6792,23 @@ type primme_svds_params
       Global sum reduction function. No need to set for sequential
       programs.
 
-      Parameters:
-         * **sendBuf** – array of size "count" with the local input
-           values.
+      Param sendBuf:
+         array of size "count" with the local input values.
 
-         * **recvBuf** – array of size "count" with the global output
-           values so that the i-th element of recvBuf is the sum over
-           all processes of the i-th element of "sendBuf".
+      Param recvBuf:
+         array of size "count" with the global output values so that
+         the i-th element of recvBuf is the sum over all processes of
+         the i-th element of "sendBuf".
 
-         * **count** – array size of "sendBuf" and "recvBuf".
+      Param count:
+         array size of "sendBuf" and "recvBuf".
 
-         * **primme_svds** – parameters structure.
+      Param primme_svds:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "sendBuf" and "recvBuf" depends on which
       function is being calling. For "dprimme_svds()" and
@@ -7004,16 +6862,18 @@ type primme_svds_params
       Broadcast function from process with ID zero. It is optional in
       parallel executions, and not needed for sequential programs.
 
-      Parameters:
-         * **buffer** – array of size "count" with the local input
-           values.
+      Param buffer:
+         array of size "count" with the local input values.
 
-         * **count** – array size of "sendBuf" and "recvBuf".
+      Param count:
+         array size of "sendBuf" and "recvBuf".
 
-         * **primme_svds** – parameters structure.
+      Param primme_svds:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "buffer" matches the type of "svecs" of the
       calling  "dprimme_svds()" (or a variant), unless
@@ -7440,26 +7300,30 @@ type primme_svds_params
       converged. If NULL, it is used the default convergence criteria
       (see "eps").
 
-      Parameters:
-         * **sval** – the approximate singular value to evaluate.
+      Param sval:
+         the approximate singular value to evaluate.
 
-         * **leftsvec** – one dimensional array of size "mLocal"
-           containing the approximate left singular vector; it can be
-           NULL.
+      Param leftsvec:
+         one dimensional array of size "mLocal" containing the
+         approximate left singular vector; it can be NULL.
 
-         * **rightsvec** – one dimensional array of size "nLocal"
-           containing the approximate right singular vector; it can be
-           NULL.
+      Param rightsvec:
+         one dimensional array of size "nLocal" containing the
+         approximate right singular vector; it can be NULL.
 
-         * **resNorm** – the norm of the residual vector.
+      Param resNorm:
+         the norm of the residual vector.
 
-         * **isconv** – (output) the function sets zero if the pair is
-           not converged and non zero otherwise.
+      Param isconv:
+         (output) the function sets zero if the pair is not converged
+         and non zero otherwise.
 
-         * **primme_svds** – parameters structure.
+      Param primme_svds:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "leftsvec" and "rightsvec" matches the type
       of "svecs" of the calling  "dprimme_svds()" (or a variant),
@@ -7512,59 +7376,70 @@ type primme_svds_params
       information during execution (stage, iteration number, matvecs,
       time, residual norms, targets, etc).
 
-      Parameters:
-         * **basisSvals** – array with approximate singular values of
-           the basis.
+      Param basisSvals:
+         array with approximate singular values of the basis.
 
-         * **basisSize** – size of the arrays "basisSvals",
-           "basisFlags" and "basisNorms".
+      Param basisSize:
+         size of the arrays "basisSvals", "basisFlags" and
+         "basisNorms".
 
-         * **basisFlags** – state of every approximate triplet in the
-           basis.
+      Param basisFlags:
+         state of every approximate triplet in the basis.
 
-         * **iblock** – indices of the approximate triplet in the
-           block.
+      Param iblock:
+         indices of the approximate triplet in the block.
 
-         * **blockSize** – size of array "iblock".
+      Param blockSize:
+         size of array "iblock".
 
-         * **basisNorms** – array with residual norms of the triplets
-           in the basis.
+      Param basisNorms:
+         array with residual norms of the triplets in the basis.
 
-         * **numConverged** – number of triplets converged in the
-           basis plus the number of the locked triplets (note that
-           this value isn’t monotonic).
+      Param numConverged:
+         number of triplets converged in the basis plus the number of
+         the locked triplets (note that this value isn’t monotonic).
 
-         * **lockedSvals** – array with the locked triplets.
+      Param lockedSvals:
+         array with the locked triplets.
 
-         * **numLocked** – size of the arrays "lockedSvals",
-           "lockedFlags" and "lockedNorms".
+      Param numLocked:
+         size of the arrays "lockedSvals", "lockedFlags" and
+         "lockedNorms".
 
-         * **lockedFlags** – state of each locked triplets.
+      Param lockedFlags:
+         state of each locked triplets.
 
-         * **lockedNorms** – array with residual norms of the locked
-           triplets.
+      Param lockedNorms:
+         array with residual norms of the locked triplets.
 
-         * **inner_its** – number of performed QMR iterations in the
-           current correction equation.
+      Param inner_its:
+         number of performed QMR iterations in the current correction
+         equation.
 
-         * **LSRes** – residual norm of the linear system at the
-           current QMR iteration.
+      Param LSRes:
+         residual norm of the linear system at the current QMR
+         iteration.
 
-         * **msg** – output message or function name.
+      Param msg:
+         output message or function name.
 
-         * **time** – time duration.
+      Param time:
+         time duration.
 
-         * **event** – event reported.
+      Param event:
+         event reported.
 
-         * **stage** – "0" for first stage, "1" for second stage.
+      Param stage:
+         "0" for first stage, "1" for second stage.
 
-         * **primme_svds** – parameters structure; the counter in
-           "stats" are updated with the current number of matrix-
-           vector products, iterations, elapsed time, etc., since
-           start.
+      Param primme_svds:
+         parameters structure; the counter in "stats" are updated with
+         the current number of matrix-vector products, iterations,
+         elapsed time, etc., since start.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       This function is called at the next events:
 
@@ -8016,234 +7891,6 @@ which is indicated in brackets.
 
 Python Interface
 ****************
-
-<<<<<<< HEAD
-primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, orthou0=None, orthov0=None, use_gpuarray=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, convtest=None, **kargs)
-=======
-primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_singular_vectors=True, precAHA=None, precAAH=None, precAug=None, u0=None, orthou0=None, orthov0=None, return_stats=False, maxBlockSize=0, method=None, methodStage1=None, methodStage2=None, return_history=False, convtest=None, raise_for_unconverged=True, **kargs)
->>>>>>> origin/master
-
-   Compute k singular values and vectors of the matrix A.
-
-   Parameters:
-      * **A** (*matrix**,
-        **scipy.sparse.linalg.interface.LinearOperator**,
-        **pycuda.sparse.operator**, or **function*) – Array to compute
-        the SVD on, of shape (M, N)
-
-      * **k** (*int**, **optional*) – Number of singular values and
-        vectors to compute. Must be 1 <= k < min(A.shape).
-
-      * **ncv** (*int**, **optional*) – The maximum size of the basis
-
-      * **tol** (*float**, **optional*) –
-
-        Tolerance for singular values. Zero (default) means 10**4
-        times the machine precision.
-
-        A triplet "(u,sigma,v)" is marked as converged when (||A*v -
-        sigma*u||**2 + ||A.H*u - sigma*v||**2)**.5 is less than “tol”
-        * ||A||, or close to the minimum tolerance that the method can
-        achieve. See the note.
-
-        The value is ignored if convtest is provided.
-
-      * **which** (*str** [**'LM' | 'SM'**] or **number**,
-        **optional*) –
-
-        Which *k* singular values to find:
-
-           * ’LM’ : largest singular values
-
-           * ’SM’ : smallest singular values
-
-           * number : closest singular values to (referred as sigma
-             later)
-
-      * **u0** (*ndarray**, **optional*) –
-
-        Initial guesses for the left singular vectors.
-
-        If only u0 or v0 is provided, the other is computed. If both
-        are provided, u0 and v0 should have the same number of
-        columns.
-
-      * **v0** (*ndarray**, **optional*) – Initial guesses for the
-        right singular vectors.
-
-      * **maxiter** (*int**, **optional*) – Maximum number of matvecs
-        with A and A.H.
-
-      * **precAHA** (*matrix**,
-        **scipy.sparse.linalg.interface.LinearOperator**,
-        **pycuda.sparse.operator**, or **function**, **optional*) –
-        Approximate inverse of (A.H*A - sigma**2*I). If provided and
-        M>=N, it usually accelerates the convergence.
-
-      * **precAAH** (*matrix**,
-        **scipy.sparse.linalg.interface.LinearOperator**,
-        **pycuda.sparse.operator**, or **function**, **optional*) –
-        Approximate inverse of (A*A.H - sigma**2*I). If provided and
-        M<N, it usually accelerates the convergence.
-
-      * **precAug** (*matrix**,
-        **scipy.sparse.linalg.interface.LinearOperator**,
-        **pycuda.sparse.operator**, or **function**, **optional*) –
-        Approximate inverse of ([zeros() A.H; zeros() A] - sigma*I).
-
-      * **orthou0** (*ndarray**, **optional*) –
-
-        Left orthogonal vector constrain.
-
-        Seek singular triplets orthogonal to orthou0 and orthov0. The
-        provided vectors *should* be orthonormal. If only orthou0 or
-        orthov0 is provided, the other is computed. Useful to avoid
-        converging to previously computed solutions.
-
-      * **orthov0** (*ndarray**, **optional*) – Right orthogonal
-        vector constrain. See orthou0.
-
-      * **use_gpuarray** (*bool*) – Set to True if A and prec*
-        accept and return GPUArray. In that case the singular vectors
-        svecs are also returned as GPUArray. Otherwise all operators
-        accept and return numpy.ndarray and svecs is also of that
-        class.
-
-      * **maxBlockSize** (*int**, **optional*) – Maximum number of
-        vectors added at every iteration.
-
-      * **convtest** (*callable*) –
-
-        User-defined function to mark an approximate singular triplet
-        as converged.
-
-        The function is called as convtest(sval, svecleft, svecright,
-        resNorm) and returns True if the triplet with value *sval*,
-        left vector *svecleft*, right vector *svecright*, and residual
-        norm *resNorm* is considered converged.
-
-      * **raise_for_unconverged** (*bool**, **optional*) – If True,
-        raise an exception when not all requested singular values
-        converged. The default is True.
-
-      * **return_stats** (*bool**, **optional*) – If True, the
-        function returns extra information (see stats in Returns).
-
-      * **return_history** (*bool**, **optional*) – If True, the
-        function returns performance information at every iteration
-
-   Returns:
-      * **u** (*ndarray or GPUArray, shape=(M, k), optional*) –
-        Unitary matrix having left singular vectors as columns.
-        Returned if *return_singular_vectors* is True.
-
-      * **s** (*ndarray, shape=(k,)*) – The singular values.
-
-      * **vt** (*ndarray or GPUArray, shape=(k, N), optional*) –
-        Unitary matrix having right singular vectors as rows. Returned
-        if *return_singular_vectors* is True.
-
-      * **stats** (*dict, optional (if return_stats)*) – Extra
-        information reported by PRIMME:
-
-        * ”numOuterIterations”: number of outer iterations
-
-        * ”numRestarts”: number of restarts
-
-        * ”numMatvecs”: number of matvecs with A and A.H
-
-        * ”numPreconds”: cumulative number of applications of precAHA,
-          precAAH and precAug
-
-        * ”elapsedTime”: time that took
-
-        * ”rnorms” : (||A*v[:,i] - sigma[i]*u[:,i]||**2 + ||A.H*u[:,i]
-          - sigma[i]*v[:,i]||**2)**.5
-
-        * ”hist” : (if return_history) report at every outer iteration
-          of:
-
-          * ”elapsedTime”: time spent up to now
-
-          * ”numMatvecs”: number of A*v and A.H*v spent up to now
-
-          * ”nconv”: number of converged triplets
-
-          * ”sval”: singular value of the first unconverged triplet
-
-          * ”resNorm”: residual norm of the first unconverged triplet
-
-   -[ Notes ]-
-
-   The default method used is the hybrid method, which first solves
-   the equivalent eigenvalue problem A.H*A or A*A.H (normal equations)
-   and then refines the solution solving the augmented problem. The
-   minimum tolerance that this method can achieve is ||A||*epsilon,
-   where epsilon is the machine precision. However it may not return
-   triplets with singular values smaller than ||A||*epsilon if “tol”
-   is smaller than ||A||*epsilon/sigma.
-
-   This function is a wrapper to PRIMME functions to find singular
-   values and vectors [1].
-
-   -[ References ]-
-
-   [1] PRIMME Software, https://github.com/primme/primme
-
-   [2] L. Wu, E. Romero and A. Stathopoulos, PRIMME_SVDS: A High-
-       Performance Preconditioned SVD Solver for Accurate Large-Scale
-       Computations. https://arxiv.org/abs/1607.01404
-
-   See also:
-
-     "primme.eigsh()"
-        eigenvalue decomposition for a sparse symmetrix/complex
-        Hermitian matrix A
-
-     "scipy.sparse.linalg.eigs()"
-        eigenvalues and eigenvectors for a general (nonsymmetric)
-        matrix A
-
-   -[ Examples ]-
-
-   >>> import primme, scipy.sparse
-   >>> A = scipy.sparse.spdiags(range(1, 11), [0], 100, 10) # sparse diag. rect. matrix
-   >>> svecs_left, svals, svecs_right = primme.svds(A, 3, tol=1e-6, which='LM')
-   >>> svals # the three largest singular values of A
-   array([10., 9., 8.])
-
-   >>> import primme, scipy.sparse, numpy as np
-   >>> A = scipy.sparse.rand(10000, 100, random_state=10)
-   >>> prec = scipy.sparse.spdiags(np.reciprocal(A.multiply(A).sum(axis=0)),
-   ...           [0], 100, 100) # square diag. preconditioner
-   >>> # the three smallest singular values of A, using preconditioning
-   >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which='SM', tol=1e-6, precAHA=prec)
-   >>> ["%.5f" % x for x in svals.flat] # doctest: +SKIP
-   ['4.57263', '4.78752', '4.82229']
-
-   >>> # Giving the matvecs as functions
-   >>> import primme, scipy.sparse, numpy as np
-   >>> Bdiag = np.arange(0, 100).reshape((100,1))
-   >>> Bdiagr = np.concatenate((np.arange(0, 100).reshape((100,1)).astype(np.float32), np.zeros((100,1), dtype=np.float32)), axis=None).reshape((200,1))
-   >>> def Bmatmat(x):
-   ...    if len(x.shape) == 1: x = x.reshape((100,1))
-   ...    return np.vstack((Bdiag * x, np.zeros((100, x.shape[1]), dtype=np.float32)))
-   ...
-   >>> def Brmatmat(x):
-   ...    if len(x.shape) == 1: x = x.reshape((200,1))
-   ...    return (Bdiagr * x)[0:100,:]
-   ...
-   >>> B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
-   >>> svecs_left, svals, svecs_right = primme.svds(B, 5, which='LM', tol=1e-6)
-   >>> svals # doctest: +SKIP
-   array([99., 98., 97., 96., 95.])
-
-   >>> import primme, scipy.sparse
-   >>> import pycuda.sparse.packeted
-   >>> A = scipy.sparse.rand(10000, 100, random_state=10)
-   >>> Agpu = pycuda.sparse.packeted.PacketedSpMV(A, False, A.dtype)
-   >>> evals, evecs = primme.eigsh(Agpu, 3, tol=1e-6, which='LA')
-   >>> evals # the three largest eigenvalues of A
 
 MATLAB Interface
 ****************

@@ -113,24 +113,27 @@ tags:
 # Convenient actions to build half precision (optional)
 #
 
-lib-debug-sanitize all_tests-debug-sanitize: export CFLAGS += -g -O0 -fsanitize=undefined,address
-lib-debug-sanitize all_tests-debug-sanitize: export LDFLAGS += -g -O0 -fsanitize=undefined,address
+lib-debug-sanitize all_tests-debug-sanitize lib-clang-half-debug lib-clang-half-debug-sanitize: export CFLAGS += -g -O0 -fsanitize=undefined,address -fPIC
+lib-debug-sanitize all_tests-debug-sanitize lib-clang-half-debug lib-clang-half-debug-sanitize: export LDFLAGS += -g -O0 -fsanitize=undefined,address -fPIC
 lib-debug-sanitize: lib
 all_tests-debug-sanitize: all_tests
-
-lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export PRIMME_WITH_HALF := yes
-lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export CC := ${CLANG} -x c++
+lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug lib-clang-half-debug-sanitize: export PRIMME_WITH_HALF := yes
+lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug lib-clang-half-debug-sanitize: export CC := ${CLANG} -x c++ -fsanitize=undefined,address
 lib-clang-half matlab-clang-half: export CFLAGS += -march=native -Ofast
-lib-clang-half-debug matlab-clang-half-debug: export CFLAGS := -O0 -g -fPIC
-lib-clang-half lib-clang-half-debug: lib
+lib-clang-half-debug lib-clang-half-debug-sanitize matlab-clang-half-debug octave-debug: export CFLAGS := -O0 -g -fPIC
+lib-clang-half lib-clang-half-debug lib-clang-half-debug-sanitize: lib
 all_tests-clang-half-debug: export CC := ${CLANG}
 all_tests-clang-half-debug: export CXX := ${CLANG}
 all_tests-clang-half-debug: export LDFLAGS := -rtlib=compiler-rt -fPIC -lgcc_s
 all_tests-clang-half-debug: all_tests
 matlab-clang-half-debug: export MEXFLAGS := CXX=${CLANG} LDFLAGS='-rtlib=compiler-rt -fPIC' -g CXXFLAGS='-fPIC -O0 -g'
 matlab-clang-half matlab-clang-half-debug: matlab
+octave-debug: export OCTFLAGS := -O0 -g
+octave-debug: octave
 
 python-clang-half-debug: clean clean_lib lib-clang-half-debug
 	@$(MAKE) -C Python clean all  CC='${CLANG} -fPIC' CXX='${CLANG} -fPIC' LDSHARED='${CLANG} -shared -rtlib=compiler-rt -lm -lstdc++'
+python-clang-half-debug-sanitize: clean clean_lib lib-clang-half-debug-sanitize
+	@$(MAKE) -C Python clean all  CC='${CLANG} -fPIC -fsanitize=undefined,address' CXX='${CLANG} -fPIC -fsanitize=undefined,address' LDSHARED='${CLANG} -shared -shared-libasan -rtlib=compiler-rt -lm -lstdc++ -fsanitize=undefined,address' LDFLAGS=-fsanitize=undefined,address
 
 .NOTPARALLEL:

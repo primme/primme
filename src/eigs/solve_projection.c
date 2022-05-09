@@ -1046,8 +1046,6 @@ STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
  * basisSize    Projected problem size
- * i0           Index of the first pair to check
- * blockSize    Number of candidates wanted
  * H            The matrix V'*A*V
  * ldH          The leading dimension of H
  * hVals        The Ritz values
@@ -1056,82 +1054,34 @@ STATIC int solve_H_brcast_Sprimme(int basisSize, SCALAR *hU, int ldhU,
  * ldhVecs      The leading dimension of hVecs
  * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
  * arbitraryVecs The number of vectors modified (input/output)
- * smallestResNorm The smallest residual norm in the block
- * flags        Array indicating the convergence of the Ritz vectors
- * RRForAll     If false compute Rayleigh-Ritz only in clusters with
- *              candidates. If true, compute it in every cluster.
- * machEps      Machine precision
- * rworkSize    The length of rwork
- * rwork        Workspace
- * iwork        Integer workspace
  * primme       Structure containing various solver parameters
  *
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
-      int ldH, EVAL *hVals, REAL *hSVals, SCALAR *hVecs, int ldhVecs,
-      int targetShiftIndex, int *arbitraryVecs, double smallestResNorm,
-      int *flags, int RRForAll, SCALAR *hVecsRot, int ldhVecsRot,
+int prepare_vecs_Sprimme(int basisSize, SCALAR *H, int ldH, EVAL *hVals,
+      REAL *hSVals, SCALAR *hVecs, int ldhVecs, int targetShiftIndex,
+      int *arbitraryVecs, SCALAR *hVecsRot, int ldhVecsRot,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int i, j, k;         /* Loop indices */
-   int candidates;      /* Number of eligible pairs */
-   int someCandidate;   /* If there is an eligible pair in the cluster */
-   double aNorm, eps;
 
    /* Quick exit */
-
    if (primme->projectionParams.projection != primme_proj_refined ||
          basisSize == 0) {
-      /* Find next candidates, starting from iev(*blockSize)+1 */
-
-      if (flags) {
-         for (i = i0, j = 0; i < basisSize && j < blockSize; i++) {
-            if (flags[i] == UNCONVERGED) j++;
-         }
-      }
-
       return 0;
    }
 
-   /* Quick exit */
+   double target = primme->targetShifts[targetShiftIndex];
 
-   if (blockSize == 0) {
-      return 0;
-   }
+   /* Set the identity hVecsRot */
+   CHKERR(Num_zero_matrix_Sprimme(
+         hVecsRot, basisSize, basisSize, ldhVecsRot, ctx));
+   for (int i = 0; i < basisSize; i++) hVecsRot[ldhVecsRot * i + i] = 1.0;
+   *arbitraryVecs = basisSize;
 
-   aNorm = (primme->aNorm <= 0.0) ?
-      primme->stats.estimateLargestSVal : primme->aNorm;
+   for (int j = 0; j < basisSize;) {
 
-   /* Before the first eigenpair converges, there's no information about the  */
-   /* requested tolerance. In that case eps is set as ten times less than the */
-   /* the current smallest residual norm, if smallestResNorm provides that    */
-   /* information.                                                            */
-   eps = primme->stats.maxConvTol > 0.0 ? primme->stats.maxConvTol : (
-         smallestResNorm < HUGE_VAL ? smallestResNorm/10.0 : 0.0);
-   double eps_orth;
-   CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
-   /* NOTE: the constant 6.28 is needed to pass                               */
-   /* testi-100-LOBPCG_OrthoBasis-2-primme_closest_abs-primme_proj_refined.F  */
-   eps = max(6.28 * eps_orth, eps);
-
-   for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
-         j < basisSize && candidates < blockSize; ) {
-
-      double ip;
-      /* -------------------------------------------------------------------- */
-      /* Count all eligible values (candidates) from j up to i.               */
-      /* -------------------------------------------------------------------- */
-
-      for ( ; j < i; j++) {
-         if (!flags || flags[j] == UNCONVERGED)
-            candidates++;
-      }
-     
-      if (candidates >= blockSize) break;
- 
       /* -------------------------------------------------------------------- */
       /* Find the first i-th vector i>j with enough good conditioning, ie.,   */
       /* the singular value is separated enough from the rest (see the header */
@@ -1139,39 +1089,19 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
       /* value in the block.                                                  */
       /* -------------------------------------------------------------------- */
 
-      for (i=j+1, someCandidate=0, ip=0.0; i<basisSize; i++) {
-
-         /* Check that this approximation:                                    */
-         /* sin singular vector: max(hSVals)*machEps/(hSvals[i]-hSVals[i+1])  */
-         /* is less than the next one:                                        */
-         /* sin eigenvector    : aNorm*eps/(hVals[i]-hVals[i+1]).             */
-         /* Also try to include enough coefficient vectors into the cluster   */
-         /* so that the cluster is close the last included vectors into the   */
-         /* basis.                                                            */
-         /* TODO: check the angle with all vectors added to the basis in the  */
-         /* previous iterations; for now only the last one is considered.     */
-         /* NOTE: we don't want to check hVecs(end,i) just after restart, so  */
-         /* we don't use the value when it is zero.                           */
-
-         // double minDiff = sqrt(2.0)*hSVals[basisSize-1]*MACHINE_EPSILON/
-         //    (aNorm*eps/EVAL_ABS(hVals[i]-hVals[i-1]));
-         // double ip0 = ABS(hVecs[(i-1)*ldhVecs+basisSize-1]);
-         // double ip1 = ((ip += ip0*ip0) != 0.0) ? ip : HUGE_VAL;
-
-         someCandidate = 1;
-
-         // if (fabs(hSVals[i]-hSVals[i-1]) >= minDiff
-         //       && (smallestResNorm >= HUGE_VAL
-         //          || sqrt(ip1) >= smallestResNorm/aNorm/3.16)) 
-         //    break;
-         HREAL sval0_i = min(0.0, hSVals[i] - primme->stats.estimateErrorOnA);
-         HREAL sval1_i = hSVals[i] + primme->stats.estimateErrorOnA;
-         HREAL sval1_j = hSVals[j] + primme->stats.estimateErrorOnA;
-         if (max(0.0, sval0_i * sval0_i - sval1_j * sval1_j) >=
-               2 * sval1_i * sval1_i * primme->stats.estimateOrthoError)
-            break;
+      int i;
+      for (i = j + 1; i < basisSize; i++) {
+         HREAL eval1 = EVAL_ABS(hVals[i] - (EVAL)target);
+         int pass = 1;
+         for (int j0 = j; j0 < i; j0++) {
+            if (eval1 < hSVals[j0] && EVAL_ABS(hVals[i] - hVals[j0]) < eval1) {
+               pass = 0;
+               break;
+            }
+         }
+         if (pass == 0) break;
       }
-      i = min(i, basisSize);
+      assert(i <= basisSize);
 
       /* ----------------------------------------------------------------- */
       /* If the cluster j:i-1 is larger than one vector and there is some  */
@@ -1180,44 +1110,64 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
       /* candidate in the cluster.                                         */
       /* ----------------------------------------------------------------- */
 
-      if (i-j > 1 && (someCandidate || RRForAll)) {
-         SCALAR *aH, *ahVecs;
-         int aBasisSize = i-j;
+      if (i - j > 1) {
+         SCALAR *aH;
+         int aBasisSize = i - j;
          CHKERR(Num_malloc_Sprimme((size_t)basisSize*aBasisSize, &aH, ctx));
-         ahVecs = &hVecsRot[ldhVecsRot*j+j];
 
-         /* Zero hVecsRot(:,arbitraryVecs:i-1) */
-         CHKERR(Num_zero_matrix_Sprimme(&hVecsRot[ldhVecsRot*(*arbitraryVecs)],
-               primme->maxBasisSize, i-*arbitraryVecs, ldhVecsRot, ctx));
-
-         /* hVecsRot(:,arbitraryVecs:i-1) = I */
-         for (k=*arbitraryVecs; k<i; k++)
-            hVecsRot[ldhVecsRot*k+k] = 1.0;
- 
          /* aH = hVecs(:,j:i-1)'*H*hVecs(:,j:i-1) */
          CHKERR(compute_submatrix_Sprimme(&hVecs[ldhVecs * j], aBasisSize,
                ldhVecs, H, basisSize, ldH,
                KIND(1 /* Hermitian */, 0 /* non-Hermitian */), aH, aBasisSize,
                ctx));
 
-         /* Compute and sort eigendecomposition aH*ahVecs = ahVecs*diag(hVals(j:i-1)) */
-         CHKERR(solve_H_RR_Sprimme(aH, aBasisSize, NULL, 0, ahVecs, ldhVecsRot,
-               &hVals[j], aBasisSize, targetShiftIndex, ctx));
+         /* Compute and sort eigendecomposition aH*hVecsRot(j:end,j:end) = hVecsRot(j:end,j:end)*diag(hVals(j:i-1)) */
+         CHKERR(solve_H_RR_Sprimme(aH, aBasisSize, NULL, 0,
+               &hVecsRot[ldhVecsRot * j + j], ldhVecsRot, &hVals[j], aBasisSize,
+               targetShiftIndex, ctx));
 
-         /* hVecs(:,j:i-1) = hVecs(:,j:i-1)*ahVecs */
+         /* hVecs(:,j:i-1) = hVecs(:,j:i-1)*hVecsRot(j:end,j:end) */
          CHKERR(Num_zero_matrix_Sprimme(
                aH, basisSize, aBasisSize, basisSize, ctx));
          CHKERR(Num_gemm_Sprimme("N", "N", basisSize, aBasisSize, aBasisSize,
-               1.0, &hVecs[ldhVecs*j], ldhVecs, ahVecs, ldhVecsRot, 0.0,
-               aH, basisSize, ctx));
+               1.0, &hVecs[ldhVecs * j], ldhVecs, &hVecsRot[ldhVecsRot * j + j],
+               ldhVecsRot, 0.0, aH, basisSize, ctx));
          CHKERR(Num_copy_matrix_Sprimme(aH, basisSize, aBasisSize, basisSize,
                &hVecs[ldhVecs*j], ldhVecs, ctx));
          CHKERR(Num_free_Sprimme(aH, ctx));
-
-         /* Indicate that before i may not be singular vectors */
-         *arbitraryVecs = i;
       }
+
+      j = i;
    }
+
+#ifdef USE_HERMITIAN
+   /* Create a permutation */
+   if (primme->target == primme_closest_geq ||
+         primme->target == primme_closest_leq) {
+      int *permRightSide = NULL, *permWrongSide = NULL;
+      int nRightSide = 0, nWrongSide = 0;
+      CHKERR(Num_malloc_iprimme(basisSize, &permRightSide, ctx));
+      CHKERR(Num_malloc_iprimme(basisSize, &permWrongSide, ctx));
+      for (int i = 0; i < basisSize; ++i) {
+         if ((primme->target == primme_closest_leq && hVals[i] > target) ||
+               (primme->target == primme_closest_geq && hVals[i] < target)) {
+            permWrongSide[nWrongSide++] = i;
+         } else {
+            permRightSide[nRightSide++] = i;
+         }
+      }
+      for (int i = 0; i < nWrongSide; ++i)
+         permRightSide[nRightSide + i] = permWrongSide[i];
+      CHKERR(permute_vecs_Sprimme(
+            hVecs, basisSize, basisSize, ldhVecs, permRightSide, ctx));
+      CHKERR(permute_vecs_Sprimme(
+            hVecsRot, basisSize, basisSize, ldhVecsRot, permRightSide, ctx));
+      CHKERR(KIND(permute_vecs_RHprimme, permute_vecs_SHprimme)(
+            hVals, 1, basisSize, 1, permRightSide, ctx));
+      CHKERR(Num_free_iprimme(permRightSide, ctx));
+      CHKERR(Num_free_iprimme(permWrongSide, ctx));
+   }
+#endif
 
    return 0;
 }
@@ -1250,7 +1200,7 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
 
    assert(nV <= m && n0 <= n && n <= m);
 
-   /* Compute V' * G * W[n0:n-1] */
+   /* Compute ip = V' * G * W[n0:n-1] */
 
    HSCALAR *ip = NULL;
    CHKERR(Num_malloc_SHprimme(nV * (n - n0), &ip, ctx));
@@ -1279,7 +1229,7 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
 
       int j, jmax=-1;
       HREAL ipmax = 0.0;
-      if (i < nV) {
+      if (i < n && i < nV) {
          for (j = 0; j < nV; j++) {
             if (used[j]) continue;
             HREAL ipij = ABS(ip[nV * (i - n0) + j]);

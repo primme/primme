@@ -133,6 +133,11 @@ Program primmeF90Example
    end do
    ierr = primme_params_destroy(primme)
 
+   ! Deallocate arrays
+   deallocate(evals)
+   deallocate(rnorms)
+   deallocate(evecs)
+ 
 contains
 
    !-----------------------------------------------------------------------

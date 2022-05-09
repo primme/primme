@@ -7,12 +7,16 @@ import scipy.sparse.linalg
 cimport cython
 from cython cimport view
 
-try:
-    import cupy, cupyx
-    __with_cupy = True
-except Exception as e:
-    cupy_exception = e
+IF BUILD_WITH_MAGMA: 
+    try:
+        import cupy, cupyx
+        __with_cupy = True
+    except Exception as e:
+        cupy_exception = e
+        __with_cupy = False
+ELSE:
     __with_cupy = False
+    cupy = cupyx = None
 
 try:
     from inspect import signature
@@ -751,7 +755,9 @@ def eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None,
             if tol is not None:
                 aNorm = __primme_params_get(PP, "stats_estimateLargestSVal")
                 if resNorm > aNorm*tol: return False
-            if eval is not None and resNorm > abs(eval)*reltol:
+            errA = __primme_params_get(PP, "stats_estimateErrorOnA")
+            errB = __primme_params_get(PP, "stats_estimateErrorOnB")
+            if eval is not None and resNorm > max(abs(eval)*reltol, errA, errB):
                 return False
             return True
 

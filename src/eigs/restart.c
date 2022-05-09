@@ -222,6 +222,35 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    int restartSize;         /* Basis size after restarting                   */
    int indexOfPreviousVecsBeforeRestart=0;/* descriptive enough name, isn't? */
 
+   /* Check V */
+
+   if (0) {
+      HSCALAR *VtBV0 = NULL;
+      int n = primme->numOrthoConst + *numLocked + basisSize;
+      CHKERR(Num_malloc_SHprimme(n * n, &VtBV0, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", primme->numOrthoConst + *numLocked,
+            primme->numOrthoConst + *numLocked, primme->nLocal, 1.0, evecs,
+            ldevecs, evecs, ldevecs, 0.0, VtBV0, n, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", primme->numOrthoConst + *numLocked,
+            basisSize, primme->nLocal, 1.0, evecs, ldevecs, V, ldV, 0.0,
+            &VtBV0[n * (primme->numOrthoConst + *numLocked)], n, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", basisSize, basisSize,
+            primme->nLocal, 1.0, V, ldV, V, ldV, 0.0,
+            &VtBV0[n * (primme->numOrthoConst + *numLocked) +
+                   primme->numOrthoConst + *numLocked],
+            n, ctx));
+      CHKERR(globalSum_SHprimme(VtBV0, n*n, ctx));
+      int i,j;
+      for (i = 0; i < n; i++) {
+         assert(ABS((HSCALAR)1.0 - VtBV0[n * i + i]) < 1 - (MACHINE_EPSILON * 1000));
+         for (j = 0; j < i; j++) {
+            assert(ABS(VtBV0[n * i + j]) < (MACHINE_EPSILON * 1000));
+         }
+      }
+      CHKERR(Num_free_SHprimme(VtBV0, ctx));
+   }
+
+
    /* ----------------------------------------------------------- */
    /* Remove the SKIP_UNTIL_RESTART flags.                        */
    /* ----------------------------------------------------------- */
@@ -338,6 +367,8 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
             &indexOfPreviousVecs, hVecsPerm, H, ldH, VtBV, ldVtBV, startTime,
             ctx));
    }
+   CHKERR(check_permutation_iprimme(restartPerm, restartSize, basisSize, ctx));
+   CHKERR(check_permutation_iprimme(hVecsPerm, restartSize, restartSize, ctx));
 
    /* Update fVtBV */
 
@@ -447,10 +478,39 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    PRINTF(5, "Residual error level: %g", residualError);
 
    if (*restartsSinceReset <= 1) {
-      primme->stats.maxConvTol = max(primme->stats.maxConvTol, residualError);
+      primme->stats.maxConvTol =
+            max(primme->stats.maxConvTol, 2 * residualError);
    }
 
    primme->stats.estimateResidualError = residualError;
+
+   /* Check V */
+
+   if (0) {
+      HSCALAR *VtBV0 = NULL;
+      int n = primme->numOrthoConst + *numLocked + restartSize;
+      CHKERR(Num_malloc_SHprimme(n * n, &VtBV0, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", primme->numOrthoConst + *numLocked,
+            primme->numOrthoConst + *numLocked, primme->nLocal, 1.0, evecs,
+            ldevecs, evecs, ldevecs, 0.0, VtBV0, n, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", primme->numOrthoConst + *numLocked,
+            restartSize, primme->nLocal, 1.0, evecs, ldevecs, V, ldV, 0.0,
+            &VtBV0[n * (primme->numOrthoConst + *numLocked)], n, ctx));
+      CHKERR(Num_gemm_ddh_Sprimme("C", "N", restartSize, restartSize,
+            primme->nLocal, 1.0, V, ldV, V, ldV, 0.0,
+            &VtBV0[n * (primme->numOrthoConst + *numLocked) +
+                   primme->numOrthoConst + *numLocked],
+            n, ctx));
+      CHKERR(globalSum_SHprimme(VtBV0, n*n, ctx));
+      int i,j;
+      for (i = 0; i < n; i++) {
+         assert(ABS((HSCALAR)1 - VtBV0[n * i + i]) < 1 - MACHINE_EPSILON * 1000);
+         for (j = 0; j < i; j++) {
+            assert(ABS(VtBV0[n * i + j]) < (MACHINE_EPSILON * 1000));
+         }
+      }
+      CHKERR(Num_free_SHprimme(VtBV0, ctx));
+   }
 
    /* Check VtBV */
 
@@ -492,7 +552,7 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
       for (i = 0; i < restartSize; i++) {
          for (j = 0; j <= i; j++) {
             assert(ABS(H[ldH * i + j] - H0[restartSize * i + j]) <
-                   problemNorm_Sprimme(1, primme) * MACHINE_EPSILON * 10);
+                   primme->stats.estimateErrorOnA * 1000);
          }
       }
       CHKERR(Num_free_SHprimme(H0, ctx));
@@ -1880,10 +1940,6 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
 
    primme_params *primme = ctx.primme;
    int i, j;          /* Loop variables                                       */
-   int mhVecsRot0;    /* Number of rows of hVecsRot0                          */
-   int newNumArbitraryVecs; /* arbitrary vectors after restarting             */
-   int nRegular;      /* restarted vectors that weren't retained              */
-   HSCALAR *hVecsRot0; /* Part of hVecsRot                                   */
    HSCALAR *RPrevhVecs;
    double aNorm = primme?max(primme->aNorm, primme->stats.estimateLargestSVal):0.0;
 
@@ -1933,30 +1989,19 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
       return 0;
    }
 
-   /* restartPerm0 = hVecsPerm(restartPerm)                             */
-
-   int *restartPerm0;
-   CHKERR(Num_malloc_iprimme(restartSize, &restartPerm0, ctx));
-   for (i=0; i<restartSize; i++) {
-      restartPerm0[i] = restartPerm[hVecsPerm[i]];
-      assert(restartPerm0[i] >= 0 && restartPerm0[i] < basisSize);
-   }
-
    /* ----------------------------------------------------------------- */
    /* Update numArbitraryVecs as the number of arbitrary vectors in     */
    /* the restarted basis.                                              */
    /* ----------------------------------------------------------------- */
 
-   for (i=newNumArbitraryVecs=0; i < restartSize-numPrevRetained; i++) {
-      if (restartPerm0[i] < *numArbitraryVecs) {
-         newNumArbitraryVecs++;
-      }
+   assert(restartSize <= basisSize);
+   int nRegular; /* restarted vectors to update without error */
+   for (i=nRegular=0; i < restartSize-numPrevRetained; i++) {
+      if (restartPerm[i] < indexOfPreviousVecsBeforeRestart) {
+         nRegular++;
+      } else
+         break;
    }
-
-   /* Check all arbitrary vectors will be together and at the beginning after restart */
-
-   for (i=0; i<newNumArbitraryVecs; i++)
-      assert(restartPerm0[i] < *numArbitraryVecs);
 
    /* -------------------------------------------------------------------- */
    /* Note that hVecs=[hV*hVecsRot prevhVecs], where hV are the right      */
@@ -1973,46 +2018,49 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    /* R*Y = R*[ hV*hVecsRot prevhVecs ]                                    */
    /*     = [ hU*diag(hSVals)*hVecsRot R*prevhVecs ].                      */
    /*                                                                      */
-   /* Note that the code works with R(:,restartPerm0) instead of R,        */
+   /* Note that the code works with R(:,restartPerm) instead of R,        */
    /* because the new arbitrary columns are all together at the leading    */
-   /* columns of R(:,restartPerm0).                                        */
+   /* columns of R(:,restartPerm).                                        */
    /* -------------------------------------------------------------------- */
 
+   assert(*numArbitraryVecs == basisSize);
 
    /* RPrevhVecs = R * hVecs(indexOfPreviousVecs:indexOfPreviousVecs+numPrevRetained) */
 
-   CHKERR(Num_malloc_SHprimme((size_t)numPrevRetained * basisSize, &RPrevhVecs,
-                              ctx));
+   int nRPrev = restartSize - nRegular;
+   int nRem = nRPrev - numPrevRetained;
+   HSCALAR *hVecsRem;         /* Part of hVecs */
+   CHKERR(Num_malloc_SHprimme((size_t)nRem * basisSize, &hVecsRem, ctx));
+   CHKERR(Num_malloc_SHprimme((size_t)nRPrev * basisSize, &RPrevhVecs, ctx));
+   CHKERR(Num_copy_matrix_columns_SHprimme(hVecs, basisSize,
+         restartPerm + nRegular, nRPrev - numPrevRetained, ldhVecs, hVecsRem,
+         NULL, basisSize, ctx));
+   CHKERR(Num_gemm_SHprimme("N", "N", basisSize, nRem, basisSize, 1.0, R, ldR,
+         hVecsRem, basisSize, 0.0, RPrevhVecs, basisSize, ctx));
    CHKERR(Num_gemm_SHprimme("N", "N", basisSize, numPrevRetained, basisSize,
          1.0, R, ldR, &hVecs[ldhVecs * indexOfPreviousVecs], ldhVecs, 0.0,
-         RPrevhVecs, basisSize, ctx));
+         &RPrevhVecs[basisSize * nRem], basisSize, ctx));
+   CHKERR(Num_free_SHprimme(hVecsRem, ctx));
 
    /* Do hVecsRot0 = diag(hSvals)*hVecsRot(hVecsPerm(restartPerm)) limited */
-   /* to the columns 0:newNumArbitraryVecs-1 (in 3 steps)                  */
-   
-   nRegular = restartSize - numPrevRetained;
-   for (i=0, mhVecsRot0=*numArbitraryVecs; i < nRegular; i++)
-      mhVecsRot0 = max(mhVecsRot0, restartPerm0[i]+1);
+   /* to the columns 0:nRegular-1 (in 3 steps)                  */
+
+   HSCALAR *hVecsRot0;         /* Part of hVecsRot */
+   int mhVecsRot0 = basisSize; /* Number of rows of hVecsRot0 */
+   assert(nRegular <= basisSize);
    CHKERR(Num_malloc_SHprimme((size_t)mhVecsRot0 * nRegular, &hVecsRot0, ctx));
 
-   /* 1) hVecsRot0 = hVecsRot(hVecsPerm(restartPerm(0:newNumArbitraryVecs-1))) */
+   /* 1) hVecsRot0 = hVecsRot(hVecsPerm(restartPerm(0:nRegular-1))) */
    CHKERR(Num_zero_matrix_SHprimme(
          hVecsRot0, mhVecsRot0, nRegular, mhVecsRot0, ctx));
-   CHKERR(Num_copy_matrix_columns_SHprimme(hVecsRot, *numArbitraryVecs,
-         restartPerm0, newNumArbitraryVecs, ldhVecsRot, hVecsRot0, NULL,
-         mhVecsRot0, ctx));
+   CHKERR(Num_copy_matrix_columns_SHprimme(hVecsRot, basisSize, restartPerm,
+         nRegular, ldhVecsRot, hVecsRot0, NULL, mhVecsRot0, ctx));
 
    /* 2) hVecsRot0 = diag(hSVals)*hVecsRot0 */
-   for (i=0; i<newNumArbitraryVecs; i++) {
-      for (j=0; j<*numArbitraryVecs; j++) {
+   for (i=0; i<nRegular; i++) {
+      for (j=0; j<basisSize; j++) {
          hVecsRot0[mhVecsRot0*i+j] *= hSVals[j];
       }
-   }
-
-   /* 3) hVecsRot0(:,c) = diag(hSVals)*I(:,restartPerm0(c))  */
-   /*  for c = newNumArbVecs:nRegular-1                   */
-   for (i=newNumArbitraryVecs; i<nRegular; i++) {
-      hVecsRot0[mhVecsRot0*i+restartPerm0[i]] = hSVals[restartPerm0[i]];
    }
 
    /* R = zeros() */
@@ -2034,43 +2082,19 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    CHKERR(Num_free_SHprimme(hVecsRot0, ctx));
 
   /* hU = [hU RPrevhVecs] */
-   CHKERR(Num_copy_matrix_SHprimme(RPrevhVecs, basisSize, numPrevRetained,
-         basisSize, &hU[basisSize * nRegular], basisSize, ctx));
+   CHKERR(Num_copy_matrix_SHprimme(RPrevhVecs, basisSize, nRPrev, basisSize,
+         &hU[basisSize * nRegular], basisSize, ctx));
    CHKERR(Num_free_SHprimme(RPrevhVecs, ctx));
 
    /* [hU, R] = ortho(hU, nRegular:nRegular+numPrevRetained-1) */
    CHKERR(Bortho_local_SHprimme(hU, basisSize, R, ldR, nRegular,
-         nRegular + numPrevRetained - 1, NULL, 0, 0, basisSize, NULL, 0,
-         primme->iseed, ctx));
+         restartSize - 1, NULL, 0, 0, basisSize, NULL, 0, primme->iseed, ctx));
 
    /* hU = C'\hU, where C is the Cholesky factor of QtQ */
 
    if (QtQ) {
       CHKERR(Num_trsm_SHprimme("L", "U", "N", "N", basisSize, restartSize, 1.0,
             fQtQ, ldfQtQ, hU, ldhU, ctx));
-   }
-
-   /* Zero upper triangular part of R(:,newNumArbVecs:nRegular-1) for the     */
-   /* columns that restartPerm0[i] >= numArbVecs                              */
-   for (i=newNumArbitraryVecs; i<nRegular; i++) {
-      if (restartPerm0[i] >= *numArbitraryVecs) {
-         for (j=0; j<=i; j++) {
-            R[ldR*i+j] = 0.0;
-         }
-         R[ldR*i+i] = hSVals[restartPerm0[i]];
-      }
-   }
-   CHKERR(Num_free_iprimme(restartPerm0, ctx));
-
-   /* When the retained coefficient vectors were orthogonalized against all   */
-   /* arbitrary vectors then R*prevhVecs is orthogonal to                     */
-   /* hU(0:indexOfPreviousVecsBeforeRestart) and that rows of R corresponding */
-   /* to the retained vectors should be zero.                                 */
-
-    if (*numArbitraryVecs <= indexOfPreviousVecsBeforeRestart) {
-      /* Zero R(0:nRegular-1,nRegular:restartSize) */
-      Num_zero_matrix_SHprimme(&R[ldR*nRegular], nRegular, numPrevRetained,
-            ldR, ctx);
    }
 
    /* ----------------------------------- */
@@ -2116,78 +2140,28 @@ STATIC int restart_refined(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    /* over the original hVals.                                               */
    /* NOTE: the eigenvalues of the retained pairs aren't correctly computed. */
 
-   HEVAL *dummyhVals;
-   CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(
-         restartSize, &dummyhVals, ctx));
    CHKERR(solve_H_SHprimme(H, restartSize, ldH,
          VtBV ? &VtBV[nLocked * ldVtBV + nLocked] : NULL, ldVtBV, R, ldR, NULL,
-         0, QtQ, ldQtQ, hU, newldhU, hVecs, newldhVecs, dummyhVals, hSVals,
+         0, QtQ, ldQtQ, hU, newldhU, hVecs, newldhVecs, hVals, hSVals,
          numConverged, NULL, ctx));
-   CHKERR(KIND(Num_free_RHprimme,Num_free_SHprimme)(dummyhVals, ctx));
 
-   CHKERR(KIND(permute_vecs_RHprimme, permute_vecs_SHprimme)(
-         hVals, 1, restartSize, 1, hVecsPerm, ctx));
+   /* Set the identity hVecsRot */
+   for (int i = 0; i < restartSize; i++)
+      for (int j = 0; j < restartSize; j++)
+         hVecsRot[ldhVecsRot * i + j] =
+               CONJ(hVecs[newldhVecs * j + hVecsPerm[i]]);
 
-   /* ---------------------------------------------------------------------- */
-   /* Permute back the columns of R                                          */
-   /* ---------------------------------------------------------------------- */
+   CHKERR(Num_zero_matrix_SHprimme(
+         hVecs, restartSize, restartSize, newldhVecs, ctx));
+   for (j = 0; j < restartSize; j++) hVecs[newldhVecs * j + hVecsPerm[j]] = 1.0;
+   for (j = 0; j < restartSize; j++)
+      hVals[j] =
+            KIND(REAL_PART, )(H[ldH * hVecsPerm[j] + hVecsPerm[j]] /
+                              (VtBV ? VtBV[(nLocked + hVecsPerm[j]) * ldVtBV +
+                                            nLocked + hVecsPerm[j]]
+                                    : 1.0));
 
-   /* hVecsPerm(invhVecsPerm) = 1:n */
-   int *invhVecsPerm;
-   CHKERR(Num_malloc_iprimme(restartSize, &invhVecsPerm, ctx));
-   for (i=0; i<restartSize; i++) {
-      invhVecsPerm[hVecsPerm[i]] = i;
-   }
-
-   /* R = R(:, invhVecsPerm) */
-   CHKERR(permute_vecs_SHprimme(
-         R, restartSize, restartSize, ldR, invhVecsPerm, ctx));
-   CHKERR(Num_free_iprimme(invhVecsPerm, ctx));
-
-   /* ----------------------------------------------------------------- */
-   /* After all the changes in hVecs and R new arbitrary vectors may    */
-   /* have been introduced. When the retained coefficient vectors are   */
-   /* orthogonalized against all arbitrary vectors then the new number  */
-   /* of arbitrary vectors is at most the largest index out of order    */
-   /* in hVecsPerm, plus one. Otherwise the easiest way is to consider  */
-   /* all restarted vectors as arbitrary vectors.                       */
-   /* ----------------------------------------------------------------- */
-
-   if (*numArbitraryVecs <= indexOfPreviousVecsBeforeRestart) {
-      for (i=*numArbitraryVecs=newNumArbitraryVecs; i<restartSize; i++)
-         if (hVecsPerm[i] != i) *numArbitraryVecs=i+1;
-   }
-   else {
-      *numArbitraryVecs = restartSize;
-   }
-
-   /* ----------------------------------------------------------------------- */
-   /* We want to compute hVecsRot so that it corresponds to the rotation of   */
-   /* the right singular vectors of R that produces I(:,hVecsPerm), because   */
-   /* the desired coefficient vectors were already decided in the last        */
-   /* iteration. The current hVecs is the right singular vectors of           */
-   /* R*I(:,hVecsPerm). Notice R*I(:,hVecsPerm) = hU * S * hV'*I(:,hVecsPerm).*/
-   /* Setting hVecsRot as current hVecs'=hV'*I(:,hVecsPerm) will satisfy that */
-   /* hVecs = hV * hVecsRot, with hVecs=I(:,hVecsPerm).                       */
-   /* ----------------------------------------------------------------------- */
-
-   /* hVecsRot <- hVecs' for arbitrary vectors */
-
-   Num_zero_matrix_SHprimme(hVecsRot, primme->maxBasisSize, primme->maxBasisSize,
-         ldhVecsRot, ctx);
-   for (j=0; j < *numArbitraryVecs; j++) {
-      for (i=0; i<restartSize; i++) {
-         hVecsRot[ldhVecsRot*j+i] = CONJ(hVecs[newldhVecs*i+j]);
-      }
-   }
- 
-   /* hVecs <- I for arbitrary vectors */
-
-   Num_zero_matrix_SHprimme(hVecs, restartSize, *numArbitraryVecs, newldhVecs, ctx);
-   for (j=0; j < *numArbitraryVecs; j++) {
-      hVecs[newldhVecs*j+hVecsPerm[j]] = 1.0;
-   }
-
+   *numArbitraryVecs = restartSize;
    return 0;
 }
 
@@ -2382,8 +2356,9 @@ STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
       HSCALAR *prevhVecs, int nprevhVecs, int ldprevhVecs, int *flags,
       int *numPrevRetained, primme_context ctx) {
 
+   int nModVecs = max(0, basisSize - indexOfPreviousVecs);
    HSCALAR *rwork; /* auxiliary space to broadcast the retained vectors */
-   CHKERR(Num_malloc_SHprimme(basisSize*(*numPrevRetained)+1, &rwork, ctx));
+   CHKERR(Num_malloc_SHprimme(basisSize * nModVecs + 1, &rwork, ctx));
 
    if (ctx.procID == 0) {
 
@@ -2398,7 +2373,7 @@ STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
             i++) {
          /* Skip converged pairs in soft locking */
 
-         if (ctx.primme->locking == 0 && flags[i] != UNCONVERGED) continue;
+         if (flags[i] != UNCONVERGED) continue;
 
          /* Avoid that ortho replaces linear dependent vectors by random
           * vectors. The random vectors make the restarting W with large
@@ -2421,19 +2396,21 @@ STATIC int ortho_coefficient_vectors_Sprimme(HSCALAR *hVecs, int basisSize,
 
       PRINTF(5, "retain_previous: numPrevRetained: %d", retained);
 
+      CHKERR(Bortho_local_SHprimme(hVecs, ldhVecs, NULL, 0,
+            indexOfPreviousVecs + retained, basisSize - 1, NULL, 0, 0,
+            basisSize, VtBV, ldVtBV, ctx.primme->iseed, ctx));
+
       rwork[0] = (HSCALAR)retained;
       CHKERR(Num_copy_matrix_SHprimme(&hVecs[ldhVecs * indexOfPreviousVecs],
-            basisSize, retained, ldhVecs, rwork + 1, basisSize, ctx));
-      CHKERR(Num_zero_matrix_SHprimme(&rwork[1 + basisSize * retained],
-            basisSize, *numPrevRetained - retained, basisSize, ctx));
+            basisSize, nModVecs, ldhVecs, rwork + 1, basisSize, ctx));
    }
 
    /* Broadcast hVecs(indexOfPreviousVecs:indexOfPreviousVecs+numPrevRetained) */
 
-   CHKERR(broadcast_SHprimme(rwork, basisSize * (*numPrevRetained) + 1, ctx));
+   CHKERR(broadcast_SHprimme(rwork, basisSize * nModVecs + 1, ctx));
    *numPrevRetained = (int)REAL_PART(rwork[0]);
-   CHKERR(Num_copy_matrix_SHprimme(rwork + 1, basisSize, *numPrevRetained,
-         basisSize, &hVecs[ldhVecs * indexOfPreviousVecs], ldhVecs, ctx));
+   CHKERR(Num_copy_matrix_SHprimme(rwork + 1, basisSize, nModVecs, basisSize,
+         &hVecs[ldhVecs * indexOfPreviousVecs], ldhVecs, ctx));
 
    CHKERR(Num_free_SHprimme(rwork, ctx));
 

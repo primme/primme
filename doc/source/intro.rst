@@ -56,6 +56,28 @@ From PRIMME 1.x to 2.0:
 Changelog
 ^^^^^^^^^
 
+Changes in PRIMME 3.3 (released on Dec 29, 2021):
+
+* Added estimation errors of |matrixMatvec| and |massMatrixMatvec| in stat fields |estimateErrorOnA| and |estimateErrorOnB|, and orthogonalization errors in |estimateOrthoError|, and errors in the residual vector norms |estimateReseidualError|.
+
+* Added a heuristic to detect stagnation in QMR
+
+* Complete support for complex half precision for GPUs.
+
+* Fixed bug in :c:func:`magma_zprimme` preventing any problem to converge
+
+* Fixed bugs for |nLocal| larger than :math:`2^{31}`
+
+* Fixed bug in reporting progress for MATLAB's `primme_svds` function.
+
+* Fixed Python's eigsh when returning only the eigenvalues.
+
+* Added support for GPU matvec in Python.
+
+* Added option `raise_for_unconverged` in Python `eigsh` to return all converged pairs even when more were asked.
+
+* Added Python function `get_eigsh_param` to get a field of `primme_params` during runtime.
+
 Changes in PRIMME 3.2 (released on Jan 29, 2021):
 
 * Fixed Intel 2021 compiler error ``"Unsupported combination of types for <tgmath.h>."``

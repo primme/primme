@@ -64,8 +64,11 @@ eval, evec = primme.eigsh(A, 1, which='LM', convtest=convtest_lm)
 assert_allclose(eval, [ 99.], atol=.1)
 
 try:
-    import cupy, cupyx
-    test_gpu = True
+    if primme.__with_cupy:
+        import cupy, cupyx
+        test_gpu = True
+    else:
+        raise Exception("Buuh")
 except Exception:
     test_gpu = False
     print("Not testing GPU examples")

@@ -365,6 +365,8 @@ static int real_main (int argc, char *argv[]) {
    free(svecs);
    free(rnorms);
 
+   if (primme_svds.numTargetShifts > 0) free(primme_svds.targetShifts);
+
    if (ret != 0 && master) {
       fprintf(primme_svds.outputFile, 
          "Error: primme_svds returned with nonzero exit status: %d \n",ret);

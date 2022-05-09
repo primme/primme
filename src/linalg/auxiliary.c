@@ -694,16 +694,46 @@ int Num_copy_matrix_rows_Sprimme(SCALAR *x, int *xim, int m, int n,
    return 0;
 }
 
+#ifdef USE_DOUBLE
+
 /******************************************************************************
+ * Subroutine check_permutation - This routine checks a permutation
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * perm        The permutation
+ * n           The number of elements
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int check_permutation_iprimme(int *perm, int n, int max_val, primme_context ctx) {
+
+   int *visit;
+   CHKERR(Num_malloc_iprimme(max_val, &visit, ctx));
+
+   for (int i = 0; i < max_val; i++)
+      visit[i] = 0;
+   for (int i = 0; i < n; i++) {
+      CHKERR(0 <= perm[i] && perm[i] < max_val ? 0 : 1);
+      visit[perm[i]]++;
+   }
+   for (int i = 0; i < max_val; i++) CHKERR(visit[i] <= 1 ? 0 : 1);
+
+   CHKERR(Num_free_iprimme(visit, ctx));
+
+   return 0;
+}
+
+#endif
+ /******************************************************************************
  * Subroutine permute_vecs - This routine permutes a set of vectors according
  *            to a permutation array perm.
  *
  * INPUT ARRAYS AND PARAMETERS
  * ---------------------------
- * m, n, ld    The number of rows and columns and the leading dimension of
- *vecs perm        The permutation of the columns rwork       Temporary space
- *of size the number of rows iwork       Temporary space of size the number
- *of columns
+ * m, n, ld    The number of rows and columns and the leading dimension of vecs
+ * perm        The permutation of the columns
  *
  * INPUT/OUTPUT ARRAYS
  * -------------------
@@ -727,14 +757,7 @@ int permute_vecs_Sprimme(SCALAR *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
    /* Check perm_ is a permutation */
 
 #ifndef NDEBUG
-   for (tempIndex = 0; tempIndex < n; tempIndex++)
-      perm[tempIndex] = 0;
-   for (tempIndex = 0; tempIndex < n; tempIndex++) {
-      assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
-      perm[perm_[tempIndex]] = 1;
-   }
-   for (tempIndex = 0; tempIndex < n; tempIndex++)
-      assert(perm[tempIndex] == 1);
+   CHKERR(check_permutation_iprimme(perm_, n, n, ctx));
 #endif
 
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
@@ -810,12 +833,7 @@ int permute_vecs_iprimme(int *vecs, int n, int *perm_, primme_context ctx) {
    /* Check perm_ is a permutation */
 
 #ifndef NDEBUG
-   for (tempIndex=0; tempIndex<n; tempIndex++) perm[tempIndex] = 0;
-   for (tempIndex=0; tempIndex<n; tempIndex++) {
-      assert(0 <= perm_[tempIndex] && perm_[tempIndex] < n);
-      perm[perm_[tempIndex]] = 1;
-   }
-   for (tempIndex=0; tempIndex<n; tempIndex++) assert(perm[tempIndex] == 1);
+   CHKERR(check_permutation_iprimme(perm_, n, n, ctx));
 #endif
 
    /* Copy of perm_ into perm, to avoid to modify the input permutation */
@@ -876,7 +894,7 @@ int permute_vecs_iprimme(int *vecs, int n, int *perm_, primme_context ctx) {
  *       matrix, i.e., work = vecs(perm). If avoidCopy and perm indices are
  *       consecutive the routine returns a reference in vecs and doesn't copy.
  *            
- *
+ *0
  * PARAMETERS
  * ---------------------------
  * 

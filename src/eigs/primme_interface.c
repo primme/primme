@@ -1016,8 +1016,20 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_estimateInvBNorm:
               *(double*)value = primme->stats.estimateInvBNorm;
       break;
+      case PRIMME_stats_estimateErrorOnA:
+              *(double*)value = primme->stats.estimateErrorOnA;
+      break;
+      case PRIMME_stats_estimateErrorOnB:
+              *(double*)value = primme->stats.estimateErrorOnB;
+      break;
       case PRIMME_stats_maxConvTol:
               *(double*)value = primme->stats.maxConvTol;
+      break;
+      case PRIMME_stats_estimateResidualError:
+              *(double*)value = primme->stats.estimateResidualError;
+      break;
+      case PRIMME_stats_estimateOrthoError:
+              *(double*)value = primme->stats.estimateOrthoError;
       break;
       case PRIMME_stats_lockingIssue:
               *(PRIMME_INT*)value = primme->stats.lockingIssue;
@@ -1332,8 +1344,20 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_estimateInvBNorm:
               primme->stats.estimateInvBNorm = *(double*)value;
       break;
+      case PRIMME_stats_estimateErrorOnA:
+              primme->stats.estimateErrorOnA = *(double*)value;
+      break;
+      case PRIMME_stats_estimateErrorOnB:
+              primme->stats.estimateErrorOnB = *(double*)value;
+      break;
       case PRIMME_stats_maxConvTol:
               primme->stats.maxConvTol = *(double*)value;
+      break;
+      case PRIMME_stats_estimateResidualError:
+              primme->stats.estimateResidualError = *(double*)value;
+      break;
+      case PRIMME_stats_estimateOrthoError:
+              primme->stats.estimateOrthoError = *(double*)value;
       break;
       case PRIMME_stats_lockingIssue:
               primme->stats.lockingIssue = *(PRIMME_INT*)value;
@@ -1415,93 +1439,99 @@ int primme_member_info(primme_params_label *label, const char **label_name,
       set = 1;                                                                 \
    }
 
-   IF_IS(n                            , n);
-   IF_IS(matrixMatvec                 , matrixMatvec);
-   IF_IS(matrixMatvec_type            , matrixMatvec_type);
-   IF_IS(massMatrixMatvec             , massMatrixMatvec);
-   IF_IS(massMatrixMatvec_type        , massMatrixMatvec_type);
-   IF_IS(applyPreconditioner          , applyPreconditioner);
-   IF_IS(applyPreconditioner_type     , applyPreconditioner_type);
-   IF_IS(numProcs                     , numProcs);
-   IF_IS(procID                       , procID);
-   IF_IS(commInfo                     , commInfo);
-   IF_IS(nLocal                       , nLocal);
-   IF_IS(globalSumReal                , globalSumReal);
-   IF_IS(broadcastReal                , broadcastReal);
-   IF_IS(numEvals                     , numEvals);
-   IF_IS(target                       , target);
-   IF_IS(numTargetShifts              , numTargetShifts);
-   IF_IS(targetShifts                 , targetShifts);
-   IF_IS(locking                      , locking);
-   IF_IS(initSize                     , initSize);
-   IF_IS(numOrthoConst                , numOrthoConst);
-   IF_IS(dynamicMethodSwitch          , dynamicMethodSwitch);
-   IF_IS(maxBasisSize                 , maxBasisSize);
-   IF_IS(minRestartSize               , minRestartSize);
-   IF_IS(maxBlockSize                 , maxBlockSize);
-   IF_IS(maxMatvecs                   , maxMatvecs);
-   IF_IS(maxOuterIterations           , maxOuterIterations);
-   IF_IS(iseed                        , iseed);
-   IF_IS(aNorm                        , aNorm);
-   IF_IS(BNorm                        , BNorm);
-   IF_IS(invBNorm                     , invBNorm);
-   IF_IS(eps                          , eps);
-   IF_IS(orth                         , orth);
-   IF_IS(internalPrecision            , internalPrecision);
-   IF_IS(printLevel                   , printLevel);
-   IF_IS(outputFile                   , outputFile);
-   IF_IS(matrix                       , matrix);
-   IF_IS(massMatrix                   , massMatrix);
-   IF_IS(preconditioner               , preconditioner);
-   IF_IS(ShiftsForPreconditioner      , ShiftsForPreconditioner);
-   IF_IS(initBasisMode                , initBasisMode);
-   IF_IS(projection_projection        , projectionParams_projection);
-   IF_IS(restarting_maxPrevRetain     , restartingParams_maxPrevRetain);
-   IF_IS(correction_precondition      , correctionParams_precondition);
-   IF_IS(correction_robustShifts      , correctionParams_robustShifts);
+   IF_IS(n, n);
+   IF_IS(matrixMatvec, matrixMatvec);
+   IF_IS(matrixMatvec_type, matrixMatvec_type);
+   IF_IS(applyPreconditioner, applyPreconditioner);
+   IF_IS(applyPreconditioner_type, applyPreconditioner_type);
+   IF_IS(massMatrixMatvec, massMatrixMatvec);
+   IF_IS(massMatrixMatvec_type, massMatrixMatvec_type);
+   IF_IS(numProcs, numProcs);
+   IF_IS(procID, procID);
+   IF_IS(commInfo, commInfo);
+   IF_IS(nLocal, nLocal);
+   IF_IS(globalSumReal, globalSumReal);
+   IF_IS(globalSumReal_type, globalSumReal_type);
+   IF_IS(broadcastReal, broadcastReal);
+   IF_IS(broadcastReal_type, broadcastReal_type);
+   IF_IS(numEvals, numEvals);
+   IF_IS(target, target);
+   IF_IS(numTargetShifts, numTargetShifts);
+   IF_IS(targetShifts, targetShifts);
+   IF_IS(locking, locking);
+   IF_IS(initSize, initSize);
+   IF_IS(numOrthoConst, numOrthoConst);
+   IF_IS(maxBasisSize, maxBasisSize);
+   IF_IS(minRestartSize, minRestartSize);
+   IF_IS(maxBlockSize, maxBlockSize);
+   IF_IS(maxMatvecs, maxMatvecs);
+   IF_IS(maxOuterIterations, maxOuterIterations);
+   IF_IS(iseed, iseed);
+   IF_IS(aNorm, aNorm);
+   IF_IS(BNorm, BNorm);
+   IF_IS(invBNorm, invBNorm);
+   IF_IS(eps, eps);
+   IF_IS(orth, orth);
+   IF_IS(internalPrecision, internalPrecision);
+   IF_IS(printLevel, printLevel);
+   IF_IS(outputFile, outputFile);
+   IF_IS(matrix, matrix);
+   IF_IS(massMatrix, massMatrix);
+   IF_IS(preconditioner, preconditioner);
+   IF_IS(ShiftsForPreconditioner, ShiftsForPreconditioner);
+   IF_IS(initBasisMode, initBasisMode);
+   IF_IS(projection_projection, projectionParams_projection);
+   IF_IS(restarting_maxPrevRetain, restartingParams_maxPrevRetain);
+   IF_IS(correction_precondition, correctionParams_precondition);
+   IF_IS(correction_robustShifts, correctionParams_robustShifts);
    IF_IS(correction_maxInnerIterations, correctionParams_maxInnerIterations);
-   IF_IS(correction_projectors_LeftQ  , correctionParams_projectors_LeftQ);
-   IF_IS(correction_projectors_LeftX  , correctionParams_projectors_LeftX);
-   IF_IS(correction_projectors_RightQ , correctionParams_projectors_RightQ);
-   IF_IS(correction_projectors_RightX , correctionParams_projectors_RightX);
-   IF_IS(correction_projectors_SkewQ  , correctionParams_projectors_SkewQ);
-   IF_IS(correction_projectors_SkewX  , correctionParams_projectors_SkewX);
-   IF_IS(correction_convTest          , correctionParams_convTest);
-   IF_IS(correction_relTolBase        , correctionParams_relTolBase);
-   IF_IS(stats_numOuterIterations     , stats_numOuterIterations);
-   IF_IS(stats_numRestarts            , stats_numRestarts);
-   IF_IS(stats_numMatvecs             , stats_numMatvecs);
-   IF_IS(stats_numPreconds            , stats_numPreconds);
-   IF_IS(stats_numGlobalSum           , stats_numGlobalSum);
-   IF_IS(stats_volumeGlobalSum        , stats_volumeGlobalSum);
-   IF_IS(stats_numBroadcast           , stats_numBroadcast);
-   IF_IS(stats_volumeBroadcast        , stats_volumeBroadcast);
-   IF_IS(stats_flopsDense             , stats_flopsDense);
-   IF_IS(stats_numOrthoInnerProds     , stats_numOrthoInnerProds);
-   IF_IS(stats_elapsedTime            , stats_elapsedTime);
-   IF_IS(stats_timeMatvec             , stats_timeMatvec);
-   IF_IS(stats_timePrecond            , stats_timePrecond);
-   IF_IS(stats_timeOrtho              , stats_timeOrtho);
-   IF_IS(stats_timeGlobalSum          , stats_timeGlobalSum);
-   IF_IS(stats_timeBroadcast          , stats_timeBroadcast);
-   IF_IS(stats_timeDense              , stats_timeDense);
-   IF_IS(stats_estimateMinEVal        , stats_estimateMinEVal);
-   IF_IS(stats_estimateMaxEVal        , stats_estimateMaxEVal);
-   IF_IS(stats_estimateLargestSVal    , stats_estimateLargestSVal);
-   IF_IS(stats_estimateBNorm          , stats_estimateBNorm);
-   IF_IS(stats_estimateInvBNorm       , stats_estimateInvBNorm);
-   IF_IS(stats_maxConvTol             , stats_maxConvTol);
-   IF_IS(stats_lockingIssue           , stats_lockingIssue);
-   IF_IS(convTestFun                  , convTestFun);
-   IF_IS(convTestFun_type             , convTestFun_type);
-   IF_IS(convtest                     , convtest);
-   IF_IS(ldevecs                      , ldevecs);
-   IF_IS(ldOPs                        , ldOPs);
-   IF_IS(monitorFun                   , monitorFun);
-   IF_IS(monitorFun_type              , monitorFun_type);
-   IF_IS(monitor                      , monitor);
-   IF_IS(queue                        , queue);
-   IF_IS(profile                      , profile);
+   IF_IS(correction_projectors_LeftQ, correctionParams_projectors_LeftQ);
+   IF_IS(correction_projectors_LeftX, correctionParams_projectors_LeftX);
+   IF_IS(correction_projectors_RightQ, correctionParams_projectors_RightQ);
+   IF_IS(correction_projectors_RightX, correctionParams_projectors_RightX);
+   IF_IS(correction_projectors_SkewQ, correctionParams_projectors_SkewQ);
+   IF_IS(correction_projectors_SkewX, correctionParams_projectors_SkewX);
+   IF_IS(correction_convTest, correctionParams_convTest);
+   IF_IS(correction_relTolBase, correctionParams_relTolBase);
+   IF_IS(stats_numOuterIterations, stats_numOuterIterations);
+   IF_IS(stats_numRestarts, stats_numRestarts);
+   IF_IS(stats_numMatvecs, stats_numMatvecs);
+   IF_IS(stats_numPreconds, stats_numPreconds);
+   IF_IS(stats_numGlobalSum, stats_numGlobalSum);
+   IF_IS(stats_volumeGlobalSum, stats_volumeGlobalSum);
+   IF_IS(stats_numBroadcast, stats_numBroadcast);
+   IF_IS(stats_volumeBroadcast, stats_volumeBroadcast);
+   IF_IS(stats_flopsDense, stats_flopsDense);
+   IF_IS(stats_numOrthoInnerProds, stats_numOrthoInnerProds);
+   IF_IS(stats_elapsedTime, stats_elapsedTime);
+   IF_IS(stats_timeMatvec, stats_timeMatvec);
+   IF_IS(stats_timePrecond, stats_timePrecond);
+   IF_IS(stats_timeOrtho, stats_timeOrtho);
+   IF_IS(stats_timeGlobalSum, stats_timeGlobalSum);
+   IF_IS(stats_timeBroadcast, stats_timeBroadcast);
+   IF_IS(stats_timeDense, stats_timeDense);
+   IF_IS(stats_estimateMinEVal, stats_estimateMinEVal);
+   IF_IS(stats_estimateMaxEVal, stats_estimateMaxEVal);
+   IF_IS(stats_estimateLargestSVal, stats_estimateLargestSVal);
+   IF_IS(stats_estimateBNorm, stats_estimateBNorm);
+   IF_IS(stats_estimateInvBNorm, stats_estimateInvBNorm);
+   IF_IS(stats_estimateErrorOnA, stats_estimateErrorOnA);
+   IF_IS(stats_estimateErrorOnB, stats_estimateErrorOnB);
+   IF_IS(stats_maxConvTol, stats_maxConvTol);
+   IF_IS(stats_estimateResidualError, stats_estimateResidualError);
+   IF_IS(stats_estimateOrthoError, stats_estimateOrthoError);
+   IF_IS(stats_lockingIssue, stats_lockingIssue);
+   IF_IS(dynamicMethodSwitch, dynamicMethodSwitch);
+   IF_IS(convTestFun, convTestFun);
+   IF_IS(convTestFun_type, convTestFun_type);
+   IF_IS(convtest, convtest);
+   IF_IS(ldevecs, ldevecs);
+   IF_IS(ldOPs, ldOPs);
+   IF_IS(monitorFun, monitorFun);
+   IF_IS(monitorFun_type, monitorFun_type);
+   IF_IS(monitor, monitor);
+   IF_IS(queue, queue);
+   IF_IS(profile, profile);
 #undef IF_IS
 
    /* Return error if no label was found */
@@ -1578,21 +1608,25 @@ int primme_member_info(primme_params_label *label, const char **label_name,
       case PRIMME_invBNorm:
       case PRIMME_eps:
       case PRIMME_correctionParams_relTolBase:
+      case PRIMME_stats_flopsDense:
       case PRIMME_stats_numOrthoInnerProds:
+      case PRIMME_stats_elapsedTime:
       case PRIMME_stats_timeMatvec:
       case PRIMME_stats_timePrecond:
       case PRIMME_stats_timeOrtho:
       case PRIMME_stats_timeGlobalSum:
       case PRIMME_stats_timeBroadcast:
-      case PRIMME_stats_flopsDense:
       case PRIMME_stats_timeDense:
-      case PRIMME_stats_elapsedTime:
       case PRIMME_stats_estimateMinEVal:
       case PRIMME_stats_estimateMaxEVal:
       case PRIMME_stats_estimateLargestSVal:
       case PRIMME_stats_estimateBNorm:
       case PRIMME_stats_estimateInvBNorm:
+      case PRIMME_stats_estimateErrorOnA:
+      case PRIMME_stats_estimateErrorOnB:
       case PRIMME_stats_maxConvTol:
+      case PRIMME_stats_estimateResidualError:
+      case PRIMME_stats_estimateOrthoError:
       if (type) *type = primme_double;
       if (arity) *arity = 1;
       break;

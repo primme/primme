@@ -173,8 +173,8 @@ STATIC void displayModel(primme_CostModel *model);
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
-      HREAL *resNorms, double startTime, int *ret, int *numRet,
+int main_iter_Sprimme(HEVAL *evals_, SCALAR *evecs, PRIMME_INT ldevecs,
+      HREAL *resNorms_, double startTime, int *ret, int *numRet,
       primme_context ctx) {
 
    /* Default error is something is wrong in this function */
@@ -226,7 +226,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    HSCALAR *M = NULL;       /* The projection Q'*K*B*Q, where Q = [evecs, x]   */
                             /* x is the current Ritz vector and K is a       */
                             /* hermitian preconditioner.                     */
-   HSCALAR *Mfact = NULL;     /* The factorization of M=Q'KBQ                   */
+   HSCALAR *Mfact = NULL;   /* The factorization of M=Q'KBQ                   */
    SCALAR *Bevecs = NULL;   /* B*evecs                                       */
    PRIMME_INT ldBevecs;     /* Leading dimension of Bevecs                   */
    SCALAR *evecsHat = NULL; /* K^{-1}*B*evecs                                   */
@@ -240,9 +240,11 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    PRIMME_INT ldQ;          /* The leading dimension of Q                    */
    HSCALAR *R = NULL;       /* projection: (A-target[i])*V = QR              */
    HSCALAR *QtV = NULL;     /* Q'*V                                          */
-   HSCALAR *hVecsRot = NULL; /* transformation of hVecs in arbitrary vectors  */
+   HSCALAR *hVecsRot = NULL;/* transformation of hVecs in arbitrary vectors  */
 
-   HEVAL *hVals;           /* Eigenvalues of H                              */
+   HEVAL *evals;            /* Converged eigenvalues                         */
+   HREAL *resNorms;         /* Residual norm of the converged pairs          */
+   HEVAL *hVals;            /* Eigenvalues of H                              */
    HREAL *hSVals = NULL;    /* Singular values of R                          */
    HEVAL *prevRitzVals;     /* Eigenvalues of H at previous outer iteration  */
                             /* by robust shifting algorithm in correction.c  */
@@ -339,6 +341,14 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(Num_malloc_SHprimme(
          primme->maxBasisSize * primme->maxBasisSize, &prevhVecs, ctx));
 
+   if (primme->locking) {
+     evals = evals_;
+     resNorms = resNorms_;
+   } else {
+      CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(
+            primme->maxBasisSize, &evals, ctx));
+      CHKERR(Num_malloc_RHprimme(primme->maxBasisSize, &resNorms, ctx));
+   }
    CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(primme->maxBasisSize,
          &hVals, ctx));
    if (numQR > 0) {
@@ -424,6 +434,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    /* Now initSize will store the number of converged pairs */
    primme->initSize = 0;
+   int comeFromRestart = 0;
 
    /* ----------------------------------------------------------- */
    /* Dynamic method switch means we need to decide whether to    */
@@ -500,6 +511,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             ldQtQ, hU, basisSize, hVecs, basisSize, hVals, hSVals, numConverged,
             &nhVecs, ctx));
 
+      comeFromRestart = 0;
       numArbitraryVecs = 0;
       maxRecentlyConverged = availableBlockSize = blockSize = 0;
       smallestResNorm = HUGE_VAL;
@@ -585,11 +597,15 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      &blockSize, &numArbitraryVecs, &smallestResNorm, hVecsRot,
                      primme->maxBasisSize, &numConverged, basisNorms, &reset,
                      VtBV, ldVtBV, prevhVecs, nprevhVecs, primme->maxBasisSize,
-                     practConvCheck, map, startTime, ctx));
+                     practConvCheck, map, comeFromRestart, startTime, ctx));
                recentlyConverged = max(0, numConverged - recentlyConverged);
                candidates_prepared = 1;
-            }
-            else {
+
+               /* Permute prevhVecs respect to map */
+               CHKERR(permute_vecs_SHprimme(prevhVecs, basisSize, nprevhVecs,
+                     primme->maxBasisSize, map, ctx));
+
+            } else {
                blockSize = recentlyConverged = 0;
             }
 
@@ -901,7 +917,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                   ldVtBV, R, primme->maxBasisSize, QtV, primme->maxBasisSize,
                   QtQ, ldQtQ, hU, basisSize, hVecs, basisSize, hVals, hSVals,
                   numConverged, &nhVecs, ctx));
-
+            comeFromRestart = 0;
             numArbitraryVecs = 0;
             candidates_prepared = 0;
 
@@ -964,6 +980,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                   ldVtBV, R, primme->maxBasisSize, QtV, primme->maxBasisSize,
                   QtQ, ldQtQ, hU, basisSize, hVecs, basisSize, hVals, hSVals,
                   numConverged, &nhVecs, ctx));
+            comeFromRestart = 0;
+            numArbitraryVecs = 0;
+            candidates_prepared = 0;
          }
 
          /* ----------------------------------------------------------------- */
@@ -1060,7 +1079,13 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      wholeSpace
                            ? 2 /* any eigenpair is practical convergenced */
                            : 1 /* check practical convergence */,
-                     map, startTime, ctx));
+                     map, comeFromRestart, startTime, ctx));
+
+               /* Permute prevhVecs respect to map */
+
+               CHKERR(permute_vecs_SHprimme(prevhVecs, basisSize, nprevhVecs,
+                     primme->maxBasisSize, map, ctx));
+
 
                if (primme->locking &&
                      (primme->target != primme_closest_geq &&
@@ -1089,11 +1114,6 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
          if (reset > 0) break;
 
-         /* Permute prevhVecs respect to map */
-
-         CHKERR(permute_vecs_SHprimme(prevhVecs, basisSize, nprevhVecs,
-               primme->maxBasisSize, map, ctx));
-
          /* ------------------ */
          /* Restart the basis  */
          /* ------------------ */
@@ -1113,6 +1133,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                &restartsSinceReset, &checkOpError, startTime, ctx));
          restartsSinceReset++;
          nhVecs = basisSize;
+         comeFromRestart = 1;
 
          if (basisSize >= primme->n - primme->numOrthoConst - numLocked &&
                primme->projectionParams.projection != primme_proj_RR) {
@@ -1191,6 +1212,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                   ldVtBV, R, primme->maxBasisSize, QtV, primme->maxBasisSize,
                   QtQ, ldQtQ, hU, basisSize, hVecs, basisSize, hVals, hSVals,
                   numConverged, &nhVecs, ctx));
+            comeFromRestart = 0;
          }
  
          primme->stats.numRestarts++;
@@ -1209,10 +1231,6 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                numConverged, blockNorms[0]); 
             CHKERR(switch_from_GDpk(&CostModel, ctx));
          } /* ---------------------------------------------------------- */
-
-         /* Reset map */
-
-         for (i = 0; i < primme->maxBasisSize; i++) map[i] = i;
 
          /* ----------------------------------------------------------- */
       } /* while ((numConverged < primme->numEvals)  (restarting loop)
@@ -1420,6 +1438,14 @@ clean:
    }
    CHKERR(Num_free_SHprimme(prevhVecs, ctx));
 
+   if (!primme->locking) {
+      for (i = 0; i < primme->initSize; i++) {
+         evals_[i] = evals[i];
+         resNorms_[i] = resNorms[i];
+      }
+      CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(evals, ctx));
+      CHKERR(Num_free_RHprimme(resNorms, ctx));
+   }
    CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(hVals, ctx));
    if (numQR > 0) { CHKERR(Num_free_RHprimme(hSVals, ctx)); }
    CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(prevRitzVals, ctx));
@@ -1502,8 +1528,8 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       int *numArbitraryVecs, double *smallestResNorm, HSCALAR *hVecsRot,
       int ldhVecsRot, int *numConverged, HREAL *basisNorms, int *reset,
       HSCALAR *VtBV, int ldVtBV, HSCALAR *prevhVecs, int nprevhVecs,
-      int ldprevhVecs, int practConvChecking, int *map, double startTime,
-      primme_context ctx) {
+      int ldprevhVecs, int practConvChecking, int *map, int comeFromRestart,
+      double startTime, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i, blki;            /* loop variables */
@@ -1545,15 +1571,13 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          hVals, 1, blockNormsSize, 1, &iev[*blockSize], hValsBlock0, 1,
          1 /* avoid copy */, ctx);
 
-   /* If some residual norms have already been computed, set the minimum   */
-   /* of them as the smallest residual norm. If not, use the value from    */
-   /* previous iteration.                                                  */
+   /* Generate well conditioned coefficient vectors; start from the last   */
+   /* position visited (variable i)                                        */
 
-   if (blockNormsSize > 0) {
-      for (*smallestResNorm = HUGE_VAL, i=0; i < blockNormsSize; i++) {
-         *smallestResNorm = min(*smallestResNorm, blockNorms[i]);
-      }
-   }
+   if (comeFromRestart == 0)
+      CHKERR(prepare_vecs_SHprimme(basisSize, H, ldH, hVals, hSVals, hVecs,
+            ldhVecs, targetShiftIndex, numArbitraryVecs, hVecsRot, ldhVecsRot,
+            ctx));
 
    /* Assign to each eigenpair a pair from previous iteration that is close in
     * angle */
@@ -1572,32 +1596,17 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
    CHKERR(permute_vecs_iprimme(flags, basisSize, map, ctx));
    if (!primme->locking) {
-      HEVAL *evals0;
-      CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(
-            primme->numEvals, &evals0, ctx));
-      HREAL *resNorms0;
-      CHKERR(Num_malloc_RHprimme(primme->numEvals, &resNorms0, ctx));
-      primme->stats.maxConvTol = 0.0;
-      for (i = 0; i < primme->numEvals; i++) {
-         if (flags[i] >= CONVERGED && map[i] < primme->numEvals) {
-            evals0[i] = evals[map[i]];
-            resNorms0[i] = resNorms[map[i]];
-            primme->stats.maxConvTol =
-                  max(primme->stats.maxConvTol, resNorms0[i]);
-         } else {
-            evals0[i] = HUGE_VAL;
-            resNorms0[i] = HUGE_VAL;
-            flags[i] = UNCONVERGED;
-         }
-      }
-      for (i = 0; i < primme->numEvals; i++) {
-         evals[i] = evals0[i];
-         resNorms[i] = resNorms0[i];
-      }
-      CHKERR(Num_free_RHprimme(resNorms0, ctx));
-      CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(evals0, ctx));
+      CHKERR(KIND(permute_vecs_RHprimme, permute_vecs_SHprimme)(
+            evals, 1, basisSize, 1, map, ctx));
+      CHKERR(permute_vecs_RHprimme(resNorms, 1, basisSize, 1, map, ctx));
    }
 
+   // If target is primme_closest_geq primme_closest_leq we don't enforce to all
+   // previous pairs to be marked as converged before marking the current.
+   int converge_in_order = (primme->target == primme_closest_geq ||
+                                        primme->target == primme_closest_leq
+                                  ? 0
+                                  : 1);
    while (1) {
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i = 0; i < blockNormsSize; i++)
@@ -1621,7 +1630,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          // Process flags
          int j;
          for (j = lasti + 1; j < iev[blki]; j++) {
-            if (flags[j] == UNCONVERGED || flags[j] == SKIP_UNTIL_RESTART) {
+            if (converge_in_order && flags[j] < CONVERGED) {
                keepConverging = 0;
             }
             if (flags[j] != SKIP) real_iev++;
@@ -1667,7 +1676,9 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                   0.0, primme_event_converged, startTime, ctx));
          }
          else if (flagsBlock[i] == UNCONVERGED) {
-            keepConverging = 0; /* stop marking as converged */
+            if (converge_in_order)
+               keepConverging = 0; /* stop marking as converged */
+
             flags[iev[blki]] = UNCONVERGED;
 
             /* Update the smallest residual norm */
@@ -1698,17 +1709,9 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          lasti = iev[blki];
       }
 
-      /* Generate well conditioned coefficient vectors; start from the last   */
-      /* position visited (variable i)                                        */
-
-      blki = *blockSize;
-      CHKERR(prepare_vecs_SHprimme(basisSize, lasti + 1, maxBlockSize - blki, H,
-            ldH, hVals, hSVals, hVecs, ldhVecs, targetShiftIndex,
-            numArbitraryVecs, *smallestResNorm, flags, 1, hVecsRot, ldhVecsRot,
-            ctx));
-
       /* Find next candidates, starting from iev(*blockSize)+1 */
 
+      blki = *blockSize;
       for (i = lasti + 1; i < *nhVecs && blki < maxBlockSize; i++) {
          if (i >= *nhVecs) {
             break;

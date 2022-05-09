@@ -853,6 +853,11 @@ function s = primme_svds_get_all_members(primme_svds)
       'stats_timeOrtho',
       'stats_timeGlobalSum',
       'stats_timeBroadcast',
+      'stats_timeDense',
+      'stats_estimateErrorOnA',
+      'stats_maxConvTol',
+      'stats_estimateResidualError',
+      'stats_estimateOrthoError',
       'stats_lockingIssue',
       'convTestFun_type'
    };
@@ -861,7 +866,9 @@ function s = primme_svds_get_all_members(primme_svds)
    s.primme = primme_get_all_members(primme_mex('primme_svds_get_member', primme_svds, 'primme'));
    s.primmeStage2 = primme_get_all_members(primme_mex('primme_svds_get_member', primme_svds, 'primmeStage2'));
    for i=1:length(members)
-     s.(members{i}) = primme_mex('primme_svds_get_member', primme_svds, members{i});
+     v = primme_mex('primme_svds_get_member', primme_svds, members{i});
+     if isnumeric(v), v = double(v); end
+     s.(members{i}) = v;
    end
 end
 
@@ -904,35 +911,41 @@ function s = primme_get_all_members(primme)
       'correction_projectors_SkewX', 
       'correction_convTest', 
       'correction_relTolBase', 
-      'stats_numOuterIterations', 
-      'stats_numRestarts', 
-      'stats_numMatvecs', 
-      'stats_numPreconds', 
-      'stats_numGlobalSum', 
-      'stats_volumeGlobalSum', 
-      'stats_numBroadcast', 
-      'stats_volumeBroadcast', 
-      'stats_flopsDense', 
-      'stats_numOrthoInnerProds', 
-      'stats_elapsedTime', 
-      'stats_timeMatvec', 
-      'stats_timePrecond', 
-      'stats_timeOrtho', 
-      'stats_timeGlobalSum', 
-      'stats_timeBroadcast', 
-      'stats_timeDense', 
-      'stats_estimateMinEVal', 
-      'stats_estimateMaxEVal', 
-      'stats_estimateLargestSVal', 
-      'stats_estimateBNorm', 
-      'stats_estimateInvBNorm', 
-      'stats_maxConvTol', 
+      'stats_numOuterIterations',
+      'stats_numRestarts',
+      'stats_numMatvecs',
+      'stats_numPreconds',
+      'stats_numGlobalSum',
+      'stats_volumeGlobalSum',
+      'stats_numBroadcast',
+      'stats_volumeBroadcast',
+      'stats_flopsDense',
+      'stats_numOrthoInnerProds',
+      'stats_elapsedTime',
+      'stats_timeMatvec',
+      'stats_timePrecond',
+      'stats_timeOrtho',
+      'stats_timeGlobalSum',
+      'stats_timeBroadcast',
+      'stats_timeDense',
+      'stats_estimateMinEVal',
+      'stats_estimateMaxEVal',
+      'stats_estimateLargestSVal',
+      'stats_estimateBNorm',
+      'stats_estimateInvBNorm',
+      'stats_estimateErrorOnA',
+      'stats_estimateErrorOnB',
+      'stats_maxConvTol',
+      'stats_estimateResidualError',
+      'stats_estimateOrthoError',
       'stats_lockingIssue'
    };
 
    s = struct();
    for i=1:length(members)
-     s.(members{i}) = primme_mex('primme_get_member', primme, members{i});
+     v = primme_mex('primme_get_member', primme, members{i});
+     if isnumeric(v), v = double(v); end
+     s.(members{i}) = v;
    end
 end
 

@@ -1233,6 +1233,97 @@ int Num_copy_matrix_columns_dprimme(dummy_type_dprimme *x, PRIMME_INT m, int *xi
 int Num_copy_matrix_rows_dprimme(dummy_type_dprimme *x, int *xim, int m, int n,
                                      PRIMME_INT ldx, dummy_type_dprimme *y, int *yim,
                                      PRIMME_INT ldy, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSprimme)
+#  define check_permutation_iprimmeSprimme CONCAT(check_permutation_iprimme,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRprimme)
+#  define check_permutation_iprimmeRprimme CONCAT(check_permutation_iprimme,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSHprimme)
+#  define check_permutation_iprimmeSHprimme CONCAT(check_permutation_iprimme,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRHprimme)
+#  define check_permutation_iprimmeRHprimme CONCAT(check_permutation_iprimme,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSXprimme)
+#  define check_permutation_iprimmeSXprimme CONCAT(check_permutation_iprimme,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRXprimme)
+#  define check_permutation_iprimmeRXprimme CONCAT(check_permutation_iprimme,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeShprimme)
+#  define check_permutation_iprimmeShprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRhprimme)
+#  define check_permutation_iprimmeRhprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSsprimme)
+#  define check_permutation_iprimmeSsprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRsprimme)
+#  define check_permutation_iprimmeRsprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSdprimme)
+#  define check_permutation_iprimmeSdprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRdprimme)
+#  define check_permutation_iprimmeRdprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSqprimme)
+#  define check_permutation_iprimmeSqprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRqprimme)
+#  define check_permutation_iprimmeRqprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSXhprimme)
+#  define check_permutation_iprimmeSXhprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRXhprimme)
+#  define check_permutation_iprimmeRXhprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSXsprimme)
+#  define check_permutation_iprimmeSXsprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRXsprimme)
+#  define check_permutation_iprimmeRXsprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSXdprimme)
+#  define check_permutation_iprimmeSXdprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRXdprimme)
+#  define check_permutation_iprimmeRXdprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSXqprimme)
+#  define check_permutation_iprimmeSXqprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRXqprimme)
+#  define check_permutation_iprimmeRXqprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSHhprimme)
+#  define check_permutation_iprimmeSHhprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRHhprimme)
+#  define check_permutation_iprimmeRHhprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSHsprimme)
+#  define check_permutation_iprimmeSHsprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRHsprimme)
+#  define check_permutation_iprimmeRHsprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSHdprimme)
+#  define check_permutation_iprimmeSHdprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRHdprimme)
+#  define check_permutation_iprimmeRHdprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeSHqprimme)
+#  define check_permutation_iprimmeSHqprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(check_permutation_iprimmeRHqprimme)
+#  define check_permutation_iprimmeRHqprimme CONCAT(check_permutation_iprimme,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int check_permutation_iprimme(int *perm, int n, int max_val, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(permute_vecs_Sprimme)
 #  define permute_vecs_Sprimme CONCAT(permute_vecs_,SCALAR_SUF)
 #endif

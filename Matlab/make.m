@@ -8,7 +8,7 @@ function make
    w = pwd;
    cd(p);
 
-   flags = {'-O', '-I../include', '-I../src/include'};
+   flags = {'-O', '-I../include', '-I../src/include', '-DNDEBUG'};
    libs = {};
    
    % If not is Windows, add underscore for blas/lapack calls

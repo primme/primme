@@ -75,6 +75,10 @@
 .. |estimateLargestSVal|             replace:: :c:member:`estimateLargestSVal                <primme_params.stats.estimateLargestSVal>`
 .. |maxConvTol|                      replace:: :c:member:`maxConvTol                         <primme_params.stats.maxConvTol>`
 .. |lockingIssue|                    replace:: :c:member:`lockingIssue                       <primme_params.stats.lockingIssue>`
+.. |estimateErrorOnA|                replace:: :c:member:`estimateErrorOnA                   <primme_params.stats.estimateErrorOnA>`
+.. |estimateErrorOnB|                replace:: :c:member:`estimateErrorOnB                   <primme_params.stats.estimateErrorOnB>`
+.. |estimateOrthoError|              replace:: :c:member:`estimateOrthoError                 <primme_params.stats.estimateOrthoError>`
+.. |estimateReseidualError|          replace:: :c:member:`estimateReseidualError             <primme_params.stats.estimateReseidualError>`
 .. |dynamicMethodSwitch|                   replace:: :c:member:`dynamicMethodSwitch                <primme_params.dynamicMethodSwitch>`
 .. |convTestFun|                           replace:: :c:member:`convTestFun                        <primme_params.convTestFun>`
 .. |convTestFun_type|                      replace:: :c:member:`convTestFun_type                   <primme_params.convTestFun_type>`

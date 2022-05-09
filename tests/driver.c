@@ -330,6 +330,8 @@ static int real_main (int argc, char *argv[]) {
    free(evecs);
    free(rnorms);
 
+   if (primme.numTargetShifts > 0) free(primme.targetShifts);
+
    if (ret != 0 && master) {
       fprintf(primme.outputFile, 
          "Error: dprimme returned with nonzero exit status: %d \n",ret);

@@ -1420,6 +1420,50 @@ primme_params
       Hold the maximum residual norm of the converged eigenvectors.
       The value is available during execution and at the end.
 
+      It is computed as |estimateErrorOnA| + |estimateErrorOnB| * |estimateLargestSVal|.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.estimateOrthoError
+
+      Hold the estimation of the departure of the search subspace basis from
+      being orthonormal, as :math:`\|I-V^*V\|_1`.
+      The value is available during execution and at the end.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.estimateErrorOnA
+
+      Hold the estimation of the departure of the |matrixMatvec| from a linear operator :math:`A(x)` as :math:`\|A(Vu)-A(V)u\|_2`, where :math:`u` and :math:`V` are orthonormal vector and matrix.
+      The value is computed at the first restart and updated after every reset.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.estimateErrorOnB
+
+      Hold the estimation of the departure of the |massMatrixMatvec| from a linear operator :math:`B(x)` as :math:`\|B(Vu)-B(V)u\|_2`, where :math:`u` and :math:`V` are orthonormal vector and matrix.
+      The value is computed at the first restart and updated after every reset.
+
+      Input/output:
+
+         | :c:func:`primme_initialize` sets this field to 0;
+         | written by :c:func:`dprimme`.
+
+   .. c:member:: double stats.estimateReseidualError
+
+      Hold the estimate of error on the residual norm.
+
+      It is computed as |estimateErrorOnA| + |estimateErrorOnB| * |estimateLargestSVal|.
+
       Input/output:
 
          | :c:func:`primme_initialize` sets this field to 0;
@@ -1647,7 +1691,7 @@ Preset Methods
       .. hlist::
 
          * |locking| = 0;
-         * |maxPrevRetain| = 1 if it is 0
+         * |maxPrevRetain| = *maxBlockSize* if it is 0
          * |maxInnerIterations| = -1;
          * |LeftQ|   = |precondition|;
          * |LeftX|   = 1;

@@ -139,6 +139,13 @@ Program primmeSvdsF77Example
    do i = 1, NUMSmax
       print '(a,i1,a,G24.16,a,E12.4)',' sval(', i, ') = ', svals(i), '    residual norm =', rnorms(i)
    enddo
+   ierr = primme_svds_params_destroy(primme_svds)
+
+   ! Deallocate arrays
+   deallocate(svals)
+   deallocate(rnorms)
+   deallocate(svecs)
+
 
 contains
 
