@@ -65,6 +65,7 @@
 /* Keep automatically generated headers under this section  */
 #ifndef CHECK_TEMPLATE
 #include "primme_c.h"
+#include "lanczos.h"
 #include "main_iter.h"
 #include "auxiliary_eigs.h"
 #endif
@@ -393,9 +394,14 @@ int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,
    /* Call the solver */
 
    int ret, numRet;
-   CHKERR(coordinated_exit(main_iter_Sprimme(evals0, evecs0, ldevecs0,
-                                 resNorms0, t0, &ret, &numRet, ctx),
-         ctx));
+   if (primme->expansion == primme_expansion_davidson) {
+      CHKERR(coordinated_exit(main_iter_Sprimme(evals0, evecs0, ldevecs0,
+                                    resNorms0, t0, &ret, &numRet, ctx),
+            ctx));
+   } else {
+      CHKERR(lanczos_Sprimme(
+            evals0, evecs0, ldevecs0, resNorms0, t0, &ret, &numRet, ctx));
+   }
 
    /* Copy back evals, evecs and resNorms */
 

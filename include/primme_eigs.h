@@ -53,6 +53,12 @@ typedef enum {
    primme_largest_abs      /* the farthest to the target shift */
 } primme_target;
 
+typedef enum {
+   primme_expansion_lanczos,
+   primme_expansion_arnoldi,
+   primme_expansion_davidson
+} primme_expansion;
+
 /* projection methods for extraction */
 typedef enum {
    primme_proj_default,
@@ -220,6 +226,7 @@ typedef struct primme_params {
    double eps;
    primme_orth orth;
    primme_op_datatype internalPrecision; /* force primme to work in that precision */
+   primme_expansion expansion;
 
    int printLevel;
    FILE *outputFile;
