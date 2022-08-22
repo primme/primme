@@ -117,60 +117,110 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme_params *primme = ctx.primme;
 
                             /* primme parameters */
-   int i;                   /* Loop variable                                 */
-   int basisSize;           /* Current size of the basis V                   */
+   SCALAR *V;                 /* Basis vectors                                 */
+   SCALAR *W;                 /* Work space storing A*V                        */
+   SCALAR *Va;                /* Temporary work array of size nLocalxblockSize */
+   SCALAR *a;                 /* Inner product of W'V                          */
+   SCALAR *B;                 /* R factor of W                                 */
+   SCALAR *Q;                 /* QR decompositions for harmonic or refined     */
 
-   SCALAR *V;               /* Basis vectors                                 */
-   PRIMME_INT ldV;          /* The leading dimension of V                    */
-   SCALAR *W;               /* Work space storing A*V                        */
-   PRIMME_INT ldW;          /* The leading dimension of W                    */
-   SCALAR *Va;              /* Temporary work array of size nLocalxblockSize */
-   PRIMME_INT ldVa;         /* The leading dimension of Va                   */
-   HSCALAR *T;              /* Holds the tridiagonal matrix from Lanczos     XXX: I don't define "T" right now, I have the alphas stored in SCALAR *a, and the betas in SCALAR *B*/
-   PRIMME_INT ldT;          /* The leading dimension of T                    */
-   SCALAR *a;               /* Inner product of W'V                          */
-   PRIMME_INT lda;          /* The leading dimension of a                    */
-   SCALAR *B;               /* R factor of W                                 */
-   PRIMME_INT ldB;          /* The leading dimension of B                    */
+   HSCALAR *T;                /* Holds the tridiagonal matrix from Lanczos     */
+   HSCALAR *H;                /* Upper triangular portion of V'*A*V            */
+   HSCALAR *hVecs;            /* Eigenvectors of H                             */
+   HSCALAR *prevhVecs;        /* hVecs from previous iteration                 */
+   HSCALAR *R;                /* projection: (A-target[i])*V = QR              */
+   HSCALAR *QtV;              /* Q'*V                                          */
+   HSCALAR *hVecsRot;         /* transformation of hVecs in arbitrary vectors  */
+   HSCALAR *hU;               /* Left singular vectors of R                    */
 
+   PRIMME_INT ldV;            /* The leading dimension of V                    */
+   PRIMME_INT ldW;            /* The leading dimension of W                    */
+   PRIMME_INT ldVa;           /* The leading dimension of Va                   */
+   PRIMME_INT lda;            /* The leading dimension of a                    */
+   PRIMME_INT ldB;            /* The leading dimension of B                    */
+   PRIMME_INT ldQ;            /* The leading dimension of Q                    */
+   PRIMME_INT ldT;            /* The leading dimension of T                    */
+   PRIMME_INT ldH;            /* The leading dimension of H                    */
+   PRIMME_INT ldQtV;          /* The leading dimension of QtV                  */
+   PRIMME_INT ldhVecs;        /* The leading dimension of hVecs                */
+
+   int i;                     /* Loop variable                                 */
+   int basisSize;             /* Current size of the basis V                   */
+   int blockSize;             /* Current block size                            */
+   int numQR;                 /* Maximum number of QR factorizations           */
+   int maxEvecsSize;          /* Maximum capacity of evecs array               */
+   int numConverged;          /* Number of converged Ritz pairs                */
+   int nprevhVecs;            /* Number of vectors stored in prevhVecs         */
+
+   double smallestResNorm;    /* the smallest residual norm in the block       */
+   HEVAL *hVals;              /* Eigenvalues of H                              */
+   HEVAL *prevRitzVals;       /* Eigenvalues of H at previous outer iteration  */
+                              /* by robust shifting algorithm in correction.c  */
+
+   HREAL *hSVals;             /* Singular values of R                          */
+   HREAL *basisNorms;         /* Residual norms of basis at pairs              */
+   HREAL *blockNorms;         /* Residual norms corresponding to current block */
+                              /* vectors.                                      */
 
    PRIMME_INT nLocal = primme->nLocal;
    PRIMME_INT maxBasisSize = primme->maxBasisSize;
    int maxBlockSize = min(primme->maxBlockSize, maxBasisSize);    /* In case user enters in too big a block size */
-   int blockSize = maxBlockSize;
+   blockSize = maxBlockSize;
+
+   if (primme->projectionParams.projection != primme_proj_RR) 
+      numQR = 1;
+   else 
+      numQR = 0;
 
    /* -------------------------------------------------------------- */
    /* Allocate objects                                               */
    /* -------------------------------------------------------------- */
 
-   /* Use leading dimension ldOPs for the large dimension mats: V, W, and T*/
-
-   ldV = ldVa = ldW = ldT = primme->ldOPs;
+   /* Setting up leading dimensions for matrices */
+   ldV = ldW = ldVa = ldQ = ldT = primme->ldOPs;
+   ldH = ldhVecs = ldQtV = maxBasisSize;
    lda = ldB = blockSize;
+
    CHKERR(Num_malloc_Sprimme(ldV*maxBasisSize, &V, ctx));
-   CHKERR(Num_malloc_Sprimme(ldVa*blockSize, &Va, ctx));
    CHKERR(Num_malloc_Sprimme(ldW*blockSize, &W, ctx));
-   CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &T, ctx));
+   CHKERR(Num_malloc_Sprimme(ldVa*blockSize, &Va, ctx));
    CHKERR(Num_malloc_Sprimme(maxBasisSize*blockSize, &a, ctx));
    CHKERR(Num_malloc_Sprimme((maxBasisSize-blockSize)*blockSize, &B, ctx));
 
+   CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &T, ctx));
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize, &H, ctx));
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize, &hVecs, ctx));
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize, &prevhVecs, ctx));
+   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize, &hVecsRot, ctx));
+
+   if (numQR > 0) {
+      CHKERR(Num_malloc_Sprimme(primme->ldOPs*primme->maxBasisSize*numQR, &Q, ctx));
+      CHKERR(Num_malloc_Sprimme(primme->ldOPs*primme->maxBasisSize*numQR, &QtV, ctx));
+      CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize * numQR, &R, ctx));
+      CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize * numQR, &hU, ctx));
+      CHKERR(Num_malloc_RHprimme(primme->maxBasisSize, &hSVals, ctx));
+   }
+
+   CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(primme->maxBasisSize, &hVals, ctx)); //XXX: What does 'KIND' do?
+   CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(primme->maxBasisSize + primme->numEvals, &prevRitzVals, ctx));
+   CHKERR(Num_malloc_RHprimme(primme->maxBlockSize, &blockNorms, ctx));
+   CHKERR(Num_malloc_RHprimme(primme->maxBasisSize, &basisNorms, ctx));
+   CHKERR(Num_zero_matrix_RHprimme(basisNorms, 1, primme->maxBasisSize, 1, ctx));
+
+ 
    /* -------------------------------------------------------------- */
    /* Lanczos algorithm                                              */
    /* -------------------------------------------------------------- */
 
-   /* Write first block of orthonormal random vectors ---------- */
-   for( i=0; i < blockSize; i++) { 
+   /* Setup Lanczis ------------------------------------------------ */
+   for( i=0; i < blockSize; i++)
       CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[i], ctx));
-   }
    CHKERR(ortho_Sprimme(V, ldV, NULL, 0, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
 
    /* Adjust block size if needed */
    blockSize = min(maxBlockSize, maxBasisSize-blockSize);
 
-   /* ----------------------------------------------------------*/
-   /* Main loop of Lanczos                                      */
-   /* ----------------------------------------------------------*/
-   
+   /* Main loop of Lanczos ----------------------------------------- */
    for(i = maxBlockSize; i < maxBasisSize; i += blockSize) {
       
       blockSize = min(blockSize, maxBasisSize-i);                                                                                                           /* Adjust block size             */
@@ -188,33 +238,58 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(Num_copy_matrix_Sprimme(&W[0], nLocal, blockSize, ldW, &V[i], ldV, ctx));                                                                      /* V_{j+1} = W                   */
    }
 
-   /* Compute initial H and solve for its eigenpairs */
+   /* ---------------------------------------------------------- */
+   /* Basis Built - Moving on to Eigenproblem solve              */
+   /* ---------------------------------------------------------- */
 
-   HSCALAR *H;              /* Upper triangular portion of V'*A*V            */
-   HSCALAR *hVecs;          /* Eigenvectors of H                             */
-   int numQR;               /* Maximum number of QR factorizations           */
-   SCALAR *Q = NULL;        /* QR decompositions for harmonic or refined     */
-   PRIMME_INT ldQ;          /* The leading dimension of Q                    */
-   HSCALAR *R = NULL;       /* projection: (A-target[i])*V = QR              */
-   HSCALAR *QtV = NULL;     /* Q'*V                                          */
-   HSCALAR *hVecsRot = NULL; /* transformation of hVecs in arbitrary vectors  */
+   /* Allocate objects ------------------------------------------ */
 
-   HEVAL *hVals;           /* Eigenvalues of H                              */
-   HREAL *hSVals = NULL;    /* Singular values of R                          */
-   HEVAL *prevRitzVals;     /* Eigenvalues of H at previous outer iteration  */
-                            /* by robust shifting algorithm in correction.c  */
-   HREAL *basisNorms;       /* Residual norms of basis at pairs              */
-   HREAL *blockNorms;       /* Residual norms corresponding to current block */
-                            /* vectors.                                      */
-   double smallestResNorm;  /* the smallest residual norm in the block       */
-   if (primme->projectionParams.projection != primme_proj_RR) 
-      numQR = 1;
-   else 
-      numQR = 0;
+  /* Initialize counters and flags ---------------------------- */
+
+   primme->stats.numOuterIterations            = 0; 
+   primme->stats.numRestarts                   = 0;
+   primme->stats.numMatvecs                    = 0;
+   primme->stats.numPreconds                   = 0;
+   primme->stats.numGlobalSum                  = 0;
+   primme->stats.numBroadcast                  = 0;
+   primme->stats.volumeGlobalSum               = 0;
+   primme->stats.volumeBroadcast               = 0;
+   primme->stats.flopsDense                    = 0;
+   primme->stats.numOrthoInnerProds            = 0.0;
+   primme->stats.elapsedTime                   = 0.0;
+   primme->stats.timeMatvec                    = 0.0;
+   primme->stats.timePrecond                   = 0.0;
+   primme->stats.timeOrtho                     = 0.0;
+   primme->stats.timeGlobalSum                 = 0.0;
+   primme->stats.timeBroadcast                 = 0.0;
+   primme->stats.timeDense                     = 0.0;
+   primme->stats.estimateMinEVal               = HUGE_VAL;
+   primme->stats.estimateMaxEVal               = -HUGE_VAL;
+   primme->stats.estimateLargestSVal           = -HUGE_VAL;
+   primme->stats.estimateBNorm                 = primme->massMatrixMatvec ? -HUGE_VAL : 1.0;
+   primme->stats.estimateInvBNorm              = primme->massMatrixMatvec ? -HUGE_VAL : 1.0;
+   primme->stats.maxConvTol                    = 0.0;
+   primme->stats.estimateResidualError         = 0.0;
+   primme->stats.lockingIssue                  = 0;
+
+   /* -------------------------------------- */
+   /* Quick return for matrix of dimension 1 */
+   /* -------------------------------------- */
+
+   if (primme->numEvals == 0) {
+      primme->initSize = 0;
+      *ret = 0;
+      goto clean;
+   }
+
+   /* Now initSize will store the number of converged pairs */
+   primme->initSize = 0;
+
 
    /* ---------------------------------------------------------- */
    /* Deallocate arrays                                          */
    /* ---------------------------------------------------------- */
+clean:
    CHKERR(Num_free_Sprimme(V, ctx));
    CHKERR(Num_free_Sprimme(Va, ctx));
    CHKERR(Num_free_Sprimme(W, ctx));
