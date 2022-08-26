@@ -54,6 +54,7 @@ typedef enum {
 } primme_target;
 
 typedef enum {
+   primme_expansion_default,
    primme_expansion_lanczos,
    primme_expansion_arnoldi,
    primme_expansion_davidson
@@ -153,6 +154,10 @@ typedef struct projection_params {
    primme_projection projection;
 } projection_params;
 
+typedef struct expansion_params {
+   primme_expansion expansion;
+} expansion_params;
+
 typedef struct correction_params {
    int precondition;
    int robustShifts;
@@ -240,6 +245,7 @@ typedef struct primme_params {
    PRIMME_INT ldOPs;
 
    struct projection_params projectionParams; 
+   struct expansion_params expansionParams; 
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;
@@ -381,7 +387,8 @@ typedef enum {
    PRIMME_monitorFun_type                        = 86  ,
    PRIMME_monitor                                = 87  ,
    PRIMME_queue                                  = 88  ,
-   PRIMME_profile                                = 89  
+   PRIMME_profile                                = 89  ,
+   PRIMME_expansionParams_expansion              = 90  
 } primme_params_label;
 
 /* Hermitian operator */

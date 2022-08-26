@@ -395,12 +395,9 @@ int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,
 
    int ret, numRet;
    if (primme->expansion == primme_expansion_davidson) {
-      CHKERR(coordinated_exit(main_iter_Sprimme(evals0, evecs0, ldevecs0,
-                                    resNorms0, t0, &ret, &numRet, ctx),
-            ctx));
-   } else {
-      CHKERR(lanczos_Sprimme(
-            evals0, evecs0, ldevecs0, resNorms0, t0, &ret, &numRet, ctx));
+      CHKERR(coordinated_exit(main_iter_Sprimme(evals0, evecs0, ldevecs0, resNorms0, t0, &ret, &numRet, ctx), ctx));
+   } else if(primme->expansion == primme_expansion_lanczos) {
+      CHKERR(coordinated_exit(lanczos_Sprimme(evals0, evecs0, ldevecs0, resNorms0, t0, &ret, &numRet, ctx), ctx));
    }
 
    /* Copy back evals, evecs and resNorms */
@@ -774,6 +771,7 @@ STATIC int check_params_coherence(primme_context ctx) {
    PARALLEL_CHECK(primme->orth);
    PARALLEL_CHECK(primme->initBasisMode);
    PARALLEL_CHECK(primme->projectionParams.projection);
+   PARALLEL_CHECK(primme->expansionParams.expansion);
    PARALLEL_CHECK(primme->restartingParams.maxPrevRetain);
    PARALLEL_CHECK(primme->correctionParams.precondition);
    PARALLEL_CHECK(primme->correctionParams.robustShifts);
