@@ -99,6 +99,7 @@ int main (int argc, char *argv[]) {
    rnorms = (double*)malloc(primme.numEvals*sizeof(double));
 
    /* Call primme  */
+   primme.expansion = primme_expansion_davidson;
    ret = dprimme(evals, evecs, rnorms, &primme);
 
    if (ret != 0) {
