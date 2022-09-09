@@ -148,7 +148,7 @@
 #'     Transaction on Mathematical Software Vol. 37, No. 2, (2010)
 #'     21:1-21:30.
 #'
-#' [2] \url{http://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide}
+#' [2] \url{https://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide}
 #'
 #' @seealso
 #' \code{\link{eigen}} for computing all values;

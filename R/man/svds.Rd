@@ -178,7 +178,7 @@ svds(A, 4, "S", tol=1e-3, orthov=r$v)$d
      Preconditioned SVD Solver for Accurate Large-Scale Computations},
      J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
 
-[2] \url{http://www.cs.wm.edu/~andreas/software/doc/svdsc.html#parameters-guide}
+[2] \url{https://www.cs.wm.edu/~andreas/software/doc/svdsc.html#parameters-guide}
 }
 \seealso{
 \code{\link{svd}} for computing all singular triplets;

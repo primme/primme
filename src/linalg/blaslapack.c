@@ -554,7 +554,8 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, PRIMME_INT m,
 
    XGEMM(transa, transb, &lm, &ln, &lk, (const BLASSCALAR *)&alpha,
          (const BLASSCALAR *)a, &llda, (const BLASSCALAR *)b, &lldb,
-         (const BLASSCALAR *)&beta, (BLASSCALAR *)c, &lldc);
+         (const BLASSCALAR *)&beta, (BLASSCALAR *)c,
+         &lldc STRING_LEN1 STRING_LEN1);
 
    return 0;
 }
@@ -680,7 +681,8 @@ int Num_hemm_Sprimme(const char *side, const char *uplo, PRIMME_INT m,
 
    XHEMM(side, uplo, &lm, &ln, (const BLASSCALAR *)&alpha,
          (const BLASSCALAR *)a, &llda, (const BLASSCALAR *)b, &lldb,
-         (const BLASSCALAR *)&beta, (BLASSCALAR *)c, &lldc);
+         (const BLASSCALAR *)&beta, (BLASSCALAR *)c,
+         &lldc STRING_LEN1 STRING_LEN1);
 
    return 0;
 }
@@ -708,7 +710,8 @@ int Num_trmm_Sprimme(const char *side, const char *uplo, const char *transa,
    if (m == 0 || n == 0) return 0;
 
    XTRMM(side, uplo, transa, diag, &lm, &ln, (const BLASSCALAR *)&alpha,
-         (const BLASSCALAR *)a, &llda, (BLASSCALAR *)b, &lldb);
+         (const BLASSCALAR *)a, &llda, (BLASSCALAR *)b,
+         &lldb STRING_LEN1 STRING_LEN1 STRING_LEN1 STRING_LEN1);
 
    return 0;
 }
@@ -762,7 +765,7 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, PRIMME_INT n,
       lm = (PRIMME_BLASINT)min(m, PRIMME_BLASINT_MAX-1);
       XGEMV(transa, &lm, &ln, (const BLASSCALAR *)&alpha, (const BLASSCALAR *)a,
             &llda, (const BLASSCALAR *)x, &lincx, (const BLASSCALAR *)&beta,
-            (BLASSCALAR *)y, &lincy);
+            (BLASSCALAR *)y, &lincy STRING_LEN1);
       m -= (PRIMME_INT)lm;
       a += lm;
       if (!tA) {
@@ -1583,7 +1586,8 @@ int Num_trsm_Sprimme(const char *side, const char *uplo, const char *transa,
    if (m == 0 || n == 0) return 0;
 
    XTRSM(side, uplo, transa, diag, &lm, &ln, (BLASSCALAR *)&alpha,
-         (BLASSCALAR *)a, &llda, (BLASSCALAR *)b, &lldb);
+         (BLASSCALAR *)a, &llda, (BLASSCALAR *)b,
+         &lldb STRING_LEN1 STRING_LEN1 STRING_LEN1 STRING_LEN1);
 
    return 0;
 }
