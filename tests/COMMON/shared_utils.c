@@ -155,6 +155,13 @@ int read_solver_params(char *configFileName, char *outputFileName,
             OPTIONParams(projection, projection, primme_proj_harmonic)
          );
 
+         READ_FIELD_OPParams(expansion, expansion,
+            OPTIONParams(expansion, expansion, primme_expansion_default)
+            OPTIONParams(expansion, expansion, primme_expansion_lanczos)
+            OPTIONParams(expansion, expansion, primme_expansion_arnoldi)
+            OPTIONParams(expansion, expansion, primme_expansion_davidson)
+         );
+
          READ_FIELD_OP(initBasisMode,
             OPTION(initBasisMode, primme_init_default)
             OPTION(initBasisMode, primme_init_krylov)
@@ -739,6 +746,7 @@ void broadCast(primme_params *primme, primme_preset_method *method,
    MPI_Bcast(&(primme->initBasisMode), 1, MPI_INT, 0, comm);
 
    MPI_Bcast(&(primme->projectionParams.projection), 1, MPI_INT, 0, comm);
+   MPI_Bcast(&(primme->expansionParams.expansion), 1, MPI_INT, 0, comm);
    MPI_Bcast(&(primme->restartingParams.maxPrevRetain), 1, MPI_INT, 0, comm);
 
    MPI_Bcast(&(primme->correctionParams.precondition), 1, MPI_INT, 0, comm);

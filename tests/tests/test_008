@@ -1,0 +1,27 @@
+// Test unrestarted configuration
+// ---------------------------------------------------
+//                 driver configuration
+// ---------------------------------------------------
+driver.matrixFile    = LUNDA.mtx
+driver.checkXFile    = tests/sol_001
+driver.PrecChoice    = noprecond
+driver.checkInterface = 1
+
+// ---------------------------------------------------
+//                 primme configuration
+// ---------------------------------------------------
+// Output and reporting
+primme.printLevel = 1
+
+// Solver parameters
+primme.numEvals = 5
+primme.eps = 1.000000e-12
+primme.maxBasisSize = 140
+primme.minRestartSize = 1
+primme.maxBlockSize = 1
+primme.maxMatvecs = 140
+primme.target = primme_largest
+primme.locking = 1
+prime.expansion.expansion = primme_expansion_lanczos
+
+method               = PRIMME_Arnoldi
