@@ -1,13 +1,9 @@
 ## Changes
 
-Change http to https in doc.
-
-Previous submission:
-
-* Fix USE_FC_LEN_T
+* Fix USE_FC_LEN_T for R >= 4.3
 
 ## Test environments
-* Ubuntu 20.04, R 4.0.2 and devel
+* Ubuntu 20.04, R 4.2 and devel
 * win-builder (devel and release)
 
 ## R CMD check results
