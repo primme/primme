@@ -394,9 +394,9 @@ int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,
    /* Call the solver */
 
    int ret, numRet;
-   if (primme->expansion == primme_expansion_davidson) {
+   if (primme->expansionParams.expansion == primme_expansion_davidson) {
       CHKERR(coordinated_exit(main_iter_Sprimme(evals0, evecs0, ldevecs0, resNorms0, t0, &ret, &numRet, ctx), ctx));
-   } else if(primme->expansion == primme_expansion_lanczos) {
+   } else if(primme->expansionParams.expansion == primme_expansion_lanczos) {
       CHKERR(coordinated_exit(lanczos_Sprimme(evals0, evecs0, ldevecs0, resNorms0, t0, &ret, &numRet, ctx), ctx));
    }
 

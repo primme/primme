@@ -85,24 +85,22 @@ int main (int argc, char *argv[]) {
    primme.maxMatvecs = 1000;
    */
 
+   primme.expansionParams.expansion = primme_expansion_lanczos;
    /* Set method to solve the problem */
    primme_set_method(PRIMME_DYNAMIC, &primme);
    /* DYNAMIC uses a runtime heuristic to choose the fastest method between
        PRIMME_DEFAULT_MIN_TIME and PRIMME_DEFAULT_MIN_MATVECS. But you can
        set another method, such as PRIMME_LOBPCG_OrthoBasis_Window, directly */
 
-   printf("HERE1!\n");
    /* Display PRIMME configuration struct (optional) */
    primme_display_params(primme);
   
-   printf("HERE2!\n");
    /* Allocate space for converged Ritz values and residual norms */
    evals = (double*)malloc(primme.numEvals*sizeof(double));
    evecs = (complex double*)malloc(primme.n*primme.numEvals*sizeof(complex double));
    rnorms = (double*)malloc(primme.numEvals*sizeof(double));
 
    /* Call primme  */
-   primme.expansionParams.expansion = primme_expansion_lanczos;
    ret = zprimme(evals, evecs, rnorms, &primme);
 
    if (ret != 0) {

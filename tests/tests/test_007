@@ -22,5 +22,4 @@ primme.target = primme_closest_abs
 primme.numTargetShifts = 1
 primme.targetShifts = 0
 primme.projection.projection = primme_proj_harmonic
-
 method               = PRIMME_GD_Olsen_plusK

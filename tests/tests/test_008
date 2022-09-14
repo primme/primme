@@ -22,6 +22,6 @@ primme.maxBlockSize = 1
 primme.maxMatvecs = 140
 primme.target = primme_largest
 primme.locking = 1
-prime.expansion.expansion = primme_expansion_lanczos
+primme.expansion.expansion = primme_expansion_lanczos
 
 method               = PRIMME_Arnoldi
