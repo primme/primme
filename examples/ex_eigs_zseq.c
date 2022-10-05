@@ -85,6 +85,7 @@ int main (int argc, char *argv[]) {
    primme.maxMatvecs = 1000;
    */
 
+   primme.maxBlockSize = 3;
    primme.expansionParams.expansion = primme_expansion_lanczos;
    /* Set method to solve the problem */
    primme_set_method(PRIMME_DYNAMIC, &primme);

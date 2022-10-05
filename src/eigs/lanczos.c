@@ -62,28 +62,6 @@
  * Subroutine lanczos - This routine implements a more general, parallel, 
  *    block Lanczos outer iteration
  *
- * A coarse outline of the algorithm performed is as follows:
- *
- *  1. Initialize basis V_1
- *     Initial iteration step:
- *  2. W_1' = A * V_1
- *  3. a_1 = W_1' * V_1
- *  4. W_1 = W_1' - a_1 * V_1
- *  2. for j = 2, 3, ...., basisSize do
- *  3.    b_j = ||W_{j-1}||
- *  4.    V_j = W_{j-1} / b_j
- *  5.    W_j' = A * V_j
- *  6.    a_1 = W_j' * V_j
- *  7.    W_j = W_j' - a_j * V_j - b_j * V_{j-1}
- *  8. endfor
- *  9. Let T = [a_1   b_2                              0  ]
- *             [b_2   a_2   b_3                           ]
- *             [      b_3   a_3   b_4                     ]
- *             [            ...   ...   ...               ]
- *             [                  b_{m-1}   a_{m-1}   b_m ]
- *             [  0                         b_m       a_m}]
- *
- * 
  * INPUT/OUTPUT arrays and parameters
  * ----------------------------------
  * evecs    Stores initial guesses. Upon return, it contains the converged Ritz
@@ -118,24 +96,25 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
                             /* primme parameters */
    SCALAR *V;                 /* Basis vectors                                 */
-   SCALAR *AV;                /* Projected Basis vectors (AV = A*V)            */
    SCALAR *W;                 /* Work space storing A*V                        */
    SCALAR *Va;                /* Temporary work array of size nLocalxblockSize */
    SCALAR *VtBV;              /* V'*B*V */
-   SCALAR *scales;            /* Scale basis vector blocks                     */
+   SCALAR *temp;              /* Temporary work array of size blockSize^2      */
 
-   SCALAR *H;                 /* Upper triangular portion of V'*A*V            */
+   HSCALAR *H;                /* Upper triangular portion of V'*A*V            */
    HSCALAR *hVecs;            /* Eigenvectors of H                             */
+   HSCALAR *RhVecs;           /* Ritz vectors                                  */
 
    PRIMME_INT ldV;            /* The leading dimension of V                    */
-   PRIMME_INT ldAV;           /* The leading dimension of AV                   */
    PRIMME_INT ldW;            /* The leading dimension of W                    */
    PRIMME_INT ldVa;           /* The leading dimension of Va                   */
    PRIMME_INT ldVtBV;         /* The leading dimension of VtBV                 */
    PRIMME_INT ldH;            /* The leading dimension of H                    */
    PRIMME_INT ldhVecs;        /* The leading dimension of hVecs                */
+   PRIMME_INT ldRhVecs;       /* The leading dimension of RhVecs               */
+   PRIMME_INT ldtemp;         /* The leading dimension of temp                 */
 
-   int i, j, k;                  /* Loop variable                                 */
+   int i, j, k;               /* Loop variable                                 */
    int blockSize;             /* Current block size                            */
    int maxEvecsSize;          /* Maximum capacity of evecs array               */
    int numConverged;          /* Number of converged Ritz pairs                */
@@ -167,18 +146,19 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* -------------------------------------------------------------- */
 
    /* Setting up leading dimensions for matrices */
-   ldV = ldW = ldVa = ldAV = primme->ldOPs;
+   ldV = ldW = ldVa = ldRhVecs = primme->ldOPs;
    ldH = ldhVecs = ldVtBV = maxBasisSize;
+   ldtemp = blockSize;
 
    CHKERR(Num_malloc_Sprimme(ldV*maxBasisSize, &V, ctx));
-   CHKERR(Num_malloc_Sprimme(ldAV*maxBasisSize, &AV, ctx));
    CHKERR(Num_malloc_Sprimme(ldW*maxBlockSize, &W, ctx));
    CHKERR(Num_malloc_Sprimme(ldVa*blockSize, &Va, ctx));
    CHKERR(Num_malloc_Sprimme(maxBasisSize*maxBasisSize, &VtBV, ctx));
-   CHKERR(Num_malloc_Sprimme(maxBlockSize, &scales, ctx));
+   CHKERR(Num_malloc_Sprimme(blockSize*blockSize, &temp, ctx));
 
-   CHKERR(Num_malloc_Sprimme(maxBasisSize*maxBasisSize, &H, ctx));
+   CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &H, ctx));
    CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &hVecs, ctx));
+   CHKERR(Num_malloc_SHprimme(nLocal*maxBasisSize, &RhVecs, ctx));
    CHKERR(Num_malloc_SHprimme(maxBasisSize, &hSVals, ctx));
 
    CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(maxBasisSize, &hVals, ctx)); 
@@ -186,7 +166,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(Num_malloc_RHprimme(maxBasisSize, &basisNorms, ctx));
    CHKERR(Num_malloc_iprimme(maxBasisSize, &flags, ctx));
 
-   CHKERR(Num_zero_matrix_Sprimme(H, maxBasisSize, maxBasisSize, ldH, ctx));
+   CHKERR(Num_zero_matrix_SHprimme(H, maxBasisSize, maxBasisSize, ldH, ctx));
    CHKERR(Num_zero_matrix_SHprimme(hVecs, maxBasisSize, maxBasisSize, ldhVecs, ctx));
    CHKERR(Num_zero_matrix_SHprimme(hSVals, 1, maxBasisSize, 1, ctx));
    CHKERR(Num_zero_matrix_RHprimme(basisNorms, 1, maxBasisSize, 1, ctx));
@@ -227,48 +207,69 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* -------------------------------------------------------------- */
 
    /* Setup first basis vector for Lanczos ------------------------------------------------ */
-   //for( i=0; i < blockSize; i++)
-   CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal, &V[0], ctx));
+   CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal*blockSize, &V[0], ctx));
+
+   for(i = 0; i < blockSize*nLocal; i++)
+      V[i] = i+1;
+
    CHKERR(ortho_Sprimme(&V[0], ldV, NULL, 0, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
 
-   printf("First column after ortho: ");
-   for(i = 0; i < nLocal; i++)
-      printf("%f, ", V[i]);
-   printf("\n");  
-
    /* Initial Iteration Step -------------------------------------------------------------- */
-   CHKERR(matrixMatvec_Sprimme(&V[0], nLocal, ldV, &W[0], ldW, 0, blockSize, ctx));                                                                         /* W = A*V_{0}*/
-   CHKERR(update_projection_Sprimme(&W[0], ldW, &V[0], ldV, &H[0], blockSize, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));      /* a_0 = W'*V_{0}*/ 
-   CHKERR(Num_gemm_Sprimme("N", "T", nLocal, blockSize, 0, 1.0, &V[0], ldV, &H[0], blockSize, 1.0, &Va[0], ldVa, ctx));                                     /* Va = V_{0}*a_{0}'           */
-   CHKERR(Num_axpy_Sprimme(nLocal, -1.0, &Va[0], 1, &W[0], 1, ctx));                                                                                        /* W = W - (V_{0}*a_0)         */
+   /* 1) W = AV_0                         */
+   /* 2) H(0:BS-1, 0:BS-01) = W'*V_0      */
+   /* 3) W = W - V_0*H(0:BS-1, 0:BS-1)'   */
 
-   blockSize = min(maxBlockSize, maxBasisSize-blockSize);      /* Adjust block size if needed   */
+   CHKERR(matrixMatvec_Sprimme(&V[0], nLocal, ldV, &W[0], ldW, 0, blockSize, ctx));                                                                         /* W = A*V_0                     */
 
-   CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], 1, nLocal, 0, 1, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));  /* VtBV = V'*B*V */
-   printf("Iteration 0 --------\n");
-   printf("%f \n", VtBV[0]);
+   CHKERR(update_projection_Sprimme(&W[0], ldW, &V[0], ldV, &temp[0], blockSize, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));   /* a_0 = W'*V_0                  */ 
+   CHKERR(Num_copy_matrix_Sprimme(&temp[0], blockSize, blockSize, ldtemp, &H[0], ldH, ctx));                                                                /* H_{a, 0} = a_0                */
+
+   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[0], ldV, &H[0], ldH, 0.0, &Va[0], ldVa, ctx));                                   /* Va = V_0*a_0'                 */
+   CHKERR(Num_axpy_Sprimme(nLocal*blockSize, -1.0, &Va[0], 1, &W[0], 1, ctx));                                                                              /* W = W - V_0*a_0               */
 
    /* Main loop of Lanczos ----------------------------------------- */
+   /* For each iteration                                      */
+   /* 1) [V_i, B_i] = QR(W, 0)                                */
+   /* 2) W = AV_i                                             */
+   /* 3) W = W - V_{i-1}B_i'                                  */
+   /* 4) a_i = V_i'*W                                         */
+   /* 5) W = W - V_i*a_i                                      */
+
    for(i = maxBlockSize; i < maxBasisSize; i += blockSize) {
+
       blockSize = min(blockSize, maxBasisSize-i);                                                                                                                                /* Adjust block size if needed   */
- 
-      CHKERR(ortho_Sprimme(&W[0], ldW, &H[i*ldH + (i-blockSize)], blockSize, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));                                           /* [W, b_i] = QR(W)              */
+
+      CHKERR(ortho_Sprimme(&W[0], ldW, &H[i*ldH + (i-blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));                                                 /* [W, b_i] = QR(W)       */
+
       CHKERR(Num_copy_matrix_Sprimme(&W[0], nLocal, blockSize, ldW, &V[i*ldV], ldV, ctx));                                                                                       /* V_{j} = W                     */
 
-      CHKERR(matrixMatvec_Sprimme(&V[(i-blockSize)*ldV], nLocal, ldV, &W[0], ldW, 0, blockSize, ctx));                                                                           /* W = A*V_{i-1}                 */
-      CHKERR(update_projection_Sprimme(&W[0], ldW, &V[i*ldV], ldV, &H[i*ldH+i], blockSize, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));              /* a_i = W'*V_{i}*/ 
-
-      CHKERR(Num_gemm_Sprimme("N", "T", nLocal, blockSize, 0, 1.0, &V[ldV*i], ldV, &H[i*blockSize + i], blockSize, 1.0, &Va[0], ldVa, ctx));                                     /* Va = V_{i}*a_{i}'             */
-      CHKERR(Num_axpy_Sprimme(nLocal, -1.0, &Va[0], 1, &W[0], 1, ctx));                                                                                                          /* W = W - Va                    */
-
-      CHKERR(Num_gemm_Sprimme("N", "T", nLocal, blockSize, 0, 1.0, &V[ldV*(i-blockSize)], ldV, &H[i*ldH + (i-blockSize)], blockSize, 1.0, &Va[0], ldVa, ctx));                   /* Va = V_{i-1}*b_{i}'           */
-      CHKERR(Num_axpy_Sprimme(nLocal, -1.0, &Va[0], 1, &W[0], 1, ctx));                                                                                                          /* W = W - Va                    */
-
-      CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], i+blockSize, nLocal, 0, i+blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));  /* VtBV = V'*B*V */
-      printf("Iteration %d (After) --------\n", i);
+      CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], ldVtBV, nLocal, 0, i+blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));                      /* VtBV = V'*B*V */
+      printf("Iteration %d (V'V) --------\n", i);
       for(j = 0; j < i+blockSize; j++){
          for(k = 0; k < i+blockSize; k++){
-            printf("%f, ", VtBV[k*(i+blockSize)+j]);
+            printf("%.4f\t", VtBV[k*ldVtBV + j]);
+         }
+         printf("\n");
+      }
+      printf("\n\n");
+
+      CHKERR(matrixMatvec_Sprimme(&V[i*ldV], nLocal, ldV, &W[0], ldW, 0, blockSize, ctx));                                                                                       /* W = A*V_{i-1}                 */
+
+      /* Substract off Beta term */
+      CHKERR(Num_gemm_Sprimme("N", "T", nLocal, blockSize, blockSize, 1.0, &V[ldV*(i-blockSize)], ldV, &H[i*ldH + (i-blockSize)], ldH, 0.0, &Va[0], ldVa, ctx));                 /* Va = V_{i-1}*b_{i}'           */
+      CHKERR(Num_axpy_Sprimme(nLocal*blockSize, -1.0, &Va[0], 1, &W[0], 1, ctx));                                                                                                /* W = W - Va                    */
+
+      /* Find Alpha and subtract off */
+      CHKERR(update_projection_Sprimme(&W[0], ldW, &V[i*ldV], ldV, &temp[0], blockSize, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));                 /* a_i = W'*V_{i}*/ 
+      CHKERR(Num_copy_matrix_Sprimme(&temp[0], blockSize, blockSize, ldtemp, &H[i*ldH + i], ldH, ctx));                                                                          /* H_{a, 0} = a_0                */
+
+      CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[ldV*i], ldV, &H[i*ldH + i], ldH, 0.0, &Va[0], ldVa, ctx));                                         /* Va = V_{i}*a_{i}'             */
+      CHKERR(Num_axpy_Sprimme(nLocal*blockSize, -1.0, &Va[0], 1, &W[0], 1, ctx));                                                                                                /* W = W - Va                    */
+
+      printf("Iteration %d (H) --------\n", i);
+      for(j = 0; j < i+blockSize; j++){
+         for(k = 0; k < i+blockSize; k++){
+            printf("%.4f\t", H[k*ldVtBV + j]);
          }
          printf("\n");
       }
@@ -290,34 +291,17 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Now initSize will store the number of converged pairs */
    primme->initSize = 0;
 
-   /* H = V'AV */
-//   CHKERR(matrixMatvec_Sprimme(&V[0], nLocal, ldV, &AV[0], ldAV, 0, maxBasisSize, ctx));                                                            /* AV = A*V */
-//   CHKERR(update_projection_Sprimme(&V[0], ldV, &AV[0], ldAV, &H[0], maxBasisSize, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));  /* H = V'*A*V */
-
    /* VtBV = V'BV */
-   CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], maxBasisSize, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));  /* VtBV = V'*B*V */
+   CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], ldVtBV, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));                      /* VtBV = V'*B*V */
 
-   printf("THIS IS H ------------ \n");
-   for(i = 0; i < maxBasisSize; i++){
-      for(j = 0; j < maxBasisSize; j++){
-         printf("%f, ", H[j*ldH+i]);
-      }
-      printf("\n");
-   }
-      printf("\n\n\n");
-   printf("THIS IS VtBV ------------ \n");
-   for(i = 0; i < maxBasisSize; i++){
-      for(j = 0; j < maxBasisSize; j++){
-         printf("%f, ", VtBV[j*maxBasisSize+i]);
-      }
-      printf("\n");
-   }
-      printf("\n\n\n");
    /* Solve the projected problem */
-   CHKERR(solve_H_Sprimme(H, maxBasisSize, ldH, VtBV, ldVtBV, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, hSVals, numConverged, ctx));   
+   CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, VtBV, ldVtBV, NULL, 0, NULL, 0, NULL, 0, NULL, 0, &hVecs[0], ldhVecs, &hVals[0], &hSVals[0], numConverged, ctx));   
+
+   /* Find Ritz Vectors */
+   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, maxBasisSize, maxBasisSize, 1.0, &V[0], ldV, &hVecs[0], ldhVecs, 0.0, &RhVecs[0], ldRhVecs, ctx));                 /* Va = V_{i-1}*b_{i}'           */
 
    /* Check the convergence of the Ritz vectors */
-   //CHKERR(check_convergence_Sprimme(V, ldV, 1 /* given X */, NULL, 0, 0, evecs, 0, ldevecs, Bevecs, ldBevecs, VtBV, ldVtBV, 0, maxBasisSize, flags, resNorms, hVals, NULL, 0, ctx));
+   //CHKERR(check_convergence_Sprimme(&RhVecs[0], ldRhVecs, 1, NULL, 0, 0, NULL, 0, 0, SCALAR *Bevecs, PRIMME_INT ldBevecs, &VtBV[0], ldVtBV, 0, maxBasisSize-1, &flags[0], &blockNorms[0], HEVAL *hVals, int *reset, int practConvCheck, primme_context ctx));
 
    /* ---------------------------------------------------------- */
    /* Deallocate arrays                                          */
@@ -327,10 +311,18 @@ clean:
    CHKERR(Num_free_Sprimme(Va, ctx));
    CHKERR(Num_free_Sprimme(W, ctx));
    CHKERR(Num_free_Sprimme(VtBV, ctx));
-   CHKERR(Num_free_Sprimme(H, ctx));
+   CHKERR(Num_free_Sprimme(temp, ctx));
+
+   CHKERR(Num_free_SHprimme(H, ctx));
    CHKERR(Num_free_SHprimme(hVecs, ctx));
+   CHKERR(Num_free_SHprimme(RhVecs, ctx));
+   CHKERR(Num_free_SHprimme(hSVals, ctx));
+
    CHKERR(Num_free_RHprimme(blockNorms, ctx));
    CHKERR(Num_free_RHprimme(basisNorms, ctx));
+   CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(hVals, ctx)); 
+
+   CHKERR(Num_free_iprimme(flags, ctx));
 
    *ret = 0;      /* Set return value to PASSED */
 
