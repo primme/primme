@@ -96,23 +96,17 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
                             /* primme parameters */
    SCALAR *V;                 /* Basis vectors                                 */
-   SCALAR *W;                 /* Work space storing A*V                        */
-   SCALAR *Va;                /* Temporary work array of size nLocalxblockSize */
    SCALAR *VtBV;              /* V'*B*V */
-   SCALAR *temp;              /* Temporary work array of size blockSize^2      */
 
    HSCALAR *H;                /* Upper triangular portion of V'*A*V            */
    HSCALAR *hVecs;            /* Eigenvectors of H                             */
    HSCALAR *RhVecs;           /* Ritz vectors                                  */
 
    PRIMME_INT ldV;            /* The leading dimension of V                    */
-   PRIMME_INT ldW;            /* The leading dimension of W                    */
-   PRIMME_INT ldVa;           /* The leading dimension of Va                   */
-   PRIMME_INT ldVtBV;         /* The leading dimension of VtBV                 */
    PRIMME_INT ldH;            /* The leading dimension of H                    */
+   PRIMME_INT ldVtBV;         /* The leading dimension of VtBV                 */
    PRIMME_INT ldhVecs;        /* The leading dimension of hVecs                */
    PRIMME_INT ldRhVecs;       /* The leading dimension of RhVecs               */
-   PRIMME_INT ldtemp;         /* The leading dimension of temp                 */
 
    int i, j, k;               /* Loop variable                                 */
    int blockSize;             /* Current block size                            */
@@ -132,8 +126,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    numConverged = 0;
    PRIMME_INT nLocal = primme->nLocal;
    PRIMME_INT maxBasisSize = primme->maxBasisSize;
-   int maxBlockSize = min(primme->maxBlockSize, maxBasisSize);    /* In case user enters in too big a block size */
-   blockSize = maxBlockSize;
+   int maxBlockSize = blockSize = min(primme->maxBlockSize, maxBasisSize);    /* In case user enters in too big a block size */
+
    if (primme->locking)
       maxRank = primme->numOrthoConst + primme->numEvals + primme->maxBasisSize;
    else
@@ -146,15 +140,11 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* -------------------------------------------------------------- */
 
    /* Setting up leading dimensions for matrices */
-   ldV = ldW = ldVa = ldRhVecs = primme->ldOPs;
+   ldV = ldRhVecs = primme->ldOPs;
    ldH = ldhVecs = ldVtBV = maxBasisSize;
-   ldtemp = blockSize;
 
-   CHKERR(Num_malloc_Sprimme(ldV*maxBasisSize, &V, ctx));
-   CHKERR(Num_malloc_Sprimme(ldW*maxBlockSize, &W, ctx));
-   CHKERR(Num_malloc_Sprimme(ldVa*blockSize, &Va, ctx));
+   CHKERR(Num_malloc_Sprimme(ldV*(maxBasisSize+maxBlockSize), &V, ctx));
    CHKERR(Num_malloc_Sprimme(maxBasisSize*maxBasisSize, &VtBV, ctx));
-   CHKERR(Num_malloc_Sprimme(blockSize*blockSize, &temp, ctx));
 
    CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &H, ctx));
    CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &hVecs, ctx));
@@ -208,73 +198,40 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    /* Setup first basis vector for Lanczos ------------------------------------------------ */
    CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal*blockSize, &V[0], ctx));
-
-   for(i = 0; i < blockSize*nLocal; i++)
-      V[i] = i+1;
-
+   //for(i = 0; i < blockSize*nLocal; i++)
+   //   V[i] = i+1;
    CHKERR(ortho_Sprimme(&V[0], ldV, NULL, 0, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
 
-   /* Initial Iteration Step -------------------------------------------------------------- */
-   /* 1) W = AV_0                         */
-   /* 2) H(0:BS-1, 0:BS-01) = W'*V_0      */
-   /* 3) W = W - V_0*H(0:BS-1, 0:BS-1)'   */
+   /* Initial iteration before for loop --------------------------------------------------- */
+   /* Adjust block size first */   
+   blockSize = min(blockSize, maxBasisSize - maxBlockSize);
 
-   CHKERR(matrixMatvec_Sprimme(&V[0], nLocal, ldV, &W[0], ldW, 0, blockSize, ctx));                                                                         /* W = A*V_0                     */
+   /* Put next chuck of vectors in the basis */
+   CHKERR(matrixMatvec_Sprimme(&V[0], nLocal, ldV, &V[maxBlockSize*ldV], ldV, 0, blockSize, ctx));
 
-   CHKERR(update_projection_Sprimme(&W[0], ldW, &V[0], ldV, &temp[0], blockSize, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));   /* a_0 = W'*V_0                  */ 
-   CHKERR(Num_copy_matrix_Sprimme(&temp[0], blockSize, blockSize, ldtemp, &H[0], ldH, ctx));                                                                /* H_{a, 0} = a_0                */
-
-   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[0], ldV, &H[0], ldH, 0.0, &Va[0], ldVa, ctx));                                   /* Va = V_0*a_0'                 */
-   CHKERR(Num_axpy_Sprimme(nLocal*blockSize, -1.0, &Va[0], 1, &W[0], 1, ctx));                                                                              /* W = W - V_0*a_0               */
-
-   /* Main loop of Lanczos ----------------------------------------- */
-   /* For each iteration                                      */
-   /* 1) [V_i, B_i] = QR(W, 0)                                */
-   /* 2) W = AV_i                                             */
-   /* 3) W = W - V_{i-1}B_i'                                  */
-   /* 4) a_i = V_i'*W                                         */
-   /* 5) W = W - V_i*a_i                                      */
+   /* Compute and subtract first alpha */
+   CHKERR(update_projection_Sprimme(&V[maxBlockSize*ldV], ldV, &V[0], ldV, &H[0], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));
+   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, -1.0, &V[0], ldV, &H[0], ldH, 1.0, &V[maxBlockSize*ldV], ldV, ctx)); 
 
    for(i = maxBlockSize; i < maxBasisSize; i += blockSize) {
 
-      blockSize = min(blockSize, maxBasisSize-i);                                                                                                                                /* Adjust block size if needed   */
+      /* Adjust block size in case maxBasisSize % maxBlockSize != 0 */
+      blockSize = min(blockSize, maxBasisSize - i);
 
-      CHKERR(ortho_Sprimme(&W[0], ldW, &H[i*ldH + (i-blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));                                                 /* [W, b_i] = QR(W)       */
+      /* Ortho to prepare for next iteration */
+      CHKERR(ortho_Sprimme(&V[i*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
 
-      CHKERR(Num_copy_matrix_Sprimme(&W[0], nLocal, blockSize, ldW, &V[i*ldV], ldV, ctx));                                                                                       /* V_{j} = W                     */
+      /* Put next chunk of vectors in the basis */
+      CHKERR(matrixMatvec_Sprimme(&V[i*ldV], nLocal, ldV, &V[(i+blockSize)*ldV], ldV, 0, blockSize, ctx));
 
-      CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], ldVtBV, nLocal, 0, i+blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));                      /* VtBV = V'*B*V */
-      printf("Iteration %d (V'V) --------\n", i);
-      for(j = 0; j < i+blockSize; j++){
-         for(k = 0; k < i+blockSize; k++){
-            printf("%.4f\t", VtBV[k*ldVtBV + j]);
-         }
-         printf("\n");
-      }
-      printf("\n\n");
+      /* Subtract beta term from new chunk of vectors */
+      CHKERR(Num_gemm_Sprimme("N", "T", nLocal, blockSize, blockSize, -1.0, &V[(i-blockSize)*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 1.0, &V[(i+blockSize)*ldV], ldV, ctx)); 
 
-      CHKERR(matrixMatvec_Sprimme(&V[i*ldV], nLocal, ldV, &W[0], ldW, 0, blockSize, ctx));                                                                                       /* W = A*V_{i-1}                 */
-
-      /* Substract off Beta term */
-      CHKERR(Num_gemm_Sprimme("N", "T", nLocal, blockSize, blockSize, 1.0, &V[ldV*(i-blockSize)], ldV, &H[i*ldH + (i-blockSize)], ldH, 0.0, &Va[0], ldVa, ctx));                 /* Va = V_{i-1}*b_{i}'           */
-      CHKERR(Num_axpy_Sprimme(nLocal*blockSize, -1.0, &Va[0], 1, &W[0], 1, ctx));                                                                                                /* W = W - Va                    */
-
-      /* Find Alpha and subtract off */
-      CHKERR(update_projection_Sprimme(&W[0], ldW, &V[i*ldV], ldV, &temp[0], blockSize, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));                 /* a_i = W'*V_{i}*/ 
-      CHKERR(Num_copy_matrix_Sprimme(&temp[0], blockSize, blockSize, ldtemp, &H[i*ldH + i], ldH, ctx));                                                                          /* H_{a, 0} = a_0                */
-
-      CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[ldV*i], ldV, &H[i*ldH + i], ldH, 0.0, &Va[0], ldVa, ctx));                                         /* Va = V_{i}*a_{i}'             */
-      CHKERR(Num_axpy_Sprimme(nLocal*blockSize, -1.0, &Va[0], 1, &W[0], 1, ctx));                                                                                                /* W = W - Va                    */
-
-      printf("Iteration %d (H) --------\n", i);
-      for(j = 0; j < i+blockSize; j++){
-         for(k = 0; k < i+blockSize; k++){
-            printf("%.4f\t", H[k*ldVtBV + j]);
-         }
-         printf("\n");
-      }
-      printf("\n\n");
-
+      /* Find and subtract alpha term */
+      CHKERR(update_projection_Sprimme(&V[(i+blockSize)*ldV], ldV, &V[i*ldV], ldV, &H[i*ldH+i], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));
+      CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, -1.0, &V[i*ldV], ldV, &H[i*ldH+i], ldH, 1.0, &V[(i+blockSize)*ldV], ldV, ctx)); 
+      
+      CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], ldVtBV, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));                      /* VtBV = V'*B*V */
    }
 
    /* ---------------------------------------------------------- */
@@ -308,10 +265,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* ---------------------------------------------------------- */
 clean:
    CHKERR(Num_free_Sprimme(V, ctx));
-   CHKERR(Num_free_Sprimme(Va, ctx));
-   CHKERR(Num_free_Sprimme(W, ctx));
    CHKERR(Num_free_Sprimme(VtBV, ctx));
-   CHKERR(Num_free_Sprimme(temp, ctx));
 
    CHKERR(Num_free_SHprimme(H, ctx));
    CHKERR(Num_free_SHprimme(hVecs, ctx));
