@@ -37,7 +37,6 @@
 #define THIS_FILE "../eigs/lanczos.c"
 #endif
 
-
 #include "numerical.h"
 #include "template_normal.h"
 #include "common_eigs.h"
@@ -96,7 +95,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
                             /* primme parameters */
    SCALAR *V;                 /* Basis vectors                                 */
-   SCALAR *VtBV;              /* V'*B*V */
+   SCALAR *VtBV;              /* V'*B*V                                        */
+   SCALAR *rwork;             /* temporary work vector                         */
 
    HSCALAR *H;                /* Upper triangular portion of V'*A*V            */
    HSCALAR *hVecs;            /* Eigenvectors of H                             */
@@ -107,44 +107,38 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    PRIMME_INT ldVtBV;         /* The leading dimension of VtBV                 */
    PRIMME_INT ldhVecs;        /* The leading dimension of hVecs                */
    PRIMME_INT ldRhVecs;       /* The leading dimension of RhVecs               */
+   PRIMME_INT ldrwork;        /* The leading dimension of rwork                */
 
-   int i, j, k;               /* Loop variable                                 */
+   int i, j;                  /* Loop variables                                */
    int blockSize;             /* Current block size                            */
-   int maxEvecsSize;          /* Maximum capacity of evecs array               */
    int numConverged;          /* Number of converged Ritz pairs                */
    int *flags;                /* Indicates which Ritz values have converged    */
-   int maxRank;               /* maximum size of the main space being orthonormalize */
+   int reset = 0;             /* reset variable for check_convergence          */
 
-   double smallestResNorm;    /* the smallest residual norm in the block       */
    HEVAL *hVals;              /* Eigenvalues of H                              */
 
    HREAL *hSVals;             /* Singular values of R                          */
    HREAL *basisNorms;         /* Residual norms of basis at pairs              */
    HREAL *blockNorms;         /* Residual norms corresponding to current block */
                               /* vectors.                                      */
+   HREAL newBlockNorm;        /* For check_convergence                         */
 
    numConverged = 0;
    PRIMME_INT nLocal = primme->nLocal;
    PRIMME_INT maxBasisSize = primme->maxBasisSize;
    int maxBlockSize = blockSize = min(primme->maxBlockSize, maxBasisSize);    /* In case user enters in too big a block size */
 
-   if (primme->locking)
-      maxRank = primme->numOrthoConst + primme->numEvals + primme->maxBasisSize;
-   else
-      maxRank = primme->numOrthoConst + primme->maxBasisSize;
-  
-   maxEvecsSize = primme->numOrthoConst + primme->numEvals;
-
    /* -------------------------------------------------------------- */
    /* Allocate objects                                               */
    /* -------------------------------------------------------------- */
 
    /* Setting up leading dimensions for matrices */
-   ldV = ldRhVecs = primme->ldOPs;
+   ldV = ldRhVecs = ldrwork = primme->ldOPs;
    ldH = ldhVecs = ldVtBV = maxBasisSize;
 
    CHKERR(Num_malloc_Sprimme(ldV*(maxBasisSize+maxBlockSize), &V, ctx));
    CHKERR(Num_malloc_Sprimme(maxBasisSize*maxBasisSize, &VtBV, ctx));
+   CHKERR(Num_malloc_Sprimme(ldrwork*maxBasisSize, &rwork, ctx));
 
    CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &H, ctx));
    CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &hVecs, ctx));
@@ -196,42 +190,35 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Lanczos algorithm - Build basis (no restarting)                */
    /* -------------------------------------------------------------- */
 
-   /* Setup first basis vector for Lanczos ------------------------------------------------ */
-   CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal*blockSize, &V[0], ctx));
-   //for(i = 0; i < blockSize*nLocal; i++)
-   //   V[i] = i+1;
+   /* Let's let ortho_Sprimme insert random vectors into the basis ------------------------ */
    CHKERR(ortho_Sprimme(&V[0], ldV, NULL, 0, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
 
    /* Initial iteration before for loop --------------------------------------------------- */
-   /* Adjust block size first */   
-   blockSize = min(blockSize, maxBasisSize - maxBlockSize);
+   blockSize = min(blockSize, maxBasisSize - maxBlockSize); /* Adjust block size first */
 
-   /* Put next chuck of vectors in the basis */
-   CHKERR(matrixMatvec_Sprimme(&V[0], nLocal, ldV, &V[maxBlockSize*ldV], ldV, 0, blockSize, ctx));
+   CHKERR(matrixMatvec_Sprimme(&V[0], nLocal, ldV, &V[maxBlockSize*ldV], ldV, 0, blockSize, ctx)); /* W = A*V_0 */
 
    /* Compute and subtract first alpha */
-   CHKERR(update_projection_Sprimme(&V[maxBlockSize*ldV], ldV, &V[0], ldV, &H[0], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));
-   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, -1.0, &V[0], ldV, &H[0], ldH, 1.0, &V[maxBlockSize*ldV], ldV, ctx)); 
+   CHKERR(update_projection_Sprimme(&V[blockSize*ldV], ldV, &V[0], ldV, &H[0], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); /* a = W'*V_0 */
+   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[0], ldV, &H[0], ldH, 0.0, &rwork[0], ldrwork, ctx)); /* rwork = V*a */
+   CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*blockSize], 1, ctx)); /* W = W - rwork */
 
    for(i = maxBlockSize; i < maxBasisSize; i += blockSize) {
 
-      /* Adjust block size in case maxBasisSize % maxBlockSize != 0 */
-      blockSize = min(blockSize, maxBasisSize - i);
+      blockSize = min(blockSize, maxBasisSize - i); /* Adjust block size */
 
-      /* Ortho to prepare for next iteration */
-      CHKERR(ortho_Sprimme(&V[i*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
-
-      /* Put next chunk of vectors in the basis */
-      CHKERR(matrixMatvec_Sprimme(&V[i*ldV], nLocal, ldV, &V[(i+blockSize)*ldV], ldV, 0, blockSize, ctx));
+      CHKERR(ortho_Sprimme(&V[i*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx)); /* [V_i, b_i] = qr(V_i) */
+      CHKERR(matrixMatvec_Sprimme(&V[i*ldV], nLocal, ldV, &V[(i+blockSize)*ldV], ldV, 0, blockSize, ctx)); /* V_{i+1} = AV_{i} */
 
       /* Subtract beta term from new chunk of vectors */
-      CHKERR(Num_gemm_Sprimme("N", "T", nLocal, blockSize, blockSize, -1.0, &V[(i-blockSize)*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 1.0, &V[(i+blockSize)*ldV], ldV, ctx)); 
+      CHKERR(Num_gemm_Sprimme("N", "T", nLocal, blockSize, blockSize, 1.0, &V[(i-blockSize)*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0.0, &rwork[0], ldrwork, ctx)); /* rtemp = V_{i-1}*b' */ 
+      CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*(i+blockSize)], 1, ctx)); /* W = W - rwork */
 
       /* Find and subtract alpha term */
-      CHKERR(update_projection_Sprimme(&V[(i+blockSize)*ldV], ldV, &V[i*ldV], ldV, &H[i*ldH+i], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));
-      CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, -1.0, &V[i*ldV], ldV, &H[i*ldH+i], ldH, 1.0, &V[(i+blockSize)*ldV], ldV, ctx)); 
+      CHKERR(update_projection_Sprimme(&V[(i+blockSize)*ldV], ldV, &V[i*ldV], ldV, &H[i*ldH+i], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); /* a_i = W'*V_i */
+      CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[i*ldV], ldV, &H[i*ldH+i], ldH, 0.0, &rwork[0], ldrwork, ctx)); /* rwork = V_i*a_i */
+      CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*(i+blockSize)], 1, ctx)); /* W = W - rwork */
       
-      CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], ldVtBV, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));                      /* VtBV = V'*B*V */
    }
 
    /* ---------------------------------------------------------- */
@@ -249,16 +236,34 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->initSize = 0;
 
    /* VtBV = V'BV */
-   CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], ldVtBV, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx));                      /* VtBV = V'*B*V */
+   CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], ldVtBV, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); 
+
+   printf("This is V' * V \n");
+   for(i = 0; i < maxBasisSize; i++){
+      for(j = 0; j < maxBasisSize; j++){
+         printf("%.4f\t", VtBV[j*ldVtBV + i]);
+      }
+      printf("\n");
+   }
+   printf("\n\n");
+
+   printf("This is my tridiagonal block matrix H = V'AV (or it's supposed to be)\n");
+   for(i = 0; i < maxBasisSize; i++){
+      for(j = 0; j < maxBasisSize; j++){
+         printf("%.4f\t", H[j*ldH + i]);
+      }
+      printf("\n");
+   }
+   printf("\n\n");
 
    /* Solve the projected problem */
-   CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, VtBV, ldVtBV, NULL, 0, NULL, 0, NULL, 0, NULL, 0, &hVecs[0], ldhVecs, &hVals[0], &hSVals[0], numConverged, ctx));   
+   CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, VtBV, ldVtBV, NULL, 0, NULL, 0, NULL, 0, NULL, 0, &hVecs[0], ldhVecs, &evals[0], &hSVals[0], numConverged, ctx));   
 
    /* Find Ritz Vectors */
-   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, maxBasisSize, maxBasisSize, 1.0, &V[0], ldV, &hVecs[0], ldhVecs, 0.0, &RhVecs[0], ldRhVecs, ctx));                 /* Va = V_{i-1}*b_{i}'           */
+   CHKERR(Num_gemm_Sprimme("N", "N", ldV, maxBasisSize, maxBasisSize, 1.0, &V[0], ldV, &hVecs[0], ldhVecs, 0.0, &evecs[0], ldevecs, ctx));    /* V = V*hVecs */
 
    /* Check the convergence of the Ritz vectors */
-   //CHKERR(check_convergence_Sprimme(&RhVecs[0], ldRhVecs, 1, NULL, 0, 0, NULL, 0, 0, SCALAR *Bevecs, PRIMME_INT ldBevecs, &VtBV[0], ldVtBV, 0, maxBasisSize-1, &flags[0], &blockNorms[0], HEVAL *hVals, int *reset, int practConvCheck, primme_context ctx));
+   CHKERR(check_convergence_Sprimme(&evecs[0], ldevecs, 1 /* given X */, NULL, 0, 0 /* not given R */, NULL, 0, 0, NULL, 0, NULL, 0, 0, 1, &flags[0], &newBlockNorm, &hVals[0], &reset, -1, ctx));
 
    /* ---------------------------------------------------------- */
    /* Deallocate arrays                                          */
@@ -266,6 +271,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 clean:
    CHKERR(Num_free_Sprimme(V, ctx));
    CHKERR(Num_free_Sprimme(VtBV, ctx));
+   CHKERR(Num_free_Sprimme(rwork, ctx));
 
    CHKERR(Num_free_SHprimme(H, ctx));
    CHKERR(Num_free_SHprimme(hVecs, ctx));
