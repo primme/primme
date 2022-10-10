@@ -190,7 +190,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Lanczos algorithm - Build basis (no restarting)                */
    /* -------------------------------------------------------------- */
 
-   /* Let's let ortho_Sprimme insert random vectors into the basis ------------------------ */
+   /* Let's insert random vectors into the basis ------------------------------------------ */
+   CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal*blockSize, &V[0], ctx));
    CHKERR(ortho_Sprimme(&V[0], ldV, NULL, 0, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
 
    /* Initial iteration before for loop --------------------------------------------------- */
@@ -198,21 +199,21 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    CHKERR(matrixMatvec_Sprimme(&V[0], nLocal, ldV, &V[maxBlockSize*ldV], ldV, 0, blockSize, ctx)); /* W = A*V_0 */
 
-   /* Compute and subtract first alpha */
-   CHKERR(update_projection_Sprimme(&V[blockSize*ldV], ldV, &V[0], ldV, &H[0], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); /* a = W'*V_0 */
-   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[0], ldV, &H[0], ldH, 0.0, &rwork[0], ldrwork, ctx)); /* rwork = V*a */
-   CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*blockSize], 1, ctx)); /* W = W - rwork */
+   /* Compute and subtract first alpha (W = W - V*(W'V))*/
+   CHKERR(update_projection_Sprimme(&V[blockSize*ldV], ldV, &V[0], ldV, &H[0], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); 
+   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[0], ldV, &H[0], ldH, 0.0, &rwork[0], ldrwork, ctx)); 
+   CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*blockSize], 1, ctx)); 
 
    for(i = maxBlockSize; i < maxBasisSize; i += blockSize) {
 
       blockSize = min(blockSize, maxBasisSize - i); /* Adjust block size */
 
-      CHKERR(ortho_Sprimme(&V[i*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx)); /* [V_i, b_i] = qr(V_i) */
-      CHKERR(matrixMatvec_Sprimme(&V[i*ldV], nLocal, ldV, &V[(i+blockSize)*ldV], ldV, 0, blockSize, ctx)); /* V_{i+1} = AV_{i} */
+      CHKERR(ortho_Sprimme(&V[i*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* [V_i, b_i] = qr(V_i) */
+      CHKERR(matrixMatvec_Sprimme(&V[i*ldV], nLocal, ldV, &V[(i+blockSize)*ldV], ldV, 0, blockSize, ctx));                             /* V_{i+1} = AV_i */
 
-      /* Subtract beta term from new chunk of vectors */
-      CHKERR(Num_gemm_Sprimme("N", "T", nLocal, blockSize, blockSize, 1.0, &V[(i-blockSize)*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0.0, &rwork[0], ldrwork, ctx)); /* rtemp = V_{i-1}*b' */ 
-      CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*(i+blockSize)], 1, ctx)); /* W = W - rwork */
+      /* Subtract beta term from new chunk of vectors (W = W - V_{i-1}*b_i)*/
+      CHKERR(Num_gemm_Sprimme("N", "C", nLocal, blockSize, blockSize, 1.0, &V[(i-blockSize)*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0.0, &rwork[0], ldrwork, ctx));  
+      CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*(i+blockSize)], 1, ctx)); 
 
       /* Find and subtract alpha term */
       CHKERR(update_projection_Sprimme(&V[(i+blockSize)*ldV], ldV, &V[i*ldV], ldV, &H[i*ldH+i], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); /* a_i = W'*V_i */
@@ -238,10 +239,13 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* VtBV = V'BV */
    CHKERR(update_projection_Sprimme(&V[0], ldV, &V[0], ldV, &VtBV[0], ldVtBV, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); 
 
-   printf("This is V' * V \n");
+   printf("This is (V'*V-I) \n");
    for(i = 0; i < maxBasisSize; i++){
       for(j = 0; j < maxBasisSize; j++){
-         printf("%.4f\t", VtBV[j*ldVtBV + i]);
+         if(i != j)
+            printf("%.4f\t", VtBV[j*ldVtBV + i]);
+         else
+            printf("%.4f\t", VtBV[j*ldVtBV + i]-1.0);
       }
       printf("\n");
    }
@@ -257,10 +261,13 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    printf("\n\n");
 
    /* Solve the projected problem */
-   CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, VtBV, ldVtBV, NULL, 0, NULL, 0, NULL, 0, NULL, 0, &hVecs[0], ldhVecs, &evals[0], &hSVals[0], numConverged, ctx));   
+   CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, VtBV, ldVtBV, NULL, 0, NULL, 0, NULL, 0, NULL, 0, &hVecs[0], ldhVecs, &hVals[0], &hSVals[0], numConverged, ctx));
+   
+   for(i = 0; i < primme->numEvals; i++)
+      evals[i] = hVals[0];
 
    /* Find Ritz Vectors */
-   CHKERR(Num_gemm_Sprimme("N", "N", ldV, maxBasisSize, maxBasisSize, 1.0, &V[0], ldV, &hVecs[0], ldhVecs, 0.0, &evecs[0], ldevecs, ctx));    /* V = V*hVecs */
+   CHKERR(Num_gemm_Sprimme("N", "N", ldV, primme->numEvals, primme->numEvals, 1.0, &V[0], ldV, &hVecs[0], ldhVecs, 0.0, &evecs[0], ldevecs, ctx));    /* V = V*hVecs */
 
    /* Check the convergence of the Ritz vectors */
    CHKERR(check_convergence_Sprimme(&evecs[0], ldevecs, 1 /* given X */, NULL, 0, 0 /* not given R */, NULL, 0, 0, NULL, 0, NULL, 0, 0, 1, &flags[0], &newBlockNorm, &hVals[0], &reset, -1, ctx));
