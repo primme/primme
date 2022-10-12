@@ -30,7 +30,8 @@ CC       ?= cc
 F77      := gfortran
 FC       := gfortran
 DEFINES  ?= -DF77UNDERSCORE 
-CFLAGS   ?= -O -fPIC -DNDEBUG
+#CFLAGS   ?= -O -fPIC -DNDEBUG
+CFLAGS   ?= -O0 -g3 -fPIC -Wall -Wextra
 FFLAGS   ?= -fno-second-underscore -O
 PRIMME_WITH_HALF ?= no
 ifeq ($(PRIMME_WITH_HALF), yes)

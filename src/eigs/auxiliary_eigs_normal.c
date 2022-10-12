@@ -66,6 +66,24 @@
  *
  ******************************************************************************/
 
+// XXX: Eloy - possible change below?
+/******************************************************************************
+ * Function Num_compute_residuals - This subroutine performs the next operation
+ *    in a cache-friendly way:
+ *
+ *    r = Ax - eval*Bx
+ *
+ * PARAMETERS
+ * ---------------------------
+ * m           The number of rows of x, Ax, and r
+ * n           The number of columns of x, Ax and r
+ * eval        An array of length n holding the eigenvalues used to
+ *             compute the residual vector r
+ * Bx          The vector Bx
+ * Ax          The vector Ax
+ * r           On output r = Ax - eval*Bx
+ *
+ ******************************************************************************/
 TEMPLATE_PLEASE
 int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,
       SCALAR *Bx, PRIMME_INT ldBx, SCALAR *Ax, PRIMME_INT ldAx, SCALAR *r,

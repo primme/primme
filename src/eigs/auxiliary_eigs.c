@@ -179,6 +179,27 @@ void primme_free_context(primme_context ctx) {
  * W          A*V
  ******************************************************************************/
 
+// XXX: Eloy - possible change below?
+/*******************************************************************************
+ * Subroutine matrixMatvec_ - Computes A*V
+ *           for column indices basisSize through basisSize+blockSize-1
+ *           where V(:,basisSize:basisSize+blockSize-1) are the new correction 
+ *           vectors.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ * V          The orthonormal basis
+ * nLocal     Number of rows of each vector stored on this node
+ * ldV        The leading dimension of V
+ * ldW        The leading dimension of W
+ * basisSize  Number of vectors in V
+ * blockSize  The current block size
+ * 
+ * INPUT/OUTPUT ARRAYS
+ * -------------------
+ * W          A*V
+ ******************************************************************************/
+
 TEMPLATE_PLEASE
 int matrixMatvec_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       SCALAR *W, PRIMME_INT ldW, int basisSize, int blockSize,

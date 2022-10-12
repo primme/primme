@@ -95,8 +95,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
                             /* primme parameters */
    SCALAR *V;                 /* Basis vectors                                 */
-   SCALAR *W;                 /* Basis projection vectors                      */
-   SCALAR *VtBV;              /* V'*B*V                                        */
+   SCALAR *AVhVecs;           /* A*V*hVecs                                     */
+   //SCALAR *VtBV;              /* V'*B*V                                        */
    SCALAR *rwork;             /* temporary work vector                         */
 
    HSCALAR *H;                /* Upper triangular portion of V'*A*V            */
@@ -104,14 +104,14 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    HSCALAR *RhVecs;           /* Ritz vectors                                  */
 
    PRIMME_INT ldV;            /* The leading dimension of V                    */
-   PRIMME_INT ldW;            /* The leading dimension of W                    */
+   PRIMME_INT ldAVhVecs;      /* The leading dimension of AVhVecs              */
    PRIMME_INT ldH;            /* The leading dimension of H                    */
-   PRIMME_INT ldVtBV;         /* The leading dimension of VtBV                 */
+   //PRIMME_INT ldVtBV;         /* The leading dimension of VtBV                 */
    PRIMME_INT ldhVecs;        /* The leading dimension of hVecs                */
    PRIMME_INT ldRhVecs;       /* The leading dimension of RhVecs               */
    PRIMME_INT ldrwork;        /* The leading dimension of rwork                */
 
-   int i;                     /* Loop variables                                */
+   int i, j, k;               /* Loop variables                                */
    int blockSize;             /* Current block size                            */
    int numConverged;          /* Number of converged Ritz pairs                */
    int *flags;                /* Indicates which Ritz values have converged    */
@@ -135,28 +135,29 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* -------------------------------------------------------------- */
 
    /* Setting up leading dimensions for matrices */
-   ldV = ldW = ldRhVecs = ldrwork = primme->ldOPs;
-   ldH = ldhVecs = ldVtBV = maxBasisSize;
+   ldV = ldAVhVecs = ldRhVecs = ldrwork = primme->ldOPs;
+   ldH = ldhVecs = maxBasisSize;
 
    CHKERR(Num_malloc_Sprimme(ldV*(maxBasisSize+maxBlockSize), &V, ctx));
-   CHKERR(Num_malloc_Sprimme(ldV*maxBasisSize, &W, ctx));
-   CHKERR(Num_malloc_Sprimme(maxBasisSize*maxBasisSize, &VtBV, ctx));
+   CHKERR(Num_malloc_Sprimme(ldAVhVecs*primme->numEvals, &AVhVecs, ctx));
+   //CHKERR(Num_malloc_Sprimme(maxBasisSize*maxBasisSize, &VtBV, ctx));
    CHKERR(Num_malloc_Sprimme(ldrwork*maxBasisSize, &rwork, ctx));
 
    CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &H, ctx));
    CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &hVecs, ctx));
    CHKERR(Num_malloc_SHprimme(nLocal*maxBasisSize, &RhVecs, ctx));
-   CHKERR(Num_malloc_SHprimme(maxBasisSize, &hSVals, ctx));
+   //CHKERR(Num_malloc_RHprimme(maxBasisSize, &hSVals, ctx));
 
    CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(maxBasisSize, &hVals, ctx)); 
+   CHKERR(KIND(Num_malloc_RHprimme, Num_malloc_SHprimme)(maxBasisSize, &hSVals, ctx)); 
    CHKERR(Num_malloc_RHprimme(maxBlockSize, &blockNorms, ctx));
    CHKERR(Num_malloc_RHprimme(maxBasisSize, &basisNorms, ctx));
    CHKERR(Num_malloc_iprimme(maxBasisSize, &flags, ctx));
 
    CHKERR(Num_zero_matrix_SHprimme(H, maxBasisSize, maxBasisSize, ldH, ctx));
-   CHKERR(Num_zero_matrix_SHprimme(hVecs, maxBasisSize, maxBasisSize, ldhVecs, ctx));
-   CHKERR(Num_zero_matrix_SHprimme(hSVals, 1, maxBasisSize, 1, ctx));
-   CHKERR(Num_zero_matrix_RHprimme(basisNorms, 1, maxBasisSize, 1, ctx));
+   //CHKERR(Num_zero_matrix_SHprimme(hVecs, maxBasisSize, maxBasisSize, ldhVecs, ctx));
+   //CHKERR(Num_zero_matrix_SHprimme(hSVals, 1, maxBasisSize, 1, ctx));
+   //CHKERR(Num_zero_matrix_RHprimme(basisNorms, 1, maxBasisSize, 1, ctx));
 
    for(i = 0; i < maxBasisSize; i++)
       flags[i] = UNCONVERGED;
@@ -211,42 +212,44 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       blockSize = min(blockSize, maxBasisSize - i); /* Adjust block size */
 
-      CHKERR(ortho_Sprimme(&V[i*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* [V_i, b_i] = qr(V_i) */
+      CHKERR(ortho_Sprimme(&V[i*ldV], ldV, &H[(i-blockSize)*ldH + i], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* [V_i, b_i] = qr(V_i) */
+      /* Copy beta block into the upper triangular of H */
+      for(j = i; j < i+blockSize; j++)
+         for(k = i-blockSize; k < i; k++)
+            H[j*ldH + k] = H[k*ldH + j];
+
       CHKERR(matrixMatvec_Sprimme(&V[i*ldV], nLocal, ldV, &V[(i+blockSize)*ldV], ldV, 0, blockSize, ctx));                             /* V_{i+1} = AV_i */
 
       /* Subtract beta term from new chunk of vectors (W = W - V_{i-1}*b_i)*/
-      CHKERR(Num_gemm_Sprimme("N", "C", nLocal, blockSize, blockSize, 1.0, &V[(i-blockSize)*ldV], ldV, &H[i*ldH + (i-blockSize)], ldH, 0.0, &rwork[0], ldrwork, ctx));  
+      CHKERR(Num_gemm_Sprimme("N", "C", nLocal, blockSize, blockSize, 1.0, &V[(i-blockSize)*ldV], ldV, &H[(i-blockSize)*ldH + i], ldH, 0.0, &rwork[0], ldrwork, ctx));  
       CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*(i+blockSize)], 1, ctx)); 
 
       /* Find and subtract alpha term */
       CHKERR(update_projection_Sprimme(&V[(i+blockSize)*ldV], ldV, &V[i*ldV], ldV, &H[i*ldH+i], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); /* a_i = W'*V_i */
       CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[i*ldV], ldV, &H[i*ldH+i], ldH, 0.0, &rwork[0], ldrwork, ctx)); /* rwork = V_i*a_i */
       CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*(i+blockSize)], 1, ctx)); /* W = W - rwork */
-      
    }
 
    /* ---------------------------------------------------------- */
    /* Moving onto eigenvalue problem                             */
    /* ---------------------------------------------------------- */
 
-   /* Quick return for matrix of dimension 1 */
-   if (primme->numEvals == 0) {
-      primme->initSize = 0;
-      *ret = 0;
-      goto clean;
-   }
-
    /* Now initSize will store the number of converged pairs */
    primme->initSize = 0;
 
+   /* Quick return for matrix of dimension 1 */
+   if (primme->numEvals == 0)
+      goto clean;
+
    /* VtBV = V'BV */
-   CHKERR(update_projection_Sprimme(V, ldV, V, ldV, VtBV, ldVtBV, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); 
+   //CHKERR(update_projection_Sprimme(V, ldV, V, ldV, VtBV, ldVtBV, nLocal, 0, maxBasisSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); 
 
    /* Solve the projected problem */
-   CHKERR(solve_H_Sprimme(H, maxBasisSize, ldH, VtBV, ldVtBV, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, hSVals, numConverged, ctx));
-   
+   //CHKERR(solve_H_Sprimme(H, maxBasisSize, ldH, VtBV, ldVtBV, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, hSVals, numConverged, ctx));
+
+   CHKERR(solve_H_Sprimme(H, maxBasisSize, ldH, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, hSVals, numConverged, ctx));
    for(i = 0; i < primme->numEvals; i++)
-      evals[i] = hVals[0];
+      evals[i] = hVals[i];
 
    /* Find Ritz Vectors */
    CHKERR(Num_gemm_Sprimme("N", "N", ldV, primme->numEvals, primme->numEvals, 1.0, V, ldV, hVecs, ldhVecs, 0.0, evecs, ldevecs, ctx));    /* V = V*hVecs */
@@ -255,45 +258,39 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(check_convergence_Sprimme(evecs, ldevecs, 1 /* given X */, NULL, 0, 0 /* not given R */, NULL, 0, 0, NULL, 0, NULL, 0, 0, primme->numEvals, flags, &newBlockNorm, hVals, &reset, -1, ctx));
 
    /* Find number of converged eigenpairs */
-   for(i = 0; i < primme->numEvals && flags[i] != UNCONVERGED; i++) numConverged = i;
+   for(i = 0; i < primme->numEvals && flags[i] != UNCONVERGED; i++) numConverged = i+1;
    primme->initSize = numConverged;
    *numRet = numConverged;
 
-/*   if (numConverged == primme->numEvals)
-      *ret = 0;
-   else
-      *ret = PRIMME_MAIN_ITER_FAILURE;
-*/
+   /* Find residual norms */
+   CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldV, AVhVecs, ldAVhVecs, 0, primme->numEvals, ctx)); /* AVhVecs = A*V*hVecs */
 
-   /* Find reisdual norms */
-   for(i = 0; i < primme->numEvals; i++) {
-      Num_axpy_Sprimme(nLocal, -hVals[i], &V[ldV*i], 1, &V[ldV*(i+1)], 1, ctx);
-      resNorms[i] = sqrt(REAL_PART(Num_dot_Sprimme(nLocal, &V[ldV*(i+1)], 1, &V[ldV*(i+1)], 1, ctx)));
-   }  
-   for (i = numConverged; i < primme->numEvals; i++) resNorms[i] = -1;
-
-   *ret = 0;
+   CHKERR(Num_compute_residuals_Sprimme(ldV, primme->numEvals, evals, evecs, ldevecs, AVhVecs, ldAVhVecs, rwork, ldrwork, ctx));
+   for(i = 0; i < primme->numEvals; i++)
+      resNorms[i] = sqrt(REAL_PART(Num_dot_Sprimme(ldAVhVecs, &rwork[i], 1, &rwork[i], 1, ctx)));
 
    /* ---------------------------------------------------------- */
    /* Deallocate arrays                                          */
    /* ---------------------------------------------------------- */
 clean:
    CHKERR(Num_free_Sprimme(V, ctx));
-   CHKERR(Num_free_Sprimme(W, ctx));
-   CHKERR(Num_free_Sprimme(VtBV, ctx));
+   CHKERR(Num_free_Sprimme(AVhVecs, ctx));
+   //CHKERR(Num_free_Sprimme(VtBV, ctx));
    CHKERR(Num_free_Sprimme(rwork, ctx));
 
    CHKERR(Num_free_SHprimme(H, ctx));
    CHKERR(Num_free_SHprimme(hVecs, ctx));
    CHKERR(Num_free_SHprimme(RhVecs, ctx));
-   CHKERR(Num_free_SHprimme(hSVals, ctx));
+   //CHKERR(Num_free_RHprimme(hSVals, ctx));
 
    CHKERR(Num_free_RHprimme(blockNorms, ctx));
    CHKERR(Num_free_RHprimme(basisNorms, ctx));
    CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(hVals, ctx)); 
+   CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(hSVals, ctx)); 
 
    CHKERR(Num_free_iprimme(flags, ctx));
 
+   *ret = 0;
 
 return 0;
 }
