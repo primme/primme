@@ -701,6 +701,7 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINTParamsIF(expansion, expansion, primme_expansion_default);
    PRINTParamsIF(expansion, expansion, primme_expansion_davidson);
    PRINTParamsIF(expansion, expansion, primme_expansion_lanczos);
+   PRINTParamsIF(expansion, expansion, primme_expansion_fullLanczos);
    PRINTParamsIF(expansion, expansion, primme_expansion_arnoldi);
 
    PRINTIF(initBasisMode, primme_init_default);
@@ -1812,6 +1813,7 @@ int primme_enum_member_info(
    IF_IS(primme_expansion_default);
    IF_IS(primme_expansion_davidson);
    IF_IS(primme_expansion_lanczos);
+   IF_IS(primme_expansion_fullLanczos);
    IF_IS(primme_expansion_arnoldi);
    break;
 

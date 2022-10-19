@@ -39,7 +39,9 @@
 #include "primme.h"   /* header file is required to run primme */ 
 
 void LaplacianMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void DiagonalMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 void LaplacianApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void DiagonalApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 
 int main (int argc, char *argv[]) {
 
@@ -62,19 +64,19 @@ int main (int argc, char *argv[]) {
    primme_initialize(&primme);
 
    /* Set problem matrix */
-   primme.matrixMatvec = LaplacianMatrixMatvec;
+   primme.matrixMatvec = DiagonalMatrixMatvec;
                            /* Function that implements the matrix-vector product
                               A*x for solving the problem A*x = l*x */
   
    /* Set problem parameters */
-   primme.n = 100; /* set problem dimension */
+   primme.n = 1000; /* set problem dimension */
    primme.numEvals = 10;   /* Number of wanted eigenpairs */
-   primme.eps = 1e-9;      /* ||r|| <= eps * ||matrix|| */
-   primme.target = primme_smallest;
+   primme.eps = 1e-1;      /* ||r|| <= eps * ||matrix|| */
+   primme.target = primme_largest;
                            /* Wanted the smallest eigenvalues */
 
    /* Set preconditioner (optional) */
-   primme.applyPreconditioner = LaplacianApplyPreconditioner;
+   primme.applyPreconditioner = DiagonalApplyPreconditioner;
    primme.correctionParams.precondition = 1;
 
    /* Set advanced parameters if you know what are you doing (optional) */
@@ -84,9 +86,10 @@ int main (int argc, char *argv[]) {
    primme.maxBlockSize = 1;
    primme.maxMatvecs = 1000;
    */
+   primme.maxBasisSize = 100;
 
    primme.maxBlockSize = 3;
-   primme.expansionParams.expansion = primme_expansion_lanczos;
+   primme.expansionParams.expansion = primme_expansion_davidson;
    /* Set method to solve the problem */
    primme_set_method(PRIMME_DYNAMIC, &primme);
    /* DYNAMIC uses a runtime heuristic to choose the fastest method between
@@ -324,6 +327,24 @@ void LaplacianMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, i
    *err = 0;
 }
 
+void DiagonalMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
+   
+   int i;            /* vector index, from 0 to *blockSize-1*/
+   int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
+   complex double *xvec;     /* pointer to i-th input vector x */
+   complex double *yvec;     /* pointer to i-th output vector y */
+   
+   for (i = 0; i < *blockSize; i++) {
+      xvec = (complex double *)x + *ldx*i;
+      yvec = (complex double *)y + *ldy*i;
+      for (row = 0; row < primme->n; row++) {
+         yvec[row] = 0.0;
+         yvec[row] += (complex double)(row+1)*xvec[row];
+      }      
+   }
+   *err = 0;
+}
+
 /* This performs Y = M^{-1} * X, where
 
    - X, input dense matrix of size primme.n x blockSize;
@@ -343,6 +364,23 @@ void LaplacianApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT 
       yvec = (complex double *)y + *ldy*i;
       for (row=0; row<primme->n; row++) {
          yvec[row] = xvec[row]/2.;
+      }      
+   }
+   *ierr = 0;
+}
+
+void DiagonalApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
+   
+   int i;            /* vector index, from 0 to *blockSize-1*/
+   int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
+   complex double *xvec;     /* pointer to i-th input vector x */
+   complex double *yvec;     /* pointer to i-th output vector y */
+    
+   for (i=0; i<*blockSize; i++) {
+      xvec = (complex double *)x + *ldx*i;
+      yvec = (complex double *)y + *ldy*i;
+      for (row=0; row<primme->n; row++) {
+         yvec[row] = xvec[row]/(complex double)(row+1);
       }      
    }
    *ierr = 0;
