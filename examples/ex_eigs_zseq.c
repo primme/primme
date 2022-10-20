@@ -86,10 +86,12 @@ int main (int argc, char *argv[]) {
    primme.maxBlockSize = 1;
    primme.maxMatvecs = 1000;
    */
-   primme.maxBasisSize = 100;
+   primme.maxBasisSize = 500;
+   primme.initSize = 500;
+   primme.locking = 0;
 
-   primme.maxBlockSize = 3;
-   primme.expansionParams.expansion = primme_expansion_davidson;
+   primme.maxBlockSize = 1;
+   primme.expansionParams.expansion = primme_expansion_lanczos;
    /* Set method to solve the problem */
    primme_set_method(PRIMME_DYNAMIC, &primme);
    /* DYNAMIC uses a runtime heuristic to choose the fastest method between
@@ -339,7 +341,7 @@ void DiagonalMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, in
       yvec = (complex double *)y + *ldy*i;
       for (row = 0; row < primme->n; row++) {
          yvec[row] = 0.0;
-         yvec[row] += (complex double)(row+1)*xvec[row];
+         yvec[row] += (complex double)((row+1)*(row+1))*xvec[row];
       }      
    }
    *err = 0;
@@ -380,7 +382,7 @@ void DiagonalApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *
       xvec = (complex double *)x + *ldx*i;
       yvec = (complex double *)y + *ldy*i;
       for (row=0; row<primme->n; row++) {
-         yvec[row] = xvec[row]/(complex double)(row+1);
+         yvec[row] = xvec[row]/(complex double)((row+1)*(row+1));
       }      
    }
    *ierr = 0;

@@ -113,7 +113,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    PRIMME_INT ldRhVecs;       /* The leading dimension of RhVecs               */
    PRIMME_INT ldrwork;        /* The leading dimension of rwork                */
 
-   int i;                     /* Loop variables                                */
+   int i,j;                     /* Loop variables                                */
    int blockSize;             /* Current block size                            */
    int numConverged;          /* Number of converged Ritz pairs                */
    int *flags;                /* Indicates which Ritz values have converged    */
@@ -197,13 +197,28 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* -------------------------------------------------------------- */
 
    /* Let's insert random vectors into the basis ------------------------------------------ */
-   CHKERR(Num_larnv_Sprimme(2, primme->iseed, nLocal*blockSize, V, ctx));
-   CHKERR(ortho_Sprimme(V, ldV, NULL, 0, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
+   CHKERR(Num_larnv_Sprimme(3, primme->iseed, nLocal*blockSize, &V[0], ctx));
+   CHKERR(ortho_Sprimme(&V[0], ldV, NULL, 0, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
+
+   SCALAR *norm;
+   CHKERR(Num_malloc_Sprimme(1, &norm, ctx));
+   CHKERR(Num_gemm_Sprimme("C", "N", 1, 1, nLocal, 1.0, &V[0], ldV, &V[0], ldV, 0.0, &norm[0], 1, ctx));  
+   
+   printf("THIS IS V, norm %f:\n", &norm[0]);
+   for(i = 0; i < nLocal; i++)
+   {
+      for(j = 0; j < blockSize; j++)
+         printf("%.10f ", V[j*ldV+i]);
+      printf("\n");
+   }
+   printf("\n\n");
 
    /* Initial iteration before for loop --------------------------------------------------- */
    blockSize = min(blockSize, maxBasisSize - maxBlockSize); /* Adjust block size first */
 
    CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, &V[maxBlockSize*ldV], ldV, 0, blockSize, ctx)); /* W = A*V_0 */
+
+
 
    /* Compute and subtract first alpha (W = W - V*(W'V))*/
    CHKERR(update_projection_Sprimme(&V[blockSize*ldV], ldV, &V[0], ldV, &H[0], ldH, nLocal, 0, blockSize, KIND(1 /*symmetric*/, 0 /* unsymmetric */), ctx)); 
