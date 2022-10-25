@@ -91,9 +91,10 @@ int main (int argc, char *argv[]) {
    primme.locking = 0;
 
    primme.maxBlockSize = 1;
-   primme.expansionParams.expansion = primme_expansion_lanczos;
+   primme.expansionParams.expansion = primme_expansion_davidson;
    /* Set method to solve the problem */
-   primme_set_method(PRIMME_DYNAMIC, &primme);
+   //primme_set_method(PRIMME_DYNAMIC, &primme);
+   primme_set_method(PRIMME_DEFAULT_MIN_MATVECS, &primme);
    /* DYNAMIC uses a runtime heuristic to choose the fastest method between
        PRIMME_DEFAULT_MIN_TIME and PRIMME_DEFAULT_MIN_MATVECS. But you can
        set another method, such as PRIMME_LOBPCG_OrthoBasis_Window, directly */
@@ -148,147 +149,147 @@ int main (int argc, char *argv[]) {
 
    /* Note that d/zprimme can be called more than once before call primme_free. */
    /* Find the 5 eigenpairs closest to .5 */
-   primme.numTargetShifts = 1;
-   targetShifts[0] = .5;
-   primme.targetShifts = targetShifts;
-   primme.target = primme_closest_abs;
-   primme.numEvals = 5;
-   primme.initSize = 0; /* primme.initSize may be not zero after a d/zprimme;
-                           so set it to zero to avoid the already converged eigenvectors
-                           being used as initial vectors. */
-
-   /* Call primme  */
-   ret = zprimme(evals, evecs, rnorms, &primme);
-
-   if (ret != 0) {
-      fprintf(primme.outputFile, 
-         "Error: primme returned with nonzero exit status: %d \n",ret);
-      return -1;
-   }
-
-   /* Reporting (optional) */
-   for (i=0; i < primme.initSize; i++) {
-      fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
-         evals[i], rnorms[i]); 
-   }
-   fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
-   fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
-                                                         primme.aNorm*primme.eps);
-   fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
-                                                 primme.stats.numOuterIterations); 
-   fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
-   fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
-   fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
-   if (primme.stats.lockingIssue) {
-      fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
-      fprintf(primme.outputFile,
-         "Some eigenpairs do not have a residual norm less than the tolerance.\n");
-      fprintf(primme.outputFile,
-         "However, the subspace of evecs is accurate to the required tolerance.\n");
-   }
-
-   switch (primme.dynamicMethodSwitch) {
-      case -1: fprintf(primme.outputFile,
-            "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
-      case -2: fprintf(primme.outputFile,
-            "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
-      case -3: fprintf(primme.outputFile,
-            "Recommended method for next run: DYNAMIC (close call)\n"); break;
-   }
-
-
-   /* Perturb the 5 approximate eigenvectors in evecs and used them as initial solution.
-      This time the solver should converge faster than the last one. */
-   for (i=0; i<primme.n*5; i++)
-      evecs[i] += rand()/(double)RAND_MAX*1e-4;
-   primme.initSize = 5;
-   primme.numEvals = 5;
-
-   /* Call primme  */
-   ret = zprimme(evals, evecs, rnorms, &primme);
-
-   if (ret != 0) {
-      fprintf(primme.outputFile, 
-         "Error: primme returned with nonzero exit status: %d \n",ret);
-      return -1;
-   }
-
-   /* Reporting (optional) */
-   for (i=0; i < primme.initSize; i++) {
-      fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
-         evals[i], rnorms[i]); 
-   }
-   fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
-   fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
-                                                         primme.aNorm*primme.eps);
-   fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
-                                                 primme.stats.numOuterIterations); 
-   fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
-   fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
-   fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
-   if (primme.stats.lockingIssue) {
-      fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
-      fprintf(primme.outputFile,
-         "Some eigenpairs do not have a residual norm less than the tolerance.\n");
-      fprintf(primme.outputFile,
-         "However, the subspace of evecs is accurate to the required tolerance.\n");
-   }
-
-   switch (primme.dynamicMethodSwitch) {
-      case -1: fprintf(primme.outputFile,
-            "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
-      case -2: fprintf(primme.outputFile,
-            "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
-      case -3: fprintf(primme.outputFile,
-            "Recommended method for next run: DYNAMIC (close call)\n"); break;
-   }
-
-
-   /* Find the next 5 eigenpairs closest to .5 */
-   primme.initSize = 0;
-   primme.numEvals = 5;
-   primme.numOrthoConst = 5; /* solver will find solutions orthogonal to the already
-                                5 approximate eigenvectors in evecs */
-
-   /* Call primme  */
-   ret = zprimme(evals, evecs, rnorms, &primme);
-
-   if (ret != 0) {
-      fprintf(primme.outputFile, 
-         "Error: primme returned with nonzero exit status: %d \n",ret);
-      return -1;
-   }
-
-   /* Reporting (optional) */
-   for (i=0; i < primme.initSize; i++) {
-      fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
-         evals[i], rnorms[i]); 
-   }
-   fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
-   fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
-                                                         primme.aNorm*primme.eps);
-   fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
-                                                 primme.stats.numOuterIterations); 
-   fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
-   fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
-   fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
-   if (primme.stats.lockingIssue) {
-      fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
-      fprintf(primme.outputFile,
-         "Some eigenpairs do not have a residual norm less than the tolerance.\n");
-      fprintf(primme.outputFile,
-         "However, the subspace of evecs is accurate to the required tolerance.\n");
-   }
-
-   switch (primme.dynamicMethodSwitch) {
-      case -1: fprintf(primme.outputFile,
-            "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
-      case -2: fprintf(primme.outputFile,
-            "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
-      case -3: fprintf(primme.outputFile,
-            "Recommended method for next run: DYNAMIC (close call)\n"); break;
-   }
-
+//   primme.numTargetShifts = 1;
+//   targetShifts[0] = .5;
+//   primme.targetShifts = targetShifts;
+//   primme.target = primme_closest_abs;
+//   primme.numEvals = 5;
+//   primme.initSize = 0; /* primme.initSize may be not zero after a d/zprimme;
+//                           so set it to zero to avoid the already converged eigenvectors
+//                           being used as initial vectors. */
+//
+//   /* Call primme  */
+//   ret = zprimme(evals, evecs, rnorms, &primme);
+//
+//   if (ret != 0) {
+//      fprintf(primme.outputFile, 
+//         "Error: primme returned with nonzero exit status: %d \n",ret);
+//      return -1;
+//   }
+//
+//   /* Reporting (optional) */
+//   for (i=0; i < primme.initSize; i++) {
+//      fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
+//         evals[i], rnorms[i]); 
+//   }
+//   fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
+//   fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
+//                                                         primme.aNorm*primme.eps);
+//   fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
+//                                                 primme.stats.numOuterIterations); 
+//   fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+//   fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+//   fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
+//   if (primme.stats.lockingIssue) {
+//      fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+//      fprintf(primme.outputFile,
+//         "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+//      fprintf(primme.outputFile,
+//         "However, the subspace of evecs is accurate to the required tolerance.\n");
+//   }
+//
+//   switch (primme.dynamicMethodSwitch) {
+//      case -1: fprintf(primme.outputFile,
+//            "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
+//      case -2: fprintf(primme.outputFile,
+//            "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
+//      case -3: fprintf(primme.outputFile,
+//            "Recommended method for next run: DYNAMIC (close call)\n"); break;
+//   }
+//
+//
+//   /* Perturb the 5 approximate eigenvectors in evecs and used them as initial solution.
+//      This time the solver should converge faster than the last one. */
+//   for (i=0; i<primme.n*5; i++)
+//      evecs[i] += rand()/(double)RAND_MAX*1e-4;
+//   primme.initSize = 5;
+//   primme.numEvals = 5;
+//
+//   /* Call primme  */
+//   ret = zprimme(evals, evecs, rnorms, &primme);
+//
+//   if (ret != 0) {
+//      fprintf(primme.outputFile, 
+//         "Error: primme returned with nonzero exit status: %d \n",ret);
+//      return -1;
+//   }
+//
+//   /* Reporting (optional) */
+//   for (i=0; i < primme.initSize; i++) {
+//      fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
+//         evals[i], rnorms[i]); 
+//   }
+//   fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
+//   fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
+//                                                         primme.aNorm*primme.eps);
+//   fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
+//                                                 primme.stats.numOuterIterations); 
+//   fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+//   fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+//   fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
+//   if (primme.stats.lockingIssue) {
+//      fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+//      fprintf(primme.outputFile,
+//         "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+//      fprintf(primme.outputFile,
+//         "However, the subspace of evecs is accurate to the required tolerance.\n");
+//   }
+//
+//   switch (primme.dynamicMethodSwitch) {
+//      case -1: fprintf(primme.outputFile,
+//            "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
+//      case -2: fprintf(primme.outputFile,
+//            "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
+//      case -3: fprintf(primme.outputFile,
+//            "Recommended method for next run: DYNAMIC (close call)\n"); break;
+//   }
+//
+//
+//   /* Find the next 5 eigenpairs closest to .5 */
+//   primme.initSize = 0;
+//   primme.numEvals = 5;
+//   primme.numOrthoConst = 5; /* solver will find solutions orthogonal to the already
+//                                5 approximate eigenvectors in evecs */
+//
+//   /* Call primme  */
+//   ret = zprimme(evals, evecs, rnorms, &primme);
+//
+//   if (ret != 0) {
+//      fprintf(primme.outputFile, 
+//         "Error: primme returned with nonzero exit status: %d \n",ret);
+//      return -1;
+//   }
+//
+//   /* Reporting (optional) */
+//   for (i=0; i < primme.initSize; i++) {
+//      fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
+//         evals[i], rnorms[i]); 
+//   }
+//   fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
+//   fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
+//                                                         primme.aNorm*primme.eps);
+//   fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
+//                                                 primme.stats.numOuterIterations); 
+//   fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+//   fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+//   fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
+//   if (primme.stats.lockingIssue) {
+//      fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+//      fprintf(primme.outputFile,
+//         "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+//      fprintf(primme.outputFile,
+//         "However, the subspace of evecs is accurate to the required tolerance.\n");
+//   }
+//
+//   switch (primme.dynamicMethodSwitch) {
+//      case -1: fprintf(primme.outputFile,
+//            "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
+//      case -2: fprintf(primme.outputFile,
+//            "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
+//      case -3: fprintf(primme.outputFile,
+//            "Recommended method for next run: DYNAMIC (close call)\n"); break;
+//   }
+//
    primme_free(&primme);
    free(evals);
    free(evecs);
