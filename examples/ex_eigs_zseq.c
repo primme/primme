@@ -71,7 +71,7 @@ int main (int argc, char *argv[]) {
    /* Set problem parameters */
    primme.n = 1000; /* set problem dimension */
    primme.numEvals = 10;   /* Number of wanted eigenpairs */
-   primme.eps = 1e-1;      /* ||r|| <= eps * ||matrix|| */
+   primme.eps = 1e-5;      /* ||r|| <= eps * ||matrix|| */
    primme.target = primme_largest;
                            /* Wanted the smallest eigenvalues */
 
@@ -80,18 +80,16 @@ int main (int argc, char *argv[]) {
    primme.correctionParams.precondition = 1;
 
    /* Set advanced parameters if you know what are you doing (optional) */
-   /*
-   primme.maxBasisSize = 14;
-   primme.minRestartSize = 4;
-   primme.maxBlockSize = 1;
-   primme.maxMatvecs = 1000;
-   */
-   primme.maxBasisSize = 500;
-   primme.initSize = 500;
+   //primme.minRestartSize = 100;
+   primme.maxBasisSize = 1000;
+   primme.initSize = 0;
    primme.locking = 0;
+   primme.maxMatvecs = 2000;
+   primme.aNorm = 1.0;
+   primme.printLevel = 4;
 
    primme.maxBlockSize = 1;
-   primme.expansionParams.expansion = primme_expansion_davidson;
+   primme.expansionParams.expansion = primme_expansion_fullLanczos;
    /* Set method to solve the problem */
    //primme_set_method(PRIMME_DYNAMIC, &primme);
    primme_set_method(PRIMME_DEFAULT_MIN_MATVECS, &primme);
