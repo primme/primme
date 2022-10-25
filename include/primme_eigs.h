@@ -55,7 +55,8 @@ typedef enum {
 
 typedef enum {
    primme_expansion_default,
-   primme_expansion_lanczos,
+   primme_expansion_lanczos,     /* Lanczos with no extra ortho */
+   primme_expansion_fullLanczos, /* Lanczos with full ortho */
    primme_expansion_arnoldi,
    primme_expansion_davidson
 } primme_expansion;
