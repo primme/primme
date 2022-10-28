@@ -16,8 +16,10 @@ endfunction()
 
 set(C_SOURCES ex_eigs_dseq.c ex_eigs_zseq.c ex_eigs_zseq_normal.c ex_svds_dseq.c ex_svds_zseq.c)
 set(CXX_SOURCES ex_eigs_zseqxx.cxx ex_svds_zseqxx.cxx)
-set(F77_SOURCES ex_eigs_dseqf77.f ex_eigs_zseqf77.f ex_svds_dseqf77.f ex_svds_zseqf77.f)
-set(F90_SOURCES ex_eigs_dseqf90.f90 ex_svds_dseqf90.f90)
+if(WITH_FORTRAN)
+  set(F77_SOURCES ex_eigs_dseqf77.f ex_eigs_zseqf77.f ex_svds_dseqf77.f ex_svds_zseqf77.f)
+  set(F90_SOURCES ex_eigs_dseqf90.f90 ex_svds_dseqf90.f90)
+endif()
 
 foreach(f ${C_SOURCES} ${CXX_SOURCES} ${F90_SOURCES})
     add_primme_test(SOURCE ${f} LIBRARIES LAPACK::LAPACK BLAS::BLAS primme)

@@ -9,11 +9,12 @@ message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 project(primme
   VERSION 3.2
   DESCRIPTION "PRIMME: PReconditioned Iterative MultiMethod Eigensolver"
-  LANGUAGES C CXX Fortran
+  LANGUAGES C CXX
   HOMEPAGE_URL https://github.com/primme/primme)
 
 option(WITH_FLOAT "Build PRIMME with support for floats" OFF)
 option(WITH_HALF "Build PRIMME with support for half floats" OFF)
+option(WITH_FORTRAN "Build PRIMME Fortran 90 tests" ON)
 
 # set C99 standard
 set(CMAKE_C_STANDARD 99)
@@ -24,17 +25,14 @@ if (POLICY CMP0042)
   cmake_policy (SET CMP0042 NEW)
 endif ()
 
+# Find our extra modules
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+include(PrimmeTests)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
-include(FortranCInterface)
 
 set(PRIMME_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/primme")
 set(PRIMME_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/primme")
-
-FortranCInterface_VERIFY()
-if (FortranCInterface_GLOBAL_SUFFIX STREQUAL "_")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DF77UNDERSCORE")
-endif()
 
 if (WITH_HALF)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPRIMME_WITH_HALF")
@@ -47,6 +45,7 @@ find_package(BLAS REQUIRED)
 if (NOT TARGET LAPACK::LAPACK)
   find_package(LAPACK REQUIRED)
 endif()
+primme_test_fortran_underscore()
 
 CHECK_LIBRARY_EXISTS(m sin "" HAVE_LIB_M)                                                                                    
 if (HAVE_LIB_M)
