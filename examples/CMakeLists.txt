@@ -24,3 +24,8 @@ endif()
 foreach(f ${C_SOURCES} ${CXX_SOURCES} ${F90_SOURCES})
     add_primme_test(SOURCE ${f} LIBRARIES LAPACK::LAPACK BLAS::BLAS primme)
 endforeach()
+
+if(MSVC)
+   set_source_files_properties(${C_SOURCES}
+      PROPERTIES LANGUAGE CXX)
+endif()

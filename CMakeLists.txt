@@ -14,7 +14,7 @@ project(primme
 
 option(WITH_FLOAT "Build PRIMME with support for floats" OFF)
 option(WITH_HALF "Build PRIMME with support for half floats" OFF)
-option(WITH_FORTRAN "Build PRIMME Fortran 90 tests" ON)
+option(WITH_FORTRAN "Build PRIMME Fortran 90 tests" OFF)
 
 # set C99 standard
 set(CMAKE_C_STANDARD 99)

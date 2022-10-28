@@ -61,5 +61,9 @@ set(SOURCES
    svds/primme_svds_f77.c
    svds/primme_svds_interface.c
 )
-
 target_sources(primme PRIVATE ${SOURCES})
+if(MSVC)
+   set_source_files_properties(${SOURCES}
+      TARGET_DIRECTORY primme
+      PROPERTIES LANGUAGE CXX)
+endif()
