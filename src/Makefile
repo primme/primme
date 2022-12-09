@@ -23,6 +23,7 @@ SOURCES := \
    eigs/inner_solve.c \
    eigs/main_iter.c \
    eigs/lanczos.c \
+   eigs/sketch.c \
    eigs/ortho.c \
    eigs/primme_c.c \
    eigs/primme_f77.c \
@@ -61,6 +62,7 @@ AUTOMATED_HEADERS_OTHERS := \
    eigs/inner_solve.h \
    eigs/main_iter.h \
    eigs/lanczos.h \
+   eigs/sketch.h \
    eigs/ortho.h \
    eigs/primme_c.h \
    eigs/factorize.h \

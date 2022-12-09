@@ -78,10 +78,11 @@ int main (int argc, char *argv[]) {
    /* Set preconditioner (optional) */
    primme.applyPreconditioner = DiagonalApplyPreconditioner;
    primme.correctionParams.precondition = 1;
+   primme.projectionParams.projection = primme_proj_sketched;
 
    /* Set advanced parameters if you know what are you doing (optional) */
    //primme.minRestartSize = 100;
-   primme.maxBasisSize = 1000;
+   primme.maxBasisSize = 750;
    primme.initSize = 0;
    primme.locking = 0;
    primme.maxMatvecs = 2000;

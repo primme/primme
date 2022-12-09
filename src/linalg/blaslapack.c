@@ -1740,6 +1740,101 @@ int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, PRIMME_INT n,
    return 0;
 }
 
+/*******************************************************************************
+ * Subroutine Num_ggev_Sprimme - Computes the generalized eigenvalues, and the
+ *    left and/or right generalized eigenvectors for a pair of nonsymmetric
+ *    matrices.
+ *
+ * Input/Output parameters
+ * -----------------------
+ * matrix_layout     Specifies whether the matrix is in row major (1) or column 
+ *                   major (2) order
+ *
+ * jobvl             Determines whether to compute the left generalized 
+ *                   eigenvectors ('N' = No, 'V' = Yes)
+ *
+ * jobvr             Determines whether to compute the right generalized 
+ *                   eigenvectors ('N' = No, 'V' = Yes)
+ *
+ * n                 The order of matrices A, B, vl, and vr
+ *
+ * a                 An n-by-n matrix for the first of the pair of matrices
+ *
+ * lda               The leading dimension of A
+ *
+ * b                 An n-by-n matrix for the second of the pair of matrices
+ * 
+ * ldb               The leading dimension of B
+ *
+ * vl                On output, the left generalized eigenvectors (if jobvl
+ *                   == 'V')
+ *
+ * ldvl              On output, the leading dimension of vl (if jobvl == 'V',
+ *                   ldvl <= max(1, n))
+ *
+ * vr                On output, the right generalized eigenvectors (if jobvr
+ *                   == 'V')
+ *
+ * ldvr              On output, the leading dimension of vr (if jobvr == 'V',
+ *                   ldvr <= max(1, n))
+ *
+ * work              Workspace array with dimension max(1, lwork)
+ *
+ * lwork             Dimension of work (lwork >= max(1, 8n+16) for real flavors,
+ *                   lwork >= max(1, 2n) for complex flavors)
+ *
+ * rwork             Only used with complex flavors. rwork >= max(1, 8n)
+ *
+ * Return
+ * ------
+ * error code
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_ggev_Sprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, SCALAR *a, PRIMME_INT lda, SCALAR *b, PRIMME_INT ldb, SCALAR *alphar, SCALAR *alphai, SCALAR *beta, SCALAR *vl, PRIMME_INT ldvl, SCALAR *vr, PRIMME_INT ldvr, primme_context ctx) {
+ 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT lldb = ldb;
+   PRIMME_BLASINT lldvl = ldvl;
+   PRIMME_BLASINT lldvr = ldvr;
+   PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0;
+
+   SCALAR *work;
+
+#if defined(USE_COMPLEX)
+
+   PRIMME_BLASINT lwork = 2*n;
+   SCALAR *rwork;
+
+   CHKERR(Num_malloc_Sprimme(lwork, &work, ctx));
+   CHKERR(Num_malloc_Sprimme(8*lwork, &rwork, ctx));
+
+   XGGEV(jobvl, jobvr, &ln, a, &llda, b, &lldb, alphar, beta, vl, &lldvl, vr, &lldvr, work, &lwork, rwork, &linfo);
+
+   CHKERR(Num_free_Sprimme(rwork, ctx));
+
+#else
+
+   PRIMME_BLASINT lwork = 8*n;
+
+   CHKERR(Num_malloc_Sprimme(lwork, &work, ctx));
+
+   XGGEV(jobvl, jobvr, &ln, a, &llda, b, &lldb, alphar, alphai, beta, vl, &lldvl, vr, &lldvr, work, &lwork, &linfo);
+
+#endif
+
+   CHKERR(Num_free_Sprimme(work, ctx));
+
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xggev with info %d", (int)linfo);
+
+   return 0;
+}
+
 #endif /* USE_HOST */
 
 #endif /* SUPPORTED_TYPE */

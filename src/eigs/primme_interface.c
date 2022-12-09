@@ -697,6 +697,7 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINTParamsIF(projection, projection, primme_proj_RR);
    PRINTParamsIF(projection, projection, primme_proj_harmonic);
    PRINTParamsIF(projection, projection, primme_proj_refined);
+   PRINTParamsIF(projection, projection, primme_proj_sketched);
    
    PRINTParamsIF(expansion, expansion, primme_expansion_default);
    PRINTParamsIF(expansion, expansion, primme_expansion_davidson);
@@ -1696,6 +1697,7 @@ int primme_constant_info(const char* label_name, int *value) {
    IF_IS(primme_proj_RR);
    IF_IS(primme_proj_harmonic);
    IF_IS(primme_proj_refined);
+   IF_IS(primme_proj_sketched);
    IF_IS(primme_init_default);
    IF_IS(primme_init_krylov);
    IF_IS(primme_init_random);
@@ -1807,6 +1809,7 @@ int primme_enum_member_info(
    IF_IS(primme_proj_RR);
    IF_IS(primme_proj_harmonic);
    IF_IS(primme_proj_refined);
+   IF_IS(primme_proj_sketched);
    break;
 
    case PRIMME_expansionParams_expansion:
