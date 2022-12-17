@@ -66,7 +66,8 @@ typedef enum {
    primme_proj_default,
    primme_proj_RR,          /* Rayleigh-Ritz */
    primme_proj_harmonic,    /* Harmonic Rayleigh-Ritz */
-   primme_proj_refined      /* refined with fixed target */
+   primme_proj_refined,     /* refined with fixed target */
+   primme_proj_sketched     /* Sketched Rayleigh-Ritz */
 } primme_projection;
 
 typedef enum {         /* Initially fill up the search subspace with: */
