@@ -1792,7 +1792,7 @@ int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, PRIMME_INT n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_ggev_Sprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, SCALAR *a, PRIMME_INT lda, SCALAR *b, PRIMME_INT ldb, SCALAR *alphar, SCALAR *alphai, SCALAR *beta, SCALAR *vl, PRIMME_INT ldvl, SCALAR *vr, PRIMME_INT ldvr, primme_context ctx) {
+int Num_ggev_Sprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, SCALAR *a, PRIMME_INT lda, SCALAR *b, PRIMME_INT ldb, HSCALAR *alphar, HREAL *alphai, HSCALAR *beta, HSCALAR *vl, PRIMME_INT ldvl, HSCALAR *vr, PRIMME_INT ldvr, primme_context ctx) {
  
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
@@ -1821,10 +1821,17 @@ int Num_ggev_Sprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, SCALAR 
 #else
 
    PRIMME_BLASINT lwork = 8*n;
-
    CHKERR(Num_malloc_Sprimme(lwork, &work, ctx));
-
-   XGGEV(jobvl, jobvr, &ln, a, &llda, b, &lldb, alphar, alphai, beta, vl, &lldvl, vr, &lldvr, work, &lwork, &linfo);
+  
+   if(alphai)
+   { 
+      XGGEV(jobvl, jobvr, &ln, a, &llda, b, &lldb, alphar, alphai, beta, vl, &lldvl, vr, &lldvr, work, &lwork, &linfo);
+   }else{
+      SCALAR *ai;
+      CHKERR(Num_malloc_Sprimme(llda, &ai, ctx));
+      XGGEV(jobvl, jobvr, &ln, a, &llda, b, &lldb, alphar, ai, beta, vl, &lldvl, vr, &lldvr, work, &lwork, &linfo);
+      CHKERR(Num_free_Sprimme(ai, ctx));
+   }
 
 #endif
 

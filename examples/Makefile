@@ -23,11 +23,11 @@ ifeq ($(USE_PETSC), yes)
   FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
   LIBS += $(PETSC_LIB)
-  EXAMPLES_C += ex_eigs_petsc ex_svds_petsc ex_eigs_mpi
+  EXAMPLES_C += ex_eigs_petsc ex_svds_petsc ex_eigs_mpi ex_eigs_zpar ex_eigs_dpar
   EXAMPLES_F += ex_eigs_petscf77 ex_eigs_petscf77ptr ex_svds_petscf77 ex_svds_petscf77ptr
   MPIRUN ?= mpirun -np 4
 else ifeq ($(USE_MPI),yes)
-  EXAMPLES_C +=  ex_eigs_mpi
+  EXAMPLES_C +=  ex_eigs_mpi ex_eigs_zpar ex_eigs_dpar
   MPIRUN ?= mpirun -np 4
   CC ?= mpicc
   CLDR ?= mpicc
@@ -99,7 +99,13 @@ endif
 ex_eigs_dseq.c: ex_c.m4
 	$(M4) ex_c.m4 > $@
 
+ex_eigs_dpar.c: ex_c.m4
+	$(M4) ex_c.m4 > $@
+
 ex_eigs_zseq.c: ex_c.m4
+	$(M4) -D USE_COMPLEX -D ADVANCED ex_c.m4 > $@
+
+ex_eigs_zpar.c: ex_c.m4
 	$(M4) -D USE_COMPLEX -D ADVANCED ex_c.m4 > $@
 
 ex_eigs_zseqxx.cxx: ex_c.m4

@@ -110,6 +110,11 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
                      hVals, basisSize, numConverged, ctx))
             break;
 
+         case primme_proj_sketched:
+            CHKERR(solve_H_RR_Sprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs,
+                     hVals, basisSize, numConverged, ctx))
+            break;
+
          case primme_proj_harmonic:
             CHKERR(solve_H_Harm_Sprimme(H, ldH, QtV, ldQtV, R, ldR, QtQ, ldQtQ,
                   VtBV, ldVtBV, hVecs, ldhVecs, hU, ldhU, hVals, basisSize,

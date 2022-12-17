@@ -254,10 +254,10 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(apply_sketching_Sprimme(H, ldH, V, ldV, hVecs, ldhVecs, hVals, maxBasisSize, blockSize, ctx));
 
    } else {
-      CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, &hVecs[0], ldhVecs, &hVals[0], NULL, 0, ctx));
+      CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, NULL, 0, ctx));
    }
 
-   for(i = 0; i < primme->numEvals; i++) evals[i] = hVals[i];
+   for(i = 0; i < primme->numEvals; i++) evals[i] = REAL_PART(hVals[i]);
 
    /* Find Ritz Vectors */
    CHKERR(Num_gemm_Sprimme("N", "N", nLocal, primme->numEvals, maxBasisSize, 1.0, V, nLocal, hVecs, ldhVecs, 0.0, evecs, ldevecs, ctx));    /* evecs = V*hVecs */
@@ -266,12 +266,6 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldevecs, AVhVecs, ldAVhVecs, 0, primme->numEvals, ctx)); /* AVhVecs = A*V*hVecs */
    CHKERR(Num_compute_residuals_Sprimme(nLocal, primme->numEvals, evals, evecs, ldevecs, AVhVecs, ldAVhVecs, rwork, ldrwork, ctx));
    for(j = 0; j < primme->numEvals; j++) resNorms[j] = sqrt(Num_dot_Sprimme(ldrwork, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx));
-
-   for(i = 0; i < primme->numEvals; i++) 
-   {
-      printf("Eval[%d]: %.4E \t ", i, evals[i]);
-      printf("ResNorm[%d]: %.4E\n", i, resNorms[i]);
-   }
 
    /* Check the convergence of the Ritz vectors */
    CHKERR(check_convergence_Sprimme(evecs, ldevecs, 1 /* given X */, NULL, 0, 0 /* not given R */, NULL, 0, 0, NULL, 0, NULL, 0, 0, primme->numEvals, flags, resNorms, hVals, &reset, -1, ctx));
@@ -286,8 +280,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* ---------------------------------------------------------- */
    /* Deallocate arrays                                          */
    /* ---------------------------------------------------------- */
+   clean:
 
-   clean: 
    CHKERR(Num_free_Sprimme(V, ctx));
    CHKERR(Num_free_Sprimme(AVhVecs, ctx));
    CHKERR(Num_free_Sprimme(rwork, ctx));
@@ -299,7 +293,6 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    CHKERR(Num_free_RHprimme(blockNorms, ctx));
    CHKERR(Num_free_RHprimme(basisNorms, ctx));
-
 
    CHKERR(Num_free_iprimme(flags, ctx));
 

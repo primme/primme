@@ -106,8 +106,11 @@ int main (int argc, char *argv[]) {
    evecs = (complex double*)malloc(primme.n*primme.numEvals*sizeof(complex double));
    rnorms = (double*)malloc(primme.numEvals*sizeof(double));
 
+   printf("CALLING PRIMME\n");
+
    /* Call primme  */
    ret = zprimme(evals, evecs, rnorms, &primme);
+   printf("DONE WITH PRIMME\n");
 
    if (ret != 0) {
       fprintf(primme.outputFile, 
