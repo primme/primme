@@ -89,6 +89,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       HREAL *resNorms, int *ret, int *numRet, int fullOrtho,
       primme_context ctx) {
 
+#ifdef USE_HERMITIAN
+
    /* Default error is something is wrong in this function */
    *ret = PRIMME_MAIN_ITER_FAILURE;
 
@@ -102,7 +104,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    HSCALAR *H;                /* Upper triangular portion of V'*A*V            */
    HSCALAR *hVecs;            /* Eigenvectors of H                             */
-   HSCALAR *hVals;
+   HREAL *hVals;
 
    PRIMME_INT ldV;            /* The leading dimension of V                    */
    PRIMME_INT ldAVhVecs;      /* The leading dimension of AVhVecs              */
@@ -154,8 +156,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(Num_malloc_Sprimme(maxBlockSize*maxBlockSize, &identity, ctx));
 
    CHKERR(Num_malloc_SHprimme(maxBasisSize*maxBasisSize, &hVecs, ctx));
-   CHKERR(Num_malloc_SHprimme(maxBasisSize, &hVals, ctx));
 
+   CHKERR(Num_malloc_RHprimme(maxBasisSize, &hVals, ctx));
    CHKERR(Num_malloc_RHprimme(maxBlockSize, &blockNorms, ctx));
    CHKERR(Num_malloc_RHprimme(maxBasisSize, &basisNorms, ctx));
    CHKERR(Num_malloc_iprimme(maxBasisSize, &flags, ctx));
@@ -257,7 +259,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, NULL, 0, ctx));
    }
 
-   for(i = 0; i < primme->numEvals; i++) evals[i] = REAL_PART(hVals[i]);
+   for(i = 0; i < primme->numEvals; i++) evals[i] = hVals[i];
 
    /* Find Ritz Vectors */
    CHKERR(Num_gemm_Sprimme("N", "N", nLocal, primme->numEvals, maxBasisSize, 1.0, V, nLocal, hVecs, ldhVecs, 0.0, evecs, ldevecs, ctx));    /* evecs = V*hVecs */
@@ -265,7 +267,15 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Find residual norms */
    CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldevecs, AVhVecs, ldAVhVecs, 0, primme->numEvals, ctx)); /* AVhVecs = A*V*hVecs */
    CHKERR(Num_compute_residuals_Sprimme(nLocal, primme->numEvals, evals, evecs, ldevecs, AVhVecs, ldAVhVecs, rwork, ldrwork, ctx));
-   for(j = 0; j < primme->numEvals; j++) resNorms[j] = sqrt(Num_dot_Sprimme(ldrwork, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx));
+   
+   if(primme->procID == 0){
+      for(j = 0; j < primme->numEvals; j++)
+      {
+         resNorms[j] = sqrt(Num_dot_Sprimme(ldrwork, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx));
+         printf("EVAL[%d]: %E \t ResNorm[%d]: %E\n", j, evals[j], j, resNorms[j]);
+      }
+      printf("\n");
+   }
 
    /* Check the convergence of the Ritz vectors */
    CHKERR(check_convergence_Sprimme(evecs, ldevecs, 1 /* given X */, NULL, 0, 0 /* not given R */, NULL, 0, 0, NULL, 0, NULL, 0, 0, primme->numEvals, flags, resNorms, hVals, &reset, -1, ctx));
@@ -289,8 +299,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    CHKERR(Num_free_SHprimme(H, ctx));
    CHKERR(Num_free_SHprimme(hVecs, ctx));
-   CHKERR(Num_free_SHprimme(hVals, ctx));
 
+   CHKERR(Num_free_RHprimme(hVals, ctx));
    CHKERR(Num_free_RHprimme(blockNorms, ctx));
    CHKERR(Num_free_RHprimme(basisNorms, ctx));
 
@@ -299,6 +309,20 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    *ret = 0;
 
 return 0;
+
+#else
+   (void)evals;
+   (void)evecs;
+   (void)ldevecs;
+   (void)resNorms;
+   (void)ret;
+   (void)numRet;
+   (void)fullOrtho;
+   (void)ctx;
+
+   CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
+   return 0;
+#endif
 }
 
 #endif   // SUPPORT_TYPE

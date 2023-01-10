@@ -44,8 +44,6 @@ void DiagonalApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *
 
 static void par_GlobalSum(void *sendBuf, void *recvBuf, int *count,
         primme_params *primme, int *ierr);
-static void par_Broadcast(void *sendBuf, int *count,
-        primme_params *primme, int *ierr);
 
 #ifndef min
 #  define min(a, b) ((a) < (b) ? (a) : (b))
@@ -100,7 +98,7 @@ int main (int argc, char *argv[]) {
     primme.aNorm = 1.0;
     primme.printLevel = 4;
 
-    primme.maxBlockSize = 1;
+    primme.maxBlockSize = 2;
     primme.expansionParams.expansion = primme_expansion_fullLanczos;
     /* Set method to solve the problem */
     //primme_set_method(PRIMME_DYNAMIC, &primme);
@@ -123,7 +121,6 @@ int main (int argc, char *argv[]) {
         (primme.n % primme.numProcs > primme.procID ? 1 : 0);
     primme.nLocal = nLocal; /* Number of local rows */
     primme.globalSumReal = par_GlobalSum;
-    primme.broadcastReal = par_Broadcast;
 
     /* Display PRIMME configuration struct (optional) */
     if (primme.procID == 0) primme_display_params(primme);
@@ -187,21 +184,24 @@ int main (int argc, char *argv[]) {
 }
 
 void DiagonalMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
-
-    int i;            /* vector index, from 0 to *blockSize-1*/
-    int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
-    double *xvec;     /* pointer to i-th input vector x */
-    double *yvec;     /* pointer to i-th output vector y */
-
-    for (i = 0; i < *blockSize; i++) {
-        xvec = (double *)x + *ldx*i;
-        yvec = (double *)y + *ldy*i;
-        for (row = 0; row < primme->n; row++) {
-            yvec[row] = 0.0;
-            yvec[row] += (double)((row+1)*(row+1))*xvec[row];
-        }      
-    }
-    *err = 0;
+   
+   int i;            /* vector index, from 0 to *blockSize-1*/
+   int row;          /* local matrix row index, from 0 to nLocal */
+   /* In this example, row0 is the global index of the first local row */
+   int row0 = primme->n / primme->numProcs * primme->procID +
+              min(primme->n % primme->numProcs, primme->procID);
+   double *xvec;     /* pointer to i-th input vector x */
+   double *yvec;     /* pointer to i-th output vector y */
+   
+   for (i=0; i<*blockSize; i++) {
+      xvec = (double *)x + *ldx*i;
+      yvec = (double *)y + *ldy*i;
+      for (row = 0; row < primme->nLocal; row++) {
+         double this_row = (row + row0 + 1);
+         yvec[row] = this_row * this_row * xvec[row];
+      }
+   }
+   *err = 0;
 }
 
 void DiagonalApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
@@ -230,10 +230,5 @@ static void par_GlobalSum(void *sendBuf, void *recvBuf, int *count,
     } else {
         *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator) != MPI_SUCCESS;
     }
-}
-
-static void par_Broadcast(void *sendBuf, int *count, primme_params *primme, int *ierr) {
-    MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
-   *ierr = MPI_Bcast(sendBuf, *count, MPI_DOUBLE, primme->procID, communicator) != MPI_SUCCESS;
 }
 

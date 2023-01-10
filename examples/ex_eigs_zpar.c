@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <complex.h>
 #include <mpi.h>
 #include <assert.h>
 #include "primme.h"   /* header file is required to run primme */ 
@@ -185,35 +184,38 @@ int main (int argc, char *argv[]) {
 }
 
 void DiagonalMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
-
-    int i;            /* vector index, from 0 to *blockSize-1*/
-    int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
-    complex double *xvec;     /* pointer to i-th input vector x */
-    complex double *yvec;     /* pointer to i-th output vector y */
-
-    for (i = 0; i < *blockSize; i++) {
-        xvec = (complex double *)x + *ldx*i;
-        yvec = (complex double *)y + *ldy*i;
-        for (row = 0; row < primme->n; row++) {
-            yvec[row] = 0.0;
-            yvec[row] += (complex double)((row+1)*(row+1))*xvec[row];
-        }      
-    }
-    *err = 0;
+   
+   int i;            /* vector index, from 0 to *blockSize-1*/
+   int row;          /* local matrix row index, from 0 to nLocal */
+   /* In this example, row0 is the global index of the first local row */
+   int row0 = primme->n / primme->numProcs * primme->procID +
+              min(primme->n % primme->numProcs, primme->procID);
+   double *xvec;     /* pointer to i-th input vector x */
+   double *yvec;     /* pointer to i-th output vector y */
+   
+   for (i=0; i<*blockSize; i++) {
+      xvec = (double *)x + *ldx*i;
+      yvec = (double *)y + *ldy*i;
+      for (row = 0; row < primme->nLocal; row++) {
+         double this_row = (row + row0 + 1);
+         yvec[row] = this_row * this_row * xvec[row];
+      }
+   }
+   *err = 0;
 }
 
 void DiagonalApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
 
     int i;            /* vector index, from 0 to *blockSize-1*/
     int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
-    complex double *xvec;     /* pointer to i-th input vector x */
-    complex double *yvec;     /* pointer to i-th output vector y */
+    double *xvec;     /* pointer to i-th input vector x */
+    double *yvec;     /* pointer to i-th output vector y */
 
     for (i=0; i<*blockSize; i++) {
-        xvec = (complex double *)x + *ldx*i;
-        yvec = (complex double *)y + *ldy*i;
+        xvec = (double *)x + *ldx*i;
+        yvec = (double *)y + *ldy*i;
         for (row=0; row<primme->n; row++) {
-            yvec[row] = xvec[row]/(complex double)((row+1)*(row+1));
+            yvec[row] = xvec[row]/(double)((row+1)*(row+1));
         }      
     }
     *ierr = 0;
@@ -224,9 +226,9 @@ static void par_GlobalSum(void *sendBuf, void *recvBuf, int *count,
     MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
 
     if (sendBuf == recvBuf) {
-        *ierr = MPI_Allreduce(MPI_IN_PLACE, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator) != MPI_SUCCESS;
+        *ierr = MPI_Allreduce(MPI_IN_PLACE, recvBuf, *count, MPI_DOUBLE_COMPLEX, MPI_SUM, communicator) != MPI_SUCCESS;
     } else {
-        *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator) != MPI_SUCCESS;
+        *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE_COMPLEX, MPI_SUM, communicator) != MPI_SUCCESS;
     }
 }
 
