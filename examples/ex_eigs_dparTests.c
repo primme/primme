@@ -196,100 +196,108 @@ int main (int argc, char *argv[]) {
 
 
 PetscErrorCode CSR_to_PETSc_Matrix(char *filename, Mat *A, primme_params *primme, int *err) {
-
-   int i;
-   PetscInt *A_rows, *A_cols;
-   PetscScalar *A_vals;   
-   PetscInt n, m, nnz;
+   
+   PetscInt i, N, M, nnz, start_row, end_row, nnz_Local;
+   PetscInt *A_I_temp, *A_J_temp, *perm;
+   PetscInt *Assign_Rows, *A_I, *A_J, *A_I_Local, *A_J_Local;
+   PetscScalar *A_V_temp;
+   PetscScalar *A_V, *A_V_Local;
    PetscErrorCode ierr;
-
-
+   PRIMME_INT nLocal;
+   
    PetscFunctionBegin;
 
+   /* Open the file and read in CSR format */
+   char* line = NULL;
+   size_t len;
+   ssize_t read;
    FILE *fp = fopen(filename, "r");
-   fscanf(fp, "%d %d %d", &n, &m, &nnz);
-   primme->n = n;
 
-   PRIMME_INT nLocal = primme->n / primme->numProcs + (primme->n % primme->numProcs > primme->procID ? 1 : 0);
-   primme->nLocal = nLocal; /* Number of local rows */
-
-   ierr = PetscCalloc1(n+1, &A_rows); CHKERRQ(ierr); 
-   ierr = PetscMalloc1(nnz, &A_cols); CHKERRQ(ierr);  
-   ierr = PetscMalloc1(nnz, &A_vals); CHKERRQ(ierr); 
-   
-   PetscInt r, c;
-   PetscScalar v;
-
-   for(i = 0; i < nnz; i++)
+   while((read = getline(&line, &len, fp)) != -1) 
    {
-      fscanf(fp, "%d %d %lf", &r, &c, &v);
-      A_rows[r]++;
-      A_cols[i] = c-1;
-      A_vals[i] = v;
+      if(line[0] == '%')
+      {
+         continue;
+      } else {
+         sscanf(line, "%d %d %d", &N, &M, &nnz);
+         break;
+      }
    }
 
+   ierr = PetscMalloc1(nnz, &A_I_temp); CHKERRQ(ierr);  
+   ierr = PetscMalloc1(nnz, &A_J_temp); CHKERRQ(ierr);  
+   ierr = PetscMalloc1(nnz, &A_V_temp); CHKERRQ(ierr);  
+   ierr = PetscMalloc1(nnz, &perm); CHKERRQ(ierr);  
+   ierr = PetscCalloc1(N+1, &A_I); CHKERRQ(ierr);  
+   ierr = PetscMalloc1(nnz, &A_J); CHKERRQ(ierr);  
+   ierr = PetscMalloc1(nnz, &A_V); CHKERRQ(ierr);  
+
+   // Read in the rest of the file
+   for(i = 0; i < nnz; i++)
+   {
+      fscanf(fp, "%d %d %lf", &A_I_temp[i], &A_J_temp[i], &A_V_temp[i]);
+      A_J_temp[i]--;
+      perm[i] = i;
+   }
    fclose(fp);
+   
+   // Constructing CSR
+   ierr = PetscSortIntWithArray(nnz, A_I_temp, perm);
+   for(i = 0; i < nnz; i++)
+   {
+      A_I[A_I_temp[i]]++;
+      A_J[i] = A_J_temp[perm[i]];
+      A_V[i] = A_V_temp[perm[i]];
+   }
+   
+   // Cumulative Sum
+   for(i = 2; i <= N; i++) A_I[i] += A_I[i-1];
 
-   for(i = 2; i <= n; i++) A_rows[i] += A_rows[i-1]; /* Cumulative sum */
+   // Set primme->n and primme->nLocal
+   primme->n = N;
+   nLocal = primme->n / primme->numProcs + (primme->n % primme->numProcs > primme->procID ? 1 : 0);
+   primme->nLocal = nLocal; /* Number of local rows */
+  
+   // Which process own which rows
+   ierr = PetscCalloc1(primme->numProcs+1, &Assign_Rows); CHKERRQ(ierr);  
+   for(i = 0; i < primme->numProcs; i++) Assign_Rows[i+1] = primme->n / primme->numProcs + (primme->n % primme->numProcs > i ? 1 : 0);
+   for(i = 2; i <= primme->numProcs; i++) Assign_Rows[i] += Assign_Rows[i-1];
+ 
+   // Create local CSR
+   start_row = Assign_Rows[primme->procID];
+   end_row = Assign_Rows[primme->procID+1]-1;
+   nnz_Local = A_I[end_row+1]-A_I[start_row];
 
+   ierr = PetscCalloc1(nLocal+1, &A_I_Local); CHKERRQ(ierr); 
+   ierr = PetscMalloc1(nnz_Local, &A_J_Local); CHKERRQ(ierr);  
+   ierr = PetscMalloc1(nnz_Local, &A_V_Local); CHKERRQ(ierr); 
+    
+   for(i = 0; i <= nLocal; i++) A_I_Local[i] = A_I[start_row+i]-A_I[start_row];
+   for(i = 0; i < nnz_Local; i++)
+   {
+      A_J_Local[i] = A_J[A_I[start_row]+i];
+      A_V_Local[i] = A_V[A_I[start_row]+i];
+   }
+ 
    MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
-   ierr = MatCreateMPIAIJWithArrays(communicator, primme->nLocal, primme->nLocal, primme->n, primme->n, A_rows, A_cols, A_vals, A); CHKERRQ(ierr); 
+   ierr = MatCreateMPIAIJWithArrays(communicator, primme->nLocal, PETSC_DECIDE, primme->n, primme->n, A_I_Local, A_J_Local, A_V_Local, A); CHKERRQ(ierr); 
 
-   ierr = PetscFree(A_rows); CHKERRQ(ierr);
-   ierr = PetscFree(A_cols); CHKERRQ(ierr);
-   ierr = PetscFree(A_vals); CHKERRQ(ierr);
+   // Free arrays   
+   ierr = PetscFree(A_I_temp); CHKERRQ(ierr);
+   ierr = PetscFree(A_J_temp); CHKERRQ(ierr);
+   ierr = PetscFree(A_V_temp); CHKERRQ(ierr);
+   ierr = PetscFree(Assign_Rows); CHKERRQ(ierr);
+   ierr = PetscFree(perm); CHKERRQ(ierr);
+   ierr = PetscFree(A_I); CHKERRQ(ierr);
+   ierr = PetscFree(A_J); CHKERRQ(ierr);
+   ierr = PetscFree(A_V); CHKERRQ(ierr);
+   ierr = PetscFree(A_I_Local); CHKERRQ(ierr);
+   ierr = PetscFree(A_J_Local); CHKERRQ(ierr);
+   ierr = PetscFree(A_V_Local); CHKERRQ(ierr);
 
    *err = 0;
    PetscFunctionReturn(0);
 }
-
-/* 1-D Laplacian block matrix-vector product, Y = A * X, where
-
-   - X, input dense matrix of size primme.n x blockSize;
-   - Y, output dense matrix of size primme.n x blockSize;
-   - A, tridiagonal square matrix of dimension primme.n with this form:
-
-        [ 2 -1  0  0  0 ... ]
-        [-1  2 -1  0  0 ... ]
-        [ 0 -1  2 -1  0 ... ]
-         ...
-*/
-/*
-PetscErrorCode generateLaplacian1D(int n, Mat *A) {
-   PetscScalar    value[3] = {-1.0, 2.0, -1.0};
-   PetscInt       i,Istart,Iend,col[3];
-   PetscBool      FirstBlock=PETSC_FALSE,LastBlock=PETSC_FALSE;
-   PetscErrorCode ierr;
-
-   PetscFunctionBegin;
-
-   ierr = MatCreate(PETSC_COMM_WORLD, A); CHKERRQ(ierr);
-   ierr = MatSetSizes(*A, PETSC_DECIDE, PETSC_DECIDE, n, n); CHKERRQ(ierr);
-   ierr = MatSetFromOptions(*A); CHKERRQ(ierr);
-   ierr = MatSetUp(*A); CHKERRQ(ierr);
-
-   ierr = MatGetOwnershipRange(*A, &Istart, &Iend); CHKERRQ(ierr);
-   if (Istart == 0) FirstBlock = PETSC_TRUE;
-   if (Iend == n) LastBlock = PETSC_TRUE;
-   for (i=(FirstBlock? Istart+1: Istart); i<(LastBlock? Iend-1: Iend); i++) {
-      col[0]=i-1; col[1]=i; col[2]=i+1;
-      ierr = MatSetValues(*A, 1, &i, 3, col, value, INSERT_VALUES); CHKERRQ(ierr);
-   }
-   if (LastBlock) {
-      i=n-1; col[0]=n-2; col[1]=n-1;
-      ierr = MatSetValues(*A, 1, &i, 2, col, value, INSERT_VALUES); CHKERRQ(ierr);
-   }
-   if (FirstBlock) {
-      i=0; col[0]=0; col[1]=1; value[0]=2.0; value[1]=-1.0;
-      ierr = MatSetValues(*A, 1, &i, 2, col, value, INSERT_VALUES); CHKERRQ(ierr);
-   }
-
-   ierr = MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-   ierr = MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-   PetscFunctionReturn(0);
-}
-*/
 
 void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
    int i;
@@ -312,47 +320,6 @@ void PETScMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockS
    ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
    *err = 0; 
 }
-
-/* This performs Y = M^{-1} * X, where
-
-   - X, input dense matrix of size primme.n x blockSize;
-   - Y, output dense matrix of size primme.n x blockSize;
-   - M, diagonal square matrix of dimension primme.n with 2 in the diagonal.
-*/
-/*
-void ApplyPCPrecPETSC(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
-   int i;
-   Mat *matrix;
-   PC *pc;
-   Vec xvec, yvec;
-   PetscErrorCode ierr;
-   
-   matrix = (Mat *)primme->matrix;
-   pc = (PC *)primme->preconditioner;
-
-   ierr = MatCreateVecs(*matrix, &xvec, &yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   for (i=0; i<*blockSize; i++) {
-      ierr = VecPlaceArray(xvec, ((PetscScalar*)x) + *ldx*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecPlaceArray(yvec, ((PetscScalar*)y) + *ldy*i); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = PCApply(*pc, xvec, yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecResetArray(xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-      ierr = VecResetArray(yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   }
-   ierr = VecDestroy(&xvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-   ierr = VecDestroy(&yvec); CHKERRABORT(*(MPI_Comm*)primme->commInfo, ierr);
-}
-
-static void par_GlobalSum(void *sendBuf, void *recvBuf, int *count, 
-                         primme_params *primme, int *ierr) {
-   MPI_Comm communicator = *(MPI_Comm *) primme->commInfo;
-
-   if (sendBuf == recvBuf) {
-     *ierr = MPI_Allreduce(MPI_IN_PLACE, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
-   } else {
-     *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPIU_REAL, MPI_SUM, communicator) != MPI_SUCCESS;
-   }
-}
-*/
 
 static void par_GlobalSum(void *sendBuf, void *recvBuf, int *count,
         primme_params *primme, int *ierr) {
