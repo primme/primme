@@ -179,20 +179,17 @@ int apply_sketching_Sprimme(SCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV
       CHKERR(Num_ggev_Sprimme("N", "V", basisSize, QtSW, ldQtSW, R, ldR, ShVals, NULL, hVals_b, NULL, ldhVecs, hVecs, ldhVecs, ctx)); /* Solve Q'SWx = RLx */
       for(i = 0; i < basisSize; i++)
       {
-         ShVals[i] = ShVals[i]/hVals_b[i];
+         hVals[i] = (HREAL)(ShVals[i]/hVals_b[i]);
          eval_perm[i] = i;
       }
-
-      CHKERR(Num_copy_matrix_astype_Sprimme(ShVals, 0, 0, basisSize, 1, basisSize, PRIMME_OP_SCALAR, hVals, 0, 0, basisSize, PRIMME_OP_HREAL, ctx));
 
       /* Sort the eigenpairs */
       for(i = 0; i < basisSize; i++) CHKERR(insertionSort_Sprimme(hVals[i], hVals, 0.0, NULL, 0, NULL, eval_perm, i, 0, ctx.primme));
       CHKERR(permute_vecs_Sprimme(hVecs, basisSize, basisSize, ldhVecs, eval_perm, ctx));
-      
    }
 
    CHKERR(broadcast_Sprimme(hVecs, basisSize*basisSize, ctx));
-   CHKERR(broadcast_RHprimme(hVals, basisSize, ctx));
+   CHKERR(broadcast_Sprimme(hVals, basisSize, ctx));
 
    /* Cleaning up */
    CHKERR(Num_free_Sprimme(SV, ctx));
