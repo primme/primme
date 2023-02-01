@@ -117,6 +117,7 @@ int main (int argc, char *argv[]) {
    primme.maxMatvecs = 1000;
 
    primme.projectionParams.projection = primme_proj_sketched;
+   //primme.expansionParams.expansion = primme_expansion_fullLanczos;
    primme.expansionParams.expansion = primme_expansion_fullLanczos;
 
    /* Set method to solve the problem */
@@ -134,8 +135,7 @@ int main (int argc, char *argv[]) {
    evals = (PetscReal*)malloc(primme.numEvals*sizeof(PetscReal));
    evecs = (PetscScalar*)malloc(primme.n*primme.numEvals*sizeof(PetscScalar));
    rnorms = (PetscReal*)malloc(primme.numEvals*sizeof(PetscReal));
-
-   /* Call primme  */
+/*
 #if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
    ret = cprimme(evals, evecs, rnorms, &primme);
 #elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
@@ -152,8 +152,13 @@ int main (int argc, char *argv[]) {
       return -1;
    }
 
-   if (primme.procID == 0) { /* Reports process with ID 0 */
-       /* Reporting (optional) */
+   
+   if (primme.procID == 0) { 
+
+      printf("\n\t\t ******************************************************\n");
+      printf("\t\t ***FULL-ORTHO LANCZOS + SKETCHING (%d PROCESSES)***\n", primme.numProcs);
+      printf("\t\t ******************************************************\n\n");
+
       for (i=0; i < primme.initSize; i++) {
          fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
             evals[i], rnorms[i]); 
@@ -166,6 +171,203 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
       fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
+      fprintf(primme.outputFile, "Elapsed Time    : %-22.10E\n", primme.stats.elapsedTime);
+      fprintf(primme.outputFile, "MatVec Time     : %-22.10E\n", primme.stats.timeMatvec);
+      fprintf(primme.outputFile, "Precond Time    : %-22.10E\n", primme.stats.timePrecond);
+      fprintf(primme.outputFile, "Ortho Time      : %-22.10E\n", primme.stats.timeOrtho);
+      fprintf(primme.outputFile, "GlobalSum Time  : %-22.10E\n", primme.stats.timeGlobalSum);
+      fprintf(primme.outputFile, "Broadcast Time  : %-22.10E\n", primme.stats.timeBroadcast);
+
+      if (primme.stats.lockingIssue) {
+         fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+         fprintf(primme.outputFile,
+            "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+         fprintf(primme.outputFile,
+            "However, the subspace of evecs is accurate to the required tolerance.\n");
+      }
+
+      switch (primme.dynamicMethodSwitch) {
+         case -1: fprintf(primme.outputFile,
+               "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
+         case -2: fprintf(primme.outputFile,
+               "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
+         case -3: fprintf(primme.outputFile,
+               "Recommended method for next run: DYNAMIC (close call)\n"); break;
+      }
+   }
+
+*/
+   /* Non-sketching comparison */
+/*   primme.projectionParams.projection = primme_proj_default;
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = cprimme(evals, evecs, rnorms, &primme);
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
+   ret = zprimme(evals, evecs, rnorms, &primme);
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = sprimme(evals, evecs, rnorms, &primme);
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
+   ret = dprimme(evals, evecs, rnorms, &primme);
+#endif
+
+   if (ret != 0) {
+      fprintf(primme.outputFile, 
+         "Error: primme returned with nonzero exit status: %d \n",ret);
+      return -1;
+   }
+
+   if (primme.procID == 0) {
+
+      printf("\n\t\t *********************************************************\n");
+      printf("\t\t ***FULL-ORTHO LANCZOS + NO SKETCHING (%d PROCESSES)***\n", primme.numProcs);
+      printf("\t\t *********************************************************\n\n");
+      for (i=0; i < primme.initSize; i++) {
+         fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
+            evals[i], rnorms[i]); 
+      }
+      fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
+      fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
+                                                            primme.aNorm*primme.eps);
+      fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
+                                                    primme.stats.numOuterIterations); 
+      fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+      fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+      fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
+      fprintf(primme.outputFile, "Elapsed Time    : %-22.10E\n", primme.stats.elapsedTime);
+      fprintf(primme.outputFile, "MatVec Time     : %-22.10E\n", primme.stats.timeMatvec);
+      fprintf(primme.outputFile, "Precond Time    : %-22.10E\n", primme.stats.timePrecond);
+      fprintf(primme.outputFile, "Ortho Time      : %-22.10E\n", primme.stats.timeOrtho);
+      fprintf(primme.outputFile, "GlobalSum Time  : %-22.10E\n", primme.stats.timeGlobalSum);
+      fprintf(primme.outputFile, "Broadcast Time  : %-22.10E\n", primme.stats.timeBroadcast);
+
+      if (primme.stats.lockingIssue) {
+         fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+         fprintf(primme.outputFile,
+            "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+         fprintf(primme.outputFile,
+            "However, the subspace of evecs is accurate to the required tolerance.\n");
+      }
+
+      switch (primme.dynamicMethodSwitch) {
+         case -1: fprintf(primme.outputFile,
+               "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
+         case -2: fprintf(primme.outputFile,
+               "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
+         case -3: fprintf(primme.outputFile,
+               "Recommended method for next run: DYNAMIC (close call)\n"); break;
+      }
+   }
+*/
+   /* partial ortho sketching comparison */
+/*   primme.projectionParams.projection = primme_proj_sketched;
+   primme.expansionParams.expansion = primme_expansion_lanczos;
+
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = cprimme(evals, evecs, rnorms, &primme);
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
+   ret = zprimme(evals, evecs, rnorms, &primme);
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = sprimme(evals, evecs, rnorms, &primme);
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
+   ret = dprimme(evals, evecs, rnorms, &primme);
+#endif
+
+   if (ret != 0) {
+      fprintf(primme.outputFile, 
+         "Error: primme returned with nonzero exit status: %d \n",ret);
+      return -1;
+   }
+
+   
+   if (primme.procID == 0) { 
+
+      printf("\n\t\t *********************************************************\n");
+      printf("\t\t ***PARTIAL-ORTHO LANCZOS + SKETCHING (%d PROCESSES)***\n", primme.numProcs);
+      printf("\t\t *********************************************************\n\n");
+
+      for (i=0; i < primme.initSize; i++) {
+         fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
+            evals[i], rnorms[i]); 
+      }
+      fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
+      fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
+                                                            primme.aNorm*primme.eps);
+      fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
+                                                    primme.stats.numOuterIterations); 
+      fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+      fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+      fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
+      fprintf(primme.outputFile, "Elapsed Time    : %-22.10E\n", primme.stats.elapsedTime);
+      fprintf(primme.outputFile, "MatVec Time     : %-22.10E\n", primme.stats.timeMatvec);
+      fprintf(primme.outputFile, "Precond Time    : %-22.10E\n", primme.stats.timePrecond);
+      fprintf(primme.outputFile, "Ortho Time      : %-22.10E\n", primme.stats.timeOrtho);
+      fprintf(primme.outputFile, "GlobalSum Time  : %-22.10E\n", primme.stats.timeGlobalSum);
+      fprintf(primme.outputFile, "Broadcast Time  : %-22.10E\n", primme.stats.timeBroadcast);
+
+      if (primme.stats.lockingIssue) {
+         fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
+         fprintf(primme.outputFile,
+            "Some eigenpairs do not have a residual norm less than the tolerance.\n");
+         fprintf(primme.outputFile,
+            "However, the subspace of evecs is accurate to the required tolerance.\n");
+      }
+
+      switch (primme.dynamicMethodSwitch) {
+         case -1: fprintf(primme.outputFile,
+               "Recommended method for next run: DEFAULT_MIN_MATVECS\n"); break;
+         case -2: fprintf(primme.outputFile,
+               "Recommended method for next run: DEFAULT_MIN_TIME\n"); break;
+         case -3: fprintf(primme.outputFile,
+               "Recommended method for next run: DYNAMIC (close call)\n"); break;
+      }
+   }
+*/
+   /* partial ortho no sketching comparison */
+
+   primme.projectionParams.projection = primme_proj_default;
+   primme.expansionParams.expansion = primme_expansion_lanczos;
+
+#if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = cprimme(evals, evecs, rnorms, &primme);
+#elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
+   ret = zprimme(evals, evecs, rnorms, &primme);
+#elif !defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
+   ret = sprimme(evals, evecs, rnorms, &primme);
+#elif !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
+   ret = dprimme(evals, evecs, rnorms, &primme);
+#endif
+
+   if (ret != 0) {
+      fprintf(primme.outputFile, 
+         "Error: primme returned with nonzero exit status: %d \n",ret);
+      return -1;
+   }
+
+   
+   if (primme.procID == 0) { 
+
+      printf("\n\t\t *********************************************************\n");
+      printf("\t\t ***PARTIAL-ORTHO LANCZOS + NO SKETCHING (%d PROCESSES)***\n", primme.numProcs);
+      printf("\t\t *********************************************************\n\n");
+
+      for (i=0; i < primme.initSize; i++) {
+         fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
+            evals[i], rnorms[i]); 
+      }
+      fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
+      fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
+                                                            primme.aNorm*primme.eps);
+      fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
+                                                    primme.stats.numOuterIterations); 
+      fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
+      fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+      fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
+      fprintf(primme.outputFile, "Elapsed Time    : %-22.10E\n", primme.stats.elapsedTime);
+      fprintf(primme.outputFile, "MatVec Time     : %-22.10E\n", primme.stats.timeMatvec);
+      fprintf(primme.outputFile, "Precond Time    : %-22.10E\n", primme.stats.timePrecond);
+      fprintf(primme.outputFile, "Ortho Time      : %-22.10E\n", primme.stats.timeOrtho);
+      fprintf(primme.outputFile, "GlobalSum Time  : %-22.10E\n", primme.stats.timeGlobalSum);
+      fprintf(primme.outputFile, "Broadcast Time  : %-22.10E\n", primme.stats.timeBroadcast);
+
       if (primme.stats.lockingIssue) {
          fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
          fprintf(primme.outputFile,
