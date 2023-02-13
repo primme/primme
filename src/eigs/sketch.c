@@ -57,41 +57,6 @@
 
 #ifdef SUPPORTED_TYPE
 
-/* Swaps two integer variables */
-STATIC void swap_iprimme(int *a, int *b){
-    int temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-/* Randomly shuffle an array of integers */
-STATIC void random_shuffle_iprimme(int *x, int n) {
-    int i, j;
-    for(i = n-1; i > 0; i--) 
-    {
-        j = rand() % (i+1);
-        swap_iprimme(&x[i], &x[j]);
-    }
-}
-
-STATIC void rand_rows_iprimme(int *x, int a, int n) {
-   int i, j;
-   int flag;
-   i = 0;
-   while(i < a)
-   {
-      flag = 0;
-      x[i] = rand() % n;
-      for(j = 0; j < i; j++) 
-         if(x[j] == x[i]) 
-         {
-            flag = 1;
-            break;
-         }
-      if(flag == 0) i++;
-   }
-}
-
 /******************************************************************************
  * Subroutine apply_sketching - This routine applies a random subspace embedding
  * to a basis matrix V, and W = AV using Sparse Maps
@@ -108,72 +73,29 @@ STATIC void rand_rows_iprimme(int *x, int a, int n) {
  * 
  * INPUT/OUTPUT arrays and parameters
  * ----------------------------------
- * SV       The sketched basis with dimensions sketchSize x ldV
+ * SV       The sketched basis with dimensions ldS x ldV
  ******************************************************************************/
 
 
 TEMPLATE_PLEASE
-int apply_sketching_Sprimme(SCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV, SCALAR *hVecs, PRIMME_INT ldhVecs, REAL *hVals, PRIMME_INT basisSize, PRIMME_INT blockSize, primme_context ctx) {
+int apply_sketching_Sprimme(SCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, SCALAR *hVecs, PRIMME_INT ldhVecs, REAL *hVals, PRIMME_INT *basisSize, PRIMME_INT blockSize, int *S_rows, SCALAR* S_vals, PRIMME_INT ldS, PRIMME_INT nnzPerCol, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
-   SCALAR *SV;       /* The sketched basis */
-   SCALAR *S_vals;   /* The nonzero values of the sketching matrix */ 
+   PRIMME_INT i, j;
 
-   int *S_rows;     /* Store the row index of each nonzero */
-   int *rand_rows;  /* Vector used to randomly select nonzero rows for each column */
+   SCALAR *V_row;
+   CHKERR(Num_malloc_Sprimme(blockSize, &V_row, ctx));
 
-   PRIMME_INT i, j, k;                                /* Loop variables */
-   PRIMME_INT ldSV;   /* Leading dimension of matrices */
-
-   PRIMME_INT sketchSize = 4*basisSize;
-   PRIMME_INT nnzPerCol = ceil(2*log(basisSize+1));
-
-   /* Allocate space */
-   ldSV = sketchSize;
-
-   CHKERR(Num_malloc_Sprimme(ldSV*(basisSize+blockSize), &SV, ctx));
-   CHKERR(Num_malloc_Sprimme(primme->nLocal*nnzPerCol, &S_vals, ctx));
-
-   CHKERR(Num_malloc_iprimme(primme->nLocal*nnzPerCol, &S_rows, ctx));
-   CHKERR(Num_malloc_iprimme(nnzPerCol, &rand_rows, ctx));
-
-   /* -------------------------------------------------------------------------------
-    * Build and apply sketching matrix to the basis V
-    *--------------------------------------------------------------------------------*/
-
-   /* Insert random variables into the nonzeros of the skecthing matrix (Uniform on the complex unit circle or -1 and 1) */
-   CHKERR(Num_larnv_Sprimme(2, primme->iseed, primme->nLocal*nnzPerCol, &S_vals[0], ctx));
-#ifdef USE_COMPLEX
-   for(i = 0; i < primme->nLocal*nnzPerCol; i++) S_vals[i] /= cabs(S_vals[i])*sqrt(sketchSize);
-#else
-   for(i = 0; i < primme->nLocal*nnzPerCol; i++) S_vals[i] /= fabs(S_vals[i])*sqrt(sketchSize);
-#endif
-   if(primme->procID == 0)
-   {
-      for(i = 0; i < )
-   }
-
-   /* Select nnzperCol random rows per column to be nonzero */
    for(i = 0; i < primme->nLocal; i++)
    {
-      rand_rows_iprimme(rand_rows, nnzPerCol, sketchSize);
-      for(j = 0; j < nnzPerCol; j++) S_rows[i*nnzPerCol + j] = rand_rows[j];
+      CHKERR(Num_copy_Sprimme(blockSize, &V[(*basisSize)*ldV+i], ldV, V_row, 1, ctx));
+      for(j = 0; j < nnzPerCol; j++) CHKERR(Num_axpy_Sprimme(blockSize, S_vals[i*nnzPerCol+j], &V_row[0], 1, &SV[((*basisSize)*ldSV) + S_rows[i*nnzPerCol+j]], ldSV, ctx));
    }
-
-   /* Sketching matrix built. Moving on to applying it. */
-   CHKERR(Num_zero_matrix_Sprimme(SV, sketchSize, basisSize+blockSize, ldSV, ctx));
-   PRIMME_INT row;
-   for(i = 0; i < primme->nLocal; i++)
-      for(j = 0; j < nnzPerCol; j++)
-         for(k = 0; k < basisSize+blockSize; k++)
-         {
-            row = S_rows[i*nnzPerCol+j];
-            SV[k*ldSV + row] += S_vals[i*nnzPerCol+j]*V[k*ldV + i];
-         }
+   CHKERR(Num_free_Sprimme(V_row, ctx)); 
 
    /* Find the sketched basis */
-   CHKERR(globalSum_Sprimme(SV, sketchSize*(basisSize+blockSize), ctx));  
+   CHKERR(globalSum_Sprimme(&SV[ldSV*(*basisSize)], ldSV*blockSize, ctx));  
 
    if(primme->procID == 0)
    {
@@ -192,22 +114,22 @@ int apply_sketching_Sprimme(SCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV
       PRIMME_INT ldSW, ldVVecst, ldUVecs, ldUtSW, ldUtSWV, ldSigma, ldtrunc_hVecs;   /* Leading dimension of matrices */
       PRIMME_INT trunc_basisSize; /* The basis size after stabilization */
 
-      ldSW = ldUVecs = sketchSize;
-      ldVVecst = basisSize;
+      ldSW = ldUVecs = ldS;
+      ldVVecst = (*basisSize);
 
-      CHKERR(Num_malloc_Sprimme(ldSW*basisSize, &SW, ctx));
-      CHKERR(Num_malloc_Sprimme(ldUVecs*basisSize, &UVecs, ctx));
-      CHKERR(Num_malloc_Sprimme(ldVVecst*basisSize, &VVecst, ctx));
-      CHKERR(Num_malloc_Rprimme(basisSize, &sing_vals, ctx));
+      CHKERR(Num_malloc_Sprimme(ldSW*(*basisSize), &SW, ctx));
+      CHKERR(Num_malloc_Sprimme(ldUVecs*(*basisSize), &UVecs, ctx));
+      CHKERR(Num_malloc_Sprimme(ldVVecst*(*basisSize), &VVecst, ctx));
+      CHKERR(Num_malloc_Rprimme((*basisSize), &sing_vals, ctx));
 
       /* Project the sketched basis (SW = SV*H)*/
-      CHKERR(Num_gemm_Sprimme("N", "N", sketchSize, basisSize, basisSize+blockSize, 1.0, SV, ldSV, H, ldH, 0.0, SW, ldSW, ctx));
+      CHKERR(Num_gemm_Sprimme("N", "N", ldS, (*basisSize), (*basisSize+blockSize), 1.0, SV, ldSV, H, ldH, 0.0, SW, ldSW, ctx));
 
       /* Take the SVD decomposition of SV */
-      CHKERR(Num_gesvd_Sprimme("S", "A", sketchSize, basisSize, SV, ldSV, sing_vals, UVecs, ldUVecs, VVecst, ldVVecst, ctx));
+      CHKERR(Num_gesvd_Sprimme("S", "A", ldS, (*basisSize), SV, ldSV, sing_vals, UVecs, ldUVecs, VVecst, ldVVecst, ctx));
 
-      trunc_basisSize = basisSize;
-      for(i = basisSize-1; i >= primme->numEvals; i--)
+      trunc_basisSize = (*basisSize);
+      for(i = (*basisSize)-1; i >= primme->numEvals; i--)
       {
          if(sing_vals[0]/sing_vals[i] > 1/MACHINE_EPSILON)
          {
@@ -219,7 +141,7 @@ int apply_sketching_Sprimme(SCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV
 
       /* Build each side of the generalized eigenvalue problem after stabilization */
       ldSigma = ldUtSW = ldUtSWV = ldtrunc_hVecs = trunc_basisSize;
-      CHKERR(Num_malloc_Sprimme(ldUtSW*basisSize, &UtSW, ctx));
+      CHKERR(Num_malloc_Sprimme(ldUtSW*(*basisSize), &UtSW, ctx));
       CHKERR(Num_malloc_Sprimme(ldUtSWV*trunc_basisSize, &UtSWV, ctx));
       CHKERR(Num_malloc_Sprimme(ldtrunc_hVecs*trunc_basisSize, &trunc_hVecs, ctx));
       CHKERR(Num_malloc_Sprimme(trunc_basisSize, &ShVals, ctx));
@@ -232,12 +154,12 @@ int apply_sketching_Sprimme(SCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV
       for(i = 0; i < trunc_basisSize; i++) Sigma[i*ldSigma+i] = sing_vals[i];
 
       /* Left hand side */
-      CHKERR(Num_gemm_Sprimme("C", "N", trunc_basisSize, basisSize, sketchSize, 1.0, UVecs, ldUVecs, SW, ldSW, 0.0, UtSW, ldUtSW, ctx)); /* Left side matrix */
-      CHKERR(Num_gemm_Sprimme("N", "C", trunc_basisSize, trunc_basisSize, basisSize, 1.0, UtSW, ldUtSW, VVecst, ldVVecst, 0.0, UtSWV, ldUtSWV, ctx)); /* Left side matrix */
+      CHKERR(Num_gemm_Sprimme("C", "N", trunc_basisSize, (*basisSize), ldS, 1.0, UVecs, ldUVecs, SW, ldSW, 0.0, UtSW, ldUtSW, ctx)); /* Left side matrix */
+      CHKERR(Num_gemm_Sprimme("N", "C", trunc_basisSize, trunc_basisSize, (*basisSize), 1.0, UtSW, ldUtSW, VVecst, ldVVecst, 0.0, UtSWV, ldUtSWV, ctx)); /* Left side matrix */
       
       /* Eigenvalue problem */
       CHKERR(Num_ggev_Sprimme("N", "V", trunc_basisSize, UtSWV, ldUtSWV, Sigma, ldSigma, ShVals, NULL, hVals_b, NULL, trunc_basisSize, trunc_hVecs, ldtrunc_hVecs, ctx)); /* Solve Q'SWx = RLx */
-      CHKERR(Num_gemm_Sprimme("C", "N", basisSize, trunc_basisSize, trunc_basisSize, 1.0, VVecst, ldVVecst, trunc_hVecs, ldtrunc_hVecs, 0.0, hVecs, ldhVecs, ctx)); /* Left side matrix */
+      CHKERR(Num_gemm_Sprimme("C", "N", (*basisSize), trunc_basisSize, trunc_basisSize, 1.0, VVecst, ldVVecst, trunc_hVecs, ldtrunc_hVecs, 0.0, hVecs, ldhVecs, ctx)); /* Left side matrix */
       for(i = 0; i < trunc_basisSize; i++)
       {
          hVals[i] = REAL_PART(ShVals[i]/hVals_b[i]);
@@ -246,7 +168,7 @@ int apply_sketching_Sprimme(SCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV
 
       /* Sort the eigenpairs */
       for(i = 0; i < trunc_basisSize; i++) CHKERR(insertionSort_Sprimme(hVals[i], hVals, 0.0, NULL, 0, NULL, eval_perm, i, 0, ctx.primme));
-      CHKERR(permute_vecs_Sprimme(hVecs, basisSize, trunc_basisSize, ldhVecs, eval_perm, ctx));
+      CHKERR(permute_vecs_Sprimme(hVecs, (*basisSize), trunc_basisSize, ldhVecs, eval_perm, ctx));
 
       CHKERR(Num_free_Sprimme(SW, ctx)); 
       CHKERR(Num_free_Sprimme(UVecs, ctx)); 
@@ -264,12 +186,7 @@ int apply_sketching_Sprimme(SCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV
    CHKERR(broadcast_Sprimme(hVecs, ldhVecs*primme->numEvals, ctx));
    CHKERR(broadcast_Rprimme(hVals, primme->numEvals, ctx));
 
-   /* Cleaning up */
-   CHKERR(Num_free_Sprimme(SV, ctx));
-   CHKERR(Num_free_Sprimme(S_vals, ctx));
-
-   CHKERR(Num_free_iprimme(S_rows, ctx));
-   CHKERR(Num_free_iprimme(rand_rows, ctx));
+   (*basisSize) += blockSize; 
 
 return 0;
 }

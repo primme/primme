@@ -111,7 +111,7 @@ int main (int argc, char *argv[]) {
    */
 
    /* Set advanced parameters if you know what are you doing (optional) */
-   primme.maxBasisSize = 1000;
+   primme.maxBasisSize = 500;
    primme.minRestartSize = 1;
    primme.maxBlockSize = 1;
    primme.maxMatvecs = 1000;
@@ -135,7 +135,7 @@ int main (int argc, char *argv[]) {
    evals = (PetscReal*)malloc(primme.numEvals*sizeof(PetscReal));
    evecs = (PetscScalar*)malloc(primme.n*primme.numEvals*sizeof(PetscScalar));
    rnorms = (PetscReal*)malloc(primme.numEvals*sizeof(PetscReal));
-/*
+
 #if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
    ret = cprimme(evals, evecs, rnorms, &primme);
 #elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
@@ -196,9 +196,9 @@ int main (int argc, char *argv[]) {
       }
    }
 
-*/
    /* Non-sketching comparison */
-/*   primme.projectionParams.projection = primme_proj_default;
+/*
+   primme.projectionParams.projection = primme_proj_default;
 #if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
    ret = cprimme(evals, evecs, rnorms, &primme);
 #elif defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE)
@@ -258,7 +258,8 @@ int main (int argc, char *argv[]) {
    }
 */
    /* partial ortho sketching comparison */
-/*   primme.projectionParams.projection = primme_proj_sketched;
+/*
+   primme.projectionParams.projection = primme_proj_sketched;
    primme.expansionParams.expansion = primme_expansion_lanczos;
 
 #if defined(PETSC_USE_COMPLEX) && defined(PETSC_USE_REAL_SINGLE)
@@ -322,7 +323,7 @@ int main (int argc, char *argv[]) {
    }
 */
    /* partial ortho no sketching comparison */
-
+/*
    primme.projectionParams.projection = primme_proj_default;
    primme.expansionParams.expansion = primme_expansion_lanczos;
 
@@ -385,6 +386,7 @@ int main (int argc, char *argv[]) {
                "Recommended method for next run: DYNAMIC (close call)\n"); break;
       }
    }
+*/
 
    primme_free(&primme);
    free(evals);
