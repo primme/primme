@@ -103,18 +103,15 @@
 
 
 TEMPLATE_PLEASE
-int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, HSCALAR *hVecs, PRIMME_INT ldhVecs, HREAL *hVals, HREAL *resNorms, PRIMME_INT last_sketch, PRIMME_INT basisSize, PRIMME_INT blockSize, int *S_rows, SCALAR* S_vals, PRIMME_INT nnzPerCol, primme_context ctx) {
+int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, HSCALAR *hVecs, PRIMME_INT ldhVecs, HREAL *hVals, PRIMME_INT last_sketch, PRIMME_INT basisSize, PRIMME_INT blockSize, int *S_rows, SCALAR* S_vals, PRIMME_INT nnzPerCol, primme_context ctx) {
 #ifdef USE_HERMITIAN
    primme_params *primme = ctx.primme;
 
    SCALAR *V_row;    /* Used to temporarily store a row in V to avoid numberous memory accesses */
-   SCALAR *SW;       /* The projected sketched basis */
-   PRIMME_INT i, j, ldSW;
+   PRIMME_INT i, j;
    PRIMME_INT numNewCols = basisSize+blockSize-last_sketch;  
-   ldSW = ldSV;
 
    CHKERR(Num_malloc_Sprimme(numNewCols, &V_row, ctx));
-   CHKERR(Num_malloc_Sprimme(ldSV*basisSize, &SW, ctx));
    CHKERR(Num_zero_matrix_Sprimme(&SV[last_sketch*ldSV], ldSV, numNewCols, ldSV, ctx));
 
    /* Sparse MM */
@@ -147,6 +144,7 @@ int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ld
    if(primme->procID == 0)
    {
 
+      SCALAR *SW;       /* The projected sketched basis */
       SCALAR *UtSW;     /* Temporary matrix to compute left hand side of the generalized eigenvalue problem */
       SCALAR *UtSWV;    /* Left hand side of the generalized eigenvalue problem */
       SCALAR *UVecs;    /* Left singular vectors of the SVD */
@@ -158,12 +156,13 @@ int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ld
       SCALAR *temp_SV;  /* Temporarily store SV while performing LaPack's GESVD */
       REAL *sing_vals;  /* Returned singular values from the SVD */
       int *eval_perm;   /* To sort the eigenpairs */
-      PRIMME_INT ldVVecst, ldUVecs, ldUtSW, ldUtSWV, ldSigma, ldtrunc_hVecs;   /* Leading dimension of matrices */
+      PRIMME_INT ldSW, ldVVecst, ldUVecs, ldUtSW, ldUtSWV, ldSigma, ldtrunc_hVecs;   /* Leading dimension of matrices */
       PRIMME_INT trunc_basisSize; /* The basis size after stabilization */
 
-      ldUVecs = ldSV;
+      ldUVecs = ldSW = ldSV;
       ldVVecst = basisSize;
 
+      CHKERR(Num_malloc_Sprimme(ldSW*basisSize, &SW, ctx));
       CHKERR(Num_malloc_Sprimme(ldUVecs*basisSize, &UVecs, ctx));
       CHKERR(Num_malloc_Sprimme(ldVVecst*basisSize, &VVecst, ctx));
       CHKERR(Num_malloc_Sprimme(ldSV*basisSize, &temp_SV, ctx));
@@ -223,6 +222,7 @@ int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ld
 
       CHKERR(permute_vecs_Sprimme(hVecs, basisSize, trunc_basisSize, ldhVecs, eval_perm, ctx));
 
+      CHKERR(Num_free_Sprimme(SW, ctx)); 
       CHKERR(Num_free_Sprimme(UVecs, ctx)); 
       CHKERR(Num_free_Sprimme(VVecst, ctx)); 
       CHKERR(Num_free_Sprimme(UtSW, ctx)); 
@@ -235,22 +235,21 @@ int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ld
       CHKERR(Num_free_Rprimme(sing_vals, ctx)); 
    }
 
-   PRIMME_INT numEvals = min(primme->numEvals, basisSize);
-   CHKERR(broadcast_Sprimme(SW, ldSW*basisSize, ctx));
-   CHKERR(broadcast_SHprimme(hVecs, ldhVecs*numEvals, ctx));
-   CHKERR(broadcast_RHprimme(hVals, numEvals, ctx));
+   //PRIMME_INT numEvals = min(primme->numEvals, basisSize);
+   CHKERR(broadcast_SHprimme(hVecs, ldhVecs*primme->numEvals, ctx));
+   CHKERR(broadcast_RHprimme(hVals, primme->numEvals, ctx));
 
    /* Form residual estimates */
-   SCALAR *SVhVecs, *SWhVecs;
+/*   SCALAR *SVhVecs, *SWhVecs;
    SCALAR *sketched_residuals;
    REAL   *resNorms_normalize;
    CHKERR(Num_malloc_Sprimme(ldSV*numEvals, &sketched_residuals, ctx));
    CHKERR(Num_malloc_Sprimme(ldSV*numEvals, &SVhVecs, ctx));
    CHKERR(Num_malloc_Sprimme(ldSV*numEvals, &SWhVecs, ctx));
    CHKERR(Num_malloc_Rprimme(numEvals, &resNorms_normalize, ctx));
-   
+*/   
    /* Compute sketched Ritz vectors (SV*hVecs = SVhVecs) and projected sketched sketched Ritz vectors (SW*hVecs = SAVhVecs) */
-   CHKERR(Num_gemm_Sprimme("N", "N", ldSV, numEvals, basisSize, 1.0, SV, ldSV, hVecs, ldhVecs, 0.0, SVhVecs, ldSV, ctx));
+/*   CHKERR(Num_gemm_Sprimme("N", "N", ldSV, numEvals, basisSize, 1.0, SV, ldSV, hVecs, ldhVecs, 0.0, SVhVecs, ldSV, ctx));
    CHKERR(Num_gemm_Sprimme("N", "N", ldSV, numEvals, basisSize, 1.0, SW, ldSV, hVecs, ldhVecs, 0.0, SWhVecs, ldSV, ctx));
 
     for(i = 0; i < numEvals; i++)
@@ -268,11 +267,11 @@ int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ld
 
    for(i = 0; i < numEvals; i++) resNorms[i] = (sqrt(resNorms[i]) / sqrt(resNorms_normalize[i]));
 
-   CHKERR(Num_free_Sprimme(SW, ctx)); 
    CHKERR(Num_free_Sprimme(SWhVecs, ctx)); 
    CHKERR(Num_free_Sprimme(SVhVecs, ctx)); 
    CHKERR(Num_free_Sprimme(sketched_residuals, ctx)); 
    CHKERR(Num_free_Rprimme(resNorms_normalize, ctx)); 
+*/
 
 return 0;
 #else
@@ -285,7 +284,6 @@ return 0;
    (void)hVecs;
    (void)ldhVecs;
    (void)hVals;
-   (void)resNorms;
    (void)last_sketch;
    (void)basisSize;
    (void)blockSize;
