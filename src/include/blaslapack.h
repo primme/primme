@@ -3218,7 +3218,7 @@ int Num_trsm_hd_hprimme(const char *side, const char *uplo, const char *transa,
 int Num_compute_gramm_ddh_hprimme(dummy_type_hprimme *X, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldX, dummy_type_hprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H,
       PRIMME_INT ldH, int isherm, primme_context ctx);
-int Num_ggev_hprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, dummy_type_hprimme *a, PRIMME_INT lda, dummy_type_hprimme *b, PRIMME_INT ldb, dummy_type_sprimme *alphar, dummy_type_sprimme *alphai, dummy_type_sprimme *beta, dummy_type_sprimme *vl, PRIMME_INT ldvl, dummy_type_sprimme *vr, PRIMME_INT ldvr, primme_context ctx);
+int Num_ggev_hprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, dummy_type_hprimme *a, PRIMME_INT lda, dummy_type_hprimme *b, PRIMME_INT ldb, dummy_type_sprimme *alphar, dummy_type_sprimme *alphai, dummy_type_sprimme *beta, dummy_type_sprimme *vl, PRIMME_INT ldvl, dummy_type_hprimme *vr, PRIMME_INT ldvr, primme_context ctx);
 int Num_check_pointer_kprimme(void *x);
 int Num_malloc_kprimme(PRIMME_INT n, dummy_type_kprimme **x, primme_context ctx);
 int Num_free_kprimme(dummy_type_kprimme *x, primme_context ctx);
@@ -3260,7 +3260,7 @@ int Num_trsm_hd_kprimme(const char *side, const char *uplo, const char *transa,
 int Num_compute_gramm_ddh_kprimme(dummy_type_kprimme *X, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldX, dummy_type_kprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H,
       PRIMME_INT ldH, int isherm, primme_context ctx);
-int Num_ggev_kprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, dummy_type_kprimme *a, PRIMME_INT lda, dummy_type_kprimme *b, PRIMME_INT ldb, dummy_type_cprimme *alphar, dummy_type_sprimme *alphai, dummy_type_cprimme *beta, dummy_type_cprimme *vl, PRIMME_INT ldvl, dummy_type_cprimme *vr, PRIMME_INT ldvr, primme_context ctx);
+int Num_ggev_kprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, dummy_type_kprimme *a, PRIMME_INT lda, dummy_type_kprimme *b, PRIMME_INT ldb, dummy_type_cprimme *alphar, dummy_type_sprimme *alphai, dummy_type_cprimme *beta, dummy_type_cprimme *vl, PRIMME_INT ldvl, dummy_type_kprimme *vr, PRIMME_INT ldvr, primme_context ctx);
 int Num_check_pointer_sprimme(void *x);
 int Num_malloc_sprimme(PRIMME_INT n, dummy_type_sprimme **x, primme_context ctx);
 int Num_free_sprimme(dummy_type_sprimme *x, primme_context ctx);

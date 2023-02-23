@@ -1792,7 +1792,7 @@ int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, PRIMME_INT n,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_ggev_Sprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, SCALAR *a, PRIMME_INT lda, SCALAR *b, PRIMME_INT ldb, HSCALAR *alphar, HREAL *alphai, HSCALAR *beta, HSCALAR *vl, PRIMME_INT ldvl, HSCALAR *vr, PRIMME_INT ldvr, primme_context ctx) {
+int Num_ggev_Sprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, SCALAR *a, PRIMME_INT lda, SCALAR *b, PRIMME_INT ldb, HSCALAR *alphar, HREAL *alphai, HSCALAR *beta, HSCALAR *vl, PRIMME_INT ldvl, SCALAR *vr, PRIMME_INT ldvr, primme_context ctx) {
  
    PRIMME_BLASINT ln = n;
    PRIMME_BLASINT llda = lda;
