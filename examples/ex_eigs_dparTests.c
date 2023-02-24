@@ -66,8 +66,8 @@ int main (int argc, char *argv[]) {
    PetscErrorCode ierr;
    MPI_Comm comm;
 
-   PetscInitialize(&argc, &argv, NULL, NULL);
 
+   PetscInitialize(&argc, &argv, NULL, NULL);
 
    /* Set default values in PRIMME configuration struct */
    primme_initialize(&primme);
@@ -90,35 +90,37 @@ int main (int argc, char *argv[]) {
    primme.matrixMatvec = PETScMatvec;
                            /* Function that implements the matrix-vector product
                               A*x for solving the problem A*x = l*x */
-  
-   /* Set problem parameters */
+
+   /* Default Parameters */
    primme.numEvals = 10;   /* Number of wanted eigenpairs */
    primme.eps = 1e-1;      /* ||r|| <= eps * ||matrix|| */
    primme.aNorm = 1.0;
    primme.target = primme_largest;
-                           /* Wanted the smallest eigenvalues */
-
-   /* Set preconditioner (optional) */
-   /*
-   ierr = PCCreate(PETSC_COMM_WORLD, &pc); CHKERRQ(ierr);
-   ierr = PCSetType(pc, PCJACOBI); CHKERRQ(ierr);
-   ierr = PCSetOperators(pc, A, A); CHKERRQ(ierr);
-   ierr = PCSetFromOptions(pc); CHKERRQ(ierr);
-   ierr = PCSetUp(pc); CHKERRQ(ierr);
-   primme.preconditioner = &pc;
-   primme.applyPreconditioner = ApplyPCPrecPETSC;
-   primme.correctionParams.precondition = 1;
-   */
-
-   /* Set advanced parameters if you know what are you doing (optional) */
-   primme.maxBasisSize = 500;
+   primme.maxBasisSize = 20;
    primme.minRestartSize = 1;
    primme.maxBlockSize = 1;
-   primme.maxMatvecs = 1000;
+   //primme.maxMatvecs = 1000;
 
    primme.projectionParams.projection = primme_proj_sketched;
-   //primme.expansionParams.expansion = primme_expansion_fullLanczos;
+   //primme.expansionParams.expansion = primme_expansion_lanczos;
    primme.expansionParams.expansion = primme_expansion_fullLanczos;
+
+   primme.printLevel = 4;
+  
+   for(i = 2; i < argc; i++)
+   {
+      if(strcmp(argv[i], "-basisSize") == 0) primme.maxBasisSize = atoi(argv[i+1]); 
+      if(strcmp(argv[i], "-numEvals") == 0) primme.numEvals = atoi(argv[i+1]); 
+      if(strcmp(argv[i], "-blockSize") == 0) primme.maxBlockSize = atoi(argv[i+1]); 
+      if(strcmp(argv[i], "-eps") == 0) sscanf(argv[i+1], "%lf", &primme.eps);
+      if(strcmp(argv[i], "--largest") == 0) primme.target = primme_largest; 
+      if(strcmp(argv[i], "--smallest") == 0) primme.target = primme_smallest; 
+      if(strcmp(argv[i], "-Sketching=yes") == 0) primme.projectionParams.projection = primme_proj_sketched; 
+      if(strcmp(argv[i], "-Sketching=no") == 0) primme.projectionParams.projection = primme_proj_default; 
+      if(strcmp(argv[i], "-Expansion=full") == 0) primme.expansionParams.expansion = primme_expansion_fullLanczos; 
+      if(strcmp(argv[i], "-Expansion=partial") == 0) primme.expansionParams.expansion = primme_expansion_lanczos; 
+      if(strcmp(argv[i], "-Expansion=default") == 0) primme.expansionParams.expansion = primme_expansion_default; 
+   }
 
    /* Set method to solve the problem */
    primme_set_method(PRIMME_DEFAULT_MIN_MATVECS, &primme);
