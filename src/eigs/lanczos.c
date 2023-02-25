@@ -77,9 +77,68 @@ STATIC void rand_rows_iprimme(int *x, int a, int n) {
    }
 }
 
-STATIC void compute_residuals_RR_Sprimme(SCALAR *evecs, HREAL *resNorms, primme_context ctx)
+STATIC void compute_residuals_RR(SCALAR *V, PRIMME_INT ldV, HSCALAR *hVecs, PRIMME_INT ldhVecs, HEVAL *evals, PRIMME_INT basisSize, PRIMME_INT numEvals, HREAL *resNorms, primme_context ctx)
 {
+   primme_params *primme = ctx.primme;
    
+   SCALAR *evecs_ortho;
+   SCALAR *Aevecs_ortho;
+   SCALAR *H_ortho;
+   SCALAR *new_hVecs;
+   SCALAR *new_evecs;
+   SCALAR *new_Aevecs;
+   SCALAR *resVecs; 
+   HREAL *new_hVals;
+   int i;
+   
+   Num_malloc_Sprimme(primme->nLocal*basisSize, &evecs_ortho, ctx);
+   Num_malloc_Sprimme(primme->nLocal*basisSize, &Aevecs_ortho, ctx);
+   Num_malloc_Sprimme(basisSize*basisSize, &H_ortho, ctx);
+   Num_malloc_Sprimme(basisSize*basisSize, &new_hVecs, ctx);
+   Num_malloc_Sprimme(primme->nLocal*numEvals, &new_evecs, ctx);
+   Num_malloc_Sprimme(primme->nLocal*numEvals, &new_Aevecs, ctx);
+   Num_malloc_Sprimme(primme->nLocal*numEvals, &resVecs, ctx);
+   Num_malloc_RHprimme(basisSize, &new_hVals, ctx);
+
+   // The Ritz vectors
+   Num_gemm_Sprimme("N", "N", primme->nLocal, basisSize, basisSize, 1.0, V, ldV, hVecs, ldhVecs, 0.0, evecs_ortho, primme->nLocal, ctx); 
+ 
+   ortho_Sprimme(evecs_ortho, primme->nLocal, NULL, 0, 0, basisSize-1, NULL, 0, 0, primme->nLocal, primme->iseed, ctx);   // Ortho the Ritz vectors
+   matrixMatvec_Sprimme(evecs_ortho, primme->nLocal, primme->nLocal, Aevecs_ortho, primme->nLocal, 0, basisSize, ctx);    // Projected orthogonal eigenvectors
+
+   // Our "new" banded matrix H 
+   Num_gemm_Sprimme("C", "N", basisSize, basisSize, primme->nLocal, 1.0, evecs_ortho, primme->nLocal, Aevecs_ortho, primme->nLocal, 0.0, H_ortho, basisSize, ctx); 
+
+   solve_H_Sprimme(&H_ortho[0], basisSize, basisSize, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, new_hVecs, basisSize, new_hVals, NULL, 0, ctx);
+
+   // Compute residuals
+   Num_gemm_Sprimme("N", "N", primme->nLocal, numEvals, basisSize, 1.0, evecs_ortho, primme->nLocal, new_hVecs, basisSize, 0.0, new_evecs, primme->nLocal, ctx); 
+   for(i = 0; i < numEvals; i++) evals[i] = new_hVals[i];
+   matrixMatvec_Sprimme(new_evecs, primme->nLocal, primme->nLocal, new_Aevecs, primme->nLocal, 0, numEvals, ctx);    // Projected new eigenvectors
+   Num_compute_residuals_Sprimme(primme->nLocal, numEvals, evals, new_evecs, primme->nLocal, new_Aevecs, primme->nLocal, resVecs, primme->nLocal, ctx); 
+
+   for(i = 0; i < numEvals; i++)
+      resNorms[i] = Num_dot_Sprimme(primme->nLocal, &resVecs[i*primme->nLocal], 1, &resVecs[i*primme->nLocal], 1, ctx); 
+   globalSum_Rprimme(resNorms, numEvals, ctx);  
+   for(i = 0; i < numEvals; i++)
+      resNorms[i] = sqrt(resNorms[i]); 
+
+   if(primme->procID == 0){
+      for(i = 0; i < numEvals; i++)
+         printf("Iter %ld. RR Residuals. Eval[%d] = %lf, ResNorm[%d] = %.3E\n", basisSize-1, i, evals[i], i, resNorms[i]);
+      printf("\n");
+   }
+
+   Num_free_Sprimme(evecs_ortho, ctx);
+   Num_free_Sprimme(Aevecs_ortho, ctx);
+   Num_free_Sprimme(H_ortho, ctx);
+   Num_free_Sprimme(new_hVecs, ctx);
+   Num_free_Sprimme(new_evecs, ctx);
+   Num_free_Sprimme(new_Aevecs, ctx);
+   Num_free_Sprimme(resVecs, ctx);
+   Num_free_RHprimme(new_hVals, ctx);
+  
+   return; 
 }
 
 /******************************************************************************
@@ -158,6 +217,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    SCALAR *S_vals;                                       /* CSC Formatted Values */
    int *S_rows;                                          /* CSC Formatted Rows */
    PRIMME_INT sketchSize, nnzPerCol, last_sketch, ldSV;  /* Size and nnz of the sketching matrix */
+   SCALAR *normalize_evecs;
 
    /* -------------------------------------------------------------- */
    /* Allocate objects                                               */
@@ -257,6 +317,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          CHKERR(Num_malloc_Sprimme(ldSV*maxBasisSize, &SW, ctx));
          CHKERR(Num_malloc_Sprimme(ldSV*primme->numEvals, &SVhVecs, ctx));
          CHKERR(Num_malloc_Sprimme(ldSV*primme->numEvals, &SWhVecs, ctx));
+         CHKERR(Num_malloc_Sprimme(primme->numEvals, &normalize_evecs, ctx));
       }
 
       /* Start building the CSR Locally */
@@ -352,9 +413,9 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             for(j = 0; j < numEvals; j++)
             {
                evals[j] = hVals[j];
-               CHKERR(Num_scal_Sprimme(nLocal, 1/Num_dot_Sprimme(nLocal, &evecs[j*ldevecs], 1, &evecs[j*ldevecs], 1, ctx), &evecs[j*ldevecs], 1, ctx));
+               normalize_evecs[j] = 1.0/Num_dot_Sprimme(nLocal, &evecs[j*ldevecs], 1, &evecs[j*ldevecs], 1, ctx);
             }
-            CHKERR(globalSum_Sprimme(evecs, numEvals*ldevecs, ctx));  
+            for(j = 0; j < numEvals; j++) CHKERR(Num_scal_Sprimme(nLocal, sqrt(normalize_evecs[j]), &evecs[j*ldevecs], 1, ctx));
 
             /* TEST 1 - SKETCHED RESIDUALS */
             /* Get the projected basis */
@@ -362,7 +423,6 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(Num_gemm_Sprimme("N", "N", ldSV, numEvals, i+blockSize, 1.0, SV, ldSV, hVecs, ldhVecs, 0.0, SVhVecs, ldSV, ctx));   // SV*hVecs
             CHKERR(Num_gemm_Sprimme("N", "N", ldSV, numEvals, i+blockSize, 1.0, SW, ldSV, hVecs, ldhVecs, 0.0, SWhVecs, ldSV, ctx));   // SW*hVecs
 
-            /* Sketched residual vectors -------------------------------------------------- */
             CHKERR(Num_compute_residuals_Sprimme(sketchSize, numEvals, evals, SVhVecs, ldSV, SWhVecs, ldSV, rwork, ldrwork, ctx));     // rwork = SW*hVecs - evals*SV*hVecs 
 
             for(j = 0; j < numEvals; j++) resNorms[j] = Num_dot_Sprimme(sketchSize, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx) / Num_dot_Sprimme(sketchSize, &SVhVecs[j*ldSV], 1, &SVhVecs[j*ldSV], 1, ctx);
@@ -375,32 +435,19 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                printf("\n");
             }
 
-            /* TEST 2 - ACTUAL RESIDUALS FROM THE SKETCHED PROBLEM ------------------------- */
-            CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldevecs, AVhVecs, ldAVhVecs, 0, numEvals-1, ctx)); /* AVhVecs = A*V*hVecs = A * evecs */
-            CHKERR(Num_compute_residuals_Sprimme(nLocal, numEvals, evals, evecs, ldevecs, AVhVecs, ldevecs, rwork, ldrwork, ctx));
-            
-            for(j = 0; j < min(i, primme->numEvals); j++) resNorms[j] = Num_dot_Sprimme(nLocal, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx);
-            CHKERR(globalSum_Rprimme(resNorms, numEvals, ctx));  
-            for(j = 0; j < min(i, primme->numEvals); j++) resNorms[j] = sqrt(resNorms[j]);
-            
-            if(primme->procID == 0){
-               for(j = 0; j < primme->numEvals; j++)
-                  printf("Iter %d. 'Actual' Residuals From Sketching. Eval[%d] = %lf, ResNorm[%d] = %.3E\n", i, j, evals[j], j, resNorms[j]);
-               printf("\n");
-            }
-
-            /* TEST 3 - RAYLEIGH QUOTIENT -------------------------------------------------- */
+            /* TEST 2 - RAYLEIGH QUOTIENT -------------------------------------------------- */
             /* Compute Rayleigh Quotient */
+            CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldevecs, AVhVecs, ldAVhVecs, 0, numEvals, ctx)); /* AVhVecs = A*V*hVecs = A * evecs */
             for(j = 0; j < numEvals; j++)
-               evals[j] =  Num_dot_Sprimme(nLocal, &evecs[j*ldevecs], 1, &AVhVecs[j*ldevecs], 1, ctx);      /* eval[i] = evecs'*A*evecs*/
+               evals[j] =  Num_dot_Sprimme(nLocal, &evecs[j*ldevecs], 1, &AVhVecs[j*ldAVhVecs], 1, ctx)/primme->numProcs;      /* eval[i] = evecs'*A*evecs*/
             CHKERR(globalSum_Rprimme(evals, numEvals, ctx));  
             
             /* RQ Residual Vectors */
-            CHKERR(Num_compute_residuals_Sprimme(nLocal, numEvals, evals, evecs, ldevecs, AVhVecs, ldevecs, rwork, ldrwork, ctx));
-            for(j = 0; j < min(i, primme->numEvals); j++) resNorms[j] = Num_dot_Sprimme(nLocal, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx);
+            CHKERR(Num_compute_residuals_Sprimme(nLocal, numEvals, evals, evecs, ldevecs, AVhVecs, ldAVhVecs, rwork, ldrwork, ctx));
+            for(j = 0; j < numEvals; j++) resNorms[j] = Num_dot_Sprimme(nLocal, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx);
             CHKERR(globalSum_Rprimme(resNorms, numEvals, ctx));  
 
-            for(j = 0; j < min(i, primme->numEvals); j++) resNorms[j] = sqrt(resNorms[j]);
+            for(j = 0; j < numEvals; j++) resNorms[j] = sqrt(resNorms[j]);
 
             if(primme->procID == 0){
                for(j = 0; j < primme->numEvals; j++)
@@ -408,7 +455,9 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                printf("\n");
             }
 
-            /* TEST 4 - RAYLEIGH-RITZ ON THE RITZ VECTORS ----------------------------------- */
+            /* TEST 3 - RAYLEIGH-RITZ ON THE RITZ VECTORS ----------------------------------- */
+
+            compute_residuals_RR(V, ldV, hVecs, ldhVecs, evals, i+blockSize, numEvals, resNorms, ctx);
 
          } else { /* End sketching */ 
             CHKERR(solve_H_Sprimme(&H[0], i+blockSize, ldH, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, NULL, 0, ctx));
@@ -523,6 +572,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          CHKERR(Num_free_Sprimme(SW, ctx));
          CHKERR(Num_free_Sprimme(SVhVecs, ctx));
          CHKERR(Num_free_Sprimme(SWhVecs, ctx));
+         CHKERR(Num_free_Sprimme(normalize_evecs, ctx));
       }   
    }
 
