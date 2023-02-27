@@ -127,9 +127,9 @@ int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ld
 
 
    /* Find the sketched basis */
-   CHKERR(globalSum_Sprimme(&SV[ldSV*last_sketch], numNewCols*ldSV, ctx));  
+/*   CHKERR(globalSum_Sprimme(&SV[ldSV*last_sketch], numNewCols*ldSV, ctx));  
 
-/*   if(primme->procID == 0 && primme->numProcs == 1)
+   if(primme->procID == 0 && primme->numProcs == 1)
    {
       printf("SV for basisSize %d\n", basisSize);
       for(i = 0; i < ldSV; i++)
