@@ -105,6 +105,8 @@ int main (int argc, char *argv[]) {
    //primme.expansionParams.expansion = primme_expansion_lanczos;
    primme.expansionParams.expansion = primme_expansion_fullLanczos;
 
+   primme.residualParams.residual = primme_residual_sketched;
+
    primme.printLevel = 4;
   
    for(i = 2; i < argc; i++)
@@ -112,6 +114,7 @@ int main (int argc, char *argv[]) {
       if(strcmp(argv[i], "-basisSize") == 0) primme.maxBasisSize = atoi(argv[i+1]); 
       if(strcmp(argv[i], "-numEvals") == 0) primme.numEvals = atoi(argv[i+1]); 
       if(strcmp(argv[i], "-blockSize") == 0) primme.maxBlockSize = atoi(argv[i+1]); 
+      if(strcmp(argv[i], "-printLevel") == 0) primme.printLevel = atoi(argv[i+1]); 
       if(strcmp(argv[i], "-eps") == 0) sscanf(argv[i+1], "%lf", &primme.eps);
       if(strcmp(argv[i], "--largest") == 0) primme.target = primme_largest; 
       if(strcmp(argv[i], "--smallest") == 0) primme.target = primme_smallest; 
@@ -120,6 +123,9 @@ int main (int argc, char *argv[]) {
       if(strcmp(argv[i], "-Expansion=full") == 0) primme.expansionParams.expansion = primme_expansion_fullLanczos; 
       if(strcmp(argv[i], "-Expansion=partial") == 0) primme.expansionParams.expansion = primme_expansion_lanczos; 
       if(strcmp(argv[i], "-Expansion=default") == 0) primme.expansionParams.expansion = primme_expansion_default; 
+      if(strcmp(argv[i], "-Residual=sketched") == 0) primme.residualParams.residual = primme_residual_sketched; 
+      if(strcmp(argv[i], "-Residual=RQ") == 0) primme.residualParams.residual = primme_residual_RQ; 
+      if(strcmp(argv[i], "-Residual=RR") == 0) primme.residualParams.residual = primme_residual_RR; 
    }
 
    /* Set method to solve the problem */

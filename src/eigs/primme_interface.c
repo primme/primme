@@ -109,6 +109,7 @@ void primme_initialize(primme_params *primme) {
    primme->invBNorm                = 0.0L;
    primme->eps                     = 0.0;
    primme->expansion               = primme_expansion_davidson;
+   primme->residual                = primme_residual_sketched;
 
    /* Matvec and preconditioner */
    primme->matrixMatvec            = NULL;
@@ -138,6 +139,7 @@ void primme_initialize(primme_params *primme) {
 
    primme->projectionParams.projection = primme_proj_default;
    primme->expansionParams.expansion = primme_expansion_default;
+   primme->residualParams.residual = primme_residual_default;
 
    primme->initBasisMode                       = primme_init_default;
 
@@ -553,6 +555,8 @@ void primme_set_defaults(primme_params *primme) {
       primme->projectionParams.projection = primme_proj_RR;
    if (primme->expansionParams.expansion == primme_expansion_default)
       primme->expansionParams.expansion = primme_expansion_davidson;
+   if (primme->residualParams.residual == primme_residual_default)
+      primme->residualParams.residual = primme_residual_sketched;
    if (primme->initBasisMode == primme_init_default)
       primme->initBasisMode = primme_init_krylov;
 
@@ -704,6 +708,11 @@ void primme_display_params_prefix(const char* prefix, primme_params primme) {
    PRINTParamsIF(expansion, expansion, primme_expansion_lanczos);
    PRINTParamsIF(expansion, expansion, primme_expansion_fullLanczos);
    PRINTParamsIF(expansion, expansion, primme_expansion_arnoldi);
+
+   PRINTParamsIF(residual, residual, primme_residual_sketched);
+   PRINTParamsIF(residual, residual, primme_residual_RQ);
+   PRINTParamsIF(residual, residual, primme_residual_RR);
+   PRINTParamsIF(residual, residual, primme_residual_default);
 
    PRINTIF(initBasisMode, primme_init_default);
    PRINTIF(initBasisMode, primme_init_krylov);
@@ -917,6 +926,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_expansionParams_expansion:
               *(PRIMME_INT*)value = primme->expansionParams.expansion;
+      break;
+      case PRIMME_residualParams_residual:
+              *(PRIMME_INT*)value = primme->residualParams.residual;
       break;
       case PRIMME_restartingParams_maxPrevRetain:
               *(PRIMME_INT*)value = primme->restartingParams.maxPrevRetain;
@@ -1233,6 +1245,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_expansionParams_expansion:
               primme->expansionParams.expansion = (primme_expansion)*(PRIMME_INT*)value;
       break;
+      case PRIMME_residualParams_residual:
+              primme->residualParams.residual = (primme_residual)*(PRIMME_INT*)value;
+      break;
       case PRIMME_restartingParams_maxPrevRetain:
               if (*(PRIMME_INT*)value > INT_MAX) return 1; else 
               primme->restartingParams.maxPrevRetain = (int)*(PRIMME_INT*)value;
@@ -1464,6 +1479,7 @@ int primme_member_info(primme_params_label *label, const char **label_name,
    IF_IS(initBasisMode                , initBasisMode);
    IF_IS(projection_projection        , projectionParams_projection);
    IF_IS(expansion_expansion          , expansionParams_expansion);
+   IF_IS(residual_residual            , residualParams_residual);
    IF_IS(restarting_maxPrevRetain     , restartingParams_maxPrevRetain);
    IF_IS(correction_precondition      , correctionParams_precondition);
    IF_IS(correction_robustShifts      , correctionParams_robustShifts);
@@ -1542,6 +1558,7 @@ int primme_member_info(primme_params_label *label, const char **label_name,
       case PRIMME_internalPrecision:
       case PRIMME_projectionParams_projection:
       case PRIMME_expansionParams_expansion:
+      case PRIMME_residualParams_residual:
       case PRIMME_restartingParams_maxPrevRetain:
       case PRIMME_correctionParams_precondition:
       case PRIMME_correctionParams_robustShifts:
@@ -1818,6 +1835,13 @@ int primme_enum_member_info(
    IF_IS(primme_expansion_lanczos);
    IF_IS(primme_expansion_fullLanczos);
    IF_IS(primme_expansion_arnoldi);
+   break;
+
+   case PRIMME_residualParams_residual:
+   IF_IS(primme_residual_sketched);
+   IF_IS(primme_residual_RQ);
+   IF_IS(primme_residual_RR);
+   IF_IS(primme_residual_default);
    break;
 
    case PRIMME_initBasisMode:

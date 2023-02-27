@@ -77,7 +77,7 @@ STATIC void rand_rows_iprimme(int *x, int a, int n) {
    }
 }
 
-STATIC void compute_residuals_RR(HSCALAR *evecs, PRIMME_INT ldevecs, HEVAL *evals, PRIMME_INT basisSize, PRIMME_INT numEvals, HREAL *resNorms, primme_context ctx)
+STATIC void compute_residuals_RR(HSCALAR *evecs, PRIMME_INT ldevecs, HEVAL *evals, PRIMME_INT numEvals, HREAL *resNorms, primme_context ctx)
 {
    primme_params *primme = ctx.primme;
    
@@ -171,6 +171,14 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    *ret = PRIMME_MAIN_ITER_FAILURE;
 
    primme_params *primme = ctx.primme;
+
+   /* TIMERS FOR TESTING - TO REMOVE LATER */
+   double sketch_time = 0.0;
+   double lanczos_time = 0.0;
+   double sketched_residual_time = 0.0;
+   double RQ_residual_time = 0.0;
+   double RR_residual_time = 0.0;
+   double start_timer1, start_timer2;
 
                             /* primme parameters */
    SCALAR *V;                 /* Basis vectors                                 */
@@ -303,15 +311,11 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(Num_malloc_iprimme(nnzPerCol, &rand_rows, ctx));
       CHKERR(Num_malloc_iprimme(nnzPerCol*nLocal, &S_rows, ctx));
       CHKERR(Num_malloc_Sprimme(nnzPerCol*nLocal, &S_vals, ctx));
+      CHKERR(Num_malloc_Sprimme(ldSV*maxBasisSize, &SW, ctx));
       CHKERR(Num_malloc_Sprimme(ldSV*(maxBasisSize+blockSize), &SV, ctx));
-
-      if(primme->printLevel == 4)
-      {
-         CHKERR(Num_malloc_Sprimme(ldSV*maxBasisSize, &SW, ctx));
-         CHKERR(Num_malloc_Sprimme(ldSV*primme->numEvals, &SVhVecs, ctx));
-         CHKERR(Num_malloc_Sprimme(ldSV*primme->numEvals, &SWhVecs, ctx));
-         CHKERR(Num_malloc_Rprimme(primme->numEvals, &normalize_evecs, ctx));
-      }
+      CHKERR(Num_malloc_Rprimme(primme->numEvals, &normalize_evecs, ctx));
+      CHKERR(Num_malloc_Sprimme(ldSV*primme->numEvals, &SVhVecs, ctx));
+      CHKERR(Num_malloc_Sprimme(ldSV*primme->numEvals, &SWhVecs, ctx));
 
       /* Start building the CSR Locally */
       for(i = 0; i < nLocal; i++)
@@ -361,6 +365,9 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[0], nLocal, &H[0], ldH, 0.0, &rwork[0], ldrwork, ctx)); 
    CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[ldV*blockSize], 1, ctx)); 
 
+   /*XXX: LANCZOS TIMER START */
+   start_timer1 = primme_wTimer();
+
    for(i = maxBlockSize; i < maxBasisSize; i += blockSize) {
       blockSize = min(blockSize, maxBasisSize - i); /* Adjust block size */
 
@@ -381,7 +388,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(Num_gemm_Sprimme("N", "N", nLocal, blockSize, blockSize, 1.0, &V[i*nLocal], nLocal, &H[i*ldH+i], ldH, 0.0, &rwork[0], ldrwork, ctx)); /* rwork = V_i*a_i */
       CHKERR(Num_axpy_Sprimme(ldV*blockSize, -1.0, &rwork[0], 1, &V[nLocal*(i+blockSize)], 1, ctx)); /* W = W - rwork */
 
-      if(primme->printLevel == 4)
+      if(primme->printLevel == 4 && (int)(i+blockSize) % 10 == 0)
       {
          /* Moving on to the eigenvalue problem */
          primme->initSize = 0;
@@ -411,54 +418,76 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(globalSum_Rprimme(normalize_evecs, numEvals, ctx));
             for(j = 0; j < numEvals; j++) CHKERR(Num_scal_Sprimme(nLocal, 1/sqrt(normalize_evecs[j]), &evecs[j*ldevecs], 1, ctx));
 
-            /* TEST 1 - SKETCHED RESIDUALS */
-            /* Get the projected basis */
-            CHKERR(Num_gemm_Sprimme("N", "N", ldSV, i+blockSize, i+2*blockSize, 1.0, SV, ldSV, H, ldH, 0.0, SW, ldSV, ctx));           // SW = A*SV = SV*H
-            CHKERR(Num_gemm_Sprimme("N", "N", ldSV, numEvals, i+blockSize, 1.0, SV, ldSV, hVecs, ldhVecs, 0.0, SVhVecs, ldSV, ctx));   // SV*hVecs
-            CHKERR(Num_gemm_Sprimme("N", "N", ldSV, numEvals, i+blockSize, 1.0, SW, ldSV, hVecs, ldhVecs, 0.0, SWhVecs, ldSV, ctx));   // SW*hVecs
+            if(primme->residualParams.residual == primme_residual_sketched)
+            {
+               /* TEST 1 - SKETCHED RESIDUALS */
+               /* Get the projected basis */
+               CHKERR(Num_gemm_Sprimme("N", "N", ldSV, i+blockSize, i+2*blockSize, 1.0, SV, ldSV, H, ldH, 0.0, SW, ldSV, ctx));           // SW = A*SV = SV*H
+               CHKERR(Num_gemm_Sprimme("N", "N", ldSV, numEvals, i+blockSize, 1.0, SV, ldSV, hVecs, ldhVecs, 0.0, SVhVecs, ldSV, ctx));   // SV*hVecs
+               CHKERR(Num_gemm_Sprimme("N", "N", ldSV, numEvals, i+blockSize, 1.0, SW, ldSV, hVecs, ldhVecs, 0.0, SWhVecs, ldSV, ctx));   // SW*hVecs
 
-            CHKERR(Num_compute_residuals_Sprimme(sketchSize, numEvals, evals, SVhVecs, ldSV, SWhVecs, ldSV, rwork, ldrwork, ctx));     // rwork = SW*hVecs - evals*SV*hVecs 
+               CHKERR(Num_compute_residuals_Sprimme(sketchSize, numEvals, evals, SVhVecs, ldSV, SWhVecs, ldSV, rwork, ldrwork, ctx));     // rwork = SW*hVecs - evals*SV*hVecs 
 
-            for(j = 0; j < numEvals; j++) resNorms[j] = Num_dot_Sprimme(sketchSize, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx) / Num_dot_Sprimme(sketchSize, &SVhVecs[j*ldSV], 1, &SVhVecs[j*ldSV], 1, ctx);
-            CHKERR(globalSum_Rprimme(resNorms, numEvals, ctx));  
-            for(j = 0; j < numEvals; j++) resNorms[j] = sqrt(resNorms[j]);
+               for(j = 0; j < numEvals; j++) resNorms[j] = Num_dot_Sprimme(sketchSize, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx) / Num_dot_Sprimme(sketchSize, &SVhVecs[j*ldSV], 1, &SVhVecs[j*ldSV], 1, ctx);
+               CHKERR(globalSum_Rprimme(resNorms, numEvals, ctx));  
+               for(j = 0; j < numEvals; j++) resNorms[j] = sqrt(resNorms[j]);
 
-            if(primme->procID == 0){
-               for(j = 0; j < primme->numEvals; j++)
-                  printf("Iter %d SR Eval[%d] = %lf, ResNorm[%d] = %.6E\n", i, j, evals[j], j, resNorms[j]);
-               printf("\n");
-            }
-
-            /* TEST 2 - RAYLEIGH QUOTIENT -------------------------------------------------- */
-            /* Compute Rayleigh Quotient */
-            CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldevecs, AVhVecs, ldAVhVecs, 0, numEvals, ctx)); /* AVhVecs = A*V*hVecs = A * evecs */
-            for(j = 0; j < numEvals; j++)
+               if(primme->procID == 0){
+                  for(j = 0; j < primme->numEvals; j++)
+                  {
+                     if(j < numEvals)
+                     {
+                        printf("Iter %d SR Eval[%d] = %lf, ResNorm[%d] = %.6E\n", i, j, evals[j], j, resNorms[j]);
+                     } else {
+                        printf("Iter %d SR Eval[%d] = %lf, ResNorm[%d] = %.6E\n", i, j, 0.0, j, 0.0);
+                     }
+                  }
+               }
+            } else if(primme->residualParams.residual == primme_residual_RQ)
+            {
+               /* TEST 2 - RAYLEIGH QUOTIENT -------------------------------------------------- */
+               /* Compute Rayleigh Quotient */
+               CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldevecs, AVhVecs, ldAVhVecs, 0, numEvals, ctx)); /* AVhVecs = A*V*hVecs = A * evecs */
+               for(j = 0; j < numEvals; j++)
                evals[j] =  Num_dot_Sprimme(nLocal, &evecs[j*ldevecs], 1, &AVhVecs[j*ldAVhVecs], 1, ctx);      /* eval[i] = evecs'*A*evecs*/
-            CHKERR(globalSum_Rprimme(evals, numEvals, ctx));  
+               CHKERR(globalSum_Rprimme(evals, numEvals, ctx));  
             
-            /* RQ Residual Vectors */
-            CHKERR(Num_compute_residuals_Sprimme(nLocal, numEvals, evals, evecs, ldevecs, AVhVecs, ldAVhVecs, rwork, ldrwork, ctx));
-            for(j = 0; j < numEvals; j++) resNorms[j] = Num_dot_Sprimme(nLocal, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx);
-            CHKERR(globalSum_Rprimme(resNorms, numEvals, ctx));  
+               /* RQ Residual Vectors */
+               CHKERR(Num_compute_residuals_Sprimme(nLocal, numEvals, evals, evecs, ldevecs, AVhVecs, ldAVhVecs, rwork, ldrwork, ctx));
+               for(j = 0; j < numEvals; j++) resNorms[j] = Num_dot_Sprimme(nLocal, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx);
+               CHKERR(globalSum_Rprimme(resNorms, numEvals, ctx));  
 
-            for(j = 0; j < numEvals; j++) resNorms[j] = sqrt(resNorms[j]);
+               for(j = 0; j < numEvals; j++) resNorms[j] = sqrt(resNorms[j]);
 
-            if(primme->procID == 0){
-               for(j = 0; j < primme->numEvals; j++)
-                  printf("Iter %d SRQ Eval[%d] = %lf, ResNorm[%d] = %.6E\n", i, j, evals[j], j, resNorms[j]);
-               printf("\n");
+               if(primme->procID == 0){
+                  for(j = 0; j < primme->numEvals; j++)
+                  {
+                     if(j < numEvals)
+                     {
+                        printf("Iter %d RQ Eval[%d] = %lf, ResNorm[%d] = %.6E\n", i, j, evals[j], j, resNorms[j]);
+                     } else {
+                        printf("Iter %d RQ Eval[%d] = %lf, ResNorm[%d] = %.6E\n", i, j, 0.0, j, 0.0);
+                     }
+                  }
+               }
+            } else if(primme->residualParams.residual == primme_residual_RR)
+            {
+               /* TEST 3 - RAYLEIGH-RITZ ON THE RITZ VECTORS ----------------------------------- */
+
+               compute_residuals_RR(evecs, ldevecs, evals, numEvals, resNorms, ctx);
+
+               if(primme->procID == 0){
+                  for(j = 0; j < primme->numEvals; j++)
+                  {
+                     if(j < numEvals)
+                     {
+                        printf("Iter %d RR Eval[%d] = %lf, ResNorm[%d] = %.6E\n", i, j, evals[j], j, resNorms[j]);
+                     } else {
+                        printf("Iter %d RR Eval[%d] = %lf, ResNorm[%d] = %.6E\n", i, j, 0.0, j, 0.0);
+                     }
+                  }
+               }
             }
-
-            /* TEST 3 - RAYLEIGH-RITZ ON THE RITZ VECTORS ----------------------------------- */
-
-            compute_residuals_RR(evecs, ldevecs, evals, i+blockSize, numEvals, resNorms, ctx);
-            if(primme->procID == 0){
-               for(j = 0; j < primme->numEvals; j++)
-                  printf("Iter %ld RR Eval[%d] = %lf, ResNorm[%d] = %.6E\n", i, j, evals[j], j, resNorms[j]);
-               printf("\n");
-            }
-
-
          } else { /* End sketching */ 
             CHKERR(solve_H_Sprimme(&H[0], i+blockSize, ldH, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, NULL, 0, ctx));
 
@@ -475,11 +504,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
            for(j = 0; j < numEvals; j++) resNorms[j] = sqrt(resNorms[j]);
 
             if(primme->procID == 0)
-            {
-               for(j = 0; j < primme->numEvals; j++)
-                  printf("Iteration %d. Eval[%d] = %lf, ResNorm[%d] = %.3E\n", i, j, evals[j], j, resNorms[j]);
-               printf("\n");
-            }
+               for(j = 0; j < primme->numEvals; j++) printf("Iteration %d. Eval[%d] = %lf, ResNorm[%d] = %.3E\n", i, j, evals[j], j, resNorms[j]);
 
          } /* End non-sketching */
 
@@ -494,51 +519,150 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          {
             primme->initSize = numConverged;
             *numRet = numConverged;
-            goto clean;
+            break;
          } 
 
       } /* End check residuals */
 
    } /* End basis build */
 
-   /* Moving on to the eigenvalue problem */
-   primme->initSize = 0;
+   /*XXX: LANCZOS TIMER END */
+   lanczos_time += primme_wTimer() - start_timer1;
 
-   /* Quick return for matrix of dimension 1 */
-   if (primme->numEvals == 0) goto clean;
+   /**************************************************************************************
+   * BASIS BUILD DONE.
+   **************************************************************************************/
 
-   if(primme->projectionParams.projection == primme_proj_sketched)
+   if(numConverged != primme->numEvals)
    {
-      /* Adding a row to H */
-      CHKERR(ortho_Sprimme(&V[ldV*maxBasisSize], nLocal, &H[(maxBasisSize-blockSize)*ldH + maxBasisSize], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* [V_i, b_i] = qr(V_i) */
-      if(fullOrtho) CHKERR(ortho_Sprimme(V, nLocal, NULL, 0, maxBasisSize, maxBasisSize+blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* Orthogonalized the last block of V against the rest of the basis */
+      /* Moving on to the eigenvalue problem */
+      primme->initSize = 0;
 
-      CHKERR(apply_sketching_Sprimme(H, ldH, V, ldV, SV, ldSV, hVecs, ldhVecs, hVals, last_sketch, maxBasisSize, blockSize,  S_rows, S_vals, nnzPerCol, ctx));
-   } else {
-      CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, NULL, 0, ctx));
-   }
+      /* Quick return for matrix of dimension 1 */
+      if (primme->numEvals == 0) goto clean;
 
-   for(i = 0; i < primme->numEvals; i++) evals[i] = hVals[i];
+      if(primme->projectionParams.projection == primme_proj_sketched)
+      {
+        /* XXX: SKETCH TIMER START */
+         start_timer2 = primme_wTimer();
 
-   /* Find Ritz Vectors */
-   CHKERR(Num_gemm_Sprimme("N", "N", nLocal, primme->numEvals, maxBasisSize, 1.0, V, nLocal, hVecs, ldhVecs, 0.0, evecs, ldevecs, ctx));    /* evecs = V*hVecs */
-   if(primme->projectionParams.projection == primme_proj_sketched)
-      for(j = 0; j < primme->numEvals; j++)
-         CHKERR(Num_scal_Sprimme(ldevecs, 1/Num_dot_Sprimme(ldevecs, &evecs[j*ldevecs], 1, &evecs[j*ldevecs], 1, ctx), &evecs[ldevecs*j], 1, ctx));
+         /* Adding a row to H */
+         CHKERR(ortho_Sprimme(&V[ldV*maxBasisSize], nLocal, &H[(maxBasisSize-blockSize)*ldH + maxBasisSize], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* [V_i, b_i] = qr(V_i) */
+         if(fullOrtho) CHKERR(ortho_Sprimme(V, nLocal, NULL, 0, maxBasisSize, maxBasisSize+blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* Orthogonalized the last block of V against the rest of the basis */
 
-   /* Find residual norms */
-   CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldevecs, AVhVecs, ldAVhVecs, 0, primme->numEvals, ctx)); /* AVhVecs = A*V*hVecs */
-   CHKERR(Num_compute_residuals_Sprimme(nLocal, primme->numEvals, evals, evecs, ldevecs, AVhVecs, ldAVhVecs, rwork, ldrwork, ctx));
+         CHKERR(apply_sketching_Sprimme(H, ldH, V, ldV, SV, ldSV, hVecs, ldhVecs, hVals, last_sketch, maxBasisSize, blockSize, S_rows, S_vals, nnzPerCol, ctx));
+
+         /* Eigenvectors that will be returns to the user - make sure they are at least normal (These are the Ritz vectors from the sketched problem) */
+         CHKERR(Num_gemm_Sprimme("N", "N", nLocal, primme->numEvals, maxBasisSize, 1.0, V, ldV, hVecs, ldhVecs, 0.0, evecs, ldevecs, ctx));    /* evecs = V*hVecs */
+         for(j = 0; j < primme->numEvals; j++)
+         {
+            evals[j] = hVals[j];
+            normalize_evecs[j] = Num_dot_Sprimme(nLocal, &evecs[j*ldevecs], 1, &evecs[j*ldevecs], 1, ctx);
+         }
+         CHKERR(globalSum_Rprimme(normalize_evecs, primme->numEvals, ctx));
+         for(j = 0; j < primme->numEvals; j++) CHKERR(Num_scal_Sprimme(nLocal, 1/sqrt(normalize_evecs[j]), &evecs[j*ldevecs], 1, ctx));
+
+         /* XXX: SKETCH TIMER END */
+         sketch_time += primme_wTimer() - start_timer2;
+
+         if(primme->residualParams.residual == primme_residual_sketched)
+         {
+            /* XXX: SKETCHED RESIDUAL TIMER START */
+            start_timer2 = primme_wTimer();
+            /* TEST 1 - SKETCHED RESIDUALS */
+            /* Get the projected basis */
+            CHKERR(Num_gemm_Sprimme("N", "N", ldSV, maxBasisSize, maxBasisSize+blockSize, 1.0, SV, ldSV, H, ldH, 0.0, SW, ldSV, ctx));           // SW = A*SV = SV*H
+            CHKERR(Num_gemm_Sprimme("N", "N", ldSV, primme->numEvals, maxBasisSize, 1.0, SV, ldSV, hVecs, ldhVecs, 0.0, SVhVecs, ldSV, ctx));   // SV*hVecs
+            CHKERR(Num_gemm_Sprimme("N", "N", ldSV, primme->numEvals, maxBasisSize, 1.0, SW, ldSV, hVecs, ldhVecs, 0.0, SWhVecs, ldSV, ctx));   // SW*hVecs
+
+            CHKERR(Num_compute_residuals_Sprimme(sketchSize, primme->numEvals, evals, SVhVecs, ldSV, SWhVecs, ldSV, rwork, ldrwork, ctx));     // rwork = SW*hVecs - evals*SV*hVecs 
+
+            for(j = 0; j < primme->numEvals; j++) resNorms[j] = Num_dot_Sprimme(sketchSize, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx) / Num_dot_Sprimme(sketchSize, &SVhVecs[j*ldSV], 1, &SVhVecs[j*ldSV], 1, ctx);
+            CHKERR(globalSum_Rprimme(resNorms, primme->numEvals, ctx));  
+            for(j = 0; j < primme->numEvals; j++) resNorms[j] = sqrt(resNorms[j]);
+
+            /* XXX: SKETCHED RESIDUAL TIMER END */
+            sketched_residual_time += primme_wTimer() - start_timer2;
+
+            if(primme->procID == 0 && primme->printLevel == 4)
+            {
+               for(j = 0; j < primme->numEvals; j++) printf("Iter %ld SR Eval[%d] = %lf, ResNorm[%d] = %.6E\n", maxBasisSize, j, evals[j], j, resNorms[j]);
+            }
+         } else if(primme->residualParams.residual == primme_residual_RQ)
+         {
+            /* XXX: SRQ RESIDUAL TIMER START */
+            start_timer2 = primme_wTimer();
+            /* TEST 2 - RAYLEIGH QUOTIENT -------------------------------------------------- */
+            /* Compute Rayleigh Quotient */
+            CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldevecs, AVhVecs, ldAVhVecs, 0, primme->numEvals, ctx)); /* AVhVecs = A*V*hVecs = A * evecs */
+            for(j = 0; j < primme->numEvals; j++)
+            evals[j] =  Num_dot_Sprimme(nLocal, &evecs[j*ldevecs], 1, &AVhVecs[j*ldAVhVecs], 1, ctx);      /* eval[i] = evecs'*A*evecs*/
+            CHKERR(globalSum_Rprimme(evals, primme->numEvals, ctx));  
+         
+            /* RQ Residual Vectors */
+            CHKERR(Num_compute_residuals_Sprimme(nLocal, primme->numEvals, evals, evecs, ldevecs, AVhVecs, ldAVhVecs, rwork, ldrwork, ctx));
+            for(j = 0; j < primme->numEvals; j++) resNorms[j] = Num_dot_Sprimme(nLocal, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx);
+            CHKERR(globalSum_Rprimme(resNorms, primme->numEvals, ctx));  
+
+            for(j = 0; j < primme->numEvals; j++) resNorms[j] = sqrt(resNorms[j]);
+
+            /* XXX: SRQ RESIDUAL TIMER END */
+            RQ_residual_time += primme_wTimer() - start_timer2;;
+
+            if(primme->procID == 0 && primme->printLevel == 4)
+               for(j = 0; j < primme->numEvals; j++) printf("Iter %ld RQ Eval[%d] = %lf, ResNorm[%d] = %.6E\n", maxBasisSize, j, evals[j], j, resNorms[j]);
+
+         } else if(primme->residualParams.residual == primme_residual_RR)
+         {
+         /* XXX: RR RESIDUAL TIMER START */
+         start_timer2 = primme_wTimer();
+         /* TEST 3 - RAYLEIGH-RITZ ON THE RITZ VECTORS ----------------------------------- */
+
+            compute_residuals_RR(evecs, ldevecs, evals, primme->numEvals, resNorms, ctx);
+
+            /* XXX: RR RESIDUAL TIMER END */
+            RR_residual_time += primme_wTimer() - start_timer2;;
+
+            if(primme->procID == 0 && primme->printLevel == 4)
+               for(j = 0; j < primme->numEvals; j++) printf("Iter %ld RR Eval[%d] = %lf, ResNorm[%d] = %.6E\n", maxBasisSize, j, evals[j], j, resNorms[j]);
+         }
+
+      } else { /* End sketched */
+         CHKERR(solve_H_Sprimme(&H[0], maxBasisSize, ldH, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, NULL, 0, ctx));
+
+         for(i = 0; i < primme->numEvals; i++) evals[i] = hVals[i];
+
+         /* Find Ritz Vectors */
+         CHKERR(Num_gemm_Sprimme("N", "N", nLocal, primme->numEvals, maxBasisSize, 1.0, V, nLocal, hVecs, ldhVecs, 0.0, evecs, ldevecs, ctx));    /* evecs = V*hVecs */
+         if(primme->projectionParams.projection == primme_proj_sketched)
+         {
+            for(j = 0; j < primme->numEvals; j++)
+            {
+               evals[j] = hVals[j];
+               normalize_evecs[j] = Num_dot_Sprimme(nLocal, &evecs[j*ldevecs], 1, &evecs[j*ldevecs], 1, ctx);
+            }
+            CHKERR(globalSum_Rprimme(normalize_evecs, primme->numEvals, ctx));
+            for(j = 0; j < primme->numEvals; j++) CHKERR(Num_scal_Sprimme(nLocal, 1/sqrt(normalize_evecs[j]), &evecs[j*ldevecs], 1, ctx));
+         }
+
+         /* Find residual norms */
+         CHKERR(matrixMatvec_Sprimme(evecs, nLocal, ldevecs, AVhVecs, ldAVhVecs, 0, primme->numEvals, ctx)); /* AVhVecs = A*V*hVecs */
+         CHKERR(Num_compute_residuals_Sprimme(nLocal, primme->numEvals, evals, evecs, ldevecs, AVhVecs, ldAVhVecs, rwork, ldrwork, ctx));
    
-   for(j = 0; j < primme->numEvals; j++) resNorms[j] = sqrt(Num_dot_Sprimme(ldrwork, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx))/primme->numProcs;
-   CHKERR(globalSum_Rprimme(resNorms, primme->numEvals, ctx));  
+         for(j = 0; j < primme->numEvals; j++) resNorms[j] = sqrt(Num_dot_Sprimme(ldrwork, &rwork[j*ldrwork], 1, &rwork[j*ldrwork], 1, ctx))/primme->numProcs;
+         CHKERR(globalSum_Rprimme(resNorms, primme->numEvals, ctx));  
 
-   /* Check the convergence of the Ritz vectors */
-   CHKERR(check_convergence_Sprimme(evecs, ldevecs, 1 /* given X */, NULL, 0, 0 /* not given R */, NULL, 0, 0, NULL, 0, NULL, 0, 0, primme->numEvals, flags, resNorms, hVals, &reset, -1, ctx));
+      } /* End nonsketched */
 
-   /* Find number of converged eigenpairs */
-   numConverged = 0;
-   for(i = 0; i < primme->numEvals && flags[i] == CONVERGED; i++) numConverged = i+1;
+
+      /* Check the convergence of the Ritz vectors */
+      CHKERR(check_convergence_Sprimme(evecs, ldevecs, 1 /* given X */, NULL, 0, 0 /* not given R */, NULL, 0, 0, NULL, 0, NULL, 0, 0, primme->numEvals, flags, resNorms, hVals, &reset, -1, ctx));
+
+      /* Find number of converged eigenpairs */
+      numConverged = 0;
+      for(i = 0; i < primme->numEvals && flags[i] == CONVERGED; i++) numConverged = i+1;
+
+   } /* end if numConverged != primme->numEvals */
 
    primme->initSize = numConverged;
    *numRet = numConverged;
@@ -566,18 +690,23 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    {
       CHKERR(Num_free_Sprimme(S_vals, ctx));
       CHKERR(Num_free_Sprimme(SV, ctx));
+      CHKERR(Num_free_Sprimme(SW, ctx));
       CHKERR(Num_free_iprimme(S_rows, ctx));
-      if(primme->printLevel == 4) 
-      {
-         CHKERR(Num_free_Sprimme(SW, ctx));
-         CHKERR(Num_free_Sprimme(SVhVecs, ctx));
-         CHKERR(Num_free_Sprimme(SWhVecs, ctx));
-         CHKERR(Num_free_Rprimme(normalize_evecs, ctx));
-      }   
+      CHKERR(Num_free_Rprimme(normalize_evecs, ctx));
+      CHKERR(Num_free_Sprimme(SVhVecs, ctx));
+      CHKERR(Num_free_Sprimme(SWhVecs, ctx));
    }
 
    *ret = 0;
 
+   if(primme->procID == 0 && primme->printLevel == 4)
+   {
+      printf("Lanczos Main Loop Time\t: %.10E\n", lanczos_time);
+      printf("Sketching Time        \t: %.10E\n", sketch_time);
+      printf("Sketched Res Comp Time\t: %.10E\n", sketched_residual_time);
+      printf("RQ Resid Comp Time    \t: %.10E\n", RQ_residual_time);
+      printf("RR Resid Comp Time    \t: %.10E\n", RR_residual_time);
+   }
 
 return 0;
 

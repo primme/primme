@@ -61,6 +61,14 @@ typedef enum {
    primme_expansion_davidson
 } primme_expansion;
 
+/* TODO: Remove after I'm done testing sketched Lanczos */
+typedef enum {
+   primme_residual_sketched,
+   primme_residual_RQ,
+   primme_residual_RR,
+   primme_residual_default
+} primme_residual;
+
 /* projection methods for extraction */
 typedef enum {
    primme_proj_default,
@@ -160,6 +168,11 @@ typedef struct expansion_params {
    primme_expansion expansion;
 } expansion_params;
 
+/* TODO: Remove after tested sketched lanczos */
+typedef struct residual_params {
+   primme_residual residual;
+} residual_params;
+
 typedef struct correction_params {
    int precondition;
    int robustShifts;
@@ -234,6 +247,7 @@ typedef struct primme_params {
    primme_orth orth;
    primme_op_datatype internalPrecision; /* force primme to work in that precision */
    primme_expansion expansion;
+   primme_residual residual;            /* TODO: Remove after tested sketched lanczos */
 
    int printLevel;
    FILE *outputFile;
@@ -248,6 +262,7 @@ typedef struct primme_params {
 
    struct projection_params projectionParams; 
    struct expansion_params expansionParams; 
+   struct residual_params residualParams; 
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;
@@ -390,7 +405,8 @@ typedef enum {
    PRIMME_monitor                                = 87  ,
    PRIMME_queue                                  = 88  ,
    PRIMME_profile                                = 89  ,
-   PRIMME_expansionParams_expansion              = 90  
+   PRIMME_expansionParams_expansion              = 90  ,
+   PRIMME_residualParams_residual                = 91  
 } primme_params_label;
 
 /* Hermitian operator */
