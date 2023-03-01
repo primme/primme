@@ -103,7 +103,7 @@
 
 
 TEMPLATE_PLEASE
-int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, HSCALAR *hVecs, PRIMME_INT ldhVecs, HREAL *hVals, PRIMME_INT last_sketch, PRIMME_INT basisSize, PRIMME_INT blockSize, int *S_rows, SCALAR* S_vals, PRIMME_INT nnzPerCol, primme_context ctx) {
+int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, HSCALAR *hVecs, PRIMME_INT ldhVecs, HREAL *hVals, PRIMME_INT last_sketch, PRIMME_INT basisSize, PRIMME_INT blockSize, PRIMME_INT *S_rows, SCALAR* S_vals, PRIMME_INT nnzPerCol, primme_context ctx) {
 #ifdef USE_HERMITIAN
    primme_params *primme = ctx.primme;
 
