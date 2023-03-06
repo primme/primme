@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.abspath('../../Python'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 import sphinx_rtd_theme
-extensions = [ 'sphinxfortran.fortran_domain', 'sphinxcontrib.matlab', 'sphinx.ext.mathjax', 'sphinx.ext.autodoc', 'sphinxcontrib.napoleon', 'sphinx_rtd_theme']
+extensions = [ 'sphinxfortran.fortran_domain', 'sphinxcontrib.matlab', 'sphinx.ext.mathjax', 'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx_rtd_theme']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
