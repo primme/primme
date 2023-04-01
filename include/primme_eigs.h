@@ -141,6 +141,9 @@ typedef struct primme_stats {
    double timeGlobalSum;            /* time expend by globalSumReal  */
    double timeBroadcast;            /* time expend by broadcastReal  */
    double timeDense;                /* time expend by Num_update_VWXR_Sprimme */
+   double timeSketching;            /* time expend by sketching */
+   double timeResiduals;            /* time expend by computing residuals */
+   double timeKrylov;               /* time expend by building the Krylov basis */
    double estimateMinEVal;          /* the leftmost Ritz value seen */
    double estimateMaxEVal;          /* the rightmost Ritz value seen */
    double estimateLargestSVal;      /* absolute value of the farthest to zero Ritz value seen */

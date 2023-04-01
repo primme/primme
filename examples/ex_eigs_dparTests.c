@@ -163,10 +163,6 @@ int main (int argc, char *argv[]) {
    
    if (primme.procID == 0) { 
 
-      printf("\n\t\t ******************************************************\n");
-      printf("\t\t ***FULL-ORTHO LANCZOS + SKETCHING (%d PROCESSES)***\n", primme.numProcs);
-      printf("\t\t ******************************************************\n\n");
-
       for (i=0; i < primme.initSize; i++) {
          fprintf(primme.outputFile, "Eval[%d]: %-22.15E rnorm: %-22.15E\n", i+1,
             evals[i], rnorms[i]); 
@@ -185,6 +181,9 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Ortho Time      : %-22.10E\n", primme.stats.timeOrtho);
       fprintf(primme.outputFile, "GlobalSum Time  : %-22.10E\n", primme.stats.timeGlobalSum);
       fprintf(primme.outputFile, "Broadcast Time  : %-22.10E\n", primme.stats.timeBroadcast);
+      fprintf(primme.outputFile, "Krylov Time     : %-22.10E\n", primme.stats.timeKrylov);
+      fprintf(primme.outputFile, "Sketching Time  : %-22.10E\n", primme.stats.timeSketching);
+      fprintf(primme.outputFile, "Residual Time   : %-22.10E\n", primme.stats.timeResiduals);
 
       if (primme.stats.lockingIssue) {
          fprintf(primme.outputFile, "\nA locking problem has occurred.\n");
