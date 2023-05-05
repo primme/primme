@@ -42,6 +42,10 @@ evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
 assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
 print(evals) # [ 99.,  98.,  97.]
 
+# Return only the eigenvalues
+evals = primme.eigsh(A, 3, tol=1e-6, which='LA', return_eigenvectors=False)
+assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
+
 # Compute the three largest eigenvalues of A orthogonal to the previous computed
 # eigenvectors, i.e., the next three eigenvalues
 evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA', lock=evecs)
@@ -59,6 +63,12 @@ def convtest_lm(eval, evecl, rnorm):
 eval, evec = primme.eigsh(A, 1, which='LM', convtest=convtest_lm)
 assert_allclose(eval, [ 99.], atol=.1)
 
+# Return and show convergence history
+eval, evec, stats = primme.eigsh(A, 1, which='LM', return_stats=True, return_history=True)
+print("MV Time Eval Res") 
+import pprint
+pprint.pprint(list(zip(stats['hist']['numMatvecs'], stats['hist']['elapsedTime'], stats['hist']['eval'], stats['hist']['resNorm'])))
+
 # User-defined matvec: implicit diagonal matrix
 Adiag = np.arange(0, 100).reshape((100,1))
 def Amatmat(x):
@@ -68,6 +78,11 @@ A = scipy.sparse.linalg.LinearOperator((100,100), matvec=Amatmat, matmat=Amatmat
 evals, evecs = primme.eigsh(A, 3, tol=1e-6, which='LA')
 assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-6*100)
 
+# Don't raise exception if some values were not found
+evals, evecs = primme.eigsh(A, 10, tol=1e-3, which='LA', maxiter=30, raise_for_unconverged=False)
+assert(len(evals) > 0)
+print(evals) # [ 98.9]
+
 # Sparse singular mass matrix
 A = scipy.sparse.spdiags(np.asarray(range(100), dtype=np.float32), [0], 100, 100)
 M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1), dtype=np.float32), [0], 100, 100)
@@ -75,7 +90,26 @@ evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
 assert_allclose(evals, [ 0./99.,  1./98.,  2./97.], atol=1e-6*100)
 print(evals)
 
+# Get PRIMME properties within a callback
+def convtest_rel_Anorm(eval, evec, rnorm):
+   estimateAnorm = primme.get_eigsh_param('stats_estimateLargestSVal')
+   return rnorm <= estimateAnorm * 1e-3
+evals, evecs = primme.eigsh(A, 3, which='LA', convtest=convtest_rel_Anorm)
+assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-3*3)
 
+def P(x):
+   # The scipy.sparse.linalg.LinearOperator constructor may call this function giving a vector
+   # as input; detect that case and return whatever
+   if x.ndim == 1:
+      return x / A.diagonal()
+   shifts = primme.get_eigsh_param('ShiftsForPreconditioner')
+   y = np.copy(x)
+   for i in range(x.shape[1]): y[:,i] = x[:,i] / (A.diagonal() - shifts[i])
+   return y
+Pop = scipy.sparse.linalg.LinearOperator(A.shape, matvec=P, matmat=P)
+evals, evecs = primme.eigsh(A, 3, OPinv=Pop, tol=1e-3, which='LA')
+assert_allclose(evals, [ 99.,  98.,  97.], atol=1e-3*3)
+ 
 # Sparse rectangular matrix 100x10 with non-zeros on the main diagonal
 A = scipy.sparse.spdiags(range(10), [0], 100, 10)
 

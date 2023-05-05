@@ -184,7 +184,8 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
  *     - -1 Num_dsyev/zheev was unsuccessful
  ******************************************************************************/
 
-STATIC int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
+TEMPLATE_PLEASE
+int solve_H_RR_Sprimme(SCALAR *H, int ldH, SCALAR *VtBV, int ldVtBV,
       SCALAR *hVecs, int ldhVecs, EVAL *hVals, int basisSize, int numConverged,
       primme_context ctx) {
 

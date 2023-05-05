@@ -785,7 +785,7 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
             &svecs0[primme_svds->nLocal], 1, ctx);
       primme->initSize = 1;
       if (rnorms)
-         rnorms[0] = HUGE_VAL;
+         rnorms[0] = HOST_MACHINE_MAX;
       primme->initBasisMode = primme_init_user;
    }
 
@@ -1423,7 +1423,7 @@ STATIC int Num_scalInv_Smatrix(SCALAR *x, PRIMME_INT m, int n, PRIMME_INT ldx,
 
    assert(ldx >= m);
    for (i=0; i<n; i++) {
-      if (factors[i] > 0.0 && 1.0L/factors[i] < HUGE_VAL) {
+      if (factors[i] > 0.0 && 1.0L/factors[i] < HOST_MACHINE_MAX) {
          factor = factors[i];
       }
       else {
@@ -1545,7 +1545,7 @@ STATIC int compute_resNorm(SCALAR *leftsvec, SCALAR *rightsvec, HREAL *rNorm,
    /* If u'*A*v is negative, set rNorm as a large number */
 
    if (sval < -0.0) {
-      *rNorm = HUGE_VAL;
+      *rNorm = HOST_MACHINE_MAX;
       CHKERR(Num_free_Sprimme(Atu, ctx));
       return 0;
    }

@@ -59,8 +59,7 @@ def get_numpy_options():
 
 def setup_package():
    import sys
-   from distutils.core import setup
-   from distutils.extension import Extension
+   from setuptools import setup, Extension
    from Cython.Build import cythonize
    
    try:
@@ -85,7 +84,7 @@ def setup_package():
    
    # NumyTypemapTests setup
    setup(name        = "primme",
-         version     = "2.1.5",
+         version     = "3.1.0",
          description = "PRIMME wrapper for Python",
          long_description = long_description,
          url         = "https://github.com/primme/primme",

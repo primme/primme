@@ -131,6 +131,7 @@ def find_deps(filename, include_paths, ignore_patterns, ignore_paths=set()):
 			continue
 
 		# Otherwise, add path to deps
+		path = os.path.normpath(path)    
 		deps.add(path)
 
 		# Add also includes in path

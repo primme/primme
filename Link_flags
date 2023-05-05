@@ -21,13 +21,17 @@ UNAME := $(shell uname)
 LDFLAGS ?= $(if $(findstring FreeBSD,$(UNAME)),-L/usr/local/lib -L/usr/local/lib/gcc7,)
 ifeq ($(origin LIBS), undefined)
     ifeq ($(PRIMME_WITH_MAGMA),yes)
-         LIBS += -L$(MAGMADIR)/lib -lmagma -lmagma_sparse  \
-                 -L$(CUDADIR)/lib64 -lcublas -lcudart -lcusparse
+         LIBS += -L$(MAGMADIR)/lib -lmagma_sparse -lmagma  \
+                 -L$(CUDADIR)/lib64 -lcublas -lcudart -lcusparse -lstdc++
     endif
     ifndef MKLROOT
         LIBS += -llapack -lblas -lm
-        ifneq ($(UNAME), Darwin)
-            LIBS += -lgfortran
+        ifneq (,$(findstring PGI,$(shell $(CC) --version)))
+            LIBS += -pgf90libs
+        else
+            ifneq ($(UNAME), Darwin)
+                LIBS += -lgfortran
+            endif
         endif
     else
         ifneq (,$(findstring icc,$(shell $(CC) --version)))

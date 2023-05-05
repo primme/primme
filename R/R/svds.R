@@ -140,7 +140,7 @@
 #'      Preconditioned SVD Solver for Accurate Large-Scale Computations},
 #'      J. Sci. Comput., Vol. 39, No. 5, (2017), S248--S271.
 #'
-#' [2] \url{http://www.cs.wm.edu/~andreas/software/doc/svdsc.html#parameters-guide}
+#' [2] \url{https://www.cs.wm.edu/~andreas/software/doc/svdsc.html#parameters-guide}
 #'
 #' @seealso
 #' \code{\link{svd}} for computing all singular triplets;
@@ -225,16 +225,21 @@ svds <- function(A, NSvals, which="L", tol=1e-6, u0=NULL, v0=NULL,
          if (ismatrix) is.double(A)
          else (inherits(A, "Matrix") && substr(class(A), 0, 1) == "d");
       Af <- function(x,trans)
+         if (trans == "n") A %*% x else crossprod(A,x);
+      Afc <- function(x,trans)
          if (trans == "n") A %*% x else Conj(t(crossprod(Conj(x),A)));
       if ((is.null(isreal) || isreal == isreal_suggestion) && (
                ismatrix ||
-               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A)) ||
-               any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A)) )) {
+               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A)))) {
          Aarg <- A;
       }
-      else {
-         isreal_suggestion <- FALSE;
+      else if ("ddiMatrix" %in% class(A)) {
+         # Bug: crossprod(A,x) does not work
+         Af <- function(x,trans) A %*% x;
          Aarg <- Af;
+      }
+      else {
+         Aarg <- if (isreal_suggestion) Af else Afc;
       }
    }
 

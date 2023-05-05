@@ -35,15 +35,25 @@
  *
  ******************************************************************************/
 
+#ifndef USE_FC_LEN_T
+#    define USE_FC_LEN_T
+#endif
 #include <R.h>
 #include <Rcpp.h>
 #include <algorithm>
 #include "primme.h"
 #include "PRIMME_types.h"
+#include <Rconfig.h>
 #include <R_ext/BLAS.h> // for BLAS and F77_NAME
 
 #include "Matrix.h"
 #include "Matrix_stubs.c"
+
+#ifdef USE_FC_LEN_T                                                                                                                                         
+#    define STRING_LEN1 , 1                                                                                                                                 
+#else
+#    define STRING_LEN1                                                                                                                                     
+#endif
 
 using namespace Rcpp;
 
@@ -81,9 +91,9 @@ void xhemm(const char *side, const char *uplo, int m, int n, const double *a,
    const int ONE=1;
    ASSERT(lda >= m && ldb >= m && ldc >= m);
    if (side[0] == 'L' && n == 1) {
-      F77_NAME(dsymv)(uplo, &m, &alpha, a, &lda, b, &ONE, &beta, c, &ONE);
+      F77_NAME(dsymv)(uplo, &m, &alpha, a, &lda, b, &ONE, &beta, c, &ONE STRING_LEN1);
    } else {
-      F77_NAME(dsymm)(side, uplo, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+      F77_NAME(dsymm)(side, uplo, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -93,9 +103,9 @@ void xhemm(const char *side, const char *uplo, int m, int n, const Rcomplex *a,
    Rcomplex alpha = {1.0, 0.0}, beta = {0.0, 0.0};
    const int ONE=1;
    if (side[0] == 'L' && n == 1) {
-      F77_NAME(zhemv)((char*)uplo, &m, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, (int*)&ONE, &beta, c, (int*)&ONE);
+      F77_NAME(zhemv)((char*)uplo, &m, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, (int*)&ONE, &beta, c, (int*)&ONE STRING_LEN1);
    } else {
-      F77_NAME(zhemm)((char*)side, (char*)uplo, &m, &n, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, &ldb, &beta, c, &ldc);
+      F77_NAME(zhemm)((char*)side, (char*)uplo, &m, &n, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -105,9 +115,9 @@ void xgemm(const char *transa, const char *transb, int m, int n, int k,
    const int ONE = 1;
    if (transb[0] == 'N' && n == 1) {
       F77_NAME(dgemv)(transa, transa[0]=='N'?&m:&k, transa[0]=='N'?&k:&m, &alpha,
-            a, &lda, b, &ONE, &beta, c, &ONE);
+            a, &lda, b, &ONE, &beta, c, &ONE STRING_LEN1);
    } else {
-      F77_NAME(dgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+      F77_NAME(dgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -117,9 +127,9 @@ void xgemm(const char *transa, const char *transb, int m, int n, int k,
    int ONE = 1;
    if (transb[0] == 'N' && n == 1) {
       F77_NAME(zgemv)((char*)transa, transa[0]=='N'?&m:&k, transa[0]=='N'?&k:&m, &alpha,
-            (Rcomplex*)a, &lda, (Rcomplex*)b, &ONE, &beta, c, &ONE);
+            (Rcomplex*)a, &lda, (Rcomplex*)b, &ONE, &beta, c, &ONE STRING_LEN1);
    } else {
-      F77_NAME(zgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+      F77_NAME(zgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -267,7 +277,7 @@ void primme_set_method_rcpp(std::string methodstr, PrimmeParams primme) {
 
 // [[Rcpp::export(.primme_get_member)]]
 SEXP primme_get_member_rcpp(std::string labelstr, PrimmeParams primme) {
-   primme_params_label label = (primme_params_label)-1;
+   primme_params_label label = PRIMME_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -341,7 +351,7 @@ SEXP primme_get_member_rcpp(std::string labelstr, PrimmeParams primme) {
 
 // [[Rcpp::export(.primme_set_member)]]
 void primme_set_member_rcpp(std::string labelstr, SEXP value, PrimmeParams primme) {
-   primme_params_label label = (primme_params_label)-1;
+   primme_params_label label = PRIMME_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -778,7 +788,7 @@ void primme_svds_set_method_rcpp(std::string methodstr,
 SEXP primme_svds_get_member_rcpp(std::string labelstr,
       PrimmeSvdsParams primme_svds) {
 
-   primme_svds_params_label label = (primme_svds_params_label)-1;
+   primme_svds_params_label label = PRIMME_SVDS_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -866,7 +876,7 @@ SEXP primme_svds_get_member_rcpp(std::string labelstr,
 void primme_svds_set_member_rcpp(std::string labelstr, SEXP value,
       PrimmeSvdsParams primme_svds) {
 
-   primme_svds_params_label label = (primme_svds_params_label)-1;
+   primme_svds_params_label label = PRIMME_SVDS_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -1191,9 +1201,11 @@ static List xprimme_svds(Matrix<S> orthol, Matrix<S> orthor, Matrix<S> initl,
       M_R_cholmod_start(&chol_c);
       primme_svds->matrix = aux;
       primme_svds->matrixMatvec = matrixMatvecSvds_CHM_SP<T>;
-   } else {
+   } else if (is<Function>(A)) {
       primme_svds->matrix = Af = new Function(as<Function>(A));
       primme_svds->matrixMatvec = matrixMatvecSvds<T, S, TS, getSvdsForMatrix>;
+   } else {
+      stop("Unsupported matrix type; pass a function instead");
    }
 
    Function *fprec = NULL;

@@ -213,7 +213,7 @@ typedef struct Namelist Namelist;
 #define pow_zz(R,A,B) {pCd(R) = cpow(Cd(A),*(B));}
 #define s_cat(lpp, rpp, rnp, np, llp) { 	ftnlen i, nc, ll; char *f__rp, *lp; 	ll = (llp); lp = (lpp); 	for(i=0; i < (int)*(np); ++i) {         	nc = ll; 	        if((rnp)[i] < nc) nc = (rnp)[i]; 	        ll -= nc;         	f__rp = (rpp)[i]; 	        while(--nc >= 0) *lp++ = *(f__rp)++;         } 	while(--ll >= 0) *lp++ = ' '; }
 #define s_cmp(a,b,c,d) ((integer)strncmp((a),(b),f2cmin((c),(d))))
-#define s_copy(A,B,C,D) { strncpy((A),(B),f2cmin((C),(D))); }
+#define s_copy(A,B,C,D) { int __i,__m; for (__i=0, __m=f2cmin((C),(D)); __i<__m && (B)[__i] != 0; ++__i) (A)[__i] = (B)[__i]; }
 #define sig_die(s, kill) { exit(1); }
 #define s_stop(s, n) {exit(0);}
 static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
@@ -1286,7 +1286,7 @@ static real c_b1095 = 1.f;
     extern /* Subroutine */ int zheev_(char *, char *, integer *, 
 	    doublecomplex *, integer *, doublereal *, doublecomplex *, 
 	    integer *, doublereal *, integer *);
-    char trans[2];
+    char trans[1];
     logical upper, wantz;
     extern /* Subroutine */ int ztrmm_(char *, char *, char *, char *, 
 	    integer *, integer *, doublecomplex *, doublecomplex *, integer *,
@@ -2737,7 +2737,7 @@ doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a,
     extern /* Subroutine */ int zlacgv_(integer *, doublecomplex *, integer *)
 	    ;
     extern integer ilazlr_(integer *, integer *, doublecomplex *, integer *);
-    char transt[2];
+    char transt[1];
 
 
 /*  -- LAPACK auxiliary routine (version 3.3.1) -- */
@@ -9772,13 +9772,13 @@ integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1,
 
     /* Local variables */
     integer i__;
-    char c1[2], c2[3], c3[4], c4[3];
+    char c1[1], c2[2], c3[3], c4[2];
     integer ic, nb, iz, nx;
     logical cname;
     integer nbmin;
     logical sname;
     extern integer ieeeck_(integer *, real *, real *);
-    char subnam[7];
+    char subnam[6];
     extern integer iparmq_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *);
 

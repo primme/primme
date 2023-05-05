@@ -6,8 +6,8 @@ include ../Link_flags
 #------------------------------------------------
 
 
-override INCLUDE += -I../include
-override FINCLUDE += -I../include
+INCLUDE := -I../include
+FINCLUDE := -I../include
 LIBS := ../lib/libprimme.a $(LIBS)
 
 EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_eigs_zseq_normal ex_svds_dseq ex_svds_zseq
@@ -19,12 +19,12 @@ USE_MPI       ?= $(if $(findstring mpi,$(CC)),yes,$(USE_PETSC))
 
 ifeq ($(USE_PETSC), yes)
   include ${PETSC_DIR}/lib/petsc/conf/variables
-  override INCLUDE += $(PETSC_CCPPFLAGS)
-  override FINCLUDE += $(PETSC_FCPPFLAGS)
+  INCLUDE += $(PETSC_CCPPFLAGS)
+  FINCLUDE += $(PETSC_FCPPFLAGS)
   LIBDIRS += $(PETSC_C_SH_LIB_PATH)
   LIBS += $(PETSC_LIB)
   EXAMPLES_C += ex_eigs_petsc ex_svds_petsc ex_eigs_mpi
-  EXAMPLES_F77 += ex_eigs_petscf77 ex_eigs_petscf77ptr ex_svds_petscf77 ex_svds_petscf77ptr
+  EXAMPLES_F += ex_eigs_petscf77 ex_eigs_petscf77ptr ex_svds_petscf77 ex_svds_petscf77ptr
   MPIRUN ?= mpirun -np 4
 else ifeq ($(USE_MPI),yes)
   EXAMPLES_C +=  ex_eigs_mpi
@@ -35,7 +35,7 @@ endif
 
 ifeq ($(PRIMME_WITH_MAGMA),yes)
   EXAMPLES_C += ex_eigs_dmagma ex_svds_dmagma
-  override INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include
+  INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
 endif
 ifeq ($(PRIMME_WITH_CUDA),yes)
   EXAMPLES_C += ex_eigs_dcublas
@@ -59,20 +59,20 @@ $(EXAMPLES_F): % : %.o
 	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
 
 .f.o .F.o:
-	$(F77) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
+	$(F77) $(FFLAGS) $(FINCLUDE) -c $< -o $@
 
 %.o: %.f90
-	$(FC) $(FFLAGS) $(FINCLUDE) $(COMMON_INCLUDE) -c $< -o $@
+	$(FC) $(FFLAGS) $(FINCLUDE) -c $< -o $@
 
 all: examples
 
-examples: examples_C examples_CXX examples_F77
+examples: examples_C examples_CXX examples_F
 examples_C: $(EXAMPLES_C)
 examples_CXX: $(EXAMPLES_CXX)
-examples_F77: $(EXAMPLES_F77)
+examples_F: $(EXAMPLES_F)
 
-test_examples: test_examples_C test_examples_F77 test_examples_CXX
-test_examples_C test_examples_F77 test_examples_CXX: test_examples% : examples%
+test_examples: test_examples_C test_examples_F test_examples_CXX
+test_examples_C test_examples_F test_examples_CXX: test_examples% : examples%
 	@ok="0";for ex in $(EXAMPLES$*); do \
 		echo "=========== Executing ./$$ex"; \
 	        case $$ex in \
@@ -93,7 +93,7 @@ clean:
 	@rm -f *.o tests.log
 
 veryclean: clean
-	@rm -f $(EXAMPLES_C) $(EXAMPLES_F77) $(EXAMPLES_CXX)
+	@rm -f $(EXAMPLES_C) $(EXAMPLES_F) $(EXAMPLES_CXX)
 
 ifeq ($(UNAME), FreeBSD)
   M4 ?= m4 -g

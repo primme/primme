@@ -42,7 +42,7 @@ SOURCES := \
 
 OBJS := $(patsubst %.c,%.o,$(SOURCES))
 
-INCLUDE += -I../include -Iinclude
+INCLUDE := -I../include -Iinclude
 INCLUDES := $(sort $(foreach dir,../include,$(wildcard $(dir)/*.h))) $(HEADERS)
 
 #
