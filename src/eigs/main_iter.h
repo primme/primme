@@ -762,4 +762,310 @@ double ratio_JDQMR_GDpkmagma_zprimme(void *model_, int numLocked,
    double estimate_slowdown, double estimate_ratio_MV_outer);
 void update_slowdownmagma_zprimme(void *model_);
 void initializeModelmagma_zprimme(void *model_, primme_params *primme);
+int main_iter_cublas_hprimme(dummy_type_sprimme *evals, dummy_type_cublas_hprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
+int prepare_candidatescublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT ldV, dummy_type_cublas_hprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_hprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_cublas_hprimme *X, dummy_type_cublas_hprimme *R, dummy_type_cublas_hprimme *BX,
+      int computeXR, dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cublas_hprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cublas_hprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_sprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_sprimme *VtBV, int ldVtBV, dummy_type_sprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int copy_back_candidatescublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT ldV, dummy_type_cublas_hprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_hprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_sprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_cublas_hprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_sprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
+int verify_normscublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT ldV, dummy_type_cublas_hprimme *W, PRIMME_INT ldW,
+      dummy_type_cublas_hprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *numConverged, primme_context ctx);
+int switch_from_JDQMRcublas_hprimme(void *model_, primme_context ctx);
+int switch_from_GDpkcublas_hprimme(void *model_, primme_context ctx);
+int update_statisticscublas_hprimme(void *model_, primme_params *primme,
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
+double ratio_JDQMR_GDpkcublas_hprimme(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncublas_hprimme(void *model_);
+void initializeModelcublas_hprimme(void *model_, primme_params *primme);
+int main_iter_cublas_kprimme_normal(dummy_type_cprimme *evals, dummy_type_cublas_kprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
+int prepare_candidatescublas_kprimme_normal(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cublas_kprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cublas_kprimme *X, dummy_type_cublas_kprimme *R, dummy_type_cublas_kprimme *BX,
+      int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cublas_kprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cublas_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_cprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int copy_back_candidatescublas_kprimme_normal(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cublas_kprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_cprimme *hVals, dummy_type_cublas_kprimme *evecs, PRIMME_INT ldevecs, dummy_type_cprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
+int verify_normscublas_kprimme_normal(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cublas_kprimme *W, PRIMME_INT ldW,
+      dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *numConverged, primme_context ctx);
+int switch_from_JDQMRcublas_kprimme_normal(void *model_, primme_context ctx);
+int switch_from_GDpkcublas_kprimme_normal(void *model_, primme_context ctx);
+int update_statisticscublas_kprimme_normal(void *model_, primme_params *primme,
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
+double ratio_JDQMR_GDpkcublas_kprimme_normal(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncublas_kprimme_normal(void *model_);
+void initializeModelcublas_kprimme_normal(void *model_, primme_params *primme);
+int main_iter_cublas_kprimme(dummy_type_sprimme *evals, dummy_type_cublas_kprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
+int prepare_candidatescublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cublas_kprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cublas_kprimme *X, dummy_type_cublas_kprimme *R, dummy_type_cublas_kprimme *BX,
+      int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cublas_kprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cublas_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_cprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int copy_back_candidatescublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cublas_kprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_cublas_kprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
+int verify_normscublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cublas_kprimme *W, PRIMME_INT ldW,
+      dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *numConverged, primme_context ctx);
+int switch_from_JDQMRcublas_kprimme(void *model_, primme_context ctx);
+int switch_from_GDpkcublas_kprimme(void *model_, primme_context ctx);
+int update_statisticscublas_kprimme(void *model_, primme_params *primme,
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
+double ratio_JDQMR_GDpkcublas_kprimme(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncublas_kprimme(void *model_);
+void initializeModelcublas_kprimme(void *model_, primme_params *primme);
+int main_iter_cublas_sprimme(dummy_type_sprimme *evals, dummy_type_cublas_sprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
+int prepare_candidatescublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_cublas_sprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_sprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_cublas_sprimme *X, dummy_type_cublas_sprimme *R, dummy_type_cublas_sprimme *BX,
+      int computeXR, dummy_type_sprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cublas_sprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cublas_sprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_sprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_sprimme *VtBV, int ldVtBV, dummy_type_sprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int copy_back_candidatescublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_cublas_sprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_sprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_sprimme *H, int ldH, int basisSize, dummy_type_sprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_cublas_sprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_sprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
+int verify_normscublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_cublas_sprimme *W, PRIMME_INT ldW,
+      dummy_type_cublas_sprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *numConverged, primme_context ctx);
+int switch_from_JDQMRcublas_sprimme(void *model_, primme_context ctx);
+int switch_from_GDpkcublas_sprimme(void *model_, primme_context ctx);
+int update_statisticscublas_sprimme(void *model_, primme_params *primme,
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
+double ratio_JDQMR_GDpkcublas_sprimme(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncublas_sprimme(void *model_);
+void initializeModelcublas_sprimme(void *model_, primme_params *primme);
+int main_iter_cublas_cprimme_normal(dummy_type_cprimme *evals, dummy_type_cublas_cprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
+int prepare_candidatescublas_cprimme_normal(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cublas_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cublas_cprimme *X, dummy_type_cublas_cprimme *R, dummy_type_cublas_cprimme *BX,
+      int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_cprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cublas_cprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cublas_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_cprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int copy_back_candidatescublas_cprimme_normal(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cublas_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_cprimme *hVals, dummy_type_cublas_cprimme *evecs, PRIMME_INT ldevecs, dummy_type_cprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
+int verify_normscublas_cprimme_normal(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cublas_cprimme *W, PRIMME_INT ldW,
+      dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *numConverged, primme_context ctx);
+int switch_from_JDQMRcublas_cprimme_normal(void *model_, primme_context ctx);
+int switch_from_GDpkcublas_cprimme_normal(void *model_, primme_context ctx);
+int update_statisticscublas_cprimme_normal(void *model_, primme_params *primme,
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
+double ratio_JDQMR_GDpkcublas_cprimme_normal(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncublas_cprimme_normal(void *model_);
+void initializeModelcublas_cprimme_normal(void *model_, primme_params *primme);
+int main_iter_cublas_cprimme(dummy_type_sprimme *evals, dummy_type_cublas_cprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_sprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
+int prepare_candidatescublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cublas_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cublas_cprimme *X, dummy_type_cublas_cprimme *R, dummy_type_cublas_cprimme *BX,
+      int computeXR, dummy_type_cprimme *hVecs, int ldhVecs, dummy_type_sprimme *hVals, dummy_type_sprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_sprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cublas_cprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cublas_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *evals, dummy_type_sprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_cprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_sprimme *basisNorms, int *reset,
+      dummy_type_cprimme *VtBV, int ldVtBV, dummy_type_cprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int copy_back_candidatescublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cublas_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_cprimme *H, int ldH, int basisSize, dummy_type_cprimme *hVecs, int ldhVecs,
+      dummy_type_sprimme *hVals, dummy_type_cublas_cprimme *evecs, PRIMME_INT ldevecs, dummy_type_sprimme *evals,
+      dummy_type_sprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_cprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
+int verify_normscublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cublas_cprimme *W, PRIMME_INT ldW,
+      dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *hVals, int basisSize, dummy_type_sprimme *resNorms,
+      int *flags, int *numConverged, primme_context ctx);
+int switch_from_JDQMRcublas_cprimme(void *model_, primme_context ctx);
+int switch_from_GDpkcublas_cprimme(void *model_, primme_context ctx);
+int update_statisticscublas_cprimme(void *model_, primme_params *primme,
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
+double ratio_JDQMR_GDpkcublas_cprimme(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncublas_cprimme(void *model_);
+void initializeModelcublas_cprimme(void *model_, primme_params *primme);
+int main_iter_cublas_dprimme(dummy_type_dprimme *evals, dummy_type_cublas_dprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_dprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
+int prepare_candidatescublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_cublas_dprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_dprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_dprimme *H, int ldH, int basisSize, dummy_type_cublas_dprimme *X, dummy_type_cublas_dprimme *R, dummy_type_cublas_dprimme *BX,
+      int computeXR, dummy_type_dprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, dummy_type_dprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_dprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cublas_dprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cublas_dprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_dprimme *evals, dummy_type_dprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_dprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_dprimme *basisNorms, int *reset,
+      dummy_type_dprimme *VtBV, int ldVtBV, dummy_type_dprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int copy_back_candidatescublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_cublas_dprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_dprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_dprimme *H, int ldH, int basisSize, dummy_type_dprimme *hVecs, int ldhVecs,
+      dummy_type_dprimme *hVals, dummy_type_cublas_dprimme *evecs, PRIMME_INT ldevecs, dummy_type_dprimme *evals,
+      dummy_type_dprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_dprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
+int verify_normscublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_cublas_dprimme *W, PRIMME_INT ldW,
+      dummy_type_cublas_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
+      int *flags, int *numConverged, primme_context ctx);
+int switch_from_JDQMRcublas_dprimme(void *model_, primme_context ctx);
+int switch_from_GDpkcublas_dprimme(void *model_, primme_context ctx);
+int update_statisticscublas_dprimme(void *model_, primme_params *primme,
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
+double ratio_JDQMR_GDpkcublas_dprimme(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncublas_dprimme(void *model_);
+void initializeModelcublas_dprimme(void *model_, primme_params *primme);
+int main_iter_cublas_zprimme_normal(dummy_type_zprimme *evals, dummy_type_cublas_zprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_dprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
+int prepare_candidatescublas_zprimme_normal(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_cublas_zprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_cublas_zprimme *X, dummy_type_cublas_zprimme *R, dummy_type_cublas_zprimme *BX,
+      int computeXR, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_zprimme *hVals, dummy_type_dprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_dprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cublas_zprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cublas_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *evals, dummy_type_dprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_zprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_dprimme *basisNorms, int *reset,
+      dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int copy_back_candidatescublas_zprimme_normal(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_cublas_zprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *hVecs, int ldhVecs,
+      dummy_type_zprimme *hVals, dummy_type_cublas_zprimme *evecs, PRIMME_INT ldevecs, dummy_type_zprimme *evals,
+      dummy_type_dprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_zprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
+int verify_normscublas_zprimme_normal(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_cublas_zprimme *W, PRIMME_INT ldW,
+      dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
+      int *flags, int *numConverged, primme_context ctx);
+int switch_from_JDQMRcublas_zprimme_normal(void *model_, primme_context ctx);
+int switch_from_GDpkcublas_zprimme_normal(void *model_, primme_context ctx);
+int update_statisticscublas_zprimme_normal(void *model_, primme_params *primme,
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
+double ratio_JDQMR_GDpkcublas_zprimme_normal(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncublas_zprimme_normal(void *model_);
+void initializeModelcublas_zprimme_normal(void *model_, primme_params *primme);
+int main_iter_cublas_zprimme(dummy_type_dprimme *evals, dummy_type_cublas_zprimme *evecs, PRIMME_INT ldevecs,
+      dummy_type_dprimme *resNorms, double startTime, int *ret, int *numRet,
+      primme_context ctx);
+int prepare_candidatescublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_cublas_zprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_cublas_zprimme *X, dummy_type_cublas_zprimme *R, dummy_type_cublas_zprimme *BX,
+      int computeXR, dummy_type_zprimme *hVecs, int ldhVecs, dummy_type_dprimme *hVals, dummy_type_dprimme *hSVals,
+      int *flags, int remainedEvals, dummy_type_dprimme *blockNorms, int blockNormsSize,
+      int maxBlockSize, dummy_type_cublas_zprimme *evecs, int numLocked, PRIMME_INT ldevecs,
+      dummy_type_cublas_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_dprimme *evals, dummy_type_dprimme *resNorms,
+      int targetShiftIndex, int *iev, int *blockSize, int *recentlyConverged,
+      int *numArbitraryVecs, double *smallestResNorm, dummy_type_zprimme *hVecsRot,
+      int ldhVecsRot, int numConverged, dummy_type_dprimme *basisNorms, int *reset,
+      dummy_type_zprimme *VtBV, int ldVtBV, dummy_type_zprimme *prevhVecs, int nprevhVecs,
+      int ldprevhVecs, int practConvChecking, int *map, double startTime,
+      primme_context ctx);
+int copy_back_candidatescublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_cublas_zprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, PRIMME_INT nLocal,
+      dummy_type_zprimme *H, int ldH, int basisSize, dummy_type_zprimme *hVecs, int ldhVecs,
+      dummy_type_dprimme *hVals, dummy_type_cublas_zprimme *evecs, PRIMME_INT ldevecs, dummy_type_dprimme *evals,
+      dummy_type_dprimme *resNorms, int targetShiftIndex, int numConverged, dummy_type_zprimme *VtBV,
+      int ldVtBV, int *numRet, primme_context ctx);
+int verify_normscublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_cublas_zprimme *W, PRIMME_INT ldW,
+      dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *hVals, int basisSize, dummy_type_dprimme *resNorms,
+      int *flags, int *numConverged, primme_context ctx);
+int switch_from_JDQMRcublas_zprimme(void *model_, primme_context ctx);
+int switch_from_GDpkcublas_zprimme(void *model_, primme_context ctx);
+int update_statisticscublas_zprimme(void *model_, primme_params *primme,
+      double current_time, int recentConv, int calledAtRestart,
+      int numConverged, double currentResNorm);
+double ratio_JDQMR_GDpkcublas_zprimme(void *model_, int numLocked,
+   double estimate_slowdown, double estimate_ratio_MV_outer);
+void update_slowdowncublas_zprimme(void *model_);
+void initializeModelcublas_zprimme(void *model_, primme_params *primme);
 #endif

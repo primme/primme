@@ -91,8 +91,8 @@ int UDUDecompose_Sprimme(SCALAR *M, int ldM, SCALAR *UDU, int ldUDU,
    else {
       /* Copy the upper triangular portion of M into UDU */
 
-      Num_copy_trimatrix_Sprimme(M, dimM, dimM, ldM, 0 /* up */, 0, UDU,
-            ldUDU, 0);
+      CHKERR(Num_copy_trimatrix_Sprimme(
+            M, dimM, dimM, ldM, 0 /* up */, 0, UDU, ldUDU, 0));
 
       /* Perform the decomposition */
 
@@ -214,8 +214,8 @@ int update_XKinvBX_Sprimme(SCALAR *X, PRIMME_INT ldX, SCALAR *KinvBX,
 
       /* Copy the upper triangular portion of M into Mfact */
 
-      Num_copy_trimatrix_SHprimme(
-            M, nM, nM, ldM, 0 /* up */, 0, Mfact, ldMfact, 0);
+      CHKERR(Num_copy_trimatrix_SHprimme(
+            M, nM, nM, ldM, 0 /* up */, 0, Mfact, ldMfact, 0));
 
       /* Perform the LDL^T decomposition */
 

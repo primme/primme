@@ -33,6 +33,7 @@ SOURCES := \
    linalg/auxiliary.c \
    linalg/blaslapack.c \
    linalg/magma_wrapper.c \
+   linalg/cublas_wrapper.c \
    linalg/memman.c \
    linalg/wtime.c \
    svds/primme_svds_c.c \
@@ -51,6 +52,7 @@ INCLUDES := $(sort $(foreach dir,../include,$(wildcard $(dir)/*.h))) $(HEADERS)
 AUTOMATED_HEADERS_LINALG := \
    include/blaslapack.h \
    include/magma_wrapper.h \
+   include/cublas_wrapper.h \
    include/auxiliary.h
 AUTOMATED_HEADERS_OTHERS := \
    eigs/auxiliary_eigs.h \

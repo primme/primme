@@ -195,4 +195,40 @@ int update_Q_magma_zprimme(dummy_type_magma_zprimme *BV, PRIMME_INT nLocal, PRIM
       PRIMME_INT ldW, dummy_type_magma_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *R, int ldR,
       dummy_type_zprimme *QtQ, int ldQtQ, dummy_type_zprimme *fQtQ, int ldfQtQ, double targetShift,
       int basisSize, int blockSize, int *nQ, primme_context ctx);
+int update_Q_cublas_hprimme(dummy_type_cublas_hprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cublas_hprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_hprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *R, int ldR,
+      dummy_type_sprimme *QtQ, int ldQtQ, dummy_type_sprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
+int update_Q_cublas_kprimme_normal(dummy_type_cublas_kprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cublas_kprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_kprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
+int update_Q_cublas_kprimme(dummy_type_cublas_kprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cublas_kprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_kprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
+int update_Q_cublas_sprimme(dummy_type_cublas_sprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cublas_sprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_sprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *R, int ldR,
+      dummy_type_sprimme *QtQ, int ldQtQ, dummy_type_sprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
+int update_Q_cublas_cprimme_normal(dummy_type_cublas_cprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cublas_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
+int update_Q_cublas_cprimme(dummy_type_cublas_cprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cublas_cprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *R, int ldR,
+      dummy_type_cprimme *QtQ, int ldQtQ, dummy_type_cprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
+int update_Q_cublas_dprimme(dummy_type_cublas_dprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cublas_dprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_dprimme *Q, PRIMME_INT ldQ, dummy_type_dprimme *R, int ldR,
+      dummy_type_dprimme *QtQ, int ldQtQ, dummy_type_dprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
+int update_Q_cublas_zprimme_normal(dummy_type_cublas_zprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cublas_zprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *R, int ldR,
+      dummy_type_zprimme *QtQ, int ldQtQ, dummy_type_zprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
+int update_Q_cublas_zprimme(dummy_type_cublas_zprimme *BV, PRIMME_INT nLocal, PRIMME_INT ldBV, dummy_type_cublas_zprimme *W,
+      PRIMME_INT ldW, dummy_type_cublas_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *R, int ldR,
+      dummy_type_zprimme *QtQ, int ldQtQ, dummy_type_zprimme *fQtQ, int ldfQtQ, double targetShift,
+      int basisSize, int blockSize, int *nQ, primme_context ctx);
 #endif

@@ -39,6 +39,7 @@
 #undef HOST_STEM
 #undef USE_HOST
 #undef USE_MAGMA
+#undef USE_CUBLAS
 #undef STEM
 #undef IMPL
 #undef USE_REAL

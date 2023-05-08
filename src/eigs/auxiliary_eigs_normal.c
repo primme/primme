@@ -168,6 +168,8 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
       HREAL *xnorms, int nxb, int nxe,
       primme_context ctx) {
 
+   (void)nh;
+ 
    PRIMME_INT i;     /* Loop variables */
    int j;            /* Loop variables */
    int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */

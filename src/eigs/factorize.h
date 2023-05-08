@@ -465,4 +465,28 @@ int update_XKinvBX_magma_zprimme(dummy_type_magma_zprimme *X, PRIMME_INT ldX, du
       PRIMME_INT ldKinvBX, dummy_type_zprimme *M, int ldM, int numCols,
       int blockSize, dummy_type_zprimme *Mfact, int ldMfact, int *ipivot,
       primme_context ctx);
+int update_XKinvBX_cublas_hprimme(dummy_type_cublas_hprimme *X, PRIMME_INT ldX, dummy_type_cublas_hprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_sprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_sprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int update_XKinvBX_cublas_kprimme(dummy_type_cublas_kprimme *X, PRIMME_INT ldX, dummy_type_cublas_kprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_cprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_cprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int update_XKinvBX_cublas_sprimme(dummy_type_cublas_sprimme *X, PRIMME_INT ldX, dummy_type_cublas_sprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_sprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_sprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int update_XKinvBX_cublas_cprimme(dummy_type_cublas_cprimme *X, PRIMME_INT ldX, dummy_type_cublas_cprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_cprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_cprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int update_XKinvBX_cublas_dprimme(dummy_type_cublas_dprimme *X, PRIMME_INT ldX, dummy_type_cublas_dprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_dprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_dprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
+int update_XKinvBX_cublas_zprimme(dummy_type_cublas_zprimme *X, PRIMME_INT ldX, dummy_type_cublas_zprimme *KinvBX,
+      PRIMME_INT ldKinvBX, dummy_type_zprimme *M, int ldM, int numCols,
+      int blockSize, dummy_type_zprimme *Mfact, int ldMfact, int *ipivot,
+      primme_context ctx);
 #endif

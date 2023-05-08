@@ -739,7 +739,6 @@ void broadCast(primme_params *primme, primme_preset_method *method,
    MPI_Bcast(&(primme->initBasisMode), 1, MPI_INT, 0, comm);
 
    MPI_Bcast(&(primme->projectionParams.projection), 1, MPI_INT, 0, comm);
-   MPI_Bcast(&(primme->restartingParams.scheme), 1, MPI_INT, 0, comm);
    MPI_Bcast(&(primme->restartingParams.maxPrevRetain), 1, MPI_INT, 0, comm);
 
    MPI_Bcast(&(primme->correctionParams.precondition), 1, MPI_INT, 0, comm);
@@ -825,10 +824,14 @@ void par_GlobalSumDouble(void *sendBuf, void *recvBuf, int *count,
 #ifdef USE_PETSC
    extern PetscLogEvent PRIMME_GLOBAL_SUM;
    PetscLogEventBegin(PRIMME_GLOBAL_SUM,0,0,0,0);
-   *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
+#endif
+   if (sendBuf == recvBuf) {
+     *ierr = MPI_Allreduce(MPI_IN_PLACE, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator) != MPI_SUCCESS;
+   } else {
+     *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator) != MPI_SUCCESS;
+   }
+#ifdef USE_PETSC
    PetscLogEventEnd(PRIMME_GLOBAL_SUM,0,0,0,0);
-#else
-   *ierr = MPI_Allreduce(sendBuf, recvBuf, *count, MPI_DOUBLE, MPI_SUM, communicator);
 #endif
 }
 

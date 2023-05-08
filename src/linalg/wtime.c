@@ -78,7 +78,7 @@ double primme_wTimer(int zeroTimer) {
 
 #else
 
-#include <Windows.h>
+#include <windows.h>
 double primme_wTimer() {
    return GetTickCount();
 }

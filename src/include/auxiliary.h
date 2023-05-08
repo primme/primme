@@ -1887,4 +1887,136 @@ dummy_type_magma_zprimme* Num_compact_vecs_magma_zprimme(dummy_type_magma_zprimm
       int avoidCopy, primme_context ctx);
 int Num_scale_matrix_magma_zprimme(dummy_type_magma_zprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_magma_zprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_cublas_hprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_cublas_hprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_cublas_hprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_cublas_hprimme(primme_op_datatype t, double *eps);
+int Num_copy_matrix_columns_cublas_hprimme(dummy_type_cublas_hprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_hprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_cublas_hprimme(dummy_type_cublas_hprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_hprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_cublas_hprimme(dummy_type_cublas_hprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_cublas_hprimme* Num_compact_vecs_cublas_hprimme(dummy_type_cublas_hprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_cublas_hprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_cublas_hprimme(dummy_type_cublas_hprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_cublas_hprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_cublas_kprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_cublas_kprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_cublas_kprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_cublas_kprimme(primme_op_datatype t, double *eps);
+int Num_copy_matrix_columns_cublas_kprimme(dummy_type_cublas_kprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_kprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_cublas_kprimme(dummy_type_cublas_kprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_kprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_cublas_kprimme(dummy_type_cublas_kprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_cublas_kprimme* Num_compact_vecs_cublas_kprimme(dummy_type_cublas_kprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_cublas_kprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_cublas_kprimme(dummy_type_cublas_kprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_cublas_kprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_cublas_sprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_cublas_sprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_cublas_sprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_cublas_sprimme(primme_op_datatype t, double *eps);
+int Num_copy_matrix_columns_cublas_sprimme(dummy_type_cublas_sprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_sprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_cublas_sprimme(dummy_type_cublas_sprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_sprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_cublas_sprimme(dummy_type_cublas_sprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_cublas_sprimme* Num_compact_vecs_cublas_sprimme(dummy_type_cublas_sprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_cublas_sprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_cublas_sprimme(dummy_type_cublas_sprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_cublas_sprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_cublas_cprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_cublas_cprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_cublas_cprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_cublas_cprimme(primme_op_datatype t, double *eps);
+int Num_copy_matrix_columns_cublas_cprimme(dummy_type_cublas_cprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_cprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_cublas_cprimme(dummy_type_cublas_cprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_cprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_cublas_cprimme(dummy_type_cublas_cprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_cublas_cprimme* Num_compact_vecs_cublas_cprimme(dummy_type_cublas_cprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_cublas_cprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_cublas_cprimme(dummy_type_cublas_cprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *s, dummy_type_cublas_cprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_cublas_dprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_cublas_dprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_cublas_dprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_cublas_dprimme(primme_op_datatype t, double *eps);
+int Num_copy_matrix_columns_cublas_dprimme(dummy_type_cublas_dprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_dprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_cublas_dprimme(dummy_type_cublas_dprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_dprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_cublas_dprimme(dummy_type_cublas_dprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_cublas_dprimme* Num_compact_vecs_cublas_dprimme(dummy_type_cublas_dprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_cublas_dprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_cublas_dprimme(dummy_type_cublas_dprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_cublas_dprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_matrix_astype_cublas_zprimme(void *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, primme_op_datatype xt, void **y, PRIMME_INT *ldy,
+      primme_op_datatype yt, int do_alloc, int do_copy, primme_context ctx);
+int Num_copy_matrix_astype_cublas_zprimme(void *x, PRIMME_INT xm0, PRIMME_INT xn0,
+      PRIMME_INT m, PRIMME_INT n, PRIMME_INT ldx, primme_op_datatype xt,
+      void *y, PRIMME_INT ym0, PRIMME_INT yn0, PRIMME_INT ldy,
+      primme_op_datatype yt, primme_context ctx);
+int Num_sizeof_cublas_zprimme(primme_op_datatype t, size_t *s);
+int Num_machine_epsilon_cublas_zprimme(primme_op_datatype t, double *eps);
+int Num_copy_matrix_columns_cublas_zprimme(dummy_type_cublas_zprimme *x, PRIMME_INT m, int *xin, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_zprimme *y, int *yin,
+                                     PRIMME_INT ldy, primme_context ctx);
+int Num_copy_matrix_rows_cublas_zprimme(dummy_type_cublas_zprimme *x, int *xim, int m, int n,
+                                     PRIMME_INT ldx, dummy_type_cublas_zprimme *y, int *yim,
+                                     PRIMME_INT ldy, primme_context ctx);
+int permute_vecs_cublas_zprimme(dummy_type_cublas_zprimme *vecs, PRIMME_INT m, int n, PRIMME_INT ld,
+                         int *perm_, primme_context ctx);
+dummy_type_cublas_zprimme* Num_compact_vecs_cublas_zprimme(dummy_type_cublas_zprimme *vecs, PRIMME_INT m, int n,
+      PRIMME_INT ld, int *perm, dummy_type_cublas_zprimme *work, PRIMME_INT ldwork,
+      int avoidCopy, primme_context ctx);
+int Num_scale_matrix_cublas_zprimme(dummy_type_cublas_zprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_dprimme *s, dummy_type_cublas_zprimme *y, PRIMME_INT ldy, primme_context ctx);
 #endif

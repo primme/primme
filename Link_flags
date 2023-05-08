@@ -24,6 +24,12 @@ ifeq ($(origin LIBS), undefined)
          LIBS += -L$(MAGMADIR)/lib -lmagma_sparse -lmagma  \
                  -L$(CUDADIR)/lib64 -lcublas -lcudart -lcusparse -lstdc++
     endif
+    ifeq ($(PRIMME_WITH_CUDA),yes)
+         LIBS += -L$(CUDADIR)/lib64 -lcusparse -lcublas -lcudart
+    endif
+    ifeq ($(PRIMME_WITH_HIPBLAS),yes)
+         LIBS += -L$(ROCMDIR)/lib -lhipsparse -lhipblas -lamdhip64
+    endif
     ifndef MKLROOT
         LIBS += -llapack -lblas -lm
         ifneq (,$(findstring PGI,$(shell $(CC) --version)))
