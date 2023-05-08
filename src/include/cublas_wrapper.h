@@ -124,6 +124,97 @@
 #  define Num_check_pointer_RHqprimme CONCAT(Num_check_pointer_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int Num_check_pointer_cublas_hprimme(void *x);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Sprimme)
+#  define Num_recommended_ld_Sprimme CONCAT(Num_recommended_ld_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Rprimme)
+#  define Num_recommended_ld_Rprimme CONCAT(Num_recommended_ld_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SHprimme)
+#  define Num_recommended_ld_SHprimme CONCAT(Num_recommended_ld_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RHprimme)
+#  define Num_recommended_ld_RHprimme CONCAT(Num_recommended_ld_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SXprimme)
+#  define Num_recommended_ld_SXprimme CONCAT(Num_recommended_ld_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RXprimme)
+#  define Num_recommended_ld_RXprimme CONCAT(Num_recommended_ld_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Shprimme)
+#  define Num_recommended_ld_Shprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Rhprimme)
+#  define Num_recommended_ld_Rhprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Ssprimme)
+#  define Num_recommended_ld_Ssprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Rsprimme)
+#  define Num_recommended_ld_Rsprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Sdprimme)
+#  define Num_recommended_ld_Sdprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Rdprimme)
+#  define Num_recommended_ld_Rdprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Sqprimme)
+#  define Num_recommended_ld_Sqprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_Rqprimme)
+#  define Num_recommended_ld_Rqprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SXhprimme)
+#  define Num_recommended_ld_SXhprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RXhprimme)
+#  define Num_recommended_ld_RXhprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SXsprimme)
+#  define Num_recommended_ld_SXsprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RXsprimme)
+#  define Num_recommended_ld_RXsprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SXdprimme)
+#  define Num_recommended_ld_SXdprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RXdprimme)
+#  define Num_recommended_ld_RXdprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SXqprimme)
+#  define Num_recommended_ld_SXqprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RXqprimme)
+#  define Num_recommended_ld_RXqprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SHhprimme)
+#  define Num_recommended_ld_SHhprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RHhprimme)
+#  define Num_recommended_ld_RHhprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SHsprimme)
+#  define Num_recommended_ld_SHsprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RHsprimme)
+#  define Num_recommended_ld_RHsprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SHdprimme)
+#  define Num_recommended_ld_SHdprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RHdprimme)
+#  define Num_recommended_ld_RHdprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_SHqprimme)
+#  define Num_recommended_ld_SHqprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_recommended_ld_RHqprimme)
+#  define Num_recommended_ld_RHqprimme CONCAT(Num_recommended_ld_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int Num_recommended_ld_cublas_hprimme(PRIMME_INT *ld, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_malloc_Sprimme)
 #  define Num_malloc_Sprimme CONCAT(Num_malloc_,SCALAR_SUF)
 #endif
@@ -1882,6 +1973,7 @@ int Num_compute_gramm_ddh_cublas_hprimme(dummy_type_cublas_hprimme *X, PRIMME_IN
       dummy_type_cublas_hprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
 int Num_check_pointer_cublas_kprimme(void *x);
+int Num_recommended_ld_cublas_kprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_kprimme(PRIMME_INT n, dummy_type_cublas_kprimme **x, primme_context ctx);
 int Num_free_cublas_kprimme(dummy_type_cublas_kprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_cublas_kprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
@@ -1930,6 +2022,7 @@ int Num_compute_gramm_ddh_cublas_kprimme(dummy_type_cublas_kprimme *X, PRIMME_IN
       dummy_type_cublas_kprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
 int Num_check_pointer_cublas_sprimme(void *x);
+int Num_recommended_ld_cublas_sprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_sprimme(PRIMME_INT n, dummy_type_cublas_sprimme **x, primme_context ctx);
 int Num_free_cublas_sprimme(dummy_type_cublas_sprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_cublas_sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
@@ -1978,6 +2071,7 @@ int Num_compute_gramm_ddh_cublas_sprimme(dummy_type_cublas_sprimme *X, PRIMME_IN
       dummy_type_cublas_sprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
 int Num_check_pointer_cublas_cprimme(void *x);
+int Num_recommended_ld_cublas_cprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_cprimme(PRIMME_INT n, dummy_type_cublas_cprimme **x, primme_context ctx);
 int Num_free_cublas_cprimme(dummy_type_cublas_cprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_cublas_cprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
@@ -2026,6 +2120,7 @@ int Num_compute_gramm_ddh_cublas_cprimme(dummy_type_cublas_cprimme *X, PRIMME_IN
       dummy_type_cublas_cprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
 int Num_check_pointer_cublas_dprimme(void *x);
+int Num_recommended_ld_cublas_dprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_dprimme(PRIMME_INT n, dummy_type_cublas_dprimme **x, primme_context ctx);
 int Num_free_cublas_dprimme(dummy_type_cublas_dprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_cublas_dprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
@@ -2074,6 +2169,7 @@ int Num_compute_gramm_ddh_cublas_dprimme(dummy_type_cublas_dprimme *X, PRIMME_IN
       dummy_type_cublas_dprimme *Y, PRIMME_INT ldY, dummy_type_dprimme alpha, dummy_type_dprimme *H, int ldH, int isherm,
       primme_context ctx);
 int Num_check_pointer_cublas_zprimme(void *x);
+int Num_recommended_ld_cublas_zprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_zprimme(PRIMME_INT n, dummy_type_cublas_zprimme **x, primme_context ctx);
 int Num_free_cublas_zprimme(dummy_type_cublas_zprimme *x, primme_context ctx);
 int Num_copy_Tmatrix_cublas_zprimme(void *x, primme_op_datatype xt, PRIMME_INT m,

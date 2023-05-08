@@ -1323,6 +1323,8 @@ int Num_ortho_kernelcublas_hprimme(dummy_type_cublas_hprimme *Q, PRIMME_INT M, i
 int decompositioncublas_hprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationcublas_hprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_cublas_hprimme(
+      dummy_type_sprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_cublas_hprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
@@ -1361,6 +1363,8 @@ int Num_ortho_kernelcublas_kprimme(dummy_type_cublas_kprimme *Q, PRIMME_INT M, i
 int decompositioncublas_kprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationcublas_kprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_cublas_kprimme(
+      dummy_type_cprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_cublas_kprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
@@ -1399,6 +1403,8 @@ int Num_ortho_kernelcublas_sprimme(dummy_type_cublas_sprimme *Q, PRIMME_INT M, i
 int decompositioncublas_sprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationcublas_sprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_cublas_sprimme(
+      dummy_type_sprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_cublas_sprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
@@ -1437,6 +1443,8 @@ int Num_ortho_kernelcublas_cprimme(dummy_type_cublas_cprimme *Q, PRIMME_INT M, i
 int decompositioncublas_cprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
       dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationcublas_cprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_cublas_cprimme(
+      dummy_type_cprimme *VtV, int n, int ldVtV, dummy_type_sprimme *level, primme_context ctx);
 int update_cholesky_cublas_cprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *R, int ldR,
@@ -1475,6 +1483,8 @@ int Num_ortho_kernelcublas_dprimme(dummy_type_cublas_dprimme *Q, PRIMME_INT M, i
 int decompositioncublas_dprimme(dummy_type_dprimme *H, int n, int ldH, dummy_type_dprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationcublas_dprimme(dummy_type_dprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_cublas_dprimme(
+      dummy_type_dprimme *VtV, int n, int ldVtV, dummy_type_dprimme *level, primme_context ctx);
 int update_cholesky_cublas_dprimme(dummy_type_dprimme *VtV, int ldVtV, dummy_type_dprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 int Bortho_gen_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *R, int ldR,
@@ -1513,6 +1523,8 @@ int Num_ortho_kernelcublas_zprimme(dummy_type_cublas_zprimme *Q, PRIMME_INT M, i
 int decompositioncublas_zprimme(dummy_type_zprimme *H, int n, int ldH, dummy_type_zprimme *Y, int ldY,
       dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
 int rank_estimationcublas_zprimme(dummy_type_zprimme *V, int n0, int n1, int n, int ldV);
+int orthogonality_error_cublas_zprimme(
+      dummy_type_zprimme *VtV, int n, int ldVtV, dummy_type_dprimme *level, primme_context ctx);
 int update_cholesky_cublas_zprimme(dummy_type_zprimme *VtV, int ldVtV, dummy_type_zprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
 #endif

@@ -1998,8 +1998,8 @@ int restart_cublas_hprimme(dummy_type_cublas_hprimme *V, dummy_type_cublas_hprim
       int ldfQtQ, dummy_type_sprimme *hU, int ldhU, int newldhU, dummy_type_sprimme *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, dummy_type_sprimme *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx);
 int restart_soft_locking_Sprimmecublas_hprimme(int *restartSize, dummy_type_cublas_hprimme *V, dummy_type_cublas_hprimme *W,
       dummy_type_cublas_hprimme *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       dummy_type_sprimme *hVecs, int ldhVecs, int *restartPerm, dummy_type_sprimme *hVals, int *flags,
@@ -2095,8 +2095,8 @@ int restart_cublas_kprimme_normal(dummy_type_cublas_kprimme *V, dummy_type_cubla
       int ldfQtQ, dummy_type_cprimme *hU, int ldhU, int newldhU, dummy_type_cprimme *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, dummy_type_cprimme *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx);
 int restart_soft_locking_Sprimmecublas_kprimme_normal(int *restartSize, dummy_type_cublas_kprimme *V, dummy_type_cublas_kprimme *W,
       dummy_type_cublas_kprimme *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       dummy_type_cprimme *hVecs, int ldhVecs, int *restartPerm, dummy_type_cprimme *hVals, int *flags,
@@ -2192,8 +2192,8 @@ int restart_cublas_kprimme(dummy_type_cublas_kprimme *V, dummy_type_cublas_kprim
       int ldfQtQ, dummy_type_cprimme *hU, int ldhU, int newldhU, dummy_type_cprimme *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, dummy_type_cprimme *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx);
 int restart_soft_locking_Sprimmecublas_kprimme(int *restartSize, dummy_type_cublas_kprimme *V, dummy_type_cublas_kprimme *W,
       dummy_type_cublas_kprimme *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       dummy_type_cprimme *hVecs, int ldhVecs, int *restartPerm, dummy_type_sprimme *hVals, int *flags,
@@ -2289,8 +2289,8 @@ int restart_cublas_sprimme(dummy_type_cublas_sprimme *V, dummy_type_cublas_sprim
       int ldfQtQ, dummy_type_sprimme *hU, int ldhU, int newldhU, dummy_type_sprimme *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, dummy_type_sprimme *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx);
 int restart_soft_locking_Sprimmecublas_sprimme(int *restartSize, dummy_type_cublas_sprimme *V, dummy_type_cublas_sprimme *W,
       dummy_type_cublas_sprimme *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       dummy_type_sprimme *hVecs, int ldhVecs, int *restartPerm, dummy_type_sprimme *hVals, int *flags,
@@ -2386,8 +2386,8 @@ int restart_cublas_cprimme_normal(dummy_type_cublas_cprimme *V, dummy_type_cubla
       int ldfQtQ, dummy_type_cprimme *hU, int ldhU, int newldhU, dummy_type_cprimme *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, dummy_type_cprimme *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx);
 int restart_soft_locking_Sprimmecublas_cprimme_normal(int *restartSize, dummy_type_cublas_cprimme *V, dummy_type_cublas_cprimme *W,
       dummy_type_cublas_cprimme *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       dummy_type_cprimme *hVecs, int ldhVecs, int *restartPerm, dummy_type_cprimme *hVals, int *flags,
@@ -2483,8 +2483,8 @@ int restart_cublas_cprimme(dummy_type_cublas_cprimme *V, dummy_type_cublas_cprim
       int ldfQtQ, dummy_type_cprimme *hU, int ldhU, int newldhU, dummy_type_cprimme *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, dummy_type_cprimme *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx);
 int restart_soft_locking_Sprimmecublas_cprimme(int *restartSize, dummy_type_cublas_cprimme *V, dummy_type_cublas_cprimme *W,
       dummy_type_cublas_cprimme *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       dummy_type_cprimme *hVecs, int ldhVecs, int *restartPerm, dummy_type_sprimme *hVals, int *flags,
@@ -2580,8 +2580,8 @@ int restart_cublas_dprimme(dummy_type_cublas_dprimme *V, dummy_type_cublas_dprim
       int ldfQtQ, dummy_type_dprimme *hU, int ldhU, int newldhU, dummy_type_dprimme *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, dummy_type_dprimme *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx);
 int restart_soft_locking_Sprimmecublas_dprimme(int *restartSize, dummy_type_cublas_dprimme *V, dummy_type_cublas_dprimme *W,
       dummy_type_cublas_dprimme *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       dummy_type_dprimme *hVecs, int ldhVecs, int *restartPerm, dummy_type_dprimme *hVals, int *flags,
@@ -2677,8 +2677,8 @@ int restart_cublas_zprimme_normal(dummy_type_cublas_zprimme *V, dummy_type_cubla
       int ldfQtQ, dummy_type_zprimme *hU, int ldhU, int newldhU, dummy_type_zprimme *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, dummy_type_zprimme *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx);
 int restart_soft_locking_Sprimmecublas_zprimme_normal(int *restartSize, dummy_type_cublas_zprimme *V, dummy_type_cublas_zprimme *W,
       dummy_type_cublas_zprimme *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       dummy_type_zprimme *hVecs, int ldhVecs, int *restartPerm, dummy_type_zprimme *hVals, int *flags,
@@ -2774,8 +2774,8 @@ int restart_cublas_zprimme(dummy_type_cublas_zprimme *V, dummy_type_cublas_zprim
       int ldfQtQ, dummy_type_zprimme *hU, int ldhU, int newldhU, dummy_type_zprimme *hVecs,
       int ldhVecs, int newldhVecs, int *restartSizeOutput,
       int *targetShiftIndex, int *numArbitraryVecs, dummy_type_zprimme *hVecsRot,
-      int ldhVecsRot, int *restartsSinceReset, double startTime,
-      primme_context ctx);
+      int ldhVecsRot, int *restartsSinceReset, PRIMME_INT *checkOpError,
+      double startTime, primme_context ctx);
 int restart_soft_locking_Sprimmecublas_zprimme(int *restartSize, dummy_type_cublas_zprimme *V, dummy_type_cublas_zprimme *W,
       dummy_type_cublas_zprimme *BV, PRIMME_INT nLocal, int basisSize, PRIMME_INT ldV,
       dummy_type_zprimme *hVecs, int ldhVecs, int *restartPerm, dummy_type_dprimme *hVals, int *flags,

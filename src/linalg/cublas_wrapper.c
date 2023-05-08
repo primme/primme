@@ -159,6 +159,38 @@ int Num_check_pointer_Sprimme(void *x) {
 }
 
 /******************************************************************************
+ * Function Num_recommended_ld - Return the recommended leading dimension
+ *    such that each column is aligned
+ *
+ * PARAMETERS
+ * ---------------------------
+ * ld         on input, the column length; on output, the recommended ld. 
+ * 
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_recommended_ld_Sprimme(PRIMME_INT *ld, primme_context ctx) {
+   (void)ctx;
+   int deviceCount;
+   GPU_SYMBOL(GetDeviceCount)(&deviceCount);
+   int device;
+   size_t maxTextureAlignment = 0; 
+   for (device = 0; device < deviceCount; ++device) {
+      struct GPU_SELECT(cudaDeviceProp, hipDeviceProp_t) deviceProp;
+      GPU_SYMBOL(GetDeviceProperties)(&deviceProp, device);
+      maxTextureAlignment =
+            max(maxTextureAlignment, deviceProp.textureAlignment);
+   }
+
+   size_t scalar_size;
+   CHKERR(Num_sizeof_Sprimme(PRIMME_OP_SCALAR, &scalar_size));
+   maxTextureAlignment = max(maxTextureAlignment, scalar_size);
+   *ld = (*ld * scalar_size + maxTextureAlignment - 1) / maxTextureAlignment *
+         (maxTextureAlignment / scalar_size);
+   return 0;
+}
+
+/******************************************************************************
  * Function Num_malloc - Allocate a vector of scalars
  *
  * PARAMETERS
