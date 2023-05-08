@@ -35,20 +35,23 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include <string.h>
 #include <math.h>
-
-#include "magma_v2.h"
-#include "magmasparse.h"
 #include <cublas_v2.h>
+#include <cusparse.h>
 
 #include "primme.h"   /* header file is required to run primme */ 
 
-#include <time.h>
+void cuSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, primme_params *primme, int *ierr);
 
-void magmaSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
-void magmaDummy(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
-
+typedef struct {
+   cusparseHandle_t cusparse_handle;
+   cusparseSpMatDescr_t desc;
+   void *aux;
+   size_t aux_size;
+} MatrixInfo;
 
 int main (int argc, char *argv[]) {
 
@@ -70,9 +73,11 @@ int main (int argc, char *argv[]) {
    int *col, *row;
    double *val;
 
+   /* Create the matrix on cpu */
    row = (int*) calloc(n+1, sizeof(int));
-   col = (int*) calloc(n+(n>0?n-1:0)*2, sizeof(int));
-   val = (double*) calloc(n+(n>0?n-1:0)*2, sizeof(double));
+   int nnz = n+(n>0?n-1:0)*2;
+   col = (int*) calloc(nnz, sizeof(int));
+   val = (double*) calloc(nnz, sizeof(double));
 
    for (i = j = 0; i < n; i++) {
       row[i] = j;
@@ -82,17 +87,23 @@ int main (int argc, char *argv[]) {
    }
    row[n] = j;
 
-   /* Initialize MAGMA and create some LA structures */
-   magma_init();
-   magma_queue_t queue;
-   magma_queue_create(0, &queue);
-
-   magma_d_matrix A={Magma_CSR}, dA={Magma_CSR};
-
-   /* Pass the matrix to MAGMA and copy it to the GPU */
-   magma_dcsrset(n, n, row, col, val, &A, queue);
-   magma_dmtransfer(A, &dA, Magma_CPU, Magma_DEV, queue);
-
+   /* Copy the matrix on the gpu */
+   int *col_dev, *row_dev;
+   double *val_dev;
+   cudaMalloc((void**)&row_dev, (n+1)*sizeof(int));
+   cudaMalloc((void**)&col_dev, nnz*sizeof(int));
+   cudaMalloc((void**)&val_dev, nnz*sizeof(double));
+   cublasSetVector(n+1,sizeof(int), row, 1, row_dev, 1);
+   cublasSetVector(nnz,sizeof(int), col, 1, col_dev, 1);
+   cublasSetVector(nnz,sizeof(double), val, 1, val_dev, 1);
+   MatrixInfo A;
+   cusparseCreate(&A.cusparse_handle);
+   cusparseCreateCsr(&A.desc, n, n, nnz, row_dev, col_dev, val_dev,
+         CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO,
+         CUDA_R_64F);
+   A.aux = NULL;
+   A.aux_size = 0;
+ 
    /* Set default values in PRIMME configuration struct */
    primme_initialize(&primme);
  
@@ -104,14 +115,16 @@ int main (int argc, char *argv[]) {
                            /* Wanted the smallest eigenvalues */
 
    /* Set problem matrix */
-   primme.matrixMatvec = magmaSparseMatrixMatvec;
-   primme.matrix = &dA;
+   primme.matrixMatvec = cuSparseMatrixMatvec;
+   primme.matrix = &A;
                            /* Function that implements the matrix-vector product
                               A*x for solving the problem A*x = l*x */
  
    /* Set preconditioner (optional) */
+   /*
    primme.applyPreconditioner = magmaDummy;
    primme.correctionParams.precondition = 1;
+   */
 
    /* Set advanced parameters if you know what are you doing (optional) */
    /*
@@ -134,39 +147,15 @@ int main (int argc, char *argv[]) {
 
    /* Allocate space for converged Ritz values and residual norms */
    evals = (double*)malloc(primme.numEvals*sizeof(double));
-   magma_dmalloc(&evecs, primme.n*primme.numEvals);
+   cudaMalloc((void**)&evecs, primme.n*primme.numEvals*sizeof(double));
    rnorms = (double*)malloc(primme.numEvals*sizeof(double));
-
-   primme.commInfo = &queue;
-   cublasHandle_t cublas_handle = magma_queue_get_cublas_handle(queue);
+   
+   cublasHandle_t cublas_handle;
+   cublasCreate(&cublas_handle);
    primme.queue = &cublas_handle;
-
-/*
-   clock_t start,end;
-
-   start = clock();
-   primme.funcTime = 0;
-*/
-  time_t rawtime,rawtime2;
-  struct tm * timeinfo,* timeinfo2;
-
-  time ( &rawtime );
-  timeinfo = localtime ( &rawtime );
-  printf ( "Start ->Current local time and date: %s", asctime (timeinfo) );
-
 
    /* Call primme  */
    ret = cublas_dprimme(evals, evecs, rnorms, &primme);
-
-  time ( &rawtime2 );
-  timeinfo2 = localtime ( &rawtime2 );
-  printf ( "End   ->Current local time and date: %s", asctime (timeinfo2) );
-
-/*
-   end = clock();
-   double time = (double)(end-start)/CLOCKS_PER_SEC;
-*/
-
 
    if (ret != 0) {
       fprintf(primme.outputFile, 
@@ -209,36 +198,43 @@ int main (int argc, char *argv[]) {
    free(rnorms);
 
    // Free the allocated memory...
-   magma_free(evecs);
-   magma_dmfree( &dA, queue );
+   cusparseDestroySpMat(A.desc);
+   cudaFree(evecs);
+   cudaFree(row_dev);
+   cudaFree(col_dev);
+   cudaFree(val_dev);
+   if (A.aux_size > 0) cudaFree(A.aux);
 
-   // and finalize MAGMA.
-   magma_queue_destroy( queue );
-   magma_finalize();
+   // and finalize cuBLAS and cuSparse.
+   cusparseDestroy(A.cusparse_handle);
+   cublasDestroy(cublas_handle);
 
    return 0;
 }
 
-void magmaSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
-   
-   int i;            /* vector index, from 0 to *blockSize-1*/
-   double *xvec;     
-   double *yvec;     
-   magma_d_matrix *A = primme->matrix;
- 
-   for (i=0; i<*blockSize; i++) {
-      magma_d_matrix vx = {Magma_CSR};  /* i-th input vector x */
-      magma_d_matrix vy = {Magma_CSR};  /* i-th output vector y */
+void cuSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+      int *blockSize, primme_params *primme, int *err) {
 
-      magma_dvset_dev(primme->n, 1, (double *)x + *ldx*i, &vx, *(magma_queue_t*)primme->commInfo);
-      magma_dvset_dev(primme->n, 1, (double *)y + *ldy*i, &vy, *(magma_queue_t*)primme->commInfo);
-
-      magma_d_spmv(1.0, *A, vx, 0.0, vy, *(magma_queue_t*)primme->commInfo);
+   MatrixInfo *A = (MatrixInfo*)primme->matrix;
+   cusparseDnMatDescr_t matx, maty;
+   cusparseCreateDnMat(&matx, primme->nLocal, *blockSize, *ldx, x, CUDA_R_64F,
+         CUSPARSE_ORDER_COL);
+   cusparseCreateDnMat(&maty, primme->nLocal, *blockSize, *ldy, y, CUDA_R_64F,
+         CUSPARSE_ORDER_COL);
+   double alpha = 1.0, beta = 0;
+   size_t buffer_size = 0;
+   cusparseSpMM_bufferSize(A->cusparse_handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
+         CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
+         CUDA_R_64F, CUSPARSE_SPMM_ALG_DEFAULT, &buffer_size);
+   if (buffer_size > A->aux_size) {
+      if (A->aux) cudaFree(A->aux);
+      cudaMalloc(&A->aux, buffer_size);
+      A->aux_size = buffer_size;
    }
-   *err = 0;
-}
-
-void magmaDummy(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *err) {
-   magma_dcopymatrix(primme->n, *blockSize, (double*)x, *ldx, (double*)y, *ldy, *(magma_queue_t*)primme->commInfo);
+   cusparseSpMM(A->cusparse_handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
+         CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
+         CUDA_R_64F, CUSPARSE_SPMM_ALG_DEFAULT, A->aux);
+   cusparseDestroyDnMat(matx);
+   cusparseDestroyDnMat(maty);
    *err = 0;
 }
