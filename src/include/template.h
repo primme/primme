@@ -164,7 +164,8 @@
       (defined(USE_HOST) ||                                                    \
             (defined(PRIMME_WITH_MAGMA) && defined(USE_MAGMA) &&               \
                   defined(MAGMA_WITH_HALF)) ||                                 \
-            (defined(PRIMME_WITH_CUBLAS) && defined(USE_CUBLAS)))
+            ((defined(PRIMME_WITH_CUBLAS) || defined(PRIMME_WITH_HIPBLAS)) &&  \
+                  defined(USE_CUBLAS)))
 #  define SUPPORTED_HALF_TYPE
 #endif
 
@@ -183,13 +184,14 @@
             ((defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)) &&    \
                   !defined(MAGMA_WITH_HALF)) ||                                \
             (defined(USE_MAGMA) && !defined(PRIMME_WITH_MAGMA)) ||             \
-            (defined(USE_CUBLAS) && !defined(PRIMME_WITH_CUBLAS)) ||           \
-            ((defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX) ||               \
-                   defined(USE_FLOAT_MAGMA) ||                                 \
-                   defined(USE_FLOATCOMPLEX_MAGMA) ||                          \
-                   defined(USE_HALF_CUBLAS) ||                                 \
-                   defined(USE_HALFCOMPLEX_CUBLAS)) &&                         \
-                  defined(PRIMME_WITHOUT_FLOAT)))
+            (defined(USE_CUBLAS) && !(defined(PRIMME_WITH_CUBLAS) ||           \
+                                          defined(PRIMME_WITH_HIPBLAS))) ||     \
+                  ((defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX) ||         \
+                         defined(USE_FLOAT_MAGMA) ||                           \
+                         defined(USE_FLOATCOMPLEX_MAGMA) ||                    \
+                         defined(USE_HALF_CUBLAS) ||                           \
+                         defined(USE_HALFCOMPLEX_CUBLAS)) &&                   \
+                        defined(PRIMME_WITHOUT_FLOAT)))
 #  undef SUPPORTED_TYPE
 #endif
 

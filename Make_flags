@@ -54,6 +54,11 @@ ifeq ($(PRIMME_WITH_CUDA), yes)
     endif
     override CFLAGS += -I$(CUDADIR)/include -DPRIMME_WITH_CUBLAS
 endif
+# ROCMDIR ?= $(shell hipconfig -R)
+PRIMME_WITH_HIPBLAS ?= $(if $(findstring undefined,$(origin ROCMDIR)),no,yes)
+ifeq ($(PRIMME_WITH_HIPBLAS), yes)
+    override CFLAGS += $(shell hipconfig -C) -I$(ROCMDIR)/include -DPRIMME_WITH_HIPBLAS
+endif
 
 #---------------------------------------------------------------
 # IBM architectures

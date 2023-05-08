@@ -39,7 +39,9 @@ ifeq ($(PRIMME_WITH_MAGMA),yes)
 endif
 ifeq ($(PRIMME_WITH_CUDA),yes)
   EXAMPLES_C += ex_eigs_dcublas
-  override INCLUDE += -I$(CUDADIR)/include
+endif
+ifeq ($(PRIMME_WITH_HIPBLAS),yes)
+  EXAMPLES_C += ex_eigs_dhipblas
 endif
 
 
