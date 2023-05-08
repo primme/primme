@@ -149,17 +149,69 @@
 #warning compiling double complex magma
 #endif
 #define USE_DOUBLECOMPLEX_MAGMA
-#include "template.h" // cyclic
+#include THIS_FILE
+#include "template_undef.h"
+#undef USE_DOUBLECOMPLEX_MAGMA
+
+
+/* CUBLAS types */
+
+
+#ifdef SHOW_TYPE
+#warning compiling half cublas
+#endif
+#define USE_HALF_CUBLAS
+#include THIS_FILE
+#include "template_undef.h"
+#undef USE_HALF_CUBLAS
+
+#ifdef SHOW_TYPE
+#warning compiling half complex cublas
+#endif
+#define USE_HALFCOMPLEX_CUBLAS
+#include THIS_FILE
+#include "template_undef.h"
+#undef USE_HALFCOMPLEX_CUBLAS
+
+#ifdef SHOW_TYPE
+#warning compiling float cublas
+#endif
+#define USE_FLOAT_CUBLAS
+#include THIS_FILE
+#include "template_undef.h"
+#undef USE_FLOAT_CUBLAS
+
+#ifdef SHOW_TYPE
+#warning compiling float complex cublas
+#endif
+#define USE_FLOATCOMPLEX_CUBLAS
+#include THIS_FILE
+#include "template_undef.h"
+#undef USE_FLOATCOMPLEX_CUBLAS
+
+#ifdef SHOW_TYPE
+#warning compiling double cublas
+#endif
+#define USE_DOUBLE_CUBLAS
+#include THIS_FILE
+#include "template_undef.h"
+#undef USE_DOUBLE_CUBLAS
+
+#ifdef SHOW_TYPE
+#warning compiling double complex cublas
+#endif
+#define USE_DOUBLECOMPLEX_CUBLAS
+#include "template.h"
 // #include THIS_FILE
 // #include "template_undef.h"
-// #undef USE_DOUBLECOMPLEX_MAGMA
-// #define USE_QUAD_MAGMA
+// #undef USE_DOUBLECOMPLEX_CUBLAS
+// #define USE_QUAD_CUBLAS
 // #include THIS_FILE
 // #include "template_undef.h"
-// #undef USE_QUAD_MAGMA
-// #define USE_QUADCOMPLEX_MAGMA
+// #undef USE_QUAD_CUBLAS
+// #define USE_QUADCOMPLEX_CUBLAS
 // #include THIS_FILE
-// #undef USE_QUADCOMPLEX_MAGMA
+// #undef USE_QUADCOMPLEX_CUBLAS
 // #include "template_undef.h"
 
 #endif /* THIS_FILE */

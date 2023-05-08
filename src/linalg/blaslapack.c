@@ -1186,9 +1186,9 @@ int Num_hegv_Sprimme(const char *jobz, const char *uplo, PRIMME_INT n,
    CHKERR(Num_malloc_iblasprimme(5*n, &iwork, ctx));
    CHKERR(Num_malloc_iblasprimme(n, &ifail, ctx));
 
-   Num_copy_trimatrix_Sprimme(b0, n, n, ldb0,
+   CHKERR(Num_copy_trimatrix_Sprimme(b0, n, n, ldb0,
          *uplo == 'U' || *uplo == 'u' ? 0 : 1, 0, b, n,
-         0 /*not to zero rest of the matrix */);
+         0 /*not to zero rest of the matrix */));
 
    /* Call to know the optimal workspace */
 

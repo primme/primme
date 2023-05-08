@@ -253,6 +253,19 @@ int magma_dprimme_svds(double *svals, double *svecs, double *resNorms,
       primme_svds_params *primme_svds);
 int magma_zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
       primme_svds_params *primme_svds);
+int cublas_hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms,
+      primme_svds_params *primme_svds);
+int cublas_kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms,
+      primme_svds_params *primme_svds);
+int cublas_sprimme_svds(float *svals, float *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+int cublas_cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+int cublas_dprimme_svds(double *svals, double *svecs, double *resNorms,
+      primme_svds_params *primme_svds);
+int cublas_zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms,
+      primme_svds_params *primme_svds);
+
 
 int hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms,
       primme_svds_params *primme_svds);
@@ -262,6 +275,11 @@ int magma_hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms,
       primme_svds_params *primme_svds);
 int magma_ksprimme_svds(float *svals, PRIMME_COMPLEX_HALF *svecs, float *resNorms,
       primme_svds_params *primme_svds);
+int cublas_hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+int cublas_ksprimme_svds(float *svals, PRIMME_COMPLEX_HALF *svecs, float *resNorms,
+      primme_svds_params *primme_svds);
+
 
 
 primme_svds_params * primme_svds_params_create(void);

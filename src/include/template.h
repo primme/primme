@@ -91,6 +91,12 @@
 #  define USE_MAGMA
 #  define STEM magma_
 #  define IMPL(BL, MA) MA
+#elif defined(USE_FLOAT_CUBLAS) || defined(USE_FLOATCOMPLEX_CUBLAS) ||         \
+      defined(USE_DOUBLE_CUBLAS) || defined(USE_DOUBLECOMPLEX_CUBLAS) ||       \
+      defined(USE_HALF_CUBLAS) || defined(USE_HALFCOMPLEX_CUBLAS)
+#  define USE_CUBLAS
+#  define STEM cublas_
+#  define IMPL(BL, MA) MA
 #else
 #  error 
 #endif
@@ -99,42 +105,46 @@
 #   define STEM_C STEM
 #endif
 
-#if defined(USE_HALF) || defined(USE_HALF_MAGMA) || defined(USE_FLOAT) ||      \
-      defined(USE_FLOAT_MAGMA) || defined(USE_DOUBLE) ||                       \
-      defined(USE_DOUBLE_MAGMA) || defined(USE_QUAD) ||                        \
-      defined(USE_QUAD_MAGMA)
+#if defined(USE_HALF) || defined(USE_HALF_MAGMA) ||                            \
+      defined(USE_HALF_CUBLAS) || defined(USE_FLOAT) ||                        \
+      defined(USE_FLOAT_MAGMA) || defined(USE_FLOAT_CUBLAS) ||                 \
+      defined(USE_DOUBLE) || defined(USE_DOUBLE_MAGMA) ||                      \
+      defined(USE_DOUBLE_CUBLAS) || defined(USE_QUAD) ||                       \
+      defined(USE_QUAD_MAGMA) || defined(USE_QUAD_CUBLAS)
 #  define USE_REAL
 #elif defined(USE_HALFCOMPLEX) || defined(USE_HALFCOMPLEX_MAGMA) ||            \
-      defined(USE_FLOATCOMPLEX) || defined(USE_FLOATCOMPLEX_MAGMA) ||          \
+      defined(USE_HALFCOMPLEX_CUBLAS) || defined(USE_FLOATCOMPLEX) ||          \
+      defined(USE_FLOATCOMPLEX_MAGMA) || defined(USE_FLOATCOMPLEX_CUBLAS) ||   \
       defined(USE_DOUBLECOMPLEX) || defined(USE_DOUBLECOMPLEX_MAGMA) ||        \
-      defined(USE_QUADCOMPLEX) || defined(USE_QUADCOMPLEX_MAGMA)
+      defined(USE_DOUBLECOMPLEX_CUBLAS) || defined(USE_QUADCOMPLEX) ||         \
+      defined(USE_QUADCOMPLEX_MAGMA) || defined(USE_QUADCOMPLEX_CUBLAS)
 #  define USE_COMPLEX
 #else
 #  error 
 #endif
 
-#if   defined(USE_DOUBLE)        || defined(USE_DOUBLE_MAGMA)
+#if   defined(USE_DOUBLE)        || defined(USE_DOUBLE_MAGMA)          || defined(USE_DOUBLE_CUBLAS)
 #  define      ARITH(H,K,S,C,D,Z,Q,W) D
 #  define REAL_ARITH(H,K,S,C,D,Z,Q,W) D
-#elif defined(USE_DOUBLECOMPLEX) || defined(USE_DOUBLECOMPLEX_MAGMA)
+#elif defined(USE_DOUBLECOMPLEX) || defined(USE_DOUBLECOMPLEX_MAGMA)   || defined(USE_DOUBLECOMPLEX_CUBLAS)
 #  define      ARITH(H,K,S,C,D,Z,Q,W) Z
 #  define REAL_ARITH(H,K,S,C,D,Z,Q,W) D
-#elif defined(USE_FLOAT)         || defined(USE_FLOAT_MAGMA)          
+#elif defined(USE_FLOAT)         || defined(USE_FLOAT_MAGMA)           || defined(USE_FLOAT_CUBLAS)
 #  define      ARITH(H,K,S,C,D,Z,Q,W) S
 #  define REAL_ARITH(H,K,S,C,D,Z,Q,W) S
-#elif defined(USE_FLOATCOMPLEX)  || defined(USE_FLOATCOMPLEX_MAGMA)          
+#elif defined(USE_FLOATCOMPLEX)  || defined(USE_FLOATCOMPLEX_MAGMA)    || defined(USE_FLOATCOMPLEX_CUBLAS)      
 #  define      ARITH(H,K,S,C,D,Z,Q,W) C
 #  define REAL_ARITH(H,K,S,C,D,Z,Q,W) S
-#elif defined(USE_HALF)          || defined(USE_HALF_MAGMA)          
+#elif defined(USE_HALF)          || defined(USE_HALF_MAGMA)            || defined(USE_HALF_CUBLAS) 
 #  define      ARITH(H,K,S,C,D,Z,Q,W) H
 #  define REAL_ARITH(H,K,S,C,D,Z,Q,W) H
-#elif defined(USE_HALFCOMPLEX)   || defined(USE_HALFCOMPLEX_MAGMA)          
+#elif defined(USE_HALFCOMPLEX)   || defined(USE_HALFCOMPLEX_MAGMA)     || defined(USE_HALFCOMPLEX_CUBLAS)          
 #  define      ARITH(H,K,S,C,D,Z,Q,W) K
 #  define REAL_ARITH(H,K,S,C,D,Z,Q,W) H
-#elif defined(USE_QUAD)          || defined(USE_QUAD_MAGMA)          
+#elif defined(USE_QUAD)          || defined(USE_QUAD_MAGMA)            || defined(USE_QUAD_CUBLAS) 
 #  define      ARITH(H,K,S,C,D,Z,Q,W) Q
 #  define REAL_ARITH(H,K,S,C,D,Z,Q,W) Q
-#elif defined(USE_QUADCOMPLEX)   || defined(USE_QUADCOMPLEX_MAGMA)          
+#elif defined(USE_QUADCOMPLEX)   || defined(USE_QUADCOMPLEX_MAGMA)     || defined(USE_QUADCOMPLEX_CUBLAS)          
 #  define      ARITH(H,K,S,C,D,Z,Q,W) W
 #  define REAL_ARITH(H,K,S,C,D,Z,Q,W) Q
 #else
@@ -153,28 +163,35 @@
 #if defined(PRIMME_WITH_HALF) && defined(PRIMME_WITH_NATIVE_HALF) &&           \
       (defined(USE_HOST) ||                                                    \
             (defined(PRIMME_WITH_MAGMA) && defined(USE_MAGMA) &&               \
-                  defined(MAGMA_WITH_HALF)))
+                  defined(MAGMA_WITH_HALF)) ||                                 \
+            ((defined(PRIMME_WITH_CUBLAS) || defined(PRIMME_WITH_HIPBLAS)) &&  \
+                  defined(USE_CUBLAS)))
 #  define SUPPORTED_HALF_TYPE
 #endif
 
 // Undefine SUPPORTED_TYPE when the current type is not supported. That is if
 // one the next applies:
-// - USE_HALF/COMPLEX/_MAGMA is defined but SUPPORTED_HALF_TYPE is not.
-// - USE_FLOAT/COMPLEX/_MAGMA is defined but PRIMME_WITHOUT_FLOAT is defined.
+// - USE_HALF/COMPLEX/_MAGMA|CUBLAS is defined but SUPPORTED_HALF_TYPE is not.
+// - USE_FLOAT/COMPLEX/_MAGMA|CUBLAS is defined but PRIMME_WITHOUT_FLOAT is defined.
 // - USE_MAGMA is defined but PRIMME_WITH_MAGMA is not.
 
 #define SUPPORTED_TYPE
 #if !defined(CHECK_TEMPLATE) &&                                                \
       (((defined(USE_HALF) || defined(USE_HALFCOMPLEX) ||                      \
-              defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)) &&    \
+              defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA) ||     \
+              defined(USE_HALF_CUBLAS) || defined(USE_HALFCOMPLEX_CUBLAS)) &&  \
              !defined(SUPPORTED_HALF_TYPE)) ||                                 \
             ((defined(USE_HALF_MAGMA) || defined(USE_HALFCOMPLEX_MAGMA)) &&    \
                   !defined(MAGMA_WITH_HALF)) ||                                \
             (defined(USE_MAGMA) && !defined(PRIMME_WITH_MAGMA)) ||             \
-            ((defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX) ||               \
-                   defined(USE_FLOAT_MAGMA) ||                                 \
-                   defined(USE_FLOATCOMPLEX_MAGMA)) &&                         \
-                  defined(PRIMME_WITHOUT_FLOAT)))
+            (defined(USE_CUBLAS) && !(defined(PRIMME_WITH_CUBLAS) ||           \
+                                          defined(PRIMME_WITH_HIPBLAS))) ||     \
+                  ((defined(USE_FLOAT) || defined(USE_FLOATCOMPLEX) ||         \
+                         defined(USE_FLOAT_MAGMA) ||                           \
+                         defined(USE_FLOATCOMPLEX_MAGMA) ||                    \
+                         defined(USE_HALF_CUBLAS) ||                           \
+                         defined(USE_HALFCOMPLEX_CUBLAS)) &&                   \
+                        defined(PRIMME_WITHOUT_FLOAT)))
 #  undef SUPPORTED_TYPE
 #endif
 
@@ -216,7 +233,7 @@
 /* PLUS_EQUAL(A, B)  : set A += B                                          */
 /* MULT_EQUAL(A, B)  : set A *= B                                          */
 
-#if (defined(USE_HALFCOMPLEX) || defined(USE_HALFCOMPLEX_MAGMA)) && !defined(PRIMME_WITH_NATIVE_COMPLEX_HALF)
+#if (defined(USE_HALFCOMPLEX) || defined(USE_HALFCOMPLEX_MAGMA) || defined(USE_HALFCOMPLEX_CUBLAS)) && !defined(PRIMME_WITH_NATIVE_COMPLEX_HALF)
 #  define SET_ZERO(A) {(A).r = 0; (A).i = 0;}
 #  define SET_COMPLEX(A,B) {(A).r = REAL_PART(B); (A).i = IMAGINARY_PART(B);}
 #  ifndef __cplusplus

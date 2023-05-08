@@ -1173,4 +1173,232 @@ int decompositionmagma_zprimme(dummy_type_zprimme *H, int n, int ldH, dummy_type
 int rank_estimationmagma_zprimme(dummy_type_zprimme *V, int n0, int n1, int n, int ldV);
 int update_cholesky_magma_zprimme(dummy_type_zprimme *VtV, int ldVtV, dummy_type_zprimme *fVtV, int ldfVtV,
       int n0, int n, primme_context ctx);
+int Bortho_gen_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
+      int b1, int b2, dummy_type_cublas_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
+      int (*B)(dummy_type_cublas_hprimme *, PRIMME_INT, dummy_type_cublas_hprimme *, PRIMME_INT, int, void *),
+      void *Bctx, PRIMME_INT *iseed, int *b2_out, primme_context ctx);
+int ortho_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR, int b1, int b2,
+                  dummy_type_cublas_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
+                  PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
+int B_matveccublas_hprimme(dummy_type_cublas_hprimme *x, PRIMME_INT ldx, dummy_type_cublas_hprimme *y, PRIMME_INT ldy,
+      int bs, void *ctx_);
+int Bortho_block_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cublas_hprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
+      int *b2_out, primme_context ctx);
+int Bortho_block_gen_Sprimmecublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_hprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      int (*B)(dummy_type_cublas_hprimme *, PRIMME_INT, dummy_type_cublas_hprimme *, PRIMME_INT, int, void *),
+      void *Bctx, dummy_type_cublas_hprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_single_iteration_cublas_hprimme(dummy_type_cublas_hprimme *Q, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_hprimme *BQ, PRIMME_INT ldBQ, dummy_type_sprimme *QtBQ, int ldQtBQ, dummy_type_cublas_hprimme *X,
+      int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
+int Num_ortho_kernelcublas_hprimme(dummy_type_cublas_hprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_hprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_cublas_hprimme *W, PRIMME_INT ldW, dummy_type_sprimme *B,
+      int ldB, primme_context ctx);
+int decompositioncublas_hprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
+      dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
+int rank_estimationcublas_hprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_cublas_hprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
+int Bortho_gen_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
+      int b1, int b2, dummy_type_cublas_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
+      int (*B)(dummy_type_cublas_kprimme *, PRIMME_INT, dummy_type_cublas_kprimme *, PRIMME_INT, int, void *),
+      void *Bctx, PRIMME_INT *iseed, int *b2_out, primme_context ctx);
+int ortho_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR, int b1, int b2,
+                  dummy_type_cublas_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
+                  PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
+int B_matveccublas_kprimme(dummy_type_cublas_kprimme *x, PRIMME_INT ldx, dummy_type_cublas_kprimme *y, PRIMME_INT ldy,
+      int bs, void *ctx_);
+int Bortho_block_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
+      int *b2_out, primme_context ctx);
+int Bortho_block_gen_Sprimmecublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_kprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      int (*B)(dummy_type_cublas_kprimme *, PRIMME_INT, dummy_type_cublas_kprimme *, PRIMME_INT, int, void *),
+      void *Bctx, dummy_type_cublas_kprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_single_iteration_cublas_kprimme(dummy_type_cublas_kprimme *Q, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_kprimme *BQ, PRIMME_INT ldBQ, dummy_type_cprimme *QtBQ, int ldQtBQ, dummy_type_cublas_kprimme *X,
+      int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
+int Num_ortho_kernelcublas_kprimme(dummy_type_cublas_kprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_kprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_cublas_kprimme *W, PRIMME_INT ldW, dummy_type_cprimme *B,
+      int ldB, primme_context ctx);
+int decompositioncublas_kprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
+      dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
+int rank_estimationcublas_kprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_cublas_kprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
+int Bortho_gen_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR,
+      int b1, int b2, dummy_type_cublas_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
+      int (*B)(dummy_type_cublas_sprimme *, PRIMME_INT, dummy_type_cublas_sprimme *, PRIMME_INT, int, void *),
+      void *Bctx, PRIMME_INT *iseed, int *b2_out, primme_context ctx);
+int ortho_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *R, int ldR, int b1, int b2,
+                  dummy_type_cublas_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
+                  PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
+int B_matveccublas_sprimme(dummy_type_cublas_sprimme *x, PRIMME_INT ldx, dummy_type_cublas_sprimme *y, PRIMME_INT ldy,
+      int bs, void *ctx_);
+int Bortho_block_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cublas_sprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_sprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
+      int *b2_out, primme_context ctx);
+int Bortho_block_gen_Sprimmecublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_sprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_sprimme *fVLtBVL, int ldfVLtBVL, dummy_type_sprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_sprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      int (*B)(dummy_type_cublas_sprimme *, PRIMME_INT, dummy_type_cublas_sprimme *, PRIMME_INT, int, void *),
+      void *Bctx, dummy_type_cublas_sprimme *BV, PRIMME_INT ldBV, dummy_type_sprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_single_iteration_cublas_sprimme(dummy_type_cublas_sprimme *Q, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_sprimme *BQ, PRIMME_INT ldBQ, dummy_type_sprimme *QtBQ, int ldQtBQ, dummy_type_cublas_sprimme *X,
+      int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
+int Num_ortho_kernelcublas_sprimme(dummy_type_cublas_sprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_sprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_sprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_sprimme *Y, int ldY, int Yortho, dummy_type_cublas_sprimme *W, PRIMME_INT ldW, dummy_type_sprimme *B,
+      int ldB, primme_context ctx);
+int decompositioncublas_sprimme(dummy_type_sprimme *H, int n, int ldH, dummy_type_sprimme *Y, int ldY,
+      dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
+int rank_estimationcublas_sprimme(dummy_type_sprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_cublas_sprimme(dummy_type_sprimme *VtV, int ldVtV, dummy_type_sprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
+int Bortho_gen_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR,
+      int b1, int b2, dummy_type_cublas_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
+      int (*B)(dummy_type_cublas_cprimme *, PRIMME_INT, dummy_type_cublas_cprimme *, PRIMME_INT, int, void *),
+      void *Bctx, PRIMME_INT *iseed, int *b2_out, primme_context ctx);
+int ortho_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *R, int ldR, int b1, int b2,
+                  dummy_type_cublas_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
+                  PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
+int B_matveccublas_cprimme(dummy_type_cublas_cprimme *x, PRIMME_INT ldx, dummy_type_cublas_cprimme *y, PRIMME_INT ldy,
+      int bs, void *ctx_);
+int Bortho_block_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
+      int *b2_out, primme_context ctx);
+int Bortho_block_gen_Sprimmecublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_cprimme *fVLtBVL, int ldfVLtBVL, dummy_type_cprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_cprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      int (*B)(dummy_type_cublas_cprimme *, PRIMME_INT, dummy_type_cublas_cprimme *, PRIMME_INT, int, void *),
+      void *Bctx, dummy_type_cublas_cprimme *BV, PRIMME_INT ldBV, dummy_type_cprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_single_iteration_cublas_cprimme(dummy_type_cublas_cprimme *Q, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_cprimme *BQ, PRIMME_INT ldBQ, dummy_type_cprimme *QtBQ, int ldQtBQ, dummy_type_cublas_cprimme *X,
+      int *inX, int nX, PRIMME_INT ldX, dummy_type_sprimme *norms, primme_context ctx);
+int Num_ortho_kernelcublas_cprimme(dummy_type_cublas_cprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_cprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_cprimme *A, int ldA, dummy_type_sprimme *D,
+      dummy_type_cprimme *Y, int ldY, int Yortho, dummy_type_cublas_cprimme *W, PRIMME_INT ldW, dummy_type_cprimme *B,
+      int ldB, primme_context ctx);
+int decompositioncublas_cprimme(dummy_type_cprimme *H, int n, int ldH, dummy_type_cprimme *Y, int ldY,
+      dummy_type_sprimme *evals, int *Yortho, primme_context ctx);
+int rank_estimationcublas_cprimme(dummy_type_cprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_cublas_cprimme(dummy_type_cprimme *VtV, int ldVtV, dummy_type_cprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
+int Bortho_gen_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *R, int ldR,
+      int b1, int b2, dummy_type_cublas_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_dprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
+      int (*B)(dummy_type_cublas_dprimme *, PRIMME_INT, dummy_type_cublas_dprimme *, PRIMME_INT, int, void *),
+      void *Bctx, PRIMME_INT *iseed, int *b2_out, primme_context ctx);
+int ortho_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *R, int ldR, int b1, int b2,
+                  dummy_type_cublas_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
+                  PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
+int B_matveccublas_dprimme(dummy_type_cublas_dprimme *x, PRIMME_INT ldx, dummy_type_cublas_dprimme *y, PRIMME_INT ldy,
+      int bs, void *ctx_);
+int Bortho_block_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_dprimme *fVLtBVL, int ldfVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cublas_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_dprimme *fVLtBVL, int ldfVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_dprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
+      int *b2_out, primme_context ctx);
+int Bortho_block_gen_Sprimmecublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_dprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_dprimme *fVLtBVL, int ldfVLtBVL, dummy_type_dprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_dprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      int (*B)(dummy_type_cublas_dprimme *, PRIMME_INT, dummy_type_cublas_dprimme *, PRIMME_INT, int, void *),
+      void *Bctx, dummy_type_cublas_dprimme *BV, PRIMME_INT ldBV, dummy_type_dprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_single_iteration_cublas_dprimme(dummy_type_cublas_dprimme *Q, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_dprimme *BQ, PRIMME_INT ldBQ, dummy_type_dprimme *QtBQ, int ldQtBQ, dummy_type_cublas_dprimme *X,
+      int *inX, int nX, PRIMME_INT ldX, dummy_type_dprimme *norms, primme_context ctx);
+int Num_ortho_kernelcublas_dprimme(dummy_type_cublas_dprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_dprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_dprimme *A, int ldA, dummy_type_dprimme *D,
+      dummy_type_dprimme *Y, int ldY, int Yortho, dummy_type_cublas_dprimme *W, PRIMME_INT ldW, dummy_type_dprimme *B,
+      int ldB, primme_context ctx);
+int decompositioncublas_dprimme(dummy_type_dprimme *H, int n, int ldH, dummy_type_dprimme *Y, int ldY,
+      dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
+int rank_estimationcublas_dprimme(dummy_type_dprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_cublas_dprimme(dummy_type_dprimme *VtV, int ldVtV, dummy_type_dprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
+int Bortho_gen_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *R, int ldR,
+      int b1, int b2, dummy_type_cublas_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_zprimme *RLocked, int ldRLocked, PRIMME_INT nLocal,
+      int (*B)(dummy_type_cublas_zprimme *, PRIMME_INT, dummy_type_cublas_zprimme *, PRIMME_INT, int, void *),
+      void *Bctx, PRIMME_INT *iseed, int *b2_out, primme_context ctx);
+int ortho_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *R, int ldR, int b1, int b2,
+                  dummy_type_cublas_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
+                  PRIMME_INT nLocal, PRIMME_INT *iseed, primme_context ctx);
+int B_matveccublas_zprimme(dummy_type_cublas_zprimme *x, PRIMME_INT ldx, dummy_type_cublas_zprimme *y, PRIMME_INT ldy,
+      int bs, void *ctx_);
+int Bortho_block_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_zprimme *fVLtBVL, int ldfVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_block_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_zprimme *fVLtBVL, int ldfVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      dummy_type_zprimme *RLocked, int ldRLocked, PRIMME_INT nLocal, int maxRank,
+      int *b2_out, primme_context ctx);
+int Bortho_block_gen_Sprimmecublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_zprimme *VLtBVL,
+      int ldVLtBVL, dummy_type_zprimme *fVLtBVL, int ldfVLtBVL, dummy_type_zprimme *R, PRIMME_INT ldR,
+      int b1, int b2, dummy_type_cublas_zprimme *locked, PRIMME_INT ldLocked, int numLocked,
+      int (*B)(dummy_type_cublas_zprimme *, PRIMME_INT, dummy_type_cublas_zprimme *, PRIMME_INT, int, void *),
+      void *Bctx, dummy_type_cublas_zprimme *BV, PRIMME_INT ldBV, dummy_type_zprimme *RLocked, int ldRLocked,
+      PRIMME_INT nLocal, int maxRank, int *b2_out, primme_context ctx);
+int ortho_single_iteration_cublas_zprimme(dummy_type_cublas_zprimme *Q, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_zprimme *BQ, PRIMME_INT ldBQ, dummy_type_zprimme *QtBQ, int ldQtBQ, dummy_type_cublas_zprimme *X,
+      int *inX, int nX, PRIMME_INT ldX, dummy_type_dprimme *norms, primme_context ctx);
+int Num_ortho_kernelcublas_zprimme(dummy_type_cublas_zprimme *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
+      dummy_type_cublas_zprimme *V, int b1, int b2, PRIMME_INT ldV, dummy_type_zprimme *A, int ldA, dummy_type_dprimme *D,
+      dummy_type_zprimme *Y, int ldY, int Yortho, dummy_type_cublas_zprimme *W, PRIMME_INT ldW, dummy_type_zprimme *B,
+      int ldB, primme_context ctx);
+int decompositioncublas_zprimme(dummy_type_zprimme *H, int n, int ldH, dummy_type_zprimme *Y, int ldY,
+      dummy_type_dprimme *evals, int *Yortho, primme_context ctx);
+int rank_estimationcublas_zprimme(dummy_type_zprimme *V, int n0, int n1, int n, int ldV);
+int update_cholesky_cublas_zprimme(dummy_type_zprimme *VtV, int ldVtV, dummy_type_zprimme *fVtV, int ldfVtV,
+      int n0, int n, primme_context ctx);
 #endif
