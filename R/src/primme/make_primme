@@ -32,7 +32,7 @@ LAPACK_SOURCES = zhegv.cpp
 
 LAPACK_OBJS = $(patsubst %.cpp,%.o,$(LAPACK_SOURCES))
 
-INCLUDE_PRIMME = $(INCLUDE) -I../../inst/include -Iinclude
+INCLUDE_PRIMME = $(INCLUDE) -I../../inst/include/c_interface -Iinclude
 
 #
 # Compilation

@@ -1,9 +1,9 @@
 ## Changes
 
-* Fix USE_FC_LEN_T for R >= 4.3
+* Fix prototype warnings
 
 ## Test environments
-* Ubuntu 20.04, R 4.2 and devel
+* Ubuntu 20.04, R 4.3 and devel
 * win-builder (devel and release)
 
 ## R CMD check results
