@@ -45,12 +45,12 @@
 #ifdef USE_MAGMA
 
 #if defined(USE_HALF_MAGMA)
-#  define USE_CUBLAS
+#  define USE_CUBLAS_HERE
 #endif
 
 #ifndef CHECK_TEMPLATE
 #  include <cuda_runtime.h>
-#  ifdef USE_CUBLAS
+#  ifdef USE_CUBLAS_HERE
 #    include <cublas_v2.h>
 #  endif
 #endif
@@ -1002,8 +1002,8 @@ int Num_compute_gramm_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
 
    if (!isherm || n <= 2 || deep <= 0) l = 0, L = n;
 
-   CHKERR(Num_compute_gramm_Sprimme(
-         X, m, l, ldX, Y, ldY, alpha, H, ldH, deep - 1, 1 /* symmetric */, ctx));
+   CHKERR(Num_compute_gramm_Sprimme(X, m, l, ldX, Y, ldY, alpha, H, ldH,
+         deep - 1, 1 /* symmetric */, ctx));
    CHKERR(Num_compute_gramm_Sprimme(&X[ldX * L], m, l, ldX, &Y[ldY * L], ldY,
          alpha, &H[ldH * L + L], ldH, deep - 1, 1 /* symmetric */, ctx));
    CHKERR(Num_gemm_Sprimme("C", "N", L, L, m, 1.0, X, ldX, &Y[ldY * l], ldY,
@@ -1077,7 +1077,7 @@ int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
 }
 
 
-#undef USE_CUBLAS
+#undef USE_CUBLAS_HERE
 
 #endif /* USE_MAGMA */
 

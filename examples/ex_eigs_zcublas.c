@@ -79,7 +79,7 @@ int main (int argc, char *argv[]) {
    /* Solver arrays and parameters */
    double *evals;    /* Array with the computed eigenvalues */
    double *rnorms;   /* Array with the computed eigenpairs residual norms */
-   double *evecs;    /* Array with the computed eigenvectors;
+   complex double *evecs;    /* Array with the computed eigenvectors;
                         first vector starts in evecs[0],
                         second vector starts in evecs[primme.n],
                         third vector starts in evecs[primme.n*2]...  */
@@ -92,13 +92,13 @@ int main (int argc, char *argv[]) {
    int i,j;
 
    int *col, *row;
-   double *val;
+   complex double *val;
 
    /* Create the matrix on cpu */
    row = (int*) calloc(n+1, sizeof(int));
    int nnz = n+(n>0?n-1:0)*2;
    col = (int*) calloc(nnz, sizeof(int));
-   val = (double*) calloc(nnz, sizeof(double));
+   val = (complex double*) calloc(nnz, sizeof(complex double));
 
    for (i = j = 0; i < n; i++) {
       row[i] = j;
@@ -110,18 +110,18 @@ int main (int argc, char *argv[]) {
 
    /* Copy the matrix on the gpu */
    int *col_dev, *row_dev;
-   double *val_dev;
+   complex double *val_dev;
    checkCuda(cudaMalloc((void**)&row_dev, (n+1)*sizeof(int)));
    checkCuda(cudaMalloc((void**)&col_dev, nnz*sizeof(int)));
-   checkCuda(cudaMalloc((void**)&val_dev, nnz*sizeof(double)));
+   checkCuda(cudaMalloc((void**)&val_dev, nnz*sizeof(complex double)));
    checkCublas(cublasSetVector(n+1,sizeof(int), row, 1, row_dev, 1));
    checkCublas(cublasSetVector(nnz,sizeof(int), col, 1, col_dev, 1));
-   checkCublas(cublasSetVector(nnz,sizeof(double), val, 1, val_dev, 1));
+   checkCublas(cublasSetVector(nnz,sizeof(complex double), val, 1, val_dev, 1));
    MatrixInfo A;
    checkCusparse(cusparseCreate(&A.cusparse_handle));
    checkCusparse(cusparseCreateCsr(&A.desc, n, n, nnz, row_dev, col_dev, val_dev,
          CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO,
-         CUDA_R_64F));
+         CUDA_C_64F));
    A.aux = NULL;
    A.aux_size = 0;
  
@@ -168,7 +168,7 @@ int main (int argc, char *argv[]) {
 
    /* Allocate space for converged Ritz values and residual norms */
    evals = (double*)malloc(primme.numEvals*sizeof(double));
-   checkCuda(cudaMalloc((void**)&evecs, primme.n*primme.numEvals*sizeof(double)));
+   checkCuda(cudaMalloc((void**)&evecs, primme.n*primme.numEvals*sizeof(complex double)));
    rnorms = (double*)malloc(primme.numEvals*sizeof(double));
    
    cublasHandle_t cublas_handle;
@@ -176,7 +176,7 @@ int main (int argc, char *argv[]) {
    primme.queue = &cublas_handle;
 
    /* Call primme  */
-   ret = cublas_dprimme(evals, evecs, rnorms, &primme);
+   ret = cublas_zprimme(evals, evecs, rnorms, &primme);
 
    if (ret != 0) {
       fprintf(primme.outputFile, 
@@ -238,15 +238,15 @@ void cuSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
 
    MatrixInfo *A = (MatrixInfo*)primme->matrix;
    cusparseDnMatDescr_t matx, maty;
-   checkCusparse(cusparseCreateDnMat(&matx, primme->nLocal, *blockSize, *ldx, x, CUDA_R_64F,
+   checkCusparse(cusparseCreateDnMat(&matx, primme->nLocal, *blockSize, *ldx, x, CUDA_C_64F,
          CUSPARSE_ORDER_COL));
-   checkCusparse(cusparseCreateDnMat(&maty, primme->nLocal, *blockSize, *ldy, y, CUDA_R_64F,
+   checkCusparse(cusparseCreateDnMat(&maty, primme->nLocal, *blockSize, *ldy, y, CUDA_C_64F,
          CUSPARSE_ORDER_COL));
-   double alpha = 1.0, beta = 0;
+   complex double alpha = 1.0, beta = 0;
    size_t buffer_size = 0;
    checkCusparse(cusparseSpMM_bufferSize(A->cusparse_handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
          CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
-         CUDA_R_64F, CUSPARSE_SPMM_ALG_DEFAULT, &buffer_size));
+         CUDA_C_64F, CUSPARSE_SPMM_ALG_DEFAULT, &buffer_size));
    if (buffer_size > A->aux_size) {
       if (A->aux) cudaFree(A->aux);
       checkCuda(cudaMalloc(&A->aux, buffer_size));
@@ -254,7 +254,7 @@ void cuSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    }
    checkCusparse(cusparseSpMM(A->cusparse_handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
          CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
-         CUDA_R_64F, CUSPARSE_SPMM_ALG_DEFAULT, A->aux));
+         CUDA_C_64F, CUSPARSE_SPMM_ALG_DEFAULT, A->aux));
    checkCusparse(cusparseDestroyDnMat(matx));
    checkCusparse(cusparseDestroyDnMat(maty));
    *err = 0;

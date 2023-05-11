@@ -883,7 +883,7 @@ int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, PRIMME_INT incx,
 }
 
 /*******************************************************************************
- * Subroutine Num_dot_Sprimme - y'*x
+ * Subroutine Num_dot_Sprimme - x'*y
  ******************************************************************************/
 
 TEMPLATE_PLEASE
