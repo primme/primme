@@ -36,7 +36,7 @@
 #ifndef _PRIMME_TYPES_
 
 #include <Rcpp.h>
-#include "primme.h"
+#include "c_interface/primme.h"
 
 typedef Rcpp::XPtr<primme_params> PrimmeParams;
 typedef Rcpp::XPtr<primme_svds_params> PrimmeSvdsParams;

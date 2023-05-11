@@ -35,13 +35,15 @@
  *
  ******************************************************************************/
 
+// [[Rcpp::interfaces(r, cpp)]]
+
 #ifndef USE_FC_LEN_T
 #    define USE_FC_LEN_T
 #endif
 #include <R.h>
 #include <Rcpp.h>
 #include <algorithm>
-#include "primme.h"
+#include "c_interface/primme.h"
 #include "PRIMME_types.h"
 #include <Rconfig.h>
 #include <R_ext/BLAS.h> // for BLAS and F77_NAME

@@ -57,3 +57,7 @@
     .Call(`_PRIMME_zprimme_svds_rcpp`, orthol, orthor, initl, initr, A, prec, primme_svds)
 }
 
+# Register entry points for exported C++ functions
+methods::setLoadAction(function(ns) {
+    .Call('_PRIMME_RcppExport_registerCCallable', PACKAGE = 'PRIMME')
+})

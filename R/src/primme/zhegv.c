@@ -225,12 +225,12 @@ static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
 
 /* procedure parameter types for -A and -C++ */
 
-#define F2C_proc_par_types 1
-#ifdef __cplusplus
-typedef logical (*L_fp)(...);
-#else
-typedef logical (*L_fp)();
-#endif
+// #define F2C_proc_par_types 1
+// #ifdef __cplusplus
+// typedef logical (*L_fp)(...);
+// #else
+// typedef logical (*L_fp)();
+// #endif
 
 static float spow_ui(float x, integer n) {
 	float pow=1.0; unsigned long int u;
@@ -3711,8 +3711,8 @@ L10:
 	    integer *, doublecomplex *, doublecomplex *, integer *);
     integer lastv;
     extern /* Subroutine */ int ztrmv_(char *, char *, char *, integer *, 
-	    doublecomplex *, integer *, doublecomplex *, integer *), zlacgv_(integer *, doublecomplex *, integer *), 
-	    mecago_();
+	    doublecomplex *, integer *, doublecomplex *, integer *);
+    extern int zlacgv_(integer *, doublecomplex *, integer *);
 
 
 /*  -- LAPACK auxiliary routine (version 3.3.1) -- */

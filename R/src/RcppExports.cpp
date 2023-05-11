@@ -2,71 +2,194 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include "PRIMME_types.h"
+#include "../inst/include/PRIMME.h"
+#include "../inst/include/PRIMME_types.h"
 #include <Rcpp.h>
+#include <string>
+#include <set>
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // primme_initialize_rcpp
 PrimmeParams primme_initialize_rcpp();
-RcppExport SEXP _PRIMME_primme_initialize_rcpp() {
+static SEXP _PRIMME_primme_initialize_rcpp_try() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     rcpp_result_gen = Rcpp::wrap(primme_initialize_rcpp());
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_initialize_rcpp() {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_initialize_rcpp_try());
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // primme_free_rcpp
 void primme_free_rcpp(PrimmeParams primme);
-RcppExport SEXP _PRIMME_primme_free_rcpp(SEXP primmeSEXP) {
+static SEXP _PRIMME_primme_free_rcpp_try(SEXP primmeSEXP) {
 BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< PrimmeParams >::type primme(primmeSEXP);
     primme_free_rcpp(primme);
     return R_NilValue;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_free_rcpp(SEXP primmeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_free_rcpp_try(primmeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // primme_set_method_rcpp
 void primme_set_method_rcpp(std::string methodstr, PrimmeParams primme);
-RcppExport SEXP _PRIMME_primme_set_method_rcpp(SEXP methodstrSEXP, SEXP primmeSEXP) {
+static SEXP _PRIMME_primme_set_method_rcpp_try(SEXP methodstrSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type methodstr(methodstrSEXP);
     Rcpp::traits::input_parameter< PrimmeParams >::type primme(primmeSEXP);
     primme_set_method_rcpp(methodstr, primme);
     return R_NilValue;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_set_method_rcpp(SEXP methodstrSEXP, SEXP primmeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_set_method_rcpp_try(methodstrSEXP, primmeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // primme_get_member_rcpp
 SEXP primme_get_member_rcpp(std::string labelstr, PrimmeParams primme);
-RcppExport SEXP _PRIMME_primme_get_member_rcpp(SEXP labelstrSEXP, SEXP primmeSEXP) {
+static SEXP _PRIMME_primme_get_member_rcpp_try(SEXP labelstrSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type labelstr(labelstrSEXP);
     Rcpp::traits::input_parameter< PrimmeParams >::type primme(primmeSEXP);
     rcpp_result_gen = Rcpp::wrap(primme_get_member_rcpp(labelstr, primme));
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_get_member_rcpp(SEXP labelstrSEXP, SEXP primmeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_get_member_rcpp_try(labelstrSEXP, primmeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // primme_set_member_rcpp
 void primme_set_member_rcpp(std::string labelstr, SEXP value, PrimmeParams primme);
-RcppExport SEXP _PRIMME_primme_set_member_rcpp(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primmeSEXP) {
+static SEXP _PRIMME_primme_set_member_rcpp_try(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type labelstr(labelstrSEXP);
     Rcpp::traits::input_parameter< SEXP >::type value(valueSEXP);
     Rcpp::traits::input_parameter< PrimmeParams >::type primme(primmeSEXP);
     primme_set_member_rcpp(labelstr, value, primme);
     return R_NilValue;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_set_member_rcpp(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primmeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_set_member_rcpp_try(labelstrSEXP, valueSEXP, primmeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // dprimme_rcpp
 List dprimme_rcpp(NumericMatrix ortho, NumericMatrix init, SEXP A, SEXP B, SEXP prec, SEXP convTest, PrimmeParams primme);
-RcppExport SEXP _PRIMME_dprimme_rcpp(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
+static SEXP _PRIMME_dprimme_rcpp_try(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type ortho(orthoSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type init(initSEXP);
     Rcpp::traits::input_parameter< SEXP >::type A(ASEXP);
@@ -76,14 +199,37 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< PrimmeParams >::type primme(primmeSEXP);
     rcpp_result_gen = Rcpp::wrap(dprimme_rcpp(ortho, init, A, B, prec, convTest, primme));
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_dprimme_rcpp(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_dprimme_rcpp_try(orthoSEXP, initSEXP, ASEXP, BSEXP, precSEXP, convTestSEXP, primmeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // zprimme_rcpp
 List zprimme_rcpp(ComplexMatrix ortho, ComplexMatrix init, SEXP A, SEXP B, SEXP prec, SEXP convTest, PrimmeParams primme);
-RcppExport SEXP _PRIMME_zprimme_rcpp(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
+static SEXP _PRIMME_zprimme_rcpp_try(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< ComplexMatrix >::type ortho(orthoSEXP);
     Rcpp::traits::input_parameter< ComplexMatrix >::type init(initSEXP);
     Rcpp::traits::input_parameter< SEXP >::type A(ASEXP);
@@ -93,71 +239,209 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< PrimmeParams >::type primme(primmeSEXP);
     rcpp_result_gen = Rcpp::wrap(zprimme_rcpp(ortho, init, A, B, prec, convTest, primme));
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_zprimme_rcpp(SEXP orthoSEXP, SEXP initSEXP, SEXP ASEXP, SEXP BSEXP, SEXP precSEXP, SEXP convTestSEXP, SEXP primmeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_zprimme_rcpp_try(orthoSEXP, initSEXP, ASEXP, BSEXP, precSEXP, convTestSEXP, primmeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // primme_svds_initialize_rcpp
 PrimmeSvdsParams primme_svds_initialize_rcpp();
-RcppExport SEXP _PRIMME_primme_svds_initialize_rcpp() {
+static SEXP _PRIMME_primme_svds_initialize_rcpp_try() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     rcpp_result_gen = Rcpp::wrap(primme_svds_initialize_rcpp());
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_svds_initialize_rcpp() {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_svds_initialize_rcpp_try());
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // primme_svds_free_rcpp
 void primme_svds_free_rcpp(PrimmeSvdsParams primme_svds);
-RcppExport SEXP _PRIMME_primme_svds_free_rcpp(SEXP primme_svdsSEXP) {
+static SEXP _PRIMME_primme_svds_free_rcpp_try(SEXP primme_svdsSEXP) {
 BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< PrimmeSvdsParams >::type primme_svds(primme_svdsSEXP);
     primme_svds_free_rcpp(primme_svds);
     return R_NilValue;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_svds_free_rcpp(SEXP primme_svdsSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_svds_free_rcpp_try(primme_svdsSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // primme_svds_set_method_rcpp
 void primme_svds_set_method_rcpp(std::string methodstr, std::string methodStage1str, std::string methodStage2str, PrimmeSvdsParams primme_svds);
-RcppExport SEXP _PRIMME_primme_svds_set_method_rcpp(SEXP methodstrSEXP, SEXP methodStage1strSEXP, SEXP methodStage2strSEXP, SEXP primme_svdsSEXP) {
+static SEXP _PRIMME_primme_svds_set_method_rcpp_try(SEXP methodstrSEXP, SEXP methodStage1strSEXP, SEXP methodStage2strSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type methodstr(methodstrSEXP);
     Rcpp::traits::input_parameter< std::string >::type methodStage1str(methodStage1strSEXP);
     Rcpp::traits::input_parameter< std::string >::type methodStage2str(methodStage2strSEXP);
     Rcpp::traits::input_parameter< PrimmeSvdsParams >::type primme_svds(primme_svdsSEXP);
     primme_svds_set_method_rcpp(methodstr, methodStage1str, methodStage2str, primme_svds);
     return R_NilValue;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_svds_set_method_rcpp(SEXP methodstrSEXP, SEXP methodStage1strSEXP, SEXP methodStage2strSEXP, SEXP primme_svdsSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_svds_set_method_rcpp_try(methodstrSEXP, methodStage1strSEXP, methodStage2strSEXP, primme_svdsSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // primme_svds_get_member_rcpp
 SEXP primme_svds_get_member_rcpp(std::string labelstr, PrimmeSvdsParams primme_svds);
-RcppExport SEXP _PRIMME_primme_svds_get_member_rcpp(SEXP labelstrSEXP, SEXP primme_svdsSEXP) {
+static SEXP _PRIMME_primme_svds_get_member_rcpp_try(SEXP labelstrSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type labelstr(labelstrSEXP);
     Rcpp::traits::input_parameter< PrimmeSvdsParams >::type primme_svds(primme_svdsSEXP);
     rcpp_result_gen = Rcpp::wrap(primme_svds_get_member_rcpp(labelstr, primme_svds));
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_svds_get_member_rcpp(SEXP labelstrSEXP, SEXP primme_svdsSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_svds_get_member_rcpp_try(labelstrSEXP, primme_svdsSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // primme_svds_set_member_rcpp
 void primme_svds_set_member_rcpp(std::string labelstr, SEXP value, PrimmeSvdsParams primme_svds);
-RcppExport SEXP _PRIMME_primme_svds_set_member_rcpp(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primme_svdsSEXP) {
+static SEXP _PRIMME_primme_svds_set_member_rcpp_try(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type labelstr(labelstrSEXP);
     Rcpp::traits::input_parameter< SEXP >::type value(valueSEXP);
     Rcpp::traits::input_parameter< PrimmeSvdsParams >::type primme_svds(primme_svdsSEXP);
     primme_svds_set_member_rcpp(labelstr, value, primme_svds);
     return R_NilValue;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_primme_svds_set_member_rcpp(SEXP labelstrSEXP, SEXP valueSEXP, SEXP primme_svdsSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_primme_svds_set_member_rcpp_try(labelstrSEXP, valueSEXP, primme_svdsSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // dprimme_svds_rcpp
 List dprimme_svds_rcpp(NumericMatrix orthol, NumericMatrix orthor, NumericMatrix initl, NumericMatrix initr, SEXP A, SEXP prec, PrimmeSvdsParams primme_svds);
-RcppExport SEXP _PRIMME_dprimme_svds_rcpp(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
+static SEXP _PRIMME_dprimme_svds_rcpp_try(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type orthol(ortholSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type orthor(orthorSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type initl(initlSEXP);
@@ -167,14 +451,37 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< PrimmeSvdsParams >::type primme_svds(primme_svdsSEXP);
     rcpp_result_gen = Rcpp::wrap(dprimme_svds_rcpp(orthol, orthor, initl, initr, A, prec, primme_svds));
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_dprimme_svds_rcpp(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_dprimme_svds_rcpp_try(ortholSEXP, orthorSEXP, initlSEXP, initrSEXP, ASEXP, precSEXP, primme_svdsSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // zprimme_svds_rcpp
 List zprimme_svds_rcpp(ComplexMatrix orthol, ComplexMatrix orthor, ComplexMatrix initl, ComplexMatrix initr, SEXP A, SEXP prec, PrimmeSvdsParams primme_svds);
-RcppExport SEXP _PRIMME_zprimme_svds_rcpp(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
+static SEXP _PRIMME_zprimme_svds_rcpp_try(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< ComplexMatrix >::type orthol(ortholSEXP);
     Rcpp::traits::input_parameter< ComplexMatrix >::type orthor(orthorSEXP);
     Rcpp::traits::input_parameter< ComplexMatrix >::type initl(initlSEXP);
@@ -184,5 +491,95 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< PrimmeSvdsParams >::type primme_svds(primme_svdsSEXP);
     rcpp_result_gen = Rcpp::wrap(zprimme_svds_rcpp(orthol, orthor, initl, initr, A, prec, primme_svds));
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _PRIMME_zprimme_svds_rcpp(SEXP ortholSEXP, SEXP orthorSEXP, SEXP initlSEXP, SEXP initrSEXP, SEXP ASEXP, SEXP precSEXP, SEXP primme_svdsSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_PRIMME_zprimme_svds_rcpp_try(ortholSEXP, orthorSEXP, initlSEXP, initrSEXP, ASEXP, precSEXP, primme_svdsSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
+}
+
+// validate (ensure exported C++ functions exist before calling them)
+static int _PRIMME_RcppExport_validate(const char* sig) { 
+    static std::set<std::string> signatures;
+    if (signatures.empty()) {
+        signatures.insert("PrimmeParams(*.primme_initialize)()");
+        signatures.insert("void(*.primme_free)(PrimmeParams)");
+        signatures.insert("void(*.primme_set_method)(std::string,PrimmeParams)");
+        signatures.insert("SEXP(*.primme_get_member)(std::string,PrimmeParams)");
+        signatures.insert("void(*.primme_set_member)(std::string,SEXP,PrimmeParams)");
+        signatures.insert("List(*.dprimme)(NumericMatrix,NumericMatrix,SEXP,SEXP,SEXP,SEXP,PrimmeParams)");
+        signatures.insert("List(*.zprimme)(ComplexMatrix,ComplexMatrix,SEXP,SEXP,SEXP,SEXP,PrimmeParams)");
+        signatures.insert("PrimmeSvdsParams(*.primme_svds_initialize)()");
+        signatures.insert("void(*.primme_svds_free)(PrimmeSvdsParams)");
+        signatures.insert("void(*.primme_svds_set_method)(std::string,std::string,std::string,PrimmeSvdsParams)");
+        signatures.insert("SEXP(*.primme_svds_get_member)(std::string,PrimmeSvdsParams)");
+        signatures.insert("void(*.primme_svds_set_member)(std::string,SEXP,PrimmeSvdsParams)");
+        signatures.insert("List(*.dprimme_svds)(NumericMatrix,NumericMatrix,NumericMatrix,NumericMatrix,SEXP,SEXP,PrimmeSvdsParams)");
+        signatures.insert("List(*.zprimme_svds)(ComplexMatrix,ComplexMatrix,ComplexMatrix,ComplexMatrix,SEXP,SEXP,PrimmeSvdsParams)");
+    }
+    return signatures.find(sig) != signatures.end();
+}
+
+// registerCCallable (register entry points for exported C++ functions)
+RcppExport SEXP _PRIMME_RcppExport_registerCCallable() { 
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_initialize", (DL_FUNC)_PRIMME_primme_initialize_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_free", (DL_FUNC)_PRIMME_primme_free_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_set_method", (DL_FUNC)_PRIMME_primme_set_method_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_get_member", (DL_FUNC)_PRIMME_primme_get_member_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_set_member", (DL_FUNC)_PRIMME_primme_set_member_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.dprimme", (DL_FUNC)_PRIMME_dprimme_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.zprimme", (DL_FUNC)_PRIMME_zprimme_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_svds_initialize", (DL_FUNC)_PRIMME_primme_svds_initialize_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_svds_free", (DL_FUNC)_PRIMME_primme_svds_free_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_svds_set_method", (DL_FUNC)_PRIMME_primme_svds_set_method_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_svds_get_member", (DL_FUNC)_PRIMME_primme_svds_get_member_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.primme_svds_set_member", (DL_FUNC)_PRIMME_primme_svds_set_member_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.dprimme_svds", (DL_FUNC)_PRIMME_dprimme_svds_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_.zprimme_svds", (DL_FUNC)_PRIMME_zprimme_svds_rcpp_try);
+    R_RegisterCCallable("PRIMME", "_PRIMME_RcppExport_validate", (DL_FUNC)_PRIMME_RcppExport_validate);
+    return R_NilValue;
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_PRIMME_primme_initialize_rcpp", (DL_FUNC) &_PRIMME_primme_initialize_rcpp, 0},
+    {"_PRIMME_primme_free_rcpp", (DL_FUNC) &_PRIMME_primme_free_rcpp, 1},
+    {"_PRIMME_primme_set_method_rcpp", (DL_FUNC) &_PRIMME_primme_set_method_rcpp, 2},
+    {"_PRIMME_primme_get_member_rcpp", (DL_FUNC) &_PRIMME_primme_get_member_rcpp, 2},
+    {"_PRIMME_primme_set_member_rcpp", (DL_FUNC) &_PRIMME_primme_set_member_rcpp, 3},
+    {"_PRIMME_dprimme_rcpp", (DL_FUNC) &_PRIMME_dprimme_rcpp, 7},
+    {"_PRIMME_zprimme_rcpp", (DL_FUNC) &_PRIMME_zprimme_rcpp, 7},
+    {"_PRIMME_primme_svds_initialize_rcpp", (DL_FUNC) &_PRIMME_primme_svds_initialize_rcpp, 0},
+    {"_PRIMME_primme_svds_free_rcpp", (DL_FUNC) &_PRIMME_primme_svds_free_rcpp, 1},
+    {"_PRIMME_primme_svds_set_method_rcpp", (DL_FUNC) &_PRIMME_primme_svds_set_method_rcpp, 4},
+    {"_PRIMME_primme_svds_get_member_rcpp", (DL_FUNC) &_PRIMME_primme_svds_get_member_rcpp, 2},
+    {"_PRIMME_primme_svds_set_member_rcpp", (DL_FUNC) &_PRIMME_primme_svds_set_member_rcpp, 3},
+    {"_PRIMME_dprimme_svds_rcpp", (DL_FUNC) &_PRIMME_dprimme_svds_rcpp, 7},
+    {"_PRIMME_zprimme_svds_rcpp", (DL_FUNC) &_PRIMME_zprimme_svds_rcpp, 7},
+    {"_PRIMME_RcppExport_registerCCallable", (DL_FUNC) &_PRIMME_RcppExport_registerCCallable, 0},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_PRIMME(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
