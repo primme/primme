@@ -978,38 +978,6 @@ int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
    return 0;
 }
 
-/*******************************************************************************
- * Subroutine Num_print_matrix_Sprimme - print a matrix
- ******************************************************************************/
-
-TEMPLATE_PLEASE
-int Num_print_matrix_Sprimme(SCALAR *a, int m, int n, int lda, primme_context ctx) {
-
-   /* Zero dimension matrix may cause problems */
-   if (m == 0 || n == 0) return 0;
-
-   /* Check pointer */
-
-   struct cudaPointerAttributes ptr_attr;
-   if (cudaPointerGetAttributes(&ptr_attr, a) != cudaSuccess) return -1;
-   printf("%% ptr: %p cuda_device: %d device_pointer: %p host_pointer: %p type: ", a, (int)ptr_attr.device, ptr_attr.devicePointer, ptr_attr.hostPointer);
-   switch(ptr_attr.type) {
-   case cudaMemoryTypeUnregistered : printf("cudaMemoryTypeUnregistered\n"); break;
-   case cudaMemoryTypeHost         : printf("cudaMemoryTypeHost        \n"); break;
-   case cudaMemoryTypeDevice       : printf("cudaMemoryTypeDevice      \n"); break;
-   case cudaMemoryTypeManaged      : printf("cudaMemoryTypeManaged     \n"); break;
-   }
-
-   XSCALAR *a_host; /* copy of a */
-   CHKERR(Num_malloc_SXprimme(m * n, &a_host, ctx));
-   CHKERR(Num_get_matrix_Sprimme(a, m, n, lda, a_host, m, ctx));
-   CHKERR(Num_print_matrix_SXprimme(a_host, m, n, m, ctx));
-   CHKERR(Num_free_SXprimme(a_host, ctx));
-
-   return 0;
-}
-
-
 #endif /* USE_CUBLAS */
 
 #endif /* SUPPORTED_TYPE */
