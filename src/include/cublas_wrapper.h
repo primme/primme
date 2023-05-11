@@ -33,6 +33,10 @@
 
 #ifndef cublas_wrapper_H
 #define cublas_wrapper_H
+#if !defined(CHECK_TEMPLATE) && !defined(toCudaDataType)
+#  define toCudaDataType CONCAT(toCudaDataType,SCALAR_SUF)
+#endif
+void toCudaDataTypecublas_hprimme(primme_op_datatype xt, void *r);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Sprimme)
 #  define Num_check_pointer_Sprimme CONCAT(Num_check_pointer_,SCALAR_SUF)
 #endif
@@ -582,6 +586,190 @@ int Num_copy_Tmatrix_cublas_hprimme(void *x, primme_op_datatype xt, PRIMME_INT m
 #endif
 int Num_copy_cublas_hprimme(PRIMME_INT n, dummy_type_cublas_hprimme *x, int incx, dummy_type_cublas_hprimme *y, int incy,
       primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Sprimme)
+#  define Num_set_matrix_Sprimme CONCAT(Num_set_matrix_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Rprimme)
+#  define Num_set_matrix_Rprimme CONCAT(Num_set_matrix_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SHprimme)
+#  define Num_set_matrix_SHprimme CONCAT(Num_set_matrix_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RHprimme)
+#  define Num_set_matrix_RHprimme CONCAT(Num_set_matrix_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SXprimme)
+#  define Num_set_matrix_SXprimme CONCAT(Num_set_matrix_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RXprimme)
+#  define Num_set_matrix_RXprimme CONCAT(Num_set_matrix_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Shprimme)
+#  define Num_set_matrix_Shprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Rhprimme)
+#  define Num_set_matrix_Rhprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Ssprimme)
+#  define Num_set_matrix_Ssprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Rsprimme)
+#  define Num_set_matrix_Rsprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Sdprimme)
+#  define Num_set_matrix_Sdprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Rdprimme)
+#  define Num_set_matrix_Rdprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Sqprimme)
+#  define Num_set_matrix_Sqprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_Rqprimme)
+#  define Num_set_matrix_Rqprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SXhprimme)
+#  define Num_set_matrix_SXhprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RXhprimme)
+#  define Num_set_matrix_RXhprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SXsprimme)
+#  define Num_set_matrix_SXsprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RXsprimme)
+#  define Num_set_matrix_RXsprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SXdprimme)
+#  define Num_set_matrix_SXdprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RXdprimme)
+#  define Num_set_matrix_RXdprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SXqprimme)
+#  define Num_set_matrix_SXqprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RXqprimme)
+#  define Num_set_matrix_RXqprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SHhprimme)
+#  define Num_set_matrix_SHhprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RHhprimme)
+#  define Num_set_matrix_RHhprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SHsprimme)
+#  define Num_set_matrix_SHsprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RHsprimme)
+#  define Num_set_matrix_RHsprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SHdprimme)
+#  define Num_set_matrix_SHdprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RHdprimme)
+#  define Num_set_matrix_RHdprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_SHqprimme)
+#  define Num_set_matrix_SHqprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_set_matrix_RHqprimme)
+#  define Num_set_matrix_RHqprimme CONCAT(Num_set_matrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int Num_set_matrix_cublas_hprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_cublas_hprimme *y, PRIMME_INT ldy, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Sprimme)
+#  define Num_get_matrix_Sprimme CONCAT(Num_get_matrix_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Rprimme)
+#  define Num_get_matrix_Rprimme CONCAT(Num_get_matrix_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SHprimme)
+#  define Num_get_matrix_SHprimme CONCAT(Num_get_matrix_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RHprimme)
+#  define Num_get_matrix_RHprimme CONCAT(Num_get_matrix_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SXprimme)
+#  define Num_get_matrix_SXprimme CONCAT(Num_get_matrix_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RXprimme)
+#  define Num_get_matrix_RXprimme CONCAT(Num_get_matrix_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Shprimme)
+#  define Num_get_matrix_Shprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Rhprimme)
+#  define Num_get_matrix_Rhprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Ssprimme)
+#  define Num_get_matrix_Ssprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Rsprimme)
+#  define Num_get_matrix_Rsprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Sdprimme)
+#  define Num_get_matrix_Sdprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Rdprimme)
+#  define Num_get_matrix_Rdprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Sqprimme)
+#  define Num_get_matrix_Sqprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_Rqprimme)
+#  define Num_get_matrix_Rqprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SXhprimme)
+#  define Num_get_matrix_SXhprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RXhprimme)
+#  define Num_get_matrix_RXhprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SXsprimme)
+#  define Num_get_matrix_SXsprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RXsprimme)
+#  define Num_get_matrix_RXsprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SXdprimme)
+#  define Num_get_matrix_SXdprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RXdprimme)
+#  define Num_get_matrix_RXdprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SXqprimme)
+#  define Num_get_matrix_SXqprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RXqprimme)
+#  define Num_get_matrix_RXqprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SHhprimme)
+#  define Num_get_matrix_SHhprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RHhprimme)
+#  define Num_get_matrix_RHhprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SHsprimme)
+#  define Num_get_matrix_SHsprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RHsprimme)
+#  define Num_get_matrix_RHsprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SHdprimme)
+#  define Num_get_matrix_SHdprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RHdprimme)
+#  define Num_get_matrix_RHdprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_SHqprimme)
+#  define Num_get_matrix_SHqprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_get_matrix_RHqprimme)
+#  define Num_get_matrix_RHqprimme CONCAT(Num_get_matrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int Num_get_matrix_cublas_hprimme(dummy_type_cublas_hprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_gemm_Sprimme)
 #  define Num_gemm_Sprimme CONCAT(Num_gemm_,SCALAR_SUF)
 #endif
@@ -1972,6 +2160,98 @@ int Num_compute_gramm_cublas_hprimme(dummy_type_cublas_hprimme *X, PRIMME_INT m,
 int Num_compute_gramm_ddh_cublas_hprimme(dummy_type_cublas_hprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_cublas_hprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Sprimme)
+#  define Num_print_matrix_Sprimme CONCAT(Num_print_matrix_,SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rprimme)
+#  define Num_print_matrix_Rprimme CONCAT(Num_print_matrix_,REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHprimme)
+#  define Num_print_matrix_SHprimme CONCAT(Num_print_matrix_,HOST_SCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHprimme)
+#  define Num_print_matrix_RHprimme CONCAT(Num_print_matrix_,HOST_REAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXprimme)
+#  define Num_print_matrix_SXprimme CONCAT(Num_print_matrix_,XSCALAR_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXprimme)
+#  define Num_print_matrix_RXprimme CONCAT(Num_print_matrix_,XREAL_SUF)
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Shprimme)
+#  define Num_print_matrix_Shprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rhprimme)
+#  define Num_print_matrix_Rhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Ssprimme)
+#  define Num_print_matrix_Ssprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rsprimme)
+#  define Num_print_matrix_Rsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Sdprimme)
+#  define Num_print_matrix_Sdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rdprimme)
+#  define Num_print_matrix_Rdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Sqprimme)
+#  define Num_print_matrix_Sqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_Rqprimme)
+#  define Num_print_matrix_Rqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXhprimme)
+#  define Num_print_matrix_SXhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXhprimme)
+#  define Num_print_matrix_RXhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,h),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXsprimme)
+#  define Num_print_matrix_SXsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXsprimme)
+#  define Num_print_matrix_RXsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXdprimme)
+#  define Num_print_matrix_SXdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXdprimme)
+#  define Num_print_matrix_RXdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SXqprimme)
+#  define Num_print_matrix_SXqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RXqprimme)
+#  define Num_print_matrix_RXqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHhprimme)
+#  define Num_print_matrix_SHhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHhprimme)
+#  define Num_print_matrix_RHhprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHsprimme)
+#  define Num_print_matrix_SHsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHsprimme)
+#  define Num_print_matrix_RHsprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,s),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHdprimme)
+#  define Num_print_matrix_SHdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHdprimme)
+#  define Num_print_matrix_RHdprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,d),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_SHqprimme)
+#  define Num_print_matrix_SHqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
+#endif
+#if !defined(CHECK_TEMPLATE) && !defined(Num_print_matrix_RHqprimme)
+#  define Num_print_matrix_RHqprimme CONCAT(Num_print_matrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
+#endif
+int Num_print_matrix_cublas_hprimme(dummy_type_cublas_hprimme *a, int m, int n, int lda, primme_context ctx);
+void toCudaDataTypecublas_kprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_kprimme(void *x);
 int Num_recommended_ld_cublas_kprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_kprimme(PRIMME_INT n, dummy_type_cublas_kprimme **x, primme_context ctx);
@@ -1981,6 +2261,10 @@ int Num_copy_Tmatrix_cublas_kprimme(void *x, primme_op_datatype xt, PRIMME_INT m
       primme_context ctx);
 int Num_copy_cublas_kprimme(PRIMME_INT n, dummy_type_cublas_kprimme *x, int incx, dummy_type_cublas_kprimme *y, int incy,
       primme_context ctx);
+int Num_set_matrix_cublas_kprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_cublas_kprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_get_matrix_cublas_kprimme(dummy_type_cublas_kprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_gemm_cublas_kprimme(const char *transa, const char *transb, int m, int n,
       int k, dummy_type_cprimme alpha, dummy_type_cublas_kprimme *a, int lda, dummy_type_cublas_kprimme *b, int ldb,
       dummy_type_cprimme beta, dummy_type_cublas_kprimme *c, int ldc, primme_context ctx);
@@ -2021,6 +2305,8 @@ int Num_compute_gramm_cublas_kprimme(dummy_type_cublas_kprimme *X, PRIMME_INT m,
 int Num_compute_gramm_ddh_cublas_kprimme(dummy_type_cublas_kprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_cublas_kprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_cublas_kprimme(dummy_type_cublas_kprimme *a, int m, int n, int lda, primme_context ctx);
+void toCudaDataTypecublas_sprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_sprimme(void *x);
 int Num_recommended_ld_cublas_sprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_sprimme(PRIMME_INT n, dummy_type_cublas_sprimme **x, primme_context ctx);
@@ -2030,6 +2316,10 @@ int Num_copy_Tmatrix_cublas_sprimme(void *x, primme_op_datatype xt, PRIMME_INT m
       primme_context ctx);
 int Num_copy_cublas_sprimme(PRIMME_INT n, dummy_type_cublas_sprimme *x, int incx, dummy_type_cublas_sprimme *y, int incy,
       primme_context ctx);
+int Num_set_matrix_cublas_sprimme(dummy_type_sprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_cublas_sprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_get_matrix_cublas_sprimme(dummy_type_cublas_sprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_sprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_gemm_cublas_sprimme(const char *transa, const char *transb, int m, int n,
       int k, dummy_type_sprimme alpha, dummy_type_cublas_sprimme *a, int lda, dummy_type_cublas_sprimme *b, int ldb,
       dummy_type_sprimme beta, dummy_type_cublas_sprimme *c, int ldc, primme_context ctx);
@@ -2070,6 +2360,8 @@ int Num_compute_gramm_cublas_sprimme(dummy_type_cublas_sprimme *X, PRIMME_INT m,
 int Num_compute_gramm_ddh_cublas_sprimme(dummy_type_cublas_sprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_cublas_sprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_cublas_sprimme(dummy_type_cublas_sprimme *a, int m, int n, int lda, primme_context ctx);
+void toCudaDataTypecublas_cprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_cprimme(void *x);
 int Num_recommended_ld_cublas_cprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_cprimme(PRIMME_INT n, dummy_type_cublas_cprimme **x, primme_context ctx);
@@ -2079,6 +2371,10 @@ int Num_copy_Tmatrix_cublas_cprimme(void *x, primme_op_datatype xt, PRIMME_INT m
       primme_context ctx);
 int Num_copy_cublas_cprimme(PRIMME_INT n, dummy_type_cublas_cprimme *x, int incx, dummy_type_cublas_cprimme *y, int incy,
       primme_context ctx);
+int Num_set_matrix_cublas_cprimme(dummy_type_cprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_cublas_cprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_get_matrix_cublas_cprimme(dummy_type_cublas_cprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_cprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_gemm_cublas_cprimme(const char *transa, const char *transb, int m, int n,
       int k, dummy_type_cprimme alpha, dummy_type_cublas_cprimme *a, int lda, dummy_type_cublas_cprimme *b, int ldb,
       dummy_type_cprimme beta, dummy_type_cublas_cprimme *c, int ldc, primme_context ctx);
@@ -2119,6 +2415,8 @@ int Num_compute_gramm_cublas_cprimme(dummy_type_cublas_cprimme *X, PRIMME_INT m,
 int Num_compute_gramm_ddh_cublas_cprimme(dummy_type_cublas_cprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_cublas_cprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_cublas_cprimme(dummy_type_cublas_cprimme *a, int m, int n, int lda, primme_context ctx);
+void toCudaDataTypecublas_dprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_dprimme(void *x);
 int Num_recommended_ld_cublas_dprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_dprimme(PRIMME_INT n, dummy_type_cublas_dprimme **x, primme_context ctx);
@@ -2128,6 +2426,10 @@ int Num_copy_Tmatrix_cublas_dprimme(void *x, primme_op_datatype xt, PRIMME_INT m
       primme_context ctx);
 int Num_copy_cublas_dprimme(PRIMME_INT n, dummy_type_cublas_dprimme *x, int incx, dummy_type_cublas_dprimme *y, int incy,
       primme_context ctx);
+int Num_set_matrix_cublas_dprimme(dummy_type_dprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_cublas_dprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_get_matrix_cublas_dprimme(dummy_type_cublas_dprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_dprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_gemm_cublas_dprimme(const char *transa, const char *transb, int m, int n,
       int k, dummy_type_dprimme alpha, dummy_type_cublas_dprimme *a, int lda, dummy_type_cublas_dprimme *b, int ldb,
       dummy_type_dprimme beta, dummy_type_cublas_dprimme *c, int ldc, primme_context ctx);
@@ -2168,6 +2470,8 @@ int Num_compute_gramm_cublas_dprimme(dummy_type_cublas_dprimme *X, PRIMME_INT m,
 int Num_compute_gramm_ddh_cublas_dprimme(dummy_type_cublas_dprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_cublas_dprimme *Y, PRIMME_INT ldY, dummy_type_dprimme alpha, dummy_type_dprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_cublas_dprimme(dummy_type_cublas_dprimme *a, int m, int n, int lda, primme_context ctx);
+void toCudaDataTypecublas_zprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_zprimme(void *x);
 int Num_recommended_ld_cublas_zprimme(PRIMME_INT *ld, primme_context ctx);
 int Num_malloc_cublas_zprimme(PRIMME_INT n, dummy_type_cublas_zprimme **x, primme_context ctx);
@@ -2177,6 +2481,10 @@ int Num_copy_Tmatrix_cublas_zprimme(void *x, primme_op_datatype xt, PRIMME_INT m
       primme_context ctx);
 int Num_copy_cublas_zprimme(PRIMME_INT n, dummy_type_cublas_zprimme *x, int incx, dummy_type_cublas_zprimme *y, int incy,
       primme_context ctx);
+int Num_set_matrix_cublas_zprimme(dummy_type_zprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_cublas_zprimme *y, PRIMME_INT ldy, primme_context ctx);
+int Num_get_matrix_cublas_zprimme(dummy_type_cublas_zprimme *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, dummy_type_zprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_gemm_cublas_zprimme(const char *transa, const char *transb, int m, int n,
       int k, dummy_type_zprimme alpha, dummy_type_cublas_zprimme *a, int lda, dummy_type_cublas_zprimme *b, int ldb,
       dummy_type_zprimme beta, dummy_type_cublas_zprimme *c, int ldc, primme_context ctx);
@@ -2217,4 +2525,5 @@ int Num_compute_gramm_cublas_zprimme(dummy_type_cublas_zprimme *X, PRIMME_INT m,
 int Num_compute_gramm_ddh_cublas_zprimme(dummy_type_cublas_zprimme *X, PRIMME_INT m, int n, int ldX,
       dummy_type_cublas_zprimme *Y, PRIMME_INT ldY, dummy_type_zprimme alpha, dummy_type_zprimme *H, int ldH, int isherm,
       primme_context ctx);
+int Num_print_matrix_cublas_zprimme(dummy_type_cublas_zprimme *a, int m, int n, int lda, primme_context ctx);
 #endif

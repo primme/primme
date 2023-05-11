@@ -1079,7 +1079,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
    int i, j, k;         /* Loop indices */
    int candidates;      /* Number of eligible pairs */
    int someCandidate;   /* If there is an eligible pair in the cluster */
-   double aNorm, eps;
+   double eps;
 
    /* Quick exit */
 
@@ -1102,9 +1102,6 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
       return 0;
    }
 
-   aNorm = (primme->aNorm <= 0.0) ?
-      primme->stats.estimateLargestSVal : primme->aNorm;
-
    /* Before the first eigenpair converges, there's no information about the  */
    /* requested tolerance. In that case eps is set as ten times less than the */
    /* the current smallest residual norm, if smallestResNorm provides that    */
@@ -1120,7 +1117,6 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
    for (candidates=0, i=min(*arbitraryVecs,basisSize), j=i0;
          j < basisSize && candidates < blockSize; ) {
 
-      double ip;
       /* -------------------------------------------------------------------- */
       /* Count all eligible values (candidates) from j up to i.               */
       /* -------------------------------------------------------------------- */
@@ -1139,7 +1135,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
       /* value in the block.                                                  */
       /* -------------------------------------------------------------------- */
 
-      for (i=j+1, someCandidate=0, ip=0.0; i<basisSize; i++) {
+      for (i=j+1, someCandidate=0; i<basisSize; i++) {
 
          /* Check that this approximation:                                    */
          /* sin singular vector: max(hSVals)*machEps/(hSvals[i]-hSVals[i+1])  */

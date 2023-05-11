@@ -979,7 +979,6 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             /* restarting is a regular step that also shrinks the basis.      */
             /* -------------------------------------------------------------- */
 
-            int j,k,l,m;
             double *dummySmallestResNorm, dummyZero = 0.0;
 
             if (blockSize > 0) {
