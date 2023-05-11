@@ -51,18 +51,14 @@
 #    ifdef PRIMME_WITH_CUBLAS
 #        include <cuda_runtime.h>
 #        include <cublas_v2.h>
+#        define GPU_SELECT(X, Y) X
 #    elif defined(PRIMME_WITH_HIPBLAS)
 #        include <hip/hip_runtime.h>
 #        include <hipblas.h>
+#        define GPU_SELECT(X, Y) Y
+#    else
+#        error Unsupported platform
 #    endif
-
-#ifdef PRIMME_WITH_CUBLAS
-#    define GPU_SELECT(X, Y) X
-#elif defined(PRIMME_WITH_HIPBLAS)
-#    define GPU_SELECT(X, Y) Y
-#else
-#     error Unsupported platform
-#endif
 #else
 #    define GPU_SELECT(X, Y) X
 #endif
@@ -72,9 +68,9 @@
 #define GPUBLAS_SYMBOL(X) CONCAT(GPU_SELECT(cublas, hipblas), X)
 #define GPUBLAS_CONST(X) CONCAT(GPU_SELECT(CUBLAS_, HIPBLAS_), X)
 
-#define CUBLAS_SCALAR                                                         \
-   ARITH(, , float, GPU_SELECT(cuComplex, hipblasComplex),                        \
-         double, GPU_SELECT(cuDoubleComplex, hipblasDoubleComplex), , )
+#define CUBLAS_SCALAR                                                          \
+   ARITH(, , float, GPU_SELECT(cuComplex, hipblasComplex), double,             \
+         GPU_SELECT(cuDoubleComplex, hipblasDoubleComplex), , )
 
 #define XGEMV     CONCAT(GPU_SELECT(cublas,hipblas),ARITH( , , Sgemv , Cgemv , Dgemv , Zgemv , , ))
 #define XTRSM     CONCAT(GPU_SELECT(cublas,hipblas),ARITH( , , Strsm , Ctrsm , Dtrsm , Ztrsm , , ))
@@ -84,20 +80,15 @@ static int free_fn_dummy (void *p, primme_context ctx) {
    return GPU_SYMBOL(Free)(p) == GPU_SYMBOL(Success) ? 0 : PRIMME_MALLOC_FAILURE;
 }
 
-typedef GPU_SELECT(cudaDataType_t, hipblasStatus_t) gpuDataType;
+typedef GPU_SELECT(cudaDataType_t, hipblasDataType_t) gpuDataType;
 
-static gpuDataType toCudaDataType(primme_op_datatype xt) {
+static GPUBLAS_SYMBOL(ComputeType_t) toCublasComputeDataType(primme_op_datatype xt) {
    if (xt == primme_op_default) xt = PRIMME_OP_SCALAR;
    switch(xt) {
-#ifndef USE_COMPLEX
-   case primme_op_half:    return GPU_SELECT(CUDA_R_16F, HIPBLAS_R_16F);
-   case primme_op_float:   return GPU_SELECT(CUDA_R_32F, HIPBLAS_R_32F);
-   case primme_op_double:  return GPU_SELECT(CUDA_R_64F, HIPBLAS_R_64F);
-#else
-   case primme_op_float:   return GPU_SELECT(CUDA_C_32F, HIPBLAS_C_32F);
-   case primme_op_double:  return GPU_SELECT(CUDA_C_64F, HIPBLAS_C_64F);
-#endif
-   default:                return (gpuDataType)-1;
+   case primme_op_half:    return GPU_SELECT(CUBLAS_COMPUTE_16F, HIPBLAS_R_16F);
+   case primme_op_float:   return GPU_SELECT(CUBLAS_COMPUTE_32F, HIPBLAS_R_32F);
+   case primme_op_double:  return GPU_SELECT(CUBLAS_COMPUTE_64F, HIPBLAS_R_64F);
+   default:                return (GPUBLAS_SYMBOL(ComputeType_t))-1;
    }
 }
 
@@ -132,6 +123,23 @@ static GPUBLAS_SYMBOL(Operation_t) toCublasOperation(const char trans) {
    }
 
 #endif /* CUBLAS_WRAPPER_PRIVATE */
+
+STATIC void toCudaDataType(primme_op_datatype xt, void *r) {
+   if (xt == primme_op_default) xt = PRIMME_OP_SCALAR;
+   gpuDataType t;
+   switch(xt) {
+#ifndef USE_COMPLEX
+   case primme_op_half:    t = GPU_SELECT(CUDA_R_16F, HIPBLAS_R_16F); break;
+   case primme_op_float:   t = GPU_SELECT(CUDA_R_32F, HIPBLAS_R_32F); break;
+   case primme_op_double:  t = GPU_SELECT(CUDA_R_64F, HIPBLAS_R_64F); break;
+#else
+   case primme_op_float:   t = GPU_SELECT(CUDA_C_32F, HIPBLAS_C_32F); break;
+   case primme_op_double:  t = GPU_SELECT(CUDA_C_64F, HIPBLAS_C_64F); break;
+#endif
+   default:                t = (gpuDataType)-1;
+   }
+   *(gpuDataType*)r = t;
+}
 
 /******************************************************************************
  * Function Num_check_pointer - Return no error code if the pointer is on a
@@ -252,7 +260,7 @@ int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
 
    /* In-place casting is not supported */
 
-   if (x == y) return PRIMME_FUNCTION_UNAVAILABLE;
+   if (x == y) CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
 
    /* Call the equivalent real version if needed. It is cheaper to call the */
    /* real variant of GEMM                                                  */
@@ -262,27 +270,27 @@ int Num_copy_Tmatrix_Sprimme(void *x, primme_op_datatype xt, PRIMME_INT m,
          x, xt, m * 2, n, ldx * 2, (REAL *)y, ldy * 2, ctx);
 #else
    GPUBLAS_SYMBOL(Handle_t) gpu_handle = *(GPUBLAS_SYMBOL(Handle_t) *)ctx.queue;
-   XSCALAR zero = 0.0, one = 1.0, *ones_host;
-   CHKERR(Num_malloc_SHprimme(n, &ones_host, ctx));
-   int i;
-   for (i=0; i<n; i++) ones_host[i] = 1.0;
-   SCALAR *ones;
-   CHKERR(Num_malloc_Sprimme(n, &ones, ctx));
-   CHKERRGPUBLAS(GPUBLAS_SYMBOL(SetVector)(
-         n, sizeof(SCALAR), (const void *)ones_host, 1, ones, 1));
+   XSCALAR zero = 0.0, one = 1.0;
+   SET_COMPLEX(zero, 0.0);
+   SET_COMPLEX(one, 1.0);
+   SCALAR *one_dev;
+   CHKERR(Num_malloc_Sprimme(1, &one_dev, ctx));
+   HSCALAR one_host;
+   SET_COMPLEX(one_host, 1.0);
+   CHKERR(Num_set_matrix_Sprimme(&one_host, 1, 1, 1, one_dev, 1, ctx));
 
    /* Because of calling a BLAS function, output matrix should be initialized */
    CHKERR(Num_zero_matrix_Sprimme(y, m, n, ldy, ctx));
 
    /* Perform conversion by doing one gemm per column */
+   gpuDataType tx; toCudaDataType(xt, &tx);
+   gpuDataType ty; toCudaDataType(PRIMME_OP_SCALAR, &ty);
    CHKERRGPUBLAS(GPUBLAS_SYMBOL(GemmStridedBatchedEx)(gpu_handle,
-         toCublasOperation('n'), toCublasOperation('n'), m, 1, 1, &one, x,
-         toCudaDataType(xt), m, ldx, ones, toCudaDataType(xt), 1, 1, &zero, y,
-         toCudaDataType(PRIMME_OP_SCALAR), m, ldy, n, toCudaDataType(xt),
-         GPUBLAS_CONST(GEMM_DEFAULT)));
+         toCublasOperation('n'), toCublasOperation('n'), m, 1, 1, &one, x, tx,
+         m, ldx, one_dev, ty, 1, 0, &zero, y, ty, m, ldy, n,
+         toCublasComputeDataType(xt), GPUBLAS_CONST(GEMM_DEFAULT)));
 
-   CHKERR(Num_free_Sprimme(ones, ctx));
-   CHKERR(Num_free_SHprimme(ones_host, ctx));
+   CHKERR(Num_free_Sprimme(one_dev, ctx));
 
    return 0;
 #endif /* USE_COMPLEX */
@@ -298,6 +306,77 @@ int Num_copy_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
 
    CHKERR(Num_copy_matrix_Sprimme(x, 1, n, incx, y, incy, ctx));
 
+   return 0;
+}
+
+/******************************************************************************
+ * Function Num_set_matrix_Sprimme - Copy the matrix x from host into y on device
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y = x
+ * ldy         The leading dimension of y
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_set_matrix_Sprimme(HSCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
+
+   /* Quick exit */
+
+   if (m == 0 || n == 0) return 0;
+
+   XSCALAR *x0;
+   PRIMME_INT ldx0;
+   CHKERR(Num_matrix_astype_SHprimme(x, m, n, ldx, PRIMME_OP_HSCALAR,
+         (void **)&x0, &ldx0, PRIMME_OP_SCALAR, 1 /* alloc */, 1 /* copy */,
+         ctx));
+   CHKERRCUDA(GPU_SYMBOL(Memcpy2D)(y, sizeof(SCALAR) * ldy, x0, sizeof(SCALAR) * ldx0,
+         sizeof(SCALAR) * m, n, GPU_SYMBOL(MemcpyHostToDevice)));
+   GPU_SYMBOL(DeviceSynchronize)();
+   if ((XSCALAR *)x != x0) CHKERR(Num_free_SXprimme(x0, ctx));
+
+   return 0;
+}
+
+/******************************************************************************
+ * Function Num_get_matrix_Sprimme - Copy the matrix x from device into y on host
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y = x
+ * ldy         The leading dimension of y
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_get_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, HSCALAR *y, PRIMME_INT ldy, primme_context ctx) {
+
+   /* Quick exit */
+
+   if (m == 0 || n == 0) return 0;
+
+   XSCALAR *y0;
+   PRIMME_INT ldy0;
+   CHKERR(Num_matrix_astype_SHprimme(y, m, n, ldy, PRIMME_OP_HSCALAR,
+         (void **)&y0, &ldy0, PRIMME_OP_SCALAR, 1 /* alloc */,
+         0 /* don't copy */, ctx));
+   CHKERRCUDA(GPU_SYMBOL(Memcpy2D)(y0, sizeof(SCALAR) * ldy0, x, sizeof(SCALAR) * ldx,
+         sizeof(SCALAR) * m, n, GPU_SYMBOL(MemcpyDeviceToHost)));
+   GPU_SYMBOL(DeviceSynchronize)();
+   CHKERR(Num_matrix_astype_SHprimme(y0, m, n, ldy0, PRIMME_OP_SCALAR,
+         (void **)&y, &ldy, PRIMME_OP_HSCALAR, -1 /* destroy */, 1 /* copy */,
+         ctx));
    return 0;
 }
 
@@ -318,12 +397,12 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
 
    if (k == 0 || ABS(alpha) == 0.0) {
       if (ABS(beta) == 0.0) {
-         Num_zero_matrix_Sprimme(c, m, n, ldc, ctx);
+         CHKERR(Num_zero_matrix_Sprimme(c, m, n, ldc, ctx));
       }
       else if (beta != (HSCALAR)1.0) {
          int i;
          for (i=0; i<n; i++) {
-            Num_scal_Sprimme(m, beta, &c[ldc*i], 1, ctx);
+            CHKERR(Num_scal_Sprimme(m, beta, &c[ldc*i], 1, ctx));
          }
       }
       return 0;
@@ -345,13 +424,12 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    XSCALAR salpha, sbeta;
    SET_COMPLEX(salpha, alpha);
    SET_COMPLEX(sbeta, beta);
+   gpuDataType t; toCudaDataType(PRIMME_OP_SCALAR, &t);
    CHKERRGPUBLAS(GPUBLAS_SYMBOL(GemmEx)(gpu_handle, toCublasOperation(*transa),
          toCublasOperation(*transb), m, n, k, (const void *)&salpha,
-         (const void *)a, toCudaDataType(PRIMME_OP_SCALAR), lda,
-         (const void *)b, toCudaDataType(PRIMME_OP_SCALAR), ldb,
-         (const void *)&sbeta, (CUBLAS_SCALAR *)c,
-         toCudaDataType(PRIMME_OP_SCALAR), ldc,
-         toCudaDataType(PRIMME_OP_SCALAR), GPUBLAS_CONST(GEMM_DEFAULT)));
+         (const void *)a, t, lda, (const void *)b, t, ldb, (const void *)&sbeta,
+         (CUBLAS_SCALAR *)c, t, ldc, toCublasComputeDataType(PRIMME_OP_SCALAR),
+         GPUBLAS_CONST(GEMM_DEFAULT)));
    return 0;
 #endif
 }
@@ -371,39 +449,17 @@ int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
 
    if (m == 0 || n == 0) return 0;
 
-#if defined(USE_HALFCOMPLEX_CUBLAS)
-   (void)transa;
-   (void)transb;
-   (void)m;
-   (void)n;
-   (void)k;
-   (void)alpha;
-   (void)a;
-   (void)lda;
-   (void)b;
-   (void)ldb;
-   (void)beta;
-   (void)c;
-   (void)ldc;
-   (void)ctx;
-   return PRIMME_FUNCTION_UNAVAILABLE;
-
-#else
    int mb = (*transb == 'N' || *transb == 'n') ? k : n;
    int nb = (*transb == 'N' || *transb == 'n') ? n : k;
 
    SCALAR *b_dev; /* copy of b on device */
    CHKERR(Num_malloc_Sprimme(mb*nb, &b_dev, ctx));
-   if (mb != 0 && nb != 0) {
-      CHKERRGPUBLAS(GPUBLAS_SYMBOL(SetMatrix)(
-            mb, nb, sizeof(SCALAR), (const void *)b, ldb, b_dev, mb));
-   }
+   CHKERR(Num_set_matrix_Sprimme(b, mb, nb, ldb, b_dev, mb, ctx));
    CHKERR(Num_gemm_Sprimme(
          transa, transb, m, n, k, alpha, a, lda, b_dev, mb, beta, c, ldc, ctx));
    CHKERR(Num_free_Sprimme(b_dev, ctx));
 
    return 0;
-#endif /* USE_HALFCOMPLEX_CUBLAS */
 }
 
 /*******************************************************************************
@@ -419,40 +475,19 @@ int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return 0;
 
-#if defined(USE_HALFCOMPLEX_CUBLAS)
-   (void)transa;
-   (void)transb;
-   (void)m;
-   (void)n;
-   (void)k;
-   (void)alpha;
-   (void)a;
-   (void)lda;
-   (void)b;
-   (void)ldb;
-   (void)beta;
-   (void)c;
-   (void)ldc;
-   (void)ctx;
-   return PRIMME_FUNCTION_UNAVAILABLE;
-
-#else
    SCALAR *c_dev; /* copy of c on device */
    CHKERR(Num_malloc_Sprimme(m*n, &c_dev, ctx));
    if (ABS(beta) != 0) {
-      CHKERRGPUBLAS(GPUBLAS_SYMBOL(SetMatrix)(
-            m, n, sizeof(SCALAR), (const void *)c, ldc, c_dev, m));
+      CHKERR(Num_set_matrix_Sprimme(c, m, n, ldc, c_dev, m, ctx));
    } else {
       CHKERR(Num_zero_matrix_Sprimme(c_dev, m, n, m, ctx));
    }
    CHKERR(Num_gemm_Sprimme(
          transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c_dev, m, ctx));
-   CHKERRGPUBLAS(GPUBLAS_SYMBOL(GetMatrix)(
-         m, n, sizeof(SCALAR), (const void *)c_dev, m, c, ldc));
+   CHKERR(Num_get_matrix_Sprimme(c_dev, m, n, m, c, ldc, ctx));
    CHKERR(Num_free_Sprimme(c_dev, ctx));
 
    return 0;
-#endif /* USE_HALFCOMPLEX_CUBLAS */
 }
 
 /*******************************************************************************
@@ -474,10 +509,10 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
 
    if (nA == 0) {
       if (ABS(beta) == 0.0) {
-         Num_zero_matrix_Sprimme(y, 1, mA, incy, ctx);
+         CHKERR(Num_zero_matrix_Sprimme(y, 1, mA, incy, ctx));
       }
       else {
-         Num_scal_Sprimme(mA, beta, y, incy, ctx);
+         CHKERR(Num_scal_Sprimme(mA, beta, y, incy, ctx));
       }
       return 0;
    }
@@ -524,41 +559,22 @@ int Num_gemv_ddh_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
       SCALAR *a, int lda, SCALAR *x, int incx, HSCALAR beta, HSCALAR *y,
       int incy, primme_context ctx) {
 
- #if defined(USE_HALFCOMPLEX_CUBLAS)
-   (void)transa;
-   (void)m;
-   (void)n;
-   (void)alpha;
-   (void)a;
-   (void)lda;
-   (void)x;
-   (void)incx;
-   (void)beta;
-   (void)y;
-   (void)incy;
-   (void)ctx;
-   return PRIMME_FUNCTION_UNAVAILABLE;
-
-#else
    int my = (*transa == 'N' || *transa == 'n') ? m : n;
    if (my == 0) return 0;
 
    SCALAR *y_dev; /* copy of y on device */
    CHKERR(Num_malloc_Sprimme(my, &y_dev, ctx));
    if (ABS(beta) != 0) {
-      CHKERRGPUBLAS(GPUBLAS_SYMBOL(SetVector)(
-            my, sizeof(SCALAR), (const void *)y, incy, y_dev, 1));
+      CHKERR(Num_set_matrix_Sprimme(y, 1, my, incy, y_dev, 1, ctx));
    } else {
       CHKERR(Num_zero_matrix_Sprimme(y_dev, my, 1, my, ctx));
    }
    CHKERR(Num_gemv_Sprimme(
          transa, m, n, alpha, a, lda, x, incx, beta, y_dev, 1, ctx));
-   CHKERRGPUBLAS(GPUBLAS_SYMBOL(GetVector)(
-         my, sizeof(SCALAR), (const void *)y_dev, 1, y, incy));
+   CHKERR(Num_get_matrix_Sprimme(y_dev, 1, my, 1, y, incy, ctx));
    CHKERR(Num_free_Sprimme(y_dev, ctx));
 
    return 0;
-#endif /* USE_HALFCOMPLEX_CUBLAS */
 }
 
 /*******************************************************************************
@@ -571,35 +587,17 @@ int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
       SCALAR *a, int lda, HSCALAR *x, int incx, HSCALAR beta, SCALAR *y,
       int incy, primme_context ctx) {
 
- #if defined(USE_HALFCOMPLEX_CUBLAS)
-   (void)transa;
-   (void)m;
-   (void)n;
-   (void)alpha;
-   (void)a;
-   (void)lda;
-   (void)x;
-   (void)incx;
-   (void)beta;
-   (void)y;
-   (void)incy;
-   (void)ctx;
-   return PRIMME_FUNCTION_UNAVAILABLE;
-
-#else
    int mx = (*transa == 'N' || *transa == 'n') ? n : m;
    if (mx == 0) return 0;
 
    SCALAR *x_dev; /* copy of x on device */
    CHKERR(Num_malloc_Sprimme(mx, &x_dev, ctx));
-   CHKERRGPUBLAS(GPUBLAS_SYMBOL(SetVector)(
-         mx, sizeof(SCALAR), (const void *)x, incx, x_dev, 1));
+   CHKERR(Num_set_matrix_Sprimme(x, 1, mx, incx, x_dev, 1, ctx));
    CHKERR(Num_gemv_Sprimme(
          transa, m, n, alpha, a, lda, x_dev, 1, beta, y, incy, ctx));
    CHKERR(Num_free_Sprimme(x_dev, ctx));
 
    return 0;
-#endif /* USE_HALFCOMPLEX_CUBLAS */
 }
 
 /*******************************************************************************
@@ -626,7 +624,7 @@ int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
    GPUBLAS_SYMBOL(Handle_t) gpu_handle = *(GPUBLAS_SYMBOL(Handle_t) *)ctx.queue;
    XSCALAR salpha;
    SET_COMPLEX(salpha, alpha);
-   gpuDataType t = toCudaDataType(PRIMME_OP_SCALAR);
+   gpuDataType t; toCudaDataType(PRIMME_OP_SCALAR, &t);
    CHKERRGPUBLAS(GPUBLAS_SYMBOL(AxpyEx)(gpu_handle, n, (const void *)&salpha, t,
          (const void *)x, t, incx, y, t, incy, t));
    return 0;
@@ -634,7 +632,7 @@ int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
 }
 
 /*******************************************************************************
- * Subroutine Num_dot_Sprimme - y'*x
+ * Subroutine Num_dot_Sprimme - x'*y
  ******************************************************************************/
 
 TEMPLATE_PLEASE
@@ -656,10 +654,10 @@ HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
 #else
    GPUBLAS_SYMBOL(Handle_t) gpu_handle = *(GPUBLAS_SYMBOL(Handle_t) *)ctx.queue;
    HSCALAR result;
-   CHKERRGPUBLAS(GPUBLAS_SYMBOL(DotcEx)(gpu_handle, n, x,
-         toCudaDataType(PRIMME_OP_SCALAR), incx, y,
-         toCudaDataType(PRIMME_OP_SCALAR), incy, &result,
-         toCudaDataType(PRIMME_OP_HSCALAR), toCudaDataType(PRIMME_OP_SCALAR)));
+   gpuDataType t; toCudaDataType(PRIMME_OP_SCALAR, &t);
+   gpuDataType tr; toCudaDataType(PRIMME_OP_HSCALAR, &tr);
+   CHKERRGPUBLAS(GPUBLAS_SYMBOL(DotcEx)(
+         gpu_handle, n, x, t, incx, y, t, incy, &result, tr, t));
    return result;
 #endif
 }
@@ -686,9 +684,9 @@ int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
    GPUBLAS_SYMBOL(Handle_t) gpu_handle = *(GPUBLAS_SYMBOL(Handle_t) *)ctx.queue;
    XSCALAR salpha;
    SET_COMPLEX(salpha, alpha);
-   CHKERRGPUBLAS(GPUBLAS_SYMBOL(ScalEx)(gpu_handle, n, &salpha,
-         toCudaDataType(PRIMME_OP_SCALAR), x, toCudaDataType(PRIMME_OP_SCALAR),
-         incx, toCudaDataType(PRIMME_OP_SCALAR)));
+   gpuDataType t; toCudaDataType(PRIMME_OP_SCALAR, &t);
+   CHKERRGPUBLAS(
+         GPUBLAS_SYMBOL(ScalEx)(gpu_handle, n, &salpha, t, x, t, incx, t));
    return 0;
 #endif
 }
@@ -707,8 +705,7 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
    HSCALAR *x_host;
    CHKERR(Num_malloc_SHprimme(length, &x_host, ctx));
    CHKERR(Num_larnv_SHprimme(idist, iseed, length, x_host, ctx));
-   CHKERRGPUBLAS(
-         GPUBLAS_SYMBOL(SetVector)(length, sizeof(SCALAR), x_host, 1, x, 1));
+   CHKERR(Num_set_matrix_Sprimme(x_host, length, 1, length, x, length, ctx));
    CHKERR(Num_free_SHprimme(x_host, ctx));
 
    return 0;
@@ -784,22 +781,9 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return 0;
 
-#if defined(USE_HALFCOMPLEX_CUBLAS)
-   (void)side;
-   (void)uplo;
-   (void)transa;
-   (void)diag;
-   (void)m;
-   (void)n;
-   (void)alpha;
-   (void)a;
-   (void)lda;
-   (void)b;
-   (void)ldb;
-   (void)ctx;
-   return PRIMME_FUNCTION_UNAVAILABLE;
+#if defined(USE_HALF_CUBLAS) || defined(USE_HALFCOMPLEX_CUBLAS)
+   if (!(*side == 'R' || *side == 'r')) return PRIMME_FUNCTION_UNAVAILABLE;
 
-#elif defined(USE_HALF_CUBLAS)
    int mA = (*side == 'R' || *side == 'r') ? n : m;
 
    /* Create an auxiliary matrix mxm and set the identity matrix */
@@ -815,32 +799,46 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
    CHKERR(Num_trsm_SHprimme(
          "L", uplo, transa, diag, mA, mA, 1.0, a, lda, ainv, mA, ctx));
 
+   /* Check that ainv is representable in half precision. If not, normalize */
+
+   HREAL *ainv_scale;
+   CHKERR(Num_malloc_RHprimme(n, &ainv_scale, ctx));
+   for (i = 0; i < mA; i++) {
+      HREAL max_val = 0.0;
+      int j;
+      for (j = 0; j < mA; j++) max_val = max(max_val, ABS(ainv[i * mA + j]));
+      if (max_val >= MACHINE_MAX) {
+         ainv_scale[i] = MACHINE_MAX / max_val / 3;
+      } else {
+         ainv_scale[i] = 1.0;
+      }
+   }
+   CHKERR(Num_scale_matrix_SHprimme(
+         ainv, mA, mA, mA, ainv_scale, ainv, mA, ctx));
+
    /* Compute bainv = b * ainv or ainv * b */
 
    SCALAR *bainv;
    CHKERR(Num_malloc_Sprimme(m * n, &bainv, ctx));
    CHKERR(Num_zero_matrix_Sprimme(bainv, m, n, m, ctx));
-   if (*side == 'R' || *side == 'r') {
       CHKERR(Num_gemm_dhd_Sprimme(
             "N", "N", m, n, n, alpha, b, ldb, ainv, n, 0.0, bainv, m, ctx));
-   } else {
-      return PRIMME_FUNCTION_UNAVAILABLE;
-   }
 
-   /* Copy bainv into b */
+   /* Copy bainv into b and undo the scale */
 
-   CHKERR(Num_copy_matrix_Sprimme(bainv, m, n, m, b, ldb, ctx));
+   for (i = 0; i < mA; i++) ainv_scale[i] = (HREAL)1.0 / ainv_scale[i];
+   CHKERR(Num_scale_matrix_Sprimme(bainv, m, n, m, ainv_scale, b, ldb, ctx));
 
    CHKERR(Num_free_Sprimme(bainv, ctx));
    CHKERR(Num_free_SHprimme(ainv, ctx));
+   CHKERR(Num_free_RHprimme(ainv_scale, ctx));
    return 0;
 
 #else
    int mA = (*side == 'R' || *side == 'r') ? n : m;
    SCALAR *a_dev; /* copy of a on device */
    CHKERR(Num_malloc_Sprimme(mA * mA, &a_dev, ctx));
-   CHKERRGPUBLAS(GPUBLAS_SYMBOL(SetMatrix)(
-         mA, mA, sizeof(SCALAR), (const void *)a, lda, a_dev, mA));
+   CHKERR(Num_set_matrix_Sprimme(a, mA, mA, lda, a_dev, mA, ctx));
 
    GPUBLAS_SYMBOL(Handle_t) gpu_handle = *(GPUBLAS_SYMBOL(Handle_t) *)ctx.queue;
    XSCALAR salpha;
@@ -857,6 +855,7 @@ int Num_trsm_hd_Sprimme(const char *side, const char *uplo, const char *transa,
          (CUBLAS_SCALAR *)b, ldb));
    CHKERR(Num_free_Sprimme(a_dev, ctx));
    return 0;
+
 #endif
 }
 
@@ -964,26 +963,50 @@ int Num_compute_gramm_ddh_Sprimme(SCALAR *X, PRIMME_INT m, int n, int ldX,
             "C", "N", n, n, m, 1.0, X, ldX, Y, ldY, alpha, H, ldH, ctx);
    }
 
-#if defined(USE_HALFCOMPLEX_CUBLAS)
-   return PRIMME_FUNCTION_UNAVAILABLE;
-
-#else
    SCALAR *H_dev; /* copy of H on device */
    CHKERR(Num_malloc_Sprimme(n * n, &H_dev, ctx));
    if (ABS(alpha) == 0.0) {
       CHKERR(Num_zero_matrix_Sprimme(H_dev, n, n, n, ctx));
    } else {
-      CHKERRGPUBLAS(GPUBLAS_SYMBOL(SetMatrix)(
-            n, n, sizeof(SCALAR), (const CUBLAS_SCALAR *)H, ldH, H_dev, ldH));
+      CHKERR(Num_set_matrix_Sprimme(H, n, n, ldH, H_dev, n, ctx));
    }
    CHKERR(Num_compute_gramm_Sprimme(
          X, m, n, ldX, Y, ldY, alpha, H_dev, n, 1 /* symmetric */, 4, ctx));
-   CHKERRGPUBLAS(GPUBLAS_SYMBOL(GetMatrix)(n, n, sizeof(SCALAR),
-         (const CUBLAS_SCALAR *)H_dev, n, (CUBLAS_SCALAR *)H, ldH));
+   CHKERR(Num_get_matrix_Sprimme(H_dev, n, n, n, H, ldH, ctx));
    CHKERR(Num_free_Sprimme(H_dev, ctx));
 
    return 0;
-#endif
+}
+
+/*******************************************************************************
+ * Subroutine Num_print_matrix_Sprimme - print a matrix
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_print_matrix_Sprimme(SCALAR *a, int m, int n, int lda, primme_context ctx) {
+
+   /* Zero dimension matrix may cause problems */
+   if (m == 0 || n == 0) return 0;
+
+   /* Check pointer */
+
+   struct cudaPointerAttributes ptr_attr;
+   if (cudaPointerGetAttributes(&ptr_attr, a) != cudaSuccess) return -1;
+   printf("%% ptr: %p cuda_device: %d device_pointer: %p host_pointer: %p type: ", a, (int)ptr_attr.device, ptr_attr.devicePointer, ptr_attr.hostPointer);
+   switch(ptr_attr.type) {
+   case cudaMemoryTypeUnregistered : printf("cudaMemoryTypeUnregistered\n"); break;
+   case cudaMemoryTypeHost         : printf("cudaMemoryTypeHost        \n"); break;
+   case cudaMemoryTypeDevice       : printf("cudaMemoryTypeDevice      \n"); break;
+   case cudaMemoryTypeManaged      : printf("cudaMemoryTypeManaged     \n"); break;
+   }
+
+   XSCALAR *a_host; /* copy of a */
+   CHKERR(Num_malloc_SXprimme(m * n, &a_host, ctx));
+   CHKERR(Num_get_matrix_Sprimme(a, m, n, lda, a_host, m, ctx));
+   CHKERR(Num_print_matrix_SXprimme(a_host, m, n, m, ctx));
+   CHKERR(Num_free_SXprimme(a_host, ctx));
+
+   return 0;
 }
 
 
