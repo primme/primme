@@ -37,6 +37,10 @@
 #  define toCudaDataType CONCAT(toCudaDataType,SCALAR_SUF)
 #endif
 void toCudaDataTypecublas_hprimme(primme_op_datatype xt, void *r);
+#if !defined(CHECK_TEMPLATE) && !defined(toCublasComputeDataType)
+#  define toCublasComputeDataType CONCAT(toCublasComputeDataType,SCALAR_SUF)
+#endif
+void toCublasComputeDataTypecublas_hprimme(primme_op_datatype xt, void *r);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_check_pointer_Sprimme)
 #  define Num_check_pointer_Sprimme CONCAT(Num_check_pointer_,SCALAR_SUF)
 #endif
@@ -2070,6 +2074,7 @@ int Num_compute_gramm_ddh_cublas_hprimme(dummy_type_cublas_hprimme *X, PRIMME_IN
       dummy_type_cublas_hprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
 void toCudaDataTypecublas_kprimme(primme_op_datatype xt, void *r);
+void toCublasComputeDataTypecublas_kprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_kprimme(void *x);
 int Num_malloc_cublas_kprimme(PRIMME_INT n, dummy_type_cublas_kprimme **x, primme_context ctx);
 int Num_free_cublas_kprimme(dummy_type_cublas_kprimme *x, primme_context ctx);
@@ -2123,6 +2128,7 @@ int Num_compute_gramm_ddh_cublas_kprimme(dummy_type_cublas_kprimme *X, PRIMME_IN
       dummy_type_cublas_kprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
 void toCudaDataTypecublas_sprimme(primme_op_datatype xt, void *r);
+void toCublasComputeDataTypecublas_sprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_sprimme(void *x);
 int Num_malloc_cublas_sprimme(PRIMME_INT n, dummy_type_cublas_sprimme **x, primme_context ctx);
 int Num_free_cublas_sprimme(dummy_type_cublas_sprimme *x, primme_context ctx);
@@ -2176,6 +2182,7 @@ int Num_compute_gramm_ddh_cublas_sprimme(dummy_type_cublas_sprimme *X, PRIMME_IN
       dummy_type_cublas_sprimme *Y, PRIMME_INT ldY, dummy_type_sprimme alpha, dummy_type_sprimme *H, int ldH, int isherm,
       primme_context ctx);
 void toCudaDataTypecublas_cprimme(primme_op_datatype xt, void *r);
+void toCublasComputeDataTypecublas_cprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_cprimme(void *x);
 int Num_malloc_cublas_cprimme(PRIMME_INT n, dummy_type_cublas_cprimme **x, primme_context ctx);
 int Num_free_cublas_cprimme(dummy_type_cublas_cprimme *x, primme_context ctx);
@@ -2229,6 +2236,7 @@ int Num_compute_gramm_ddh_cublas_cprimme(dummy_type_cublas_cprimme *X, PRIMME_IN
       dummy_type_cublas_cprimme *Y, PRIMME_INT ldY, dummy_type_cprimme alpha, dummy_type_cprimme *H, int ldH, int isherm,
       primme_context ctx);
 void toCudaDataTypecublas_dprimme(primme_op_datatype xt, void *r);
+void toCublasComputeDataTypecublas_dprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_dprimme(void *x);
 int Num_malloc_cublas_dprimme(PRIMME_INT n, dummy_type_cublas_dprimme **x, primme_context ctx);
 int Num_free_cublas_dprimme(dummy_type_cublas_dprimme *x, primme_context ctx);
@@ -2282,6 +2290,7 @@ int Num_compute_gramm_ddh_cublas_dprimme(dummy_type_cublas_dprimme *X, PRIMME_IN
       dummy_type_cublas_dprimme *Y, PRIMME_INT ldY, dummy_type_dprimme alpha, dummy_type_dprimme *H, int ldH, int isherm,
       primme_context ctx);
 void toCudaDataTypecublas_zprimme(primme_op_datatype xt, void *r);
+void toCublasComputeDataTypecublas_zprimme(primme_op_datatype xt, void *r);
 int Num_check_pointer_cublas_zprimme(void *x);
 int Num_malloc_cublas_zprimme(PRIMME_INT n, dummy_type_cublas_zprimme **x, primme_context ctx);
 int Num_free_cublas_zprimme(dummy_type_cublas_zprimme *x, primme_context ctx);

@@ -29,7 +29,7 @@
  *******************************************************************************
  *
  *  Example to compute the k largest eigenvalues in a 1-D Laplacian matrix
- *  with MAGMA
+ *  with CUBLAS
  *
  ******************************************************************************/
 
@@ -45,13 +45,6 @@
 
 void cuSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, primme_params *primme, int *ierr);
-
-typedef struct {
-   cusparseHandle_t cusparse_handle;
-   cusparseSpMatDescr_t desc;
-   void *aux;
-   size_t aux_size;
-} MatrixInfo;
 
 void checkCuda(cudaError_t err) {
    if (err != cudaSuccess) {
@@ -75,13 +68,11 @@ void checkCusparse(cusparseStatus_t err) {
 }
 
 int main (int argc, char *argv[]) {
-   (void)argc;
-   (void)argv;
 
    /* Solver arrays and parameters */
    double *evals;    /* Array with the computed eigenvalues */
    double *rnorms;   /* Array with the computed eigenpairs residual norms */
-   double *evecs;    /* Array with the computed eigenvectors;
+   complex double *evecs;    /* Array with the computed eigenvectors;
                         first vector starts in evecs[0],
                         second vector starts in evecs[primme.n],
                         third vector starts in evecs[primme.n*2]...  */
@@ -89,43 +80,25 @@ int main (int argc, char *argv[]) {
                      /* PRIMME configuration struct */
 
    /* Other miscellaneous items */
-   int n=1000; /* problem size */
+   int n=64; /* problem size */
    int ret;
-   int i,j;
+   int i;
 
-   int *col, *row;
-   double *val;
+   complex double *val;
 
    /* Create the matrix on cpu */
-   row = (int*) calloc(n+1, sizeof(int));
-   int nnz = n+(n>0?n-1:0)*2;
-   col = (int*) calloc(nnz, sizeof(int));
-   val = (double*) calloc(nnz, sizeof(double));
+   val = (complex double*) calloc(n*n, sizeof(complex double));
 
-   for (i = j = 0; i < n; i++) {
-      row[i] = j;
-      if (i > 0)   {col[j] = i-1; val[j] = -1.0; j++;}
-                    col[j] = i  ; val[j] =  2.0; j++;
-      if (i < n-1) {col[j] = i+1; val[j] = -1.0; j++;}
+   for (i = 0; i < n; i++) {
+      val[i+n*i] = (complex double)i;
    }
-   row[n] = j;
 
    /* Copy the matrix on the gpu */
-   int *col_dev, *row_dev;
-   double *val_dev;
-   checkCuda(cudaMalloc((void**)&row_dev, (n+1)*sizeof(int)));
-   checkCuda(cudaMalloc((void**)&col_dev, nnz*sizeof(int)));
-   checkCuda(cudaMalloc((void**)&val_dev, nnz*sizeof(double)));
-   checkCublas(cublasSetVector(n+1,sizeof(int), row, 1, row_dev, 1));
-   checkCublas(cublasSetVector(nnz,sizeof(int), col, 1, col_dev, 1));
-   checkCublas(cublasSetVector(nnz,sizeof(double), val, 1, val_dev, 1));
-   MatrixInfo A;
-   checkCusparse(cusparseCreate(&A.cusparse_handle));
-   checkCusparse(cusparseCreateCsr(&A.desc, n, n, nnz, row_dev, col_dev, val_dev,
-         CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO,
-         CUDA_R_64F));
-   A.aux = NULL;
-   A.aux_size = 0;
+   cublasHandle_t cublas_handle;
+   checkCublas(cublasCreate(&cublas_handle));
+   complex double *val_dev;
+   checkCuda(cudaMalloc((void**)&val_dev, n*n*sizeof(complex double)));
+   checkCublas(cublasSetVector(n*n,sizeof(complex double), val, 1, val_dev, 1));
  
    /* Set default values in PRIMME configuration struct */
    primme_initialize(&primme);
@@ -135,11 +108,12 @@ int main (int argc, char *argv[]) {
    primme.numEvals = 6;   /* Number of wanted eigenpairs */
    primme.eps = 1e-12;      /* ||r|| <= eps * ||matrix|| */
    primme.target = primme_smallest;
+   primme.maxBlockSize = 2;
                            /* Wanted the smallest eigenvalues */
 
    /* Set problem matrix */
    primme.matrixMatvec = cuSparseMatrixMatvec;
-   primme.matrix = &A;
+   primme.matrix = val_dev;
                            /* Function that implements the matrix-vector product
                               A*x for solving the problem A*x = l*x */
  
@@ -170,15 +144,13 @@ int main (int argc, char *argv[]) {
 
    /* Allocate space for converged Ritz values and residual norms */
    evals = (double*)malloc(primme.numEvals*sizeof(double));
-   checkCuda(cudaMalloc((void**)&evecs, primme.n*primme.numEvals*sizeof(double)));
+   checkCuda(cudaMalloc((void**)&evecs, primme.n*primme.numEvals*sizeof(complex double)));
    rnorms = (double*)malloc(primme.numEvals*sizeof(double));
    
-   cublasHandle_t cublas_handle;
-   checkCublas(cublasCreate(&cublas_handle));
    primme.queue = &cublas_handle;
 
    /* Call primme  */
-   ret = cublas_dprimme(evals, evecs, rnorms, &primme);
+   ret = cublas_zprimme(evals, evecs, rnorms, &primme);
 
    if (ret != 0) {
       fprintf(primme.outputFile, 
@@ -210,26 +182,16 @@ int main (int argc, char *argv[]) {
    }
 
 
-//   printf("Time used in func:%e\n",primme.funcTime);
-//  printf("Execution time: %e\n",time);
-
    primme_free(&primme);
-   free(row);
-   free(col);
    free(val);
    free(evals);
    free(rnorms);
 
    // Free the allocated memory...
-   checkCusparse(cusparseDestroySpMat(A.desc));
    checkCuda(cudaFree(evecs));
-   checkCuda(cudaFree(row_dev));
-   checkCuda(cudaFree(col_dev));
    checkCuda(cudaFree(val_dev));
-   if (A.aux_size > 0) checkCuda(cudaFree(A.aux));
 
    // and finalize cuBLAS and cuSparse.
-   checkCusparse(cusparseDestroy(A.cusparse_handle));
    checkCublas(cublasDestroy(cublas_handle));
 
    return 0;
@@ -238,26 +200,11 @@ int main (int argc, char *argv[]) {
 void cuSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, primme_params *primme, int *err) {
 
-   MatrixInfo *A = (MatrixInfo*)primme->matrix;
-   cusparseDnMatDescr_t matx, maty;
-   checkCusparse(cusparseCreateDnMat(&matx, primme->nLocal, *blockSize, *ldx, x, CUDA_R_64F,
-         CUSPARSE_ORDER_COL));
-   checkCusparse(cusparseCreateDnMat(&maty, primme->nLocal, *blockSize, *ldy, y, CUDA_R_64F,
-         CUSPARSE_ORDER_COL));
-   double alpha = 1.0, beta = 0;
-   size_t buffer_size = 0;
-   checkCusparse(cusparseSpMM_bufferSize(A->cusparse_handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-         CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
-         CUDA_R_64F, CUSPARSE_SPMM_ALG_DEFAULT, &buffer_size));
-   if (buffer_size > A->aux_size) {
-      if (A->aux) checkCuda(cudaFree(A->aux));
-      checkCuda(cudaMalloc(&A->aux, buffer_size));
-      A->aux_size = buffer_size;
-   }
-   checkCusparse(cusparseSpMM(A->cusparse_handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-         CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
-         CUDA_R_64F, CUSPARSE_SPMM_ALG_DEFAULT, A->aux));
-   checkCusparse(cusparseDestroyDnMat(matx));
-   checkCusparse(cusparseDestroyDnMat(maty));
+   cublasHandle_t cublas_handle = *(cublasHandle_t *)primme->queue;
+   complex double alpha = 1.0, beta = 0;
+   checkCublas(cublasGemmEx(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, primme->n,
+         *blockSize, primme->n, &alpha, (const void *)primme->matrix,
+         CUDA_C_64F, primme->n, x, CUDA_C_64F, *ldx, &beta, y, CUDA_C_64F, *ldy,
+         CUBLAS_COMPUTE_64F, CUBLAS_GEMM_DEFAULT));
    *err = 0;
 }
