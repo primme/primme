@@ -29,7 +29,7 @@
  *******************************************************************************
  *
  *  Example to compute the k largest eigenvalues in a 1-D Laplacian matrix
- *  with MAGMA
+ *  with CUBLAS
  *
  ******************************************************************************/
 
@@ -75,6 +75,8 @@ void checkCusparse(cusparseStatus_t err) {
 }
 
 int main (int argc, char *argv[]) {
+   (void)argc;
+   (void)argv;
 
    /* Solver arrays and parameters */
    double *evals;    /* Array with the computed eigenvalues */
@@ -208,9 +210,6 @@ int main (int argc, char *argv[]) {
    }
 
 
-//   printf("Time used in func:%e\n",primme.funcTime);
-//  printf("Execution time: %e\n",time);
-
    primme_free(&primme);
    free(row);
    free(col);
@@ -248,7 +247,7 @@ void cuSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
          CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
          CUDA_C_64F, CUSPARSE_SPMM_ALG_DEFAULT, &buffer_size));
    if (buffer_size > A->aux_size) {
-      if (A->aux) cudaFree(A->aux);
+      if (A->aux) checkCuda(cudaFree(A->aux));
       checkCuda(cudaMalloc(&A->aux, buffer_size));
       A->aux_size = buffer_size;
    }
