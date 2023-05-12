@@ -38,10 +38,10 @@ ifeq ($(PRIMME_WITH_MAGMA),yes)
   INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
 endif
 ifeq ($(PRIMME_WITH_CUDA),yes)
-  EXAMPLES_C += ex_eigs_dcublas ex_eigs_zcublas
+  EXAMPLES_C += ex_eigs_dcublas ex_eigs_zcublas ex_eigs_zcublas0
 endif
 ifeq ($(PRIMME_WITH_HIPBLAS),yes)
-  EXAMPLES_C += ex_eigs_dhipblas
+  EXAMPLES_C += ex_eigs_dhipblas ex_eigs_zhipblas ex_eigs_zhipblas0
 endif
 
 

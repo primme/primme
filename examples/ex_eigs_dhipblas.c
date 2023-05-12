@@ -53,6 +53,27 @@ typedef struct {
    size_t aux_size;
 } MatrixInfo;
 
+void checkHip(hipError_t err) {
+   if (err != hipSuccess) {
+      fprintf(stderr, "hip call failed!\n");
+      exit(-1);
+   }
+}
+
+void checkHipblas(hipblasStatus_t err) {
+   if (err != HIPBLAS_STATUS_SUCCESS) {
+      fprintf(stderr, "hipblas call failed!\n");
+      exit(-1);
+   }
+}
+
+void checkHipsparse(hipsparseStatus_t err) {
+   if (err != HIPSPARSE_STATUS_SUCCESS) {
+      fprintf(stderr, "hipsparse call failed!\n");
+      exit(-1);
+   }
+}
+
 int main (int argc, char *argv[]) {
    (void)argc;
    (void)argv;
@@ -92,17 +113,17 @@ int main (int argc, char *argv[]) {
    /* Copy the matrix on the gpu */
    int *col_dev, *row_dev;
    double *val_dev;
-   hipMalloc((void**)&row_dev, (n+1)*sizeof(int));
-   hipMalloc((void**)&col_dev, nnz*sizeof(int));
-   hipMalloc((void**)&val_dev, nnz*sizeof(double));
-   hipblasSetVector(n+1,sizeof(int), row, 1, row_dev, 1);
-   hipblasSetVector(nnz,sizeof(int), col, 1, col_dev, 1);
-   hipblasSetVector(nnz,sizeof(double), val, 1, val_dev, 1);
+   checkHip(hipMalloc((void**)&row_dev, (n+1)*sizeof(int)));
+   checkHip(hipMalloc((void**)&col_dev, nnz*sizeof(int)));
+   checkHip(hipMalloc((void**)&val_dev, nnz*sizeof(double)));
+   checkHipblas(hipblasSetVector(n+1,sizeof(int), row, 1, row_dev, 1));
+   checkHipblas(hipblasSetVector(nnz,sizeof(int), col, 1, col_dev, 1));
+   checkHipblas(hipblasSetVector(nnz,sizeof(double), val, 1, val_dev, 1));
    MatrixInfo A;
-   hipsparseCreate(&A.hipsparse_handle);
-   hipsparseCreateCsr(&A.desc, n, n, nnz, row_dev, col_dev, val_dev,
+   checkHipsparse(hipsparseCreate(&A.hipsparse_handle));
+   checkHipsparse(hipsparseCreateCsr(&A.desc, n, n, nnz, row_dev, col_dev, val_dev,
          HIPSPARSE_INDEX_32I, HIPSPARSE_INDEX_32I, HIPSPARSE_INDEX_BASE_ZERO,
-         HIP_R_64F);
+         HIP_R_64F));
    A.aux = NULL;
    A.aux_size = 0;
  
@@ -121,6 +142,7 @@ int main (int argc, char *argv[]) {
    primme.matrix = &A;
                            /* Function that implements the matrix-vector product
                               A*x for solving the problem A*x = l*x */
+   primme.printLevel = 5;
  
    /* Set preconditioner (optional) */
    /*
@@ -149,11 +171,11 @@ int main (int argc, char *argv[]) {
 
    /* Allocate space for converged Ritz values and residual norms */
    evals = (double*)malloc(primme.numEvals*sizeof(double));
-   hipMalloc((void**)&evecs, primme.n*primme.numEvals*sizeof(double));
+   checkHip(hipMalloc((void**)&evecs, primme.n*primme.numEvals*sizeof(double)));
    rnorms = (double*)malloc(primme.numEvals*sizeof(double));
    
    hipblasHandle_t hipblas_handle;
-   hipblasCreate(&hipblas_handle);
+   checkHipblas(hipblasCreate(&hipblas_handle));
    primme.queue = &hipblas_handle;
 
    /* Call primme  */
@@ -200,16 +222,16 @@ int main (int argc, char *argv[]) {
    free(rnorms);
 
    // Free the allocated memory...
-   hipsparseDestroySpMat(A.desc);
-   hipFree(evecs);
-   hipFree(row_dev);
-   hipFree(col_dev);
-   hipFree(val_dev);
-   if (A.aux_size > 0) hipFree(A.aux);
+   checkHipsparse(hipsparseDestroySpMat(A.desc));
+   checkHip(hipFree(evecs));
+   checkHip(hipFree(row_dev));
+   checkHip(hipFree(col_dev));
+   checkHip(hipFree(val_dev));
+   if (A.aux_size > 0) checkHip(hipFree(A.aux));
 
    // and finalize cuBLAS and cuSparse.
-   hipsparseDestroy(A.hipsparse_handle);
-   hipblasDestroy(hipblas_handle);
+   checkHipsparse(hipsparseDestroy(A.hipsparse_handle));
+   checkHipblas(hipblasDestroy(hipblas_handle));
 
    return 0;
 }
@@ -219,24 +241,24 @@ void hipSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
 
    MatrixInfo *A = (MatrixInfo*)primme->matrix;
    hipsparseDnMatDescr_t matx, maty;
-   hipsparseCreateDnMat(&matx, primme->nLocal, *blockSize, *ldx, x, HIP_R_64F,
-         HIPSPARSE_ORDER_COLUMN);
-   hipsparseCreateDnMat(&maty, primme->nLocal, *blockSize, *ldy, y, HIP_R_64F,
-         HIPSPARSE_ORDER_COLUMN);
+   checkHipsparse(hipsparseCreateDnMat(&matx, primme->nLocal, *blockSize, *ldx, x, HIP_R_64F,
+         HIPSPARSE_ORDER_COLUMN));
+   checkHipsparse(hipsparseCreateDnMat(&maty, primme->nLocal, *blockSize, *ldy, y, HIP_R_64F,
+         HIPSPARSE_ORDER_COLUMN));
    double alpha = 1.0, beta = 0;
    size_t buffer_size = 0;
-   hipsparseSpMM_bufferSize(A->hipsparse_handle, HIPSPARSE_OPERATION_NON_TRANSPOSE,
+   checkHipsparse(hipsparseSpMM_bufferSize(A->hipsparse_handle, HIPSPARSE_OPERATION_NON_TRANSPOSE,
          HIPSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
-         HIP_R_64F, HIPSPARSE_SPMM_ALG_DEFAULT, &buffer_size);
+         HIP_R_64F, HIPSPARSE_SPMM_ALG_DEFAULT, &buffer_size));
    if (buffer_size > A->aux_size) {
-      if (A->aux) hipFree(A->aux);
-      hipMalloc(&A->aux, buffer_size);
+      if (A->aux) checkHip(hipFree(A->aux));
+      checkHip(hipMalloc(&A->aux, buffer_size));
       A->aux_size = buffer_size;
    }
-   hipsparseSpMM(A->hipsparse_handle, HIPSPARSE_OPERATION_NON_TRANSPOSE,
+   checkHipsparse(hipsparseSpMM(A->hipsparse_handle, HIPSPARSE_OPERATION_NON_TRANSPOSE,
          HIPSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
-         HIP_R_64F, HIPSPARSE_SPMM_ALG_DEFAULT, A->aux);
-   hipsparseDestroyDnMat(matx);
-   hipsparseDestroyDnMat(maty);
+         HIP_R_64F, HIPSPARSE_SPMM_ALG_DEFAULT, A->aux));
+   checkHipsparse(hipsparseDestroyDnMat(matx));
+   checkHipsparse(hipsparseDestroyDnMat(maty));
    *err = 0;
 }

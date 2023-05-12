@@ -29,7 +29,7 @@
  *******************************************************************************
  *
  *  Example to compute the k largest eigenvalues in a 1-D Laplacian matrix
- *  with MAGMA
+ *  with HIPBLAS
  *
  ******************************************************************************/
 
@@ -38,38 +38,31 @@
 #include <assert.h>
 #include <string.h>
 #include <math.h>
-#include <cublas_v2.h>
-#include <cusparse.h>
+#include <hipblas.h>
+#include <hipsparse.h>
 
 #include "primme.h"   /* header file is required to run primme */ 
 
-void cuSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+void hipSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, primme_params *primme, int *ierr);
 
-typedef struct {
-   cusparseHandle_t cusparse_handle;
-   cusparseSpMatDescr_t desc;
-   void *aux;
-   size_t aux_size;
-} MatrixInfo;
-
-void checkCuda(cudaError_t err) {
-   if (err != cudaSuccess) {
-      fprintf(stderr, "cuda call failed!\n");
+void checkHip(hipError_t err) {
+   if (err != hipSuccess) {
+      fprintf(stderr, "hip call failed!\n");
       exit(-1);
    }
 }
 
-void checkCublas(cublasStatus_t err) {
-   if (err != CUBLAS_STATUS_SUCCESS) {
-      fprintf(stderr, "cublas call failed!\n");
+void checkHipblas(hipblasStatus_t err) {
+   if (err != HIPBLAS_STATUS_SUCCESS) {
+      fprintf(stderr, "hipblas call failed!\n");
       exit(-1);
    }
 }
 
-void checkCusparse(cusparseStatus_t err) {
-   if (err != CUSPARSE_STATUS_SUCCESS) {
-      fprintf(stderr, "cusparse call failed!\n");
+void checkHipsparse(hipsparseStatus_t err) {
+   if (err != HIPSPARSE_STATUS_SUCCESS) {
+      fprintf(stderr, "hipsparse call failed!\n");
       exit(-1);
    }
 }
@@ -81,7 +74,7 @@ int main (int argc, char *argv[]) {
    /* Solver arrays and parameters */
    double *evals;    /* Array with the computed eigenvalues */
    double *rnorms;   /* Array with the computed eigenpairs residual norms */
-   double *evecs;    /* Array with the computed eigenvectors;
+   complex double *evecs;    /* Array with the computed eigenvectors;
                         first vector starts in evecs[0],
                         second vector starts in evecs[primme.n],
                         third vector starts in evecs[primme.n*2]...  */
@@ -89,43 +82,25 @@ int main (int argc, char *argv[]) {
                      /* PRIMME configuration struct */
 
    /* Other miscellaneous items */
-   int n=1000; /* problem size */
+   int n=64; /* problem size */
    int ret;
-   int i,j;
+   int i;
 
-   int *col, *row;
-   double *val;
+   complex double *val;
 
    /* Create the matrix on cpu */
-   row = (int*) calloc(n+1, sizeof(int));
-   int nnz = n+(n>0?n-1:0)*2;
-   col = (int*) calloc(nnz, sizeof(int));
-   val = (double*) calloc(nnz, sizeof(double));
+   val = (complex double*) calloc(n*n, sizeof(complex double));
 
-   for (i = j = 0; i < n; i++) {
-      row[i] = j;
-      if (i > 0)   {col[j] = i-1; val[j] = -1.0; j++;}
-                    col[j] = i  ; val[j] =  2.0; j++;
-      if (i < n-1) {col[j] = i+1; val[j] = -1.0; j++;}
+   for (i = 0; i < n; i++) {
+      val[i+n*i] = (complex double)i;
    }
-   row[n] = j;
 
    /* Copy the matrix on the gpu */
-   int *col_dev, *row_dev;
-   double *val_dev;
-   checkCuda(cudaMalloc((void**)&row_dev, (n+1)*sizeof(int)));
-   checkCuda(cudaMalloc((void**)&col_dev, nnz*sizeof(int)));
-   checkCuda(cudaMalloc((void**)&val_dev, nnz*sizeof(double)));
-   checkCublas(cublasSetVector(n+1,sizeof(int), row, 1, row_dev, 1));
-   checkCublas(cublasSetVector(nnz,sizeof(int), col, 1, col_dev, 1));
-   checkCublas(cublasSetVector(nnz,sizeof(double), val, 1, val_dev, 1));
-   MatrixInfo A;
-   checkCusparse(cusparseCreate(&A.cusparse_handle));
-   checkCusparse(cusparseCreateCsr(&A.desc, n, n, nnz, row_dev, col_dev, val_dev,
-         CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO,
-         CUDA_R_64F));
-   A.aux = NULL;
-   A.aux_size = 0;
+   hipblasHandle_t hipblas_handle;
+   checkHipblas(hipblasCreate(&hipblas_handle));
+   complex double *val_dev;
+   checkHip(hipMalloc((void**)&val_dev, n*n*sizeof(complex double)));
+   checkHipblas(hipblasSetVector(n*n,sizeof(complex double), val, 1, val_dev, 1));
  
    /* Set default values in PRIMME configuration struct */
    primme_initialize(&primme);
@@ -138,8 +113,8 @@ int main (int argc, char *argv[]) {
                            /* Wanted the smallest eigenvalues */
 
    /* Set problem matrix */
-   primme.matrixMatvec = cuSparseMatrixMatvec;
-   primme.matrix = &A;
+   primme.matrixMatvec = hipSparseMatrixMatvec;
+   primme.matrix = val_dev;
                            /* Function that implements the matrix-vector product
                               A*x for solving the problem A*x = l*x */
  
@@ -170,15 +145,13 @@ int main (int argc, char *argv[]) {
 
    /* Allocate space for converged Ritz values and residual norms */
    evals = (double*)malloc(primme.numEvals*sizeof(double));
-   checkCuda(cudaMalloc((void**)&evecs, primme.n*primme.numEvals*sizeof(double)));
+   checkHip(hipMalloc((void**)&evecs, primme.n*primme.numEvals*sizeof(complex double)));
    rnorms = (double*)malloc(primme.numEvals*sizeof(double));
    
-   cublasHandle_t cublas_handle;
-   checkCublas(cublasCreate(&cublas_handle));
-   primme.queue = &cublas_handle;
+   primme.queue = &hipblas_handle;
 
    /* Call primme  */
-   ret = cublas_dprimme(evals, evecs, rnorms, &primme);
+   ret = cublas_zprimme(evals, evecs, rnorms, &primme);
 
    if (ret != 0) {
       fprintf(primme.outputFile, 
@@ -210,54 +183,29 @@ int main (int argc, char *argv[]) {
    }
 
 
-//   printf("Time used in func:%e\n",primme.funcTime);
-//  printf("Execution time: %e\n",time);
-
    primme_free(&primme);
-   free(row);
-   free(col);
    free(val);
    free(evals);
    free(rnorms);
 
    // Free the allocated memory...
-   checkCusparse(cusparseDestroySpMat(A.desc));
-   checkCuda(cudaFree(evecs));
-   checkCuda(cudaFree(row_dev));
-   checkCuda(cudaFree(col_dev));
-   checkCuda(cudaFree(val_dev));
-   if (A.aux_size > 0) checkCuda(cudaFree(A.aux));
+   checkHip(hipFree(evecs));
+   checkHip(hipFree(val_dev));
 
    // and finalize cuBLAS and cuSparse.
-   checkCusparse(cusparseDestroy(A.cusparse_handle));
-   checkCublas(cublasDestroy(cublas_handle));
+   checkHipblas(hipblasDestroy(hipblas_handle));
 
    return 0;
 }
 
-void cuSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
+void hipSparseMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
       int *blockSize, primme_params *primme, int *err) {
 
-   MatrixInfo *A = (MatrixInfo*)primme->matrix;
-   cusparseDnMatDescr_t matx, maty;
-   checkCusparse(cusparseCreateDnMat(&matx, primme->nLocal, *blockSize, *ldx, x, CUDA_R_64F,
-         CUSPARSE_ORDER_COL));
-   checkCusparse(cusparseCreateDnMat(&maty, primme->nLocal, *blockSize, *ldy, y, CUDA_R_64F,
-         CUSPARSE_ORDER_COL));
-   double alpha = 1.0, beta = 0;
-   size_t buffer_size = 0;
-   checkCusparse(cusparseSpMM_bufferSize(A->cusparse_handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-         CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
-         CUDA_R_64F, CUSPARSE_SPMM_ALG_DEFAULT, &buffer_size));
-   if (buffer_size > A->aux_size) {
-      if (A->aux) checkCuda(cudaFree(A->aux));
-      checkCuda(cudaMalloc(&A->aux, buffer_size));
-      A->aux_size = buffer_size;
-   }
-   checkCusparse(cusparseSpMM(A->cusparse_handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-         CUSPARSE_OPERATION_NON_TRANSPOSE, &alpha, A->desc, matx, &beta, maty,
-         CUDA_R_64F, CUSPARSE_SPMM_ALG_DEFAULT, A->aux));
-   checkCusparse(cusparseDestroyDnMat(matx));
-   checkCusparse(cusparseDestroyDnMat(maty));
+   hipblasHandle_t hipblas_handle = *(hipblasHandle_t *)primme->queue;
+   complex double alpha = 1.0, beta = 0;
+   checkHipblas(hipblasGemmEx(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_N,
+         primme->n, *blockSize, primme->n, &alpha, (const void *)primme->matrix,
+         HIPBLAS_C_64F, primme->n, x, HIPBLAS_C_64F, *ldx, &beta, y,
+         HIPBLAS_C_64F, *ldy, HIPBLAS_C_64F, HIPBLAS_GEMM_DEFAULT));
    *err = 0;
 }
