@@ -57,6 +57,76 @@
 
 #ifdef SUPPORTED_TYPE
 
+
+/* Insert into array x of length a random integers between 1 and n */
+STATIC void rand_iprimme(PRIMME_INT *x, PRIMME_INT a, PRIMME_INT n) {
+   PRIMME_INT i, j;
+   int flag;
+   i = 0;
+   while(i < a)
+   {
+      flag = 0;
+      x[i] = rand() % n;
+      for(j = 0; j < i; j++) 
+         if(x[j] == x[i]) 
+         {
+            flag = 1;
+            break;
+         }
+      if(flag == 0) i++;
+   }
+}
+
+/******************************************************************************
+ * Subroutine build_sketch - This routine builds the subspace embedding matrix
+ * in CSC format that can be applied to a basis for sketching. This is adapted
+ * from the Sparse Maps method. Because each column contains the same number 
+ * of nonzeros, we do not need to store the index pointers. 
+ ******************************************************************************/
+TEMPLATE_PLEASE
+int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, PRIMME_INT ldS, PRIMME_INT nnz_per_col, primme_context ctx) {
+
+  primme_params *primme = ctx.primme;
+
+  PRIMME_INT i, j;         /* loop variables */
+  PRIMME_INT my_start = 0; /* Use to determine the local columns assigned to this process */
+  int *global_start;       /* nLocals of all processes */
+  PRIMME_INT seed;       /* seed for the random number generator */
+  SCALAR scaling_factor = 1/sqrt(ldS);
+
+  /* Determine which columns of S belong to this process */
+  CHKERR(Num_malloc_iprimme(primme->numProcs, &global_start, ctx));
+  for(i = 0; i < primme->numProcs; i++) global_start[i] = 0;
+  global_start[primme->procID] = primme->nLocal;
+  CHKERR(globalSum_Tprimme(global_start, primme_op_int, primme->numProcs, ctx));  
+  for(i = 0; i < primme->procID; i++) my_start += global_start[i];
+  CHKERR(Num_free_iprimme(global_start, ctx));
+
+
+  /* Build the CSR matrix locally */
+  for(i = 0; i < primme->nLocal; i++)
+  {
+     /* Set rng seed */
+     seed = my_start+i+1;
+     srand((unsigned int)seed);
+
+     /* determine which rows will be nonzero in this column */
+     rand_iprimme(&S_rows[i*nnz_per_col], nnz_per_col, ldS);
+
+     /* Insert entries corresponding to the Hadamard distribution (complex) or -1/+1 (real) */
+#ifdef USE_COMPLEX
+  CHKERR(Num_larnv_Sprimme(3, &seed, nnz_per_col, &S_vals[i*nnz_per_col], ctx));
+  for(j = i*nnz_per_col; j < (i+1)*nnz_per_col; j++) S_vals[j] /= cabs(S_vals[j]);
+#else
+  for(j = i*nnz_per_col; j < (i+1)*nnz_per_col; j++) S_vals[j] = (rand() % 2)*2 - 1;
+#endif
+  }
+  
+  CHKERR(Num_scal_Sprimme(primme->nLocal*nnz_per_col, scaling_factor, S_vals, 1, ctx));
+
+  return 0;
+}
+
 /******************************************************************************
  * Subroutine apply_sketching - This routine using a random subspace embedding
  * to estimate the eigenpairs of the H matrix produced by Lanczos

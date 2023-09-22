@@ -58,25 +58,6 @@
 
 #ifdef SUPPORTED_TYPE
 
-/* Insert into array x of length a random integers between 1 and n */
-STATIC void rand_rows_iprimme(PRIMME_INT *x, PRIMME_INT a, PRIMME_INT n) {
-   PRIMME_INT i, j;
-   int flag;
-   i = 0;
-   while(i < a)
-   {
-      flag = 0;
-      x[i] = rand() % n;
-      for(j = 0; j < i; j++) 
-         if(x[j] == x[i]) 
-         {
-            flag = 1;
-            break;
-         }
-      if(flag == 0) i++;
-   }
-}
-
 STATIC void compute_residuals_RR(HSCALAR *evecs, PRIMME_INT ldevecs, HEVAL *evals, PRIMME_INT numEvals, HREAL *resNorms, primme_context ctx)
 {
    primme_params *primme = ctx.primme;
@@ -302,15 +283,10 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Build the sketching matrix first if needed ------------------- */
    if(primme->projectionParams.projection == primme_proj_sketched)
    {
-      PRIMME_INT *rand_rows;
-      PRIMME_INT iseed;
-
       sketchSize = ldSV = 4*maxBasisSize;
       nnzPerCol = (int)(ceil(2*log(maxBasisSize+1)));   
       last_sketch = 0;
 
-      //CHKERR(Num_malloc_iprimme(nnzPerCol, &rand_rows, ctx));
-      //CHKERR(Num_malloc_iprimme(nnzPerCol*nLocal, &S_rows, ctx));
       CHKERR(Num_malloc_Sprimme(nnzPerCol*nLocal, &S_vals, ctx));
       CHKERR(Num_malloc_Sprimme(ldSV*maxBasisSize, &SW, ctx));
       CHKERR(Num_malloc_Sprimme(ldSV*(maxBasisSize+blockSize), &SV, ctx));
@@ -320,28 +296,9 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(Num_malloc_Sprimme(ldV*(maxBasisSize+blockSize), &V_temp, ctx));
 
       S_rows = (PRIMME_INT*)malloc(nnzPerCol*nLocal*sizeof(PRIMME_INT));
-      rand_rows = (PRIMME_INT*)malloc(nnzPerCol*sizeof(PRIMME_INT));
 
-      /* Start building the CSR Locally */
-      for(i = 0; i < nLocal; i++)
-      {
-         iseed = myGlobalStart+i+1;
-         srand((unsigned int)iseed);
-         
-         /* For each column, randomly select which rows will be nonzero */
-         rand_rows_iprimme(&S_rows[i*nnzPerCol], nnzPerCol, sketchSize);
-
-         /* Insert random variables into the nonzeros of the skecthing matrix (Uniform on the complex unit circle or -1 and 1) */
-#ifdef USE_COMPLEX
-         CHKERR(Num_larnv_Sprimme(3, &iseed, nnzPerCol, &S_vals[i*nnzPerCol], ctx));
-         for(j = i*nnzPerCol; j < (i+1)*nnzPerCol; j++) S_vals[j] /= cabs(S_vals[j]);
-#else
-         for(j = i*nnzPerCol; j < (i+1)*nnzPerCol; j++) S_vals[j] = (rand() % 2)*2 - 1;
-#endif
-      }
-
-      CHKERR(Num_scal_Sprimme(nLocal*nnzPerCol, 1/sqrt(sketchSize), S_vals, 1, ctx));
-      free(rand_rows);
+      /* Build Sketch CSR Locally */
+      CHKERR(build_sketch_Sprimme(S_rows, S_vals, sketchSize, nnzPerCol, ctx));
 
    } /* End sketching matrix build */
    
