@@ -193,7 +193,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    SCALAR *SWhVecs;           /* The projected sketched Ritz vectors           */
    SCALAR *S_vals;                                       /* CSC Formatted Values */
    PRIMME_INT *S_rows;                                          /* CSC Formatted Rows */
-   PRIMME_INT sketchSize, nnzPerCol, last_sketch, ldSV;  /* Size and nnz of the sketching matrix */
+   PRIMME_INT sketchSize, nnzPerCol, ldSV;  /* Size and nnz of the sketching matrix */
    REAL *normalize_evecs;
 
    /* -------------------------------------------------------------- */
@@ -285,7 +285,6 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    {
       sketchSize = ldSV = 4*maxBasisSize;
       nnzPerCol = (int)(ceil(2*log(maxBasisSize+1)));   
-      last_sketch = 0;
 
       CHKERR(Num_malloc_Sprimme(nnzPerCol*nLocal, &S_vals, ctx));
       CHKERR(Num_malloc_Sprimme(ldSV*maxBasisSize, &SW, ctx));
@@ -364,8 +363,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(ortho_Sprimme(&V_temp[ldV*(i+blockSize)], ldV, &H[i*ldH + (i+blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* [V_i, b_i] = qr(V_i) */
 
             /* Getting our sketched basis and projected sketched basis */
-            CHKERR(apply_sketching_Sprimme(H, ldH, V_temp, ldV, SV, ldSV, hVecs, ldhVecs, hVals, last_sketch, i+blockSize, blockSize, S_rows, S_vals, nnzPerCol, ctx));
-            last_sketch = i;            
+            CHKERR(apply_sketching_Sprimme(H, ldH, V_temp, ldV, SV, ldSV, hVecs, ldhVecs, hVals, i+blockSize, blockSize, S_rows, S_vals, nnzPerCol, ctx));
 
             /* Eigenvectors that will be returns to the user - make sure they are at least normal (These are the Ritz vectors from the sketched problem) */
             CHKERR(Num_gemm_Sprimme("N", "N", nLocal, numEvals, i+blockSize, 1.0, V_temp, ldV, hVecs, ldhVecs, 0.0, evecs, ldevecs, ctx));    /* evecs = V*hVecs */
@@ -505,7 +503,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          CHKERR(ortho_Sprimme(&V[ldV*maxBasisSize], ldV, &H[(maxBasisSize-blockSize)*ldH + maxBasisSize], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* [V_i, b_i] = qr(V_i) */
          if(fullOrtho) CHKERR(ortho_Sprimme(V, ldV, NULL, 0, maxBasisSize, maxBasisSize+blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* Orthogonalized the last block of V against the rest of the basis */
 
-         CHKERR(apply_sketching_Sprimme(H, ldH, V, ldV, SV, ldSV, hVecs, ldhVecs, hVals, last_sketch, maxBasisSize, blockSize, S_rows, S_vals, nnzPerCol, ctx));
+         CHKERR(apply_sketching_Sprimme(H, ldH, V, ldV, SV, ldSV, hVecs, ldhVecs, hVals, maxBasisSize, blockSize, S_rows, S_vals, nnzPerCol, ctx));
 
          /* Eigenvectors that will be returns to the user - make sure they are at least normal (These are the Ritz vectors from the sketched problem) */
          CHKERR(Num_gemm_Sprimme("N", "N", nLocal, primme->numEvals, maxBasisSize, 1.0, V, ldV, hVecs, ldhVecs, 0.0, evecs, ldevecs, ctx));    /* evecs = V*hVecs */

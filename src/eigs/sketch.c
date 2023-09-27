@@ -102,7 +102,6 @@ int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, PRIMME_INT ldS, PRI
   for(i = 0; i < primme->procID; i++) my_start += global_start[i];
   CHKERR(Num_free_iprimme(global_start, ctx));
 
-
   /* Build the CSR matrix locally */
   for(i = 0; i < primme->nLocal; i++)
   {
@@ -128,7 +127,50 @@ int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, PRIMME_INT ldS, PRI
 }
 
 /******************************************************************************
- * Subroutine apply_sketching - This routine using a random subspace embedding
+ * Subroutine sketch_basis - This routine multiplies the basis by the random
+ * subspace embedding and returns the result in SV
+ ******************************************************************************/
+TEMPLATE_PLEASE
+int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, PRIMME_INT blockSize, PRIMME_INT nnz_per_col, PRIMME_INT *S_rows, SCALAR *S_vals, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+ 
+   SCALAR *V_row;    /* Used to temporarily store a row in V to avoid numberous memory accesses */
+   PRIMME_INT i, j;
+
+   CHKERR(Num_malloc_Sprimme(blockSize, &V_row, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(SV, ldSV, blockSize, ldSV, ctx));
+
+   /* Sparse MM */
+   for(i = 0; i < primme->nLocal; i++) /* Traverse the rows of the basis V */
+   {
+      CHKERR(Num_copy_Sprimme(blockSize, &V[i], ldV, V_row, 1, ctx));
+      for(j = 0; j < nnz_per_col; j++) CHKERR(Num_axpy_Sprimme(blockSize, S_vals[i*nnz_per_col+j], V_row, 1, &SV[S_rows[i*nnz_per_col+j]], ldSV, ctx));
+   }
+   CHKERR(Num_free_Sprimme(V_row, ctx)); 
+
+   /* Find the sketched basis */
+   CHKERR(globalSum_Sprimme(SV, blockSize*ldSV, ctx));  
+ 
+   return 0;
+}
+
+/******************************************************************************
+ * Subroutine sketched_residuals - This routine finds the residuals of the 
+ * sketched Ritz pairs along with the residual norms. 
+ * \| SAV*x - SV*x*lambda \|_2 / \|SV*x\_x
+ * SAV = SV*H
+ ******************************************************************************/
+TEMPLATE_PLEASE
+int sketched_residuals_Sprimme(SCALAR *SV, PRIMME_INT ldSV, HSCALAR *H, PRIMME_INT ldH, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+
+return 0;
+}
+
+/******************************************************************************
+ * Subroutine apply_sketching - This routine uses a random subspace embedding
  * to estimate the eigenpairs of the H matrix produced by Lanczos
  * I.e. [evecs, evals] = eig((SV)'(SAV)y = Ly)
  *
@@ -150,7 +192,7 @@ int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, PRIMME_INT ldS, PRI
  *
  * blockSize The number of columns added to the basis per iteration in Lanczos
  * 
- * nnzPerCol Number of nonzeros per column of the sketching matrix
+ * nnz_per_col Number of nonzeros per column of the sketching matrix
  * 
  * S_rows   The nonzero rows indices for all columns in the sketching matrix
  *          in CSC format
@@ -167,50 +209,17 @@ int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, PRIMME_INT ldS, PRI
  * 
  * resNorms The estimated residual norms from the sketched RR
  * 
- * last_sketch The number of columns of SV that have previously been computed
- *  
  ******************************************************************************/
 
-
 TEMPLATE_PLEASE
-int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, HSCALAR *hVecs, PRIMME_INT ldhVecs, HREAL *hVals, PRIMME_INT last_sketch, PRIMME_INT basisSize, PRIMME_INT blockSize, PRIMME_INT *S_rows, SCALAR* S_vals, PRIMME_INT nnzPerCol, primme_context ctx) {
+int apply_sketching_Sprimme(HSCALAR *H, PRIMME_INT ldH, SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, HSCALAR *hVecs, PRIMME_INT ldhVecs, HREAL *hVals, PRIMME_INT basisSize, PRIMME_INT blockSize, PRIMME_INT *S_rows, SCALAR* S_vals, PRIMME_INT nnz_per_col, primme_context ctx) {
 #ifdef USE_HERMITIAN
    primme_params *primme = ctx.primme;
 
-   SCALAR *V_row;    /* Used to temporarily store a row in V to avoid numberous memory accesses */
-   PRIMME_INT i, j;
-   PRIMME_INT numNewCols = basisSize+blockSize-last_sketch;  
+   PRIMME_INT i; /* Loop variables */
+   
+   CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, basisSize+blockSize, nnz_per_col, S_rows, S_vals, ctx));
 
-   CHKERR(Num_malloc_Sprimme(numNewCols, &V_row, ctx));
-   CHKERR(Num_zero_matrix_Sprimme(&SV[last_sketch*ldSV], ldSV, numNewCols, ldSV, ctx));
-
-   /* Sparse MM */
-   for(i = 0; i < primme->nLocal; i++) /* Traverse the rows of the basis V */
-   {
-      CHKERR(Num_copy_Sprimme(numNewCols, &V[last_sketch*ldV+i], ldV, V_row, 1, ctx));
-      for(j = 0; j < nnzPerCol; j++)
-      {
-         CHKERR(Num_axpy_Sprimme(numNewCols, S_vals[i*nnzPerCol+j], V_row, 1, &SV[last_sketch*ldSV + S_rows[i*nnzPerCol+j]], ldSV, ctx));
-      }
-   }
-   CHKERR(Num_free_Sprimme(V_row, ctx)); 
-
-
-   /* Find the sketched basis */
-   CHKERR(globalSum_Sprimme(&SV[ldSV*last_sketch], numNewCols*ldSV, ctx));  
-/*
-   if(primme->procID == 0 && primme->numProcs == 1)
-   {
-      printf("SV for basisSize %d\n", basisSize);
-      for(i = 0; i < ldSV; i++)
-      {
-         for(j = 0; j < basisSize+blockSize; j++)
-            printf("%lf ", SV[j*ldSV+i]);
-         printf("\n");
-      }
-      printf("\n\n");
-   }
-*/
    if(primme->procID == 0)
    {
 
@@ -354,12 +363,11 @@ return 0;
    (void)hVecs;
    (void)ldhVecs;
    (void)hVals;
-   (void)last_sketch;
    (void)basisSize;
    (void)blockSize;
    (void)S_rows;
    (void)S_vals;
-   (void)nnzPerCol;
+   (void)nnz_per_col;
    (void)ctx;
 
    CHKERR(PRIMME_FUNCTION_UNAVAILABLE);
