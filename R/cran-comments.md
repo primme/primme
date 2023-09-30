@@ -1,6 +1,6 @@
 ## Changes
 
-* Fix prototype warnings
+* Accommodate following changes in Matrix's API
 
 ## Test environments
 * Ubuntu 20.04, R 4.3 and devel

@@ -550,7 +550,7 @@ void matrixMatvecEigs_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
 {
    checkUserInterrupt(primme);
 
-   const_CHM_SP chm = (const_CHM_SP)((void**)F::get(primme))[0];
+   CHM_SP chm = (CHM_SP)((void**)F::get(primme))[0];
    ASSERT(chm->nrow == chm->ncol && (PRIMME_INT)chm->nrow == primme->nLocal);
 
    cholmod_dense chx, chy;
@@ -573,7 +573,7 @@ void matrixMatvecEigs_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    double ONEf[] = {1.0, 0.0}, ZEROf[] = {0.0, 0.0};
    CHM_CM chol_c = (CHM_CM)((void**)F::get(primme))[1];
 
-   M_cholmod_sdmult(chm, 0, ONEf, ZEROf, (const_CHM_DN)&chx, &chy, chol_c);
+   M_cholmod_sdmult(chm, 0, ONEf, ZEROf, (CHM_DN)&chx, &chy, chol_c);
 
    *ierr = 0;
 }
@@ -1114,7 +1114,7 @@ static void matrixMatvecSvds_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_IN
 {  
    checkUserInterrupt(primme_svds);
 
-   const_CHM_SP chm = (const_CHM_SP)((void**)primme_svds->matrix)[0];
+   CHM_SP chm = (CHM_SP)((void**)primme_svds->matrix)[0];
    ASSERT((PRIMME_INT)chm->nrow == primme_svds->mLocal && (PRIMME_INT)chm->ncol == primme_svds->nLocal);
 
    cholmod_dense chx, chy;
@@ -1137,7 +1137,7 @@ static void matrixMatvecSvds_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_IN
    double ONEf[] = {1.0, 0.0}, ZEROf[] = {0.0, 0.0};
    CHM_CM chol_c = (CHM_CM)((void**)primme_svds->matrix)[1];
 
-   M_cholmod_sdmult(chm, *transpose?1:0, ONEf, ZEROf, (const_CHM_DN)&chx, &chy,
+   M_cholmod_sdmult(chm, *transpose?1:0, ONEf, ZEROf, (CHM_DN)&chx, &chy,
          chol_c);
 
    *ierr = 0;
