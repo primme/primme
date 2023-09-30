@@ -1,8 +1,8 @@
 Package: PRIMME
 Type: Package
 Title: Eigenvalues and Singular Values and Vectors from Large Matrices
-Version: 3.2-4
-Date: 2023-05-9
+Version: 3.2-5
+Date: 2023-09-30
 Authors@R: c(person("Eloy", "Romero", role=c("aut", "cre"), email="eloy@cs.wm.edu"),
              person("Andreas", "Stathopoulos", role="aut", email="andreas@cs.wm.edu"),
              person("Lingfei", "Wu", role="aut", email="wuli@us.ibm.com"),
