@@ -54,6 +54,7 @@
 #include "update_W.h"
 #include "auxiliary_eigs.h"
 #include "auxiliary_eigs_normal.h"
+#include "sketch.h"
 #endif
 
 #ifdef SUPPORTED_TYPE
@@ -260,6 +261,17 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    double tstart=0.0;       /* Timing variable for accumulative time spent   */
    int maxNumRandoms = 10;  /* We do not allow more than 10 randomizations */
 
+   /* Variables for sketching (if needed)                                    */
+   SCALAR *SV;              /* Sketched Basis vectors                     */
+   SCALAR *SW;              /* Projected sketched Basis vectors           */
+   SCALAR *V_temp;          /* Work array for sketching                   */
+   SCALAR *S_vals;          /* Holds the nonzero entries of the sketching matrix  */
+   REAL *normalize_evecs;   /* For normalizing the sketched Ritz vectors  */
+   PRIMME_INT *S_rows;      /* Holds the row numbers of the nonzero entries       */
+   PRIMME_INT nnz_per_col;  /* NNZ per column in the sketching matrix     */
+   PRIMME_INT ldSV, ldSW;   /* Leading dimensions of SV and SW            */
+   PRIMME_INT ldH;          /* (New) Leading dimensions of H              */
+
    /* -------------------------------------------------------------- */
    /* Allocate objects                                               */
    /* -------------------------------------------------------------- */
@@ -292,8 +304,11 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(Num_malloc_SHprimme(
           primme->maxBasisSize * primme->maxBasisSize * numQR, &QtV, ctx));
    }
-   CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize, &H,
-                              ctx));
+   if(primme->projectionParams.projection == primme_proj_sketched){
+      CHKERR(Num_malloc_SHprimme((primme->maxBasisSize + primme->maxBlockSize) * primme->maxBasisSize, &H, ctx));
+   } else { 
+      CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize, &H, ctx));
+   }
    CHKERR(Num_malloc_SHprimme(primme->maxBasisSize * primme->maxBasisSize,
                               &hVecs, ctx));
    int maxRank; /* maximum size of the main space being orthonormalize */
@@ -360,6 +375,24 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(Num_malloc_iprimme(primme->maxBlockSize, &iev, ctx));
    CHKERR(Num_malloc_iprimme(maxEvecsSize, &ipivot, ctx));
 
+   /* Allocate space for the variables needed for sketching (if needed) */
+   /* Values based on manuscript by Nakastukasa and Tropp. Will change 
+      later to user-optioned */
+   if(primme->projectionParams.projection == primme_proj_sketched){
+     ldH = primme->maxBasisSize + primme->maxBlockSize;
+     ldSV = ldSW = 4*primme->maxBasisSize;
+     nnz_per_col = (int)(ceil(2*log(primme->maxBasisSize + 1)));  
+    
+     S_rows = (PRIMME_INT*)malloc(nnz_per_col*primme->nLocal*sizeof(PRIMME_INT));
+
+     CHKERR(Num_malloc_Sprimme(primme->nLocal*nnz_per_col, &S_vals, ctx));
+     CHKERR(Num_malloc_Sprimme(ldSV*primme->maxBasisSize, &SV, ctx));
+     CHKERR(Num_malloc_Sprimme(ldSW*primme->maxBasisSize, &SW, ctx));
+     CHKERR(Num_malloc_Sprimme(ldV*primme->maxBasisSize, &V_temp, ctx));
+
+     CHKERR(Num_malloc_Rprimme(primme->numEvals, &normalize_evecs, ctx));
+   }
+
    /* -------------------------------------------------------------- */
    /* Initialize counters and flags                                  */
    /* -------------------------------------------------------------- */
@@ -419,6 +452,10 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    /* Now initSize will store the number of converged pairs */
    primme->initSize = 0;
+
+   /* Initialize sketching matrix */
+   if(primme->projectionParams.projection == primme_proj_sketched) 
+      CHKERR(build_sketch_Sprimme(S_rows, S_vals, ldSV, nnz_per_col, ctx));
 
    /* ----------------------------------------------------------- */
    /* Dynamic method switch means we need to decide whether to    */
@@ -1409,6 +1446,17 @@ clean:
    CHKERR(Num_free_iprimme(map, ctx));
    CHKERR(Num_free_iprimme(iev, ctx));
    CHKERR(Num_free_iprimme(ipivot, ctx));
+
+   if(primme->projectionParams.projection == primme_proj_sketched){
+      free(S_rows);
+
+      CHKERR(Num_free_Rprimme(normalize_evecs, ctx));
+
+      CHKERR(Num_free_Sprimme(SV, ctx));
+      CHKERR(Num_free_Sprimme(SW, ctx));
+      CHKERR(Num_free_Sprimme(S_vals, ctx));
+      CHKERR(Num_free_Sprimme(V_temp, ctx));
+   }
 
    return 0;
 }
