@@ -155,6 +155,10 @@ void primme_initialize(primme_params *primme) {
    primme->orth                                = primme_orth_default;
    primme->internalPrecision                   = primme_op_default;
 
+   /* Sketching parameters */
+   primme->sketchingParams.sketchSize          = 0;
+   primme->sketchingParams.nnzPerCol           = 0;
+
    /* correction parameters (inner) */
    primme->correctionParams.precondition       = -1;
    primme->correctionParams.robustShifts       = 0;
@@ -556,7 +560,7 @@ void primme_set_defaults(primme_params *primme) {
    if (primme->expansionParams.expansion == primme_expansion_default)
       primme->expansionParams.expansion = primme_expansion_davidson;
    if (primme->residualParams.residual == primme_residual_default)
-      primme->residualParams.residual = primme_residual_sketched;
+      primme->residualParams.residual = primme_residual_RR;
    if (primme->initBasisMode == primme_init_default)
       primme->initBasisMode = primme_init_krylov;
 
@@ -604,6 +608,11 @@ void primme_set_defaults(primme_params *primme) {
             (1 + (int) ((primme->maxBasisSize - primme->minRestartSize - 1)
                         /(double) primme->maxBlockSize) );
       }
+   }
+
+   if (primme->projectionParams.projection == primme_proj_sketched) {
+      primme->sketchingParams.sketchSize = 4*primme->maxBasisSize;
+      primme->sketchingParams.nnzPerCol  = (PRIMME_INT)ceil(2*log(primme->maxBasisSize+1));
    }
 
    /* --------------------------------------------------------------------- */

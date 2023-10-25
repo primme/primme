@@ -494,6 +494,340 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
 }
 
 /*******************************************************************************
+ * Subroutine: sketched_restart - This routine replaces V with V*c, some subset
+ *             of the Ritz vectors of the current and the previous iteration.
+ *             Related bases and matrices are updated accordingly.
+ *
+ * INPUT ARRAYS AND PARAMETERS
+ * ---------------------------
+ *
+ * nLocal           Number of rows of V, W, Q, evecs and evecsHat assigned to the node
+ *
+ * ldV              The leading dimension of V, W, Q, evecs and evecsHat
+ *
+ * basisSize        The number of columns in V, W and Q
+ *
+ * resNorms         The residual norms of the converged eigenpairs
+ *
+ * prevhVecs        Coefficient vectors retained from the previous iteration
+ *
+ * numGuesses       Number of remaining initial guesses
+ *
+ * rwork            Real work array
+ *
+ * rworkSize        Must be of size 
+ *
+ * iwork            Integer work array
+ *                  
+ * primme           Structure containing various solver parameters
+ *
+ *
+ * INPUT/OUTPUT ARRAYS AND PARAMETERS
+ * ----------------------------------
+ * restartSizeOutput Output the number of columns of the restarted V.
+ *
+ * V                The orthonormal basis. After restart, contains Ritz vectors
+ *                  plus the orthogonal components from prevhVecs 
+ *
+ * W                A*V
+ *
+ * BV               B*V
+ *
+ * hU               The left singular vectors of R or the eigenvectors of QtV/R
+ *
+ * ldhU             The leading dimension of the input hU
+ *
+ * newldhU          The leading dimension of the output hU
+ *
+ * hVecs            The coefficient vectors
+ *
+ * ldhVecs          The leading dimension of the input hVecs
+ *
+ * newldhVecs       The leading dimension of the output hVecs
+ *
+ * hVals            The Rayleigh quotient of candidates
+ *
+ * hSVals           The singular values of R
+ *
+ * flags            Array indicating the convergence of the Ritz vectors
+ *
+ * iev              Array of size blockSize indicating which Ritz vectors are
+ *                  targeted in the block
+ *
+ * ievSize          The length of iev
+ *
+ * blockNorms       The residual norms of the eigenpairs in the block
+ *
+ * evecs            The converged Ritz vectors. Without locking, all converged
+ *                  eigenvectors are copied from V to evecs if skew projections
+ *                  are required
+ *
+ * Bevecs           B*evecs
+ *
+ * evals            The converged Ritz values
+ *
+ * resNorms         The residual norms of the converged eigenpairs
+ *
+ * evecsHat         K^{-1}evecs
+ *
+ * prevRitzVals     Projected values retained from the previous iteration
+ *
+ * numPrevRitzVals  Length of the vector prevRitzVals
+ *
+ * ldevecsHat       The leading dimension of evecsHat
+ *
+ * M, ldM           evecs'*evecsHat and the leading dimension of M
+ *
+ * Mfact            The factorization of M
+ *
+ * ldMfact          The leading dimension of Mfact
+ *
+ * ipivot           The pivot array of the Mfact factorization
+ *
+ * H                The projection V'*A*V
+ *
+ * ldH              The leading dimension of H
+ *
+ * VtBV             The projection V'*B*V
+ *
+ * ldVtBV           The leading dimension of VtBV
+ *
+ * fVtBV            The Cholesky factor of VtBV
+ *
+ * ldfVtBV          The leading dimension of fVtBV
+ * 
+ * Q, R             The factors of the QR decomposition of (A - targetShift*B)*V
+ *
+ * ldQ, ldR         The leading dimension of Q and R
+ *
+ * fQtQ             The Cholesky factor of QtQ
+ *
+ * ldfQtQ           The leading dimension of fQtQ
+ * 
+ * numConverged     The number of converged eigenpairs
+ *
+ * nprevhVecs       The number of columns of prevhVecs
+ *
+ * targetShiftIndex The target shift used in (A - targetShift*B) = Q*R
+ *
+ * numArbitraryVecs The number of columns of hVecsRot
+ *
+ * hVecsRot         hVecs = hV*hVecsRot, where hV are the original coefficient
+ *                  vectors returned by solve_H
+ *
+ * ldhVecsRot       The leading dimension of hVecsRot
+ *
+ * restartsSinceReset Number of restarts since last reset of V and W
+ *
+ *
+ * Return value
+ * ------------
+ * error code
+ *       
+ ******************************************************************************/
+ 
+TEMPLATE_PLEASE
+int sketched_restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
+      int basisSize, PRIMME_INT ldV, HEVAL *hVals, HREAL *hSVals, int *flags,
+      int *iev, int *ievSize, HREAL *blockNorms, SCALAR *evecs,
+      PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, 
+      HEVAL *evals, HREAL *resNorms, SCALAR *evecsHat, PRIMME_INT ldevecsHat,
+      HSCALAR *M, int ldM, HSCALAR *Mfact, int ldMfact, int *ipivot,
+      int *numConverged, int numGuesses, HEVAL *prevRitzVals,
+      int *numPrevRitzVals, HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
+      HSCALAR *QtV, int ldQtV, 
+      HSCALAR *hU, int ldhU, int newldhU, HSCALAR *hVecs,
+      int ldhVecs, int newldhVecs, int *restartSizeOutput,
+      int *targetShiftIndex, int *numArbitraryVecs, HSCALAR *hVecsRot,
+      int ldhVecsRot, int *restartsSinceReset,
+      primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+   int i;                   /* Loop indices */
+   int restartSize;         /* Basis size after restarting                   */
+   int indexOfPreviousVecsBeforeRestart=0; /* descriptive enough name, isn't? */
+
+   /* ----------------------------------------------------------- */
+   /* Remove the SKIP_UNTIL_RESTART flags.                        */
+   /* ----------------------------------------------------------- */
+
+   for (i=0; i<basisSize; i++) {
+      if (flags[i] == SKIP_UNTIL_RESTART) {
+         flags[i] = UNCONVERGED;
+      }
+      else if (flags[i] != UNCONVERGED &&
+            /* Don't check more than numEvals */
+               *numConverged < primme->numEvals &&
+            /* Check only the first pairs, except if finding closest_leq/geq  */
+            /* because with refined extraction the pairs may not be ordered   */
+            /* by this criterion.                                             */
+               (i < primme->numEvals
+                || primme->target == primme_closest_geq
+                || primme->target == primme_closest_leq)) {
+         (*numConverged)++;
+      }
+   }
+
+   /* ----------------------------------------------------------- */
+   /* Special case: If (basisSize) is the entire space, */
+   /* then everything should be converged. Do not test, just flag */
+   /* everything as converged. But only do that when multiple     */
+   /* shifts are not involved.                                    */
+   /* ----------------------------------------------------------- */
+
+   int numPrevRetained = primme->restartingParams.maxPrevRetain;
+   if (!primme->locking && basisSize >= primme->n) {
+      restartSize = basisSize;
+      numPrevRetained = 0;
+   }
+   /* --------------------------------------------------------------------- */
+   /* If basis isn't full, restart with the current basis size.             */
+   /* --------------------------------------------------------------------- */
+   else if (basisSize <= primme->maxBasisSize - primme->maxBlockSize) {
+      restartSize = basisSize;
+      numPrevRetained = 0;
+   }
+   else {
+      restartSize = min(basisSize, primme->minRestartSize);
+   }
+
+   /* ----------------------------------------------------------------------- */
+   /* Insert as many initial guesses as eigenpairs have converged.            */
+   /* Leave sufficient restarting room in the restarted basis so that to      */
+   /* insert (in main_iter) as many initial guesses as the number of          */
+   /* eigenpairs that converged.                                              */
+   /* ----------------------------------------------------------------------- */
+
+   restartSize -= min(min(numGuesses, *numConverged), restartSize);
+
+   /* ----------------------------------------------------------------------- */
+   /* Limit the number of previous retained vectors such that the final basis */
+   /* size isn't larger than the current basis size.                          */
+   /* ----------------------------------------------------------------------- */
+
+   numPrevRetained = max(0, min(min(
+         numPrevRetained,
+         primme->maxBasisSize - restartSize - 1),
+         primme->n - restartSize - *numConverged));
+
+   /* ----------------------------------------------------------------------- */
+   /* Restarting with a small number of coefficient vectors from the previous */
+   /* iteration can accelerate convergence.  The previous                     */
+   /* coefficient vectors must be combined with the current coefficient       */
+   /* vectors by first orthogonalizing the previous ones versus the current   */
+   /* restartSize ones.  The orthogonalized previous vectors are then         */
+   /* inserted into the hVecs array at hVecs(:,indexOfPreviousVecs).          */
+   /* When using refined, avoid to replace linear dependent previous coeffi-  */
+   /* cient vectors by random vectors, it may increase the norm of R after    */
+   /* restarting.                                                             */
+   /* ----------------------------------------------------------------------- */
+
+   int indexOfPreviousVecs; /* Column index in hVecs with previous vecs      */
+   indexOfPreviousVecs = restartSize;
+   indexOfPreviousVecsBeforeRestart = indexOfPreviousVecs;
+
+   /* Restart V and W, and compute X and residual vectors for next candidates */
+
+   int *restartPerm; /* Permutation of hVecs used to restart V        */
+   int *hVecsPerm;   /* Permutation of hVecs to sort as primme.target */
+   CHKERR(Num_malloc_iprimme(basisSize, &restartPerm, ctx));
+   CHKERR(Num_malloc_iprimme(basisSize, &hVecsPerm, ctx));
+
+   CHKERR(restart_soft_locking_Sprimme(&restartSize, V, W, BV, nLocal,
+      basisSize, ldV, hVecs, ldhVecs, restartPerm, hVals, flags, iev,
+      ievSize, blockNorms, evecs, ldevecs, Bevecs, ldBevecs, evals,
+      resNorms, numConverged, numPrevRetained, &indexOfPreviousVecs,
+      hVecsPerm, H, ldH, VtBV, ldVtBV, ctx));
+
+   /* Rearrange prevRitzVals according to restartPerm */
+
+   if (primme->target != primme_smallest && primme->target != primme_largest) {
+      if (*numPrevRitzVals > 0) {
+         for (i = *numPrevRitzVals; i < basisSize; i++)
+            prevRitzVals[i] = prevRitzVals[*numPrevRitzVals - 1];
+
+         CHKERR(KIND(permute_vecs_RHprimme, permute_vecs_SHprimme)(
+               prevRitzVals, 1, basisSize, 1, restartPerm, ctx));
+      }
+      for (i = 0; i < restartSize; i++) {
+         if (restartPerm[i] >= *numPrevRitzVals) prevRitzVals[i] = hVals[i];
+      }
+      CHKERR(KIND(permute_vecs_RHprimme, permute_vecs_SHprimme)(
+            prevRitzVals, 1, restartSize, 1, hVecsPerm, ctx));
+      *numPrevRitzVals = restartSize;
+   }
+
+   if (newldhVecs == 0) newldhVecs = restartSize;
+   if (newldhU == 0) newldhU = restartSize;
+   CHKERR(restart_projection_Sprimme(V, ldV, W, ldV, BV, ldV, H, ldH, VtBV,
+         ldVtBV, NULL, 0, nLocal, NULL, 0, QtV, ldQtV, NULL, 0, NULL, 0,
+         hU, ldhU, newldhU, indexOfPreviousVecsBeforeRestart, hVecs, ldhVecs,
+         newldhVecs, hVals, hSVals, restartPerm, hVecsPerm, restartSize,
+         basisSize, numPrevRetained, indexOfPreviousVecs, evecs,
+         0, ldevecs, Bevecs, ldBevecs, evecsHat, ldevecsHat, M,
+         ldM, Mfact, ldMfact, ipivot, targetShiftIndex, *numConverged,
+         numArbitraryVecs, hVecsRot, ldhVecsRot, ctx));
+   CHKERR(Num_free_iprimme(restartPerm, ctx));
+
+   /* If all request eigenpairs converged, move the converged vectors at the  */
+   /* beginning of V                                                          */
+
+   if (*numConverged >= primme->numEvals) {
+      CHKERR(permute_vecs_Sprimme(V, nLocal, restartSize, ldV, hVecsPerm, ctx));
+      CHKERR(permute_vecs_Sprimme(W, nLocal, restartSize, ldV, hVecsPerm, ctx));
+      if (BV) {
+         CHKERR(permute_vecs_Sprimme(
+               BV, nLocal, restartSize, ldV, hVecsPerm, ctx));
+      }
+   }
+   CHKERR(Num_free_iprimme(hVecsPerm, ctx));
+
+   *restartSizeOutput = restartSize; 
+
+   /* If VtBV is computed, estimate the orthogonality error as                */
+   /* ||I - V'*B*V||_F * problemNorm. Use this value to estimate the residual error */
+   /* and to bound the minimum residual error norm the solver can converge    */
+
+   HREAL fn = 0.0; /* = max(|I - VtBV|_F, |I - QtQ|_F) * problemNorm */
+
+   if (ctx.procID == 0) {
+      if (VtBV) {
+         HREAL n = 0;
+         int i,j, nVtBV = restartSize;
+         for (i = 0; i < nVtBV; i++) {
+            for (j = 0; j < i; j++)
+               n += 2 * REAL_PART(CONJ(VtBV[i * ldVtBV + j]) *
+                                  VtBV[i * ldVtBV + j]) /
+                    ABS(VtBV[i * ldVtBV + i]) / ABS(VtBV[j * ldVtBV + j]);
+         }
+         fn = sqrt(n);
+      }
+
+   }
+   CHKERR(broadcast_RHprimme(&fn, 1, ctx));
+      
+   if (fn > 0.0) {
+      if (*restartsSinceReset <= 1) {
+         PRINTF(5, "Orthogonalization level: %g", (double)fn);
+         primme->stats.maxConvTol = max(primme->stats.maxConvTol,
+               fn * primme->stats.estimateLargestSVal);
+      }
+      primme->stats.estimateResidualError = sqrt((double)*restartsSinceReset) *
+                                            fn * problemNorm_Sprimme(1, primme);
+   }
+   else {
+      double eps_orth;
+      CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
+      primme->stats.estimateResidualError =
+            2 * sqrt((double)*restartsSinceReset) * eps_orth *
+            problemNorm_Sprimme(1, primme);
+   }
+
+
+   return 0;
+}
+
+/*******************************************************************************
  * Subroutine: restart_soft_locking - This routine replaces V with V*c, some
  *             subset of hVecs. Also it may include components from vectors 
  *             from the previous iteration.
@@ -1462,6 +1796,10 @@ STATIC int restart_projection_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             hSVals, restartPerm, hVecsPerm, restartSize, basisSize,
             numPrevRetained, indexOfPreviousVecs, targetShiftIndex,
             numConverged, numArbitraryVecs, hVecsRot, ldhVecsRot, ctx));
+      break;
+
+   case primme_proj_sketched:
+      //TODO
       break;
 
    default:

@@ -222,7 +222,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    SCALAR *SW;                /* The projected sketched basis                  */
    SCALAR *S_vals;                                       /* CSC Formatted Values */
    PRIMME_INT *S_rows;                                          /* CSC Formatted Rows */
-   PRIMME_INT nnz_per_col, ldSV, ldSW;  /* Size and nnz of the sketching matrix */
+   PRIMME_INT nnzPerCol, ldSV, ldSW;  /* Size and nnz of the sketching matrix */
    REAL *normalize_evecs;
 
    /* -------------------------------------------------------------- */
@@ -327,11 +327,11 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    if(primme->projectionParams.projection == primme_proj_sketched)
    {
       /* Default settings for sketch size and nnz per column. Based on Yuji and Tropp's manuscript */
-      ldSV = ldSW = 4*maxBasisSize;
-      nnz_per_col = (int)(ceil(2*log(maxBasisSize+1)));   
+      ldSV = ldSW = primme->sketchingParams.sketchSize;
+      nnzPerCol = primme->sketchingParams.nnzPerCol; 
 
-      CHKERR(Num_malloc_Sprimme(nnz_per_col*nLocal, &S_vals, ctx));
-      S_rows = (PRIMME_INT*)malloc(nnz_per_col*nLocal*sizeof(PRIMME_INT));
+      CHKERR(Num_malloc_Sprimme(nnzPerCol*nLocal, &S_vals, ctx));
+      S_rows = (PRIMME_INT*)malloc(nnzPerCol*nLocal*sizeof(PRIMME_INT));
 
       CHKERR(Num_malloc_Sprimme(ldSV*(maxBasisSize+maxBlockSize), &SV, ctx));
       CHKERR(Num_malloc_Sprimme(ldSW*maxBasisSize, &SW, ctx));
@@ -340,7 +340,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(Num_malloc_Sprimme(ldV*(maxBasisSize+maxBlockSize), &V_temp, ctx));
 
       /* Build Sketch CSR Locally */
-      CHKERR(build_sketch_Sprimme(S_rows, S_vals, ldSV, nnz_per_col, ctx));
+      CHKERR(build_sketch_Sprimme(S_rows, S_vals, ctx));
 
    } /* End sketching matrix build */
    
@@ -354,7 +354,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    /* Update sketched basis if sketching is turned on */
    if(primme->projectionParams.projection == primme_proj_sketched)
-      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, 0, blockSize, nnz_per_col, S_rows, S_vals, ctx));
+      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, 0, blockSize, S_rows, S_vals, ctx));
 
    t0 = primme_wTimer(); /* Start timing our basis build */
 
@@ -383,7 +383,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       /* Update sketched basis if sketching is turned on */
       if(primme->projectionParams.projection == primme_proj_sketched)
-         CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, i, blockSize, nnz_per_col, S_rows, S_vals, ctx));
+         CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, i, blockSize, S_rows, S_vals, ctx));
 
       if(primme->printLevel == 4 && (PRIMME_INT)(i+blockSize) % 10 == 0)
       {
@@ -400,7 +400,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(ortho_Sprimme(&V_temp[ldV*(i+blockSize)], ldV, &H[i*ldH + (i+blockSize)], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* [V_i, b_i] = qr(V_i) */
 
             /* SW = SV*H */
-            CHKERR(sketch_basis_Sprimme(V_temp, ldV, SV, ldSV, i+blockSize, blockSize, nnz_per_col, S_rows, S_vals, ctx));
+            CHKERR(sketch_basis_Sprimme(V_temp, ldV, SV, ldSV, i+blockSize, blockSize, S_rows, S_vals, ctx));
             CHKERR(Num_gemm_Sprimme("N", "N", ldSV, i+blockSize, i+2*blockSize, 1.0, SV, ldSV, H, ldH, 0.0, SW, ldSW, ctx));
 
             /* Getting our sketched basis and projected sketched basis */
@@ -497,7 +497,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          CHKERR(ortho_Sprimme(V, ldV, NULL, 0, maxBasisSize, maxBasisSize+blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* Orthogonalized the last block of V against the rest of the basis */
 
          /* SW = SV*H */
-         CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, maxBasisSize, blockSize, nnz_per_col, S_rows, S_vals, ctx));
+         CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, maxBasisSize, blockSize, S_rows, S_vals, ctx));
          CHKERR(Num_gemm_Sprimme("N", "N", ldSV, maxBasisSize, maxBasisSize+blockSize, 1.0, SV, ldSV, H, ldH, 0.0, SW, ldSW, ctx));
 
          /* Getting our sketched basis and projected sketched basis */

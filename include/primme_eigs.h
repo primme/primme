@@ -61,7 +61,7 @@ typedef enum {
    primme_expansion_davidson
 } primme_expansion;
 
-/* TODO: Remove after I'm done testing sketched Lanczos */
+/* Used for testing sketched Lanczos */
 typedef enum {
    primme_residual_sketched,
    primme_residual_RQ,
@@ -176,6 +176,11 @@ typedef struct residual_params {
    primme_residual residual;
 } residual_params;
 
+typedef struct sketching_params {
+   PRIMME_INT sketchSize;
+   PRIMME_INT nnzPerCol;
+} sketching_params;
+
 typedef struct correction_params {
    int precondition;
    int robustShifts;
@@ -266,6 +271,7 @@ typedef struct primme_params {
    struct projection_params projectionParams; 
    struct expansion_params expansionParams; 
    struct residual_params residualParams; 
+   struct sketching_params sketchingParams; 
    struct restarting_params restartingParams;
    struct correction_params correctionParams;
    struct primme_stats stats;

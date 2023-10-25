@@ -84,7 +84,7 @@ STATIC void rand_iprimme(PRIMME_INT *x, PRIMME_INT a, PRIMME_INT n) {
  * of nonzeros, we do not need to store the index pointers. 
  ******************************************************************************/
 TEMPLATE_PLEASE
-int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, PRIMME_INT ldS, PRIMME_INT nnz_per_col, primme_context ctx) {
+int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, primme_context ctx) {
 
   primme_params *primme = ctx.primme;
 
@@ -92,7 +92,11 @@ int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, PRIMME_INT ldS, PRI
   PRIMME_INT my_start = 0; /* Use to determine the local columns assigned to this process */
   int *global_start;       /* nLocals of all processes */
   PRIMME_INT seed;       /* seed for the random number generator */
+  PRIMME_INT nnzPerCol = primme->sketchingParams.nnzPerCol;
+  PRIMME_INT ldS = primme->sketchingParams.sketchSize;
+   
   SCALAR scaling_factor = 1/sqrt(ldS);
+
 
   /* Determine which columns of S belong to this process */
   CHKERR(Num_malloc_iprimme(primme->numProcs, &global_start, ctx));
@@ -110,18 +114,18 @@ int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, PRIMME_INT ldS, PRI
      srand((unsigned int)seed);
 
      /* determine which rows will be nonzero in this column */
-     rand_iprimme(&S_rows[i*nnz_per_col], nnz_per_col, ldS);
+     rand_iprimme(&S_rows[i*nnzPerCol], nnzPerCol, ldS);
 
      /* Insert entries corresponding to the Hadamard distribution (complex) or -1/+1 (real) */
 #ifdef USE_COMPLEX
-  CHKERR(Num_larnv_Sprimme(3, &seed, nnz_per_col, &S_vals[i*nnz_per_col], ctx));
-  for(j = i*nnz_per_col; j < (i+1)*nnz_per_col; j++) S_vals[j] /= cabs(S_vals[j]);
+  CHKERR(Num_larnv_Sprimme(3, &seed, nnzPerCol, &S_vals[i*nnzPerCol], ctx));
+  for(j = i*nnzPerCol; j < (i+1)*nnzPerCol; j++) S_vals[j] /= cabs(S_vals[j]);
 #else
-  for(j = i*nnz_per_col; j < (i+1)*nnz_per_col; j++) S_vals[j] = (rand() % 2)*2 - 1;
+  for(j = i*nnzPerCol; j < (i+1)*nnzPerCol; j++) S_vals[j] = (rand() % 2)*2 - 1;
 #endif
   }
   
-  CHKERR(Num_scal_Sprimme(primme->nLocal*nnz_per_col, scaling_factor, S_vals, 1, ctx));
+  CHKERR(Num_scal_Sprimme(primme->nLocal*nnzPerCol, scaling_factor, S_vals, 1, ctx));
 
   return 0;
 }
@@ -131,12 +135,13 @@ int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, PRIMME_INT ldS, PRI
  * subspace embedding and returns the result in SV
  ******************************************************************************/
 TEMPLATE_PLEASE
-int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, PRIMME_INT basisSize, PRIMME_INT blockSize, PRIMME_INT nnz_per_col, PRIMME_INT *S_rows, SCALAR *S_vals, primme_context ctx) {
+int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, PRIMME_INT basisSize, PRIMME_INT blockSize, PRIMME_INT *S_rows, SCALAR *S_vals, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
  
    SCALAR *V_row;    /* Used to temporarily store a row in V to avoid numberous memory accesses */
    PRIMME_INT i, j;
+   PRIMME_INT nnzPerCol = primme->sketchingParams.nnzPerCol;
 
    CHKERR(Num_malloc_Sprimme(blockSize, &V_row, ctx));
    CHKERR(Num_zero_matrix_Sprimme(&SV[ldSV*basisSize], ldSV, blockSize, ldSV, ctx));
@@ -145,7 +150,7 @@ int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV,
    for(i = 0; i < primme->nLocal; i++) /* Traverse the rows of the basis V */
    {
       CHKERR(Num_copy_Sprimme(blockSize, &V[basisSize*ldV+i], ldV, V_row, 1, ctx));
-      for(j = 0; j < nnz_per_col; j++) CHKERR(Num_axpy_Sprimme(blockSize, S_vals[i*nnz_per_col+j], V_row, 1, &SV[basisSize*ldSV + S_rows[i*nnz_per_col+j]], ldSV, ctx));
+      for(j = 0; j < nnzPerCol; j++) CHKERR(Num_axpy_Sprimme(blockSize, S_vals[i*nnzPerCol+j], V_row, 1, &SV[basisSize*ldSV + S_rows[i*nnzPerCol+j]], ldSV, ctx));
    }
    CHKERR(Num_free_Sprimme(V_row, ctx)); 
 
@@ -196,12 +201,6 @@ return 0;
  *
  * INPUT arrays and parameters
  * ----------------------------------
- * H        The tridiagonal matrix produced by Lanczos
- * 
- * ldH      The leading dimension of H
- *
- * V        The Lanczos basis
- * 
  * ldV      The leading dimension of V
  * 
  * ldSV     The leading dimension of SV
@@ -212,7 +211,7 @@ return 0;
  *
  * blockSize The number of columns added to the basis per iteration in Lanczos
  * 
- * nnz_per_col Number of nonzeros per column of the sketching matrix
+ * nnzPerCol Number of nonzeros per column of the sketching matrix
  * 
  * S_rows   The nonzero rows indices for all columns in the sketching matrix
  *          in CSC format
@@ -303,11 +302,16 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
       CHKERR(Num_ggev_Sprimme("N", "V", trunc_basisSize, UtSWV, ldUtSWV, Sigma, ldSigma, ShVals, NULL, hVals_b, NULL, trunc_basisSize, trunc_hVecs, ldtrunc_hVecs, ctx)); 
       CHKERR(Num_gemm_Sprimme("C", "N", basisSize, trunc_basisSize, trunc_basisSize, 1.0, VVecst, ldVVecst, trunc_hVecs, ldtrunc_hVecs, 0.0, hVecs, ldhVecs, ctx)); 
 
+      primme->stats.estimateMaxEVal = -INFINITY;
+      primme->stats.estimateLargestSVal = -INFINITY;
       for(i = 0; i < trunc_basisSize; i++)
       {
          hVals[i] = REAL_PART(ShVals[i]/hVals_b[i]);
          eval_perm[i] = i;
+         primme->stats.estimateMaxEVal = max(ctx.primme->stats.estimateMaxEVal, EVAL_REAL_PART(hVals[i])); 
+         primme->stats.estimateLargestSVal = max(ctx.primme->stats.estimateLargestSVal, EVAL_ABS(hVals[i])); 
       }
+      primme->aNorm = primme->stats.estimateLargestSVal;
 
       /* Sort the eigenpairs */
       for(i = 0; i < trunc_basisSize; i++) CHKERR(insertionSort_Rprimme(hVals[i], hVals, 0.0, NULL, 0, NULL, eval_perm, i, 0, ctx.primme));
