@@ -356,6 +356,49 @@ int Num_machine_epsilon_Sprimme(primme_op_datatype t, double *eps) {
    return 0;
 }
 
+/******************************************************************************
+ * Function Num_matrix_on_cpu - Create and copy matrix on cpu if x was on the
+ *    gpu. Otherwise, it y and ldy are set to x and ldx.
+ *
+ * PARAMETERS
+ * ---------------------------
+ * x           The source matrix
+ * m           The number of rows of x
+ * n           The number of columns of x
+ * ldx         The leading dimension of x
+ * y           On output y = x
+ * ldy         The leading dimension of y; if ldy == 0 on input and y is created,
+ *             y is created with ldy == m
+ * do_alloc    1, create and copy the matrix; -1, destroy the matrix
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_matrix_on_cpu_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
+      PRIMME_INT ldx, XSCALAR **y, PRIMME_INT *ldy, int do_alloc,
+      primme_context ctx) {
+
+#ifdef USE_HOST
+
+   (void)do_alloc;
+   (void)ctx;
+   *y = x;
+   if (ldy) *ldy = ldx;
+#else
+   if (do_alloc > 0) {
+      HSCALAR *x_cpu; /* copy of x on cpu */
+      CHKERR(Num_malloc_SHprimme(m * n, &x_cpu, ctx));
+      CHKERR(Num_get_matrix_Sprimme(x, m, n, ldx, x_cpu, m, ctx));
+      *y = x_cpu;
+      if (ldy) *ldy = m;
+   } else {
+      CHKERR(Num_set_matrix_Sprimme(*y, m, n, ldy ? *ldy : m, x, ldx, ctx));
+      CHKERR(Num_free_SHprimme(*y, ctx));
+   }
+#endif
+   return 0;
+}
+
 #ifdef USE_HOST
 
 /******************************************************************************

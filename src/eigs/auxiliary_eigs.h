@@ -766,7 +766,7 @@ int broadcast_dprimme(dummy_type_dprimme *buffer, int count, primme_context ctx)
 #  define globalSum_TprimmeRHqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int globalSum_Tprimme(
-      void *buffer, primme_op_datatype buffert, int count, primme_context ctx);
+      void *buffer_, primme_op_datatype buffert, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSprimme)
 #  define broadcast_TprimmeSprimme CONCAT(broadcast_Tprimme,SCALAR_SUF)
 #endif
@@ -858,7 +858,7 @@ int globalSum_Tprimme(
 #  define broadcast_TprimmeRHqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int broadcast_Tprimme(
-      void *buffer, primme_op_datatype buffert, int count, primme_context ctx);
+      void *buffer_, primme_op_datatype buffert, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSprimme)
 #  define broadcast_iprimmeSprimme CONCAT(broadcast_iprimme,SCALAR_SUF)
 #endif
@@ -1608,6 +1608,8 @@ int massMatrixMatvec_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_magma_hprimme(dummy_type_magma_hprimme *buffer, int count, primme_context ctx);
+int broadcast_magma_hprimme(dummy_type_magma_hprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_magma_hprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_hprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_hprimme(
@@ -1626,6 +1628,8 @@ int massMatrixMatvec_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_magma_kprimme(dummy_type_magma_kprimme *buffer, int count, primme_context ctx);
+int broadcast_magma_kprimme(dummy_type_magma_kprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_magma_kprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_kprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_kprimme(
@@ -1644,6 +1648,8 @@ int massMatrixMatvec_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_magma_sprimme(dummy_type_magma_sprimme *buffer, int count, primme_context ctx);
+int broadcast_magma_sprimme(dummy_type_magma_sprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_magma_sprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_sprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_sprimme(
@@ -1662,6 +1668,8 @@ int massMatrixMatvec_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_magma_cprimme(dummy_type_magma_cprimme *buffer, int count, primme_context ctx);
+int broadcast_magma_cprimme(dummy_type_magma_cprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_magma_cprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_cprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_cprimme(
@@ -1680,6 +1688,8 @@ int massMatrixMatvec_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_dprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_magma_dprimme(dummy_type_magma_dprimme *buffer, int count, primme_context ctx);
+int broadcast_magma_dprimme(dummy_type_magma_dprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_magma_dprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_dprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_magma_dprimme(
@@ -1698,6 +1708,8 @@ int massMatrixMatvec_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_zprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_magma_zprimme(dummy_type_magma_zprimme *buffer, int count, primme_context ctx);
+int broadcast_magma_zprimme(dummy_type_magma_zprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_magma_zprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_zprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_magma_zprimme(
@@ -1716,6 +1728,8 @@ int massMatrixMatvec_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_cublas_hprimme(dummy_type_cublas_hprimme *buffer, int count, primme_context ctx);
+int broadcast_cublas_hprimme(dummy_type_cublas_hprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_cublas_hprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_hprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cublas_hprimme(
@@ -1734,6 +1748,8 @@ int massMatrixMatvec_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_cublas_kprimme(dummy_type_cublas_kprimme *buffer, int count, primme_context ctx);
+int broadcast_cublas_kprimme(dummy_type_cublas_kprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_cublas_kprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_kprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cublas_kprimme(
@@ -1752,6 +1768,8 @@ int massMatrixMatvec_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_cublas_sprimme(dummy_type_cublas_sprimme *buffer, int count, primme_context ctx);
+int broadcast_cublas_sprimme(dummy_type_cublas_sprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_cublas_sprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_sprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cublas_sprimme(
@@ -1770,6 +1788,8 @@ int massMatrixMatvec_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_cublas_cprimme(dummy_type_cublas_cprimme *buffer, int count, primme_context ctx);
+int broadcast_cublas_cprimme(dummy_type_cublas_cprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_cublas_cprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_cprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cublas_cprimme(
@@ -1788,6 +1808,8 @@ int massMatrixMatvec_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_dprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_cublas_dprimme(dummy_type_cublas_dprimme *buffer, int count, primme_context ctx);
+int broadcast_cublas_dprimme(dummy_type_cublas_dprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_cublas_dprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_dprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_cublas_dprimme(
@@ -1806,6 +1828,8 @@ int massMatrixMatvec_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_zprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
+int globalSum_cublas_zprimme(dummy_type_cublas_zprimme *buffer, int count, primme_context ctx);
+int broadcast_cublas_zprimme(dummy_type_cublas_zprimme *buffer, int count, primme_context ctx);
 int machineEpsMatrix_cublas_zprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_zprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_cublas_zprimme(
