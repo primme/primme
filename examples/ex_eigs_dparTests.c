@@ -117,13 +117,6 @@ int main (int argc, char *argv[]) {
     * n % numProcs */
    primme.globalSumReal = par_GlobalSum;
 
-   /* Set problem matrix */
-   ierr = CSR_to_PETSc_Matrix(argv[1], &A, &primme, &ierr); CHKERRQ(ierr);
-   primme.matrix = &A;
-   primme.matrixMatvec = PETScMatvec;
-                           /* Function that implements the matrix-vector product
-                              A*x for solving the problem A*x = l*x */
-
    /* Default Parameters */
    primme.maxBasisSize = 100;
    primme.numEvals = 10;   /* Number of wanted eigenpairs */
@@ -134,8 +127,10 @@ int main (int argc, char *argv[]) {
    primme.eps = 1e-1;      /* ||r|| <= eps * ||matrix|| */
    primme.aNorm = 1.0;
    primme.target = primme_largest;
-   //primme.maxMatvecs = 1000;
+   primme.maxMatvecs = 1000;
+   primme.maxOuterIterations = 1000;
 
+   primme.dynamicMethodSwitch = 0;
    primme.expansionParams.expansion = primme_expansion_davidson;
    primme.projectionParams.projection = primme_proj_default;
  
@@ -147,6 +142,8 @@ int main (int argc, char *argv[]) {
          return 0;
       }
       if(strcmp(argv[i], "-basisSize") == 0)    primme.maxBasisSize      = atoi(argv[i+1]); 
+      if(strcmp(argv[i], "-maxIters") == 0)     primme.maxOuterIterations = atoi(argv[i+1]); 
+      if(strcmp(argv[i], "-maxMatvecs") == 0)   primme.maxMatvecs        = atoi(argv[i+1]); 
       if(strcmp(argv[i], "-numEvals") == 0)     primme.numEvals          = atoi(argv[i+1]); 
       if(strcmp(argv[i], "-blockSize") == 0)    primme.maxBlockSize      = atoi(argv[i+1]); 
       if(strcmp(argv[i], "-printLevel") == 0)   primme.printLevel        = atoi(argv[i+1]); 
@@ -192,6 +189,13 @@ int main (int argc, char *argv[]) {
          }
       } /* End residual */
    } /* End command line argument options */
+
+   /* Set problem matrix */
+   ierr = CSR_to_PETSc_Matrix(argv[1], &A, &primme, &ierr); CHKERRQ(ierr);
+   primme.matrix = &A;
+   primme.matrixMatvec = PETScMatvec;
+                           /* Function that implements the matrix-vector product
+                              A*x for solving the problem A*x = l*x */
 
    /* Set method to solve the problem */
    primme_set_method(PRIMME_DEFAULT_MIN_MATVECS, &primme);

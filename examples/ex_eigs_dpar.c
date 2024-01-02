@@ -98,8 +98,9 @@ int main (int argc, char *argv[]) {
     primme.aNorm = 1.0;
     primme.printLevel = 4;
 
-    primme.maxBlockSize = 2;
-    primme.expansionParams.expansion = primme_expansion_fullLanczos;
+    primme.maxBlockSize = 1;
+    //primme.expansionParams.expansion = primme_expansion_fullLanczos;
+    primme.expansionParams.expansion = primme_expansion_davidson;
     /* Set method to solve the problem */
     //primme_set_method(PRIMME_DYNAMIC, &primme);
     primme_set_method(PRIMME_DEFAULT_MIN_MATVECS, &primme);
@@ -147,8 +148,8 @@ int main (int argc, char *argv[]) {
                     evals[i], rnorms[i]); 
         }
         fprintf(primme.outputFile, " %d eigenpairs converged\n", primme.initSize);
-        fprintf(primme.outputFile, "Tolerance : %-22.15E\n", 
-                primme.aNorm*primme.eps);
+        fprintf(primme.outputFile, "Tolerance : %-22.15E\t (%-22.4E tolerance x %-22.4E norm)\n", 
+                primme.aNorm*primme.eps, primme.eps, primme.aNorm);
         fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", 
                 primme.stats.numOuterIterations); 
         fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);

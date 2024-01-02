@@ -280,6 +280,9 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
          }
       }
 
+      primme->stats.estimateLargestSVal = REAL_PART(sing_vals[0]); 
+      primme->aNorm = primme->stats.estimateLargestSVal;
+
       /* Build each side of the generalized eigenvalue problem after stabilization */
       ldSigma = ldUtSW = ldUtSWV = ldtrunc_hVecs = trunc_basisSize;
       CHKERR(Num_malloc_Sprimme(ldUtSW*basisSize, &UtSW, ctx));
@@ -302,21 +305,17 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
       CHKERR(Num_ggev_Sprimme("N", "V", trunc_basisSize, UtSWV, ldUtSWV, Sigma, ldSigma, ShVals, NULL, hVals_b, NULL, trunc_basisSize, trunc_hVecs, ldtrunc_hVecs, ctx)); 
       CHKERR(Num_gemm_Sprimme("C", "N", basisSize, trunc_basisSize, trunc_basisSize, 1.0, VVecst, ldVVecst, trunc_hVecs, ldtrunc_hVecs, 0.0, hVecs, ldhVecs, ctx)); 
 
-      primme->stats.estimateMaxEVal = -INFINITY;
-      primme->stats.estimateLargestSVal = -INFINITY;
       for(i = 0; i < trunc_basisSize; i++)
       {
          hVals[i] = REAL_PART(ShVals[i]/hVals_b[i]);
          eval_perm[i] = i;
-         primme->stats.estimateMaxEVal = max(ctx.primme->stats.estimateMaxEVal, EVAL_REAL_PART(hVals[i])); 
-         primme->stats.estimateLargestSVal = max(ctx.primme->stats.estimateLargestSVal, EVAL_ABS(hVals[i])); 
       }
-      primme->aNorm = primme->stats.estimateLargestSVal;
 
       /* Sort the eigenpairs */
       for(i = 0; i < trunc_basisSize; i++) CHKERR(insertionSort_Rprimme(hVals[i], hVals, 0.0, NULL, 0, NULL, eval_perm, i, 0, ctx.primme));
 
       CHKERR(permute_vecs_Sprimme(hVecs, basisSize, trunc_basisSize, ldhVecs, eval_perm, ctx));
+
 
       CHKERR(Num_free_Sprimme(UVecs, ctx)); 
       CHKERR(Num_free_Sprimme(VVecst, ctx)); 
@@ -332,7 +331,7 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
 
    CHKERR(broadcast_SHprimme(hVecs, ldhVecs*primme->numEvals, ctx));
    CHKERR(broadcast_RHprimme(hVals, primme->numEvals, ctx));
-
+     
 return 0;
 #else
    (void)SV;

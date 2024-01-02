@@ -58,6 +58,79 @@
 
 #ifdef SUPPORTED_TYPE
 
+STATIC void monitor_condition_number_lanczos(SCALAR *V, SCALAR *SV, PRIMME_INT basisSize, primme_context ctx){
+
+   primme_params *primme = ctx.primme;
+
+
+   SCALAR *temp_SV, *temp_V;
+   SCALAR condition_number;                  /* The condition number of V */
+   SCALAR sketched_condition_number;         /* The condition number of SV */
+   SCALAR trunc_condition_number;            /* The condition number of V after stabilization */
+   SCALAR sketched_trunc_condition_number;   /* The condition number of SV after stabilization */
+   PRIMME_INT trunc_basisSize = basisSize;
+   PRIMME_INT sketched_trunc_basisSize = basisSize;   /* The size the basis after stabilization */ 
+   int i;
+ 
+   Num_malloc_Sprimme(primme->nLocal*basisSize, &temp_V, ctx);
+   Num_malloc_Sprimme(primme->sketchingParams.sketchSize*basisSize, &temp_SV, ctx);
+
+   SCALAR *sing_vals;
+   SCALAR *sketched_sing_vals;
+   Num_malloc_Sprimme(basisSize, &sing_vals, ctx);
+   Num_malloc_Sprimme(basisSize, &sketched_sing_vals, ctx);
+
+   Num_copy_matrix_Sprimme(&SV[0], primme->sketchingParams.sketchSize, basisSize, primme->sketchingParams.sketchSize, &temp_SV[0], primme->sketchingParams.sketchSize, ctx);
+   Num_copy_matrix_Sprimme(&V[0], primme->nLocal, basisSize, primme->nLocal, &temp_V[0], primme->nLocal, ctx);
+
+   if(primme->procID == 0){
+      Num_gesvd_Sprimme("N", "N", primme->nLocal, basisSize, temp_V, primme->nLocal, sing_vals, NULL, primme->nLocal, NULL, primme->nLocal, ctx);
+      Num_gesvd_Sprimme("N", "N", primme->sketchingParams.sketchSize, basisSize, temp_SV, primme->sketchingParams.sketchSize, sketched_sing_vals, NULL, primme->sketchingParams.sketchSize, NULL, primme->sketchingParams.sketchSize, ctx);
+   }
+
+   condition_number = sing_vals[0]/sing_vals[basisSize-1];
+   sketched_condition_number = sketched_sing_vals[0]/sketched_sing_vals[basisSize-1];
+
+   trunc_basisSize = basisSize;
+   trunc_condition_number = condition_number;
+   for(i = basisSize-1; i > primme->numEvals; i--)
+   {
+      if((double)(sing_vals[0]/sing_vals[i]) >= 1/MACHINE_EPSILON){
+         trunc_basisSize--;
+      } else {
+         trunc_condition_number = sing_vals[0]/sing_vals[i];
+         break;
+      }
+   }
+   sketched_trunc_basisSize = basisSize;
+   sketched_trunc_condition_number = sketched_condition_number;
+   for(i = basisSize-1; i > primme->numEvals; i--)
+   {
+      if((double)(sketched_sing_vals[0]/sketched_sing_vals[i]) >= 1/MACHINE_EPSILON){
+         sketched_trunc_basisSize--;
+      } else {
+         sketched_trunc_condition_number = sketched_sing_vals[0]/sketched_sing_vals[i];
+         break;
+      }
+   }
+
+
+   printf("\nMONITERING AT BASIS SIZE %ld ---------------------------------------\n", basisSize);
+   printf("--- Condition number of V:  %E / %E = %E\n", REAL_PART(sing_vals[0]), REAL_PART(sing_vals[basisSize-1]), REAL_PART(condition_number));
+   printf("--- Condition number of SV: %E / %E = %E\n", REAL_PART(sketched_sing_vals[0]), REAL_PART(sketched_sing_vals[basisSize-1]), REAL_PART(sketched_condition_number));
+   printf("--- Approximate condition number of V (After stabilization):  %E / %E = %E\n", REAL_PART(sing_vals[0]), REAL_PART(sing_vals[trunc_basisSize-1]), REAL_PART(trunc_condition_number));
+   printf("--- Approximate condition number of SV (After stabilization): %E / %E = %E\n\n", REAL_PART(sketched_sing_vals[0]), REAL_PART(sketched_sing_vals[trunc_basisSize-1]), REAL_PART(sketched_trunc_condition_number));
+
+   printf("--- Number of vectors stabilization should throw away in V:  %ld\n", basisSize - trunc_basisSize);
+   printf("--- Number of vectors stabilization should throw away in SV: %ld\n", basisSize - sketched_trunc_basisSize);
+   printf("--------------------------------------------------------------------\n\n");
+   Num_free_Sprimme(sing_vals, ctx);
+   Num_free_Sprimme(sketched_sing_vals, ctx);
+   Num_free_Sprimme(temp_SV, ctx); 
+   Num_free_Sprimme(temp_V, ctx); 
+   return;
+}
+
 STATIC void compute_residuals_RR(HSCALAR *evecs, PRIMME_INT ldevecs, HEVAL *evals, PRIMME_INT numEvals, HREAL *resNorms, primme_context ctx)
 {
    primme_params *primme = ctx.primme;
@@ -200,9 +273,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    PRIMME_INT ldH;            /* The leading dimension of H                    */
    PRIMME_INT ldhVecs;        /* The leading dimension of hVecs                */
    PRIMME_INT ldrwork;        /* The leading dimension of rwork                */
-   PRIMME_INT myGlobalStart;  /* For building the initial starting vectors     */
 
-   PRIMME_INT i, j;           /* Loop variabls                                 */
+   PRIMME_INT i, j;           /* Loop variables                                 */
    int blockSize;             /* Current block size                            */
    int numConverged;          /* Number of converged Ritz pairs                */
    int *flags;                /* Indicates which Ritz values have converged    */
@@ -305,27 +377,15 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* Inserting random initial vectors into the basis ------------------------------------------ */
    blockSize = min(maxBlockSize, maxBasisSize - maxBlockSize); /* Adjust block size first */
 
-   myGlobalStart = 1;
-   for(i = 0; i < primme->numProcs; i++) global_start[i] = 0;
-   global_start[primme->procID] = nLocal;
-   CHKERR(globalSum_Tprimme(global_start, primme_op_int, primme->numProcs, ctx));
-   for(i = 0; i < primme->procID; i++) myGlobalStart += global_start[i];
-
-   SCALAR *temp_Vrow;
-   CHKERR(Num_malloc_Sprimme(blockSize, &temp_Vrow, ctx));
-   for(i = 0; i < nLocal; i++)
-   {
-      srand(myGlobalStart+i);
-      CHKERR(Num_larnv_Sprimme(3, primme->iseed, blockSize, &temp_Vrow[0], ctx));
-      CHKERR(Num_copy_matrix_Sprimme(&temp_Vrow[0], 1, blockSize, 1, &V[i], ldV, ctx));
-   }
-   CHKERR(Num_free_Sprimme(temp_Vrow, ctx));
+   // Set initial vectors
+   for(i = 0; i < nLocal*blockSize; i++)
+      V[i] = 1.0;
 
    CHKERR(ortho_Sprimme(V, ldV, NULL, 0, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));
 
    /* Build/update the sketching matrix if needed ------------------------------ */
    if(primme->projectionParams.projection == primme_proj_sketched)
-   {
+   { 
       /* Default settings for sketch size and nnz per column. Based on Yuji and Tropp's manuscript */
       ldSV = ldSW = primme->sketchingParams.sketchSize;
       nnzPerCol = primme->sketchingParams.nnzPerCol; 
@@ -361,7 +421,9 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    /* ---------------------------------------------------------------
     * Main Lanczos Loop
     * --------------------------------------------------------------- */
-   for(i = maxBlockSize; i < maxBasisSize; i += blockSize) {
+   i = maxBlockSize;
+   while(i < maxBasisSize && (primme->maxOuterIterations == 0 || primme->stats.numOuterIterations < primme->maxOuterIterations) && primme->stats.numMatvecs < primme->maxMatvecs) {
+
       blockSize = min(blockSize, maxBasisSize - i); /* Adjust block size if needed */
 
       CHKERR(ortho_Sprimme(&V[i*ldV], ldV, &H[(i-blockSize)*ldH + i], ldH, 0, blockSize-1, NULL, 0, 0, nLocal, primme->iseed, ctx));   /* [V_i, b_i] = qr(V_i) */
@@ -473,9 +535,16 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       } /* End check residuals */
 
+      /* XXX: FOR MONITORING */
+      //monitor_condition_number_lanczos(V, SV, i+blockSize, ctx);
+
+      /* Update loop variables */
+      i += blockSize;
+      primme->stats.numOuterIterations += 1;
+
    } /* End basis build */
 
-   /*XXX: LANCZOS TIMER END */
+   /* LANCZOS TIMER END */
    primme->stats.timeKrylov = primme_wTimer() - t0;
 
    /**************************************************************************************
