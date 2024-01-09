@@ -39,7 +39,7 @@ ifeq ($(PRIMME_WITH_MAGMA),yes)
 endif
 
 $(EXAMPLES_C): %: %.o
-	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CLDR) -o $@ $@.o -g $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 $(EXAMPLES_CXX): %: %.o
 	$(CXX) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
