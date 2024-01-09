@@ -1,6 +1,7 @@
 ## Changes
 
-* Accommodate following changes in Matrix's API
+* Force Matrix dependency to be 1.6-2 at least to avoid ABI issues
+* Fix string issues with Rcpp
 
 ## Test environments
 * Ubuntu 20.04, R 4.3 and devel

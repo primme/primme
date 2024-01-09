@@ -59,5 +59,5 @@
 
 # Register entry points for exported C++ functions
 methods::setLoadAction(function(ns) {
-    .Call('_PRIMME_RcppExport_registerCCallable', PACKAGE = 'PRIMME')
+    .Call(`_PRIMME_RcppExport_registerCCallable`)
 })
