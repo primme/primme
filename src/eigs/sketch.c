@@ -226,8 +226,6 @@ return 0;
  *
  * hVals    The sketched Ritz values
  * 
- * resNorms The estimated residual norms from the sketched RR
- * 
  ******************************************************************************/
 
 TEMPLATE_PLEASE
@@ -316,7 +314,6 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
 
       CHKERR(permute_vecs_Sprimme(hVecs, basisSize, trunc_basisSize, ldhVecs, eval_perm, ctx));
 
-
       CHKERR(Num_free_Sprimme(UVecs, ctx)); 
       CHKERR(Num_free_Sprimme(VVecst, ctx)); 
       CHKERR(Num_free_Sprimme(UtSW, ctx)); 
@@ -329,8 +326,8 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
       CHKERR(Num_free_Rprimme(sing_vals, ctx)); 
    }
 
-   CHKERR(broadcast_SHprimme(hVecs, ldhVecs*primme->numEvals, ctx));
-   CHKERR(broadcast_RHprimme(hVals, primme->numEvals, ctx));
+   CHKERR(broadcast_SHprimme(hVecs, basisSize*ldhVecs, ctx));
+   CHKERR(broadcast_RHprimme(hVals, basisSize, ctx));
      
 return 0;
 #else

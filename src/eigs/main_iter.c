@@ -1860,7 +1860,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                   practConvCheck = 1;
                } 
 
-
+/*
                CHKERR(prepare_candidates(V, ldV, W, ldW, BV, ldBV,
                      primme->nLocal, H, primme->maxBasisSize, basisSize,
                      &V[basisSize * ldV], &W[basisSize * ldW],
@@ -1874,6 +1874,22 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      primme->maxBasisSize, numConverged, basisNorms, &reset,
                      VtBV, ldVtBV, prevhVecs, nprevhVecs, primme->maxBasisSize,
                      practConvCheck, map, startTime, ctx));
+*/
+
+               //CHKERR(Num_gemm_Sprimme("N", "N", primme->nLocal, blockSize, basisSize, 1.0, V, ldV, hVecs, basisSize, 0.0, &V[basisSize * ldV], ldV, ctx));
+               CHKERR(prepare_candidates(V, ldV, W, ldW, NULL, 0,
+                     primme->nLocal, NULL, 0, basisSize,
+                     &V[basisSize * ldV], &W[basisSize * ldW],
+                     NULL, 1, hVecs,
+                     basisSize, hVals, NULL, flags, maxRecentlyConverged,
+                     blockNorms, blockSize, availableBlockSize, evecs,
+                     0, ldevecs, NULL, 0, evals, resNorms,
+                     targetShiftIndex, iev, &blockSize, &recentlyConverged,
+                     &numArbitraryVecs, &smallestResNorm, NULL,
+                     0, numConverged, basisNorms, &reset,
+                     NULL, 0, prevhVecs, nprevhVecs, primme->maxBasisSize,
+                     practConvCheck, map, startTime, ctx));
+
                assert(recentlyConverged >= 0);
                candidates_prepared = 1;
 
@@ -1995,6 +2011,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             blockSize = 0;
 
             CHKERR(sketched_RR_Sprimme(SV, ldSV, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+
             numArbitraryVecs = 0;
             candidates_prepared = 0;
 
@@ -2019,7 +2036,6 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          } /* while (basisSize<maxBasisSize && basisSize<n-orthoConst)
             * --------------------------------------------------------------- */
 
-         if (primme->procID == 1) printf("Process %d at basisSize %d is here. About to restart.\n", primme->procID, basisSize);
          /* If wholeSpace, reset if the accumulated errors on the residual    */
          /* vectors are too large                                             */
 
@@ -2547,7 +2563,6 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             hVecs, 0, basisSize, ldhVecs, map, ctx));
    }
    CHKERR(broadcast_iprimme(map, basisSize, ctx));
-
    /* Reorder the flags from previous iteration following map */
 
    CHKERR(permute_vecs_iprimme(flags, basisSize, map, ctx));
@@ -2557,6 +2572,8 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i=*blockSize; i<blockNormsSize; i++)
          flagsBlock[i-*blockSize] = flags[iev[i]];
+
+      // XXX: FLAGS ARE RECOMPUTED HERE
       CHKERR(check_convergence_Sprimme(X ? &X[(*blockSize) * ldV] : NULL, ldV,
             computeXR, R ? &R[(*blockSize) * ldW] : NULL, ldW, computeXR, evecs,
             numLocked, ldevecs, Bevecs, ldBevecs, VtBV, ldVtBV, 0,
@@ -2654,13 +2671,13 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* position visited (variable i)                                        */
 
       blki = *blockSize;
+
       CHKERR(prepare_vecs_SHprimme(basisSize, lasti + 1, maxBlockSize - blki, H,
             ldH, hVals, hSVals, hVecs, ldhVecs, targetShiftIndex,
             numArbitraryVecs, *smallestResNorm, flags, 1, hVecsRot, ldhVecsRot,
             ctx));
 
       /* Find next candidates, starting from iev(*blockSize)+1 */
-
       for (i=lasti+1; i<basisSize && blki < maxBlockSize; i++) {
          if (flags[i] == UNCONVERGED) iev[blki++] = i;
       }
