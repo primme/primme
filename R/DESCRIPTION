@@ -23,9 +23,8 @@ URL:
 BugReports: https://github.com/primme/primme/issues
 Imports:
     Rcpp (>= 0.11.4),
-    Matrix (>= 1.6.2)
+    Matrix
 LinkingTo: Rcpp, Matrix
-Suggests: Matrix
 SystemRequirements:
     A POSIX system. Currently Linux and OS X are known to work.
     GNU make.
