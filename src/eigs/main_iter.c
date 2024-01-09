@@ -1876,7 +1876,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      practConvCheck, map, startTime, ctx));
 */
 
-               //CHKERR(Num_gemm_Sprimme("N", "N", primme->nLocal, blockSize, basisSize, 1.0, V, ldV, hVecs, basisSize, 0.0, &V[basisSize * ldV], ldV, ctx));
+               CHKERR(Num_gemm_Sprimme("N", "N", primme->nLocal, blockSize, basisSize, 1.0, V, ldV, hVecs, basisSize, 0.0, &V[basisSize * ldV], ldV, ctx));
                CHKERR(prepare_candidates(V, ldV, W, ldW, NULL, 0,
                      primme->nLocal, NULL, 0, basisSize,
                      &V[basisSize * ldV], &W[basisSize * ldW],
@@ -2567,6 +2567,13 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
    CHKERR(permute_vecs_iprimme(flags, basisSize, map, ctx));
 
+   if(primme->procID == 0)
+   {
+      printf("Process %d at basisSize %d - hVals: ", primme->procID, basisSize);
+      for(int k = 0; k < basisSize; k++) printf("%f, ", hVals[k]);
+      printf("\n");
+   }
+
    *recentlyConverged = 0;
    while (1) {
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
@@ -2665,6 +2672,13 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          }
 
          lasti = iev[blki];
+      }
+
+      if(primme->procID == 0)
+      {
+         printf("Process %d at basisSize %d - flags (after check_convergence_Sprimme): ", primme->procID, basisSize);
+         for(int k = 0; k < basisSize; k++) printf("%d, ", flags[k]);
+         printf("\n");
       }
 
       /* Generate well conditioned coefficient vectors; start from the last   */
