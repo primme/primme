@@ -652,7 +652,7 @@ primme_svds_params
          | this field is read and written by :c:func:`primme_svds_set_method` (see :ref:`methods_svds`);
          | this field is read and written by :c:func:`dprimme_svds` and :c:func:`zprimme_svds`.
 
-   .. c:member:: void (*convTestFun)(double *sval, void *leftsvec, void *rightsvec, double *rNorm, int *isconv, primme_svds_params *primme_svds, int *ierr)
+   .. c:member:: void (*convTestFun)(double *sval, void *leftsvec, void *rightsvec, double *rNorm, int *method, int *isconv, primme_svds_params *primme_svds, int *ierr)
 
       Function that evaluates if the approximate triplet has converged.
       If NULL, it is used the default convergence criteria (see |Seps|).
@@ -660,7 +660,8 @@ primme_svds_params
       :param sval: the approximate singular value to evaluate.
       :param leftsvec: one dimensional array of size |SmLocal| containing the approximate left singular vector; it can be NULL.
       :param rightsvec: one dimensional array of size |SnLocal| containing the approximate right singular vector; it can be NULL.
-      :param resNorm: the norm of the residual vector.
+      :param rNorm: the norm of the residual vector.
+      :param method: current eigenvalue problem being solved, either,  :c:enumerator:`primme_svds_normalequations` or  :c:enumerator:`primme_svds_augmented`.
       :param isconv: (output) the function sets zero if the pair is not converged and non zero otherwise.
       :param primme_svds: parameters structure.
       :param ierr: output error code; if it is set to non-zero, the current call to PRIMME will stop.
