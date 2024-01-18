@@ -279,7 +279,6 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
       }
 
       primme->stats.estimateLargestSVal = REAL_PART(sing_vals[0]); 
-      primme->aNorm = primme->stats.estimateLargestSVal;
 
       /* Build each side of the generalized eigenvalue problem after stabilization */
       ldSigma = ldUtSW = ldUtSWV = ldtrunc_hVecs = trunc_basisSize;
@@ -328,6 +327,7 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
 
    CHKERR(broadcast_SHprimme(hVecs, basisSize*ldhVecs, ctx));
    CHKERR(broadcast_RHprimme(hVals, basisSize, ctx));
+   //CHKERR(broadcast_SHprimme(primme->stats.estimateLargestSVal, 1, ctx));
      
 return 0;
 #else
