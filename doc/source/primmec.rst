@@ -466,6 +466,8 @@ The next enumerations and functions are declared in ``primme.h``.
 
    The type and precision of the callbacks is also the same as `evecs`. Although this can be changed. See details for |matrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
 
+   See examples :ref:`normalEigs`.
+
    .. versionadded:: 3.0
 
 `magma_?primme_normal`
