@@ -1777,8 +1777,8 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
       int *basisSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
+
    int i;          /* Loop variable                                     */
-   //double aNorm = primme?max(primme->aNorm, primme->stats.estimateLargestSVal):0.0;
    SCALAR *V_temp;
    SCALAR *SV_temp;
    SCALAR *VecNorms;
@@ -1786,8 +1786,8 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
 
    int old_basisSize = *basisSize;
 
-   CHKERR(Num_malloc_Sprimme(ldV*old_basisSize, &V_temp, ctx)); 
-   CHKERR(Num_malloc_Sprimme(ldSV*old_basisSize, &SV_temp, ctx)); 
+   CHKERR(Num_malloc_Sprimme(ldV*restartSize, &V_temp, ctx)); 
+   CHKERR(Num_malloc_Sprimme(ldSV*restartSize, &SV_temp, ctx)); 
    CHKERR(Num_malloc_Sprimme(restartSize, &VecNorms, ctx)); 
    CHKERR(Num_malloc_Sprimme(old_basisSize*restartSize, &hVecs_temp, ctx)); 
 
@@ -1814,7 +1814,6 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
    CHKERR(Num_copy_matrix_Sprimme(V_temp, ldV, restartSize, ldV, V, ldV, ctx));  // Copy the temporary matrix back into V
 
    // W = W * hVecs
-   assert(ldV == ldW);
    CHKERR(Num_gemm_SHprimme("N", "N", ldW, restartSize, old_basisSize, 1.0, W, ldW, hVecs, ldhVecs, 0.0, V_temp, ldV, ctx));
    CHKERR(Num_copy_matrix_Sprimme(V_temp, ldV, restartSize, ldW, W, ldW, ctx));  // Copy the temporary matrix back into W
    CHKERR(Num_free_Sprimme(V_temp, ctx));
@@ -1830,14 +1829,14 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
    CHKERR(Num_free_Sprimme(SV_temp, ctx));
 
    // Normalize the matrices
-   for(i = 0; i < restartSize; i++) VecNorms[i] = Num_dot_Sprimme(primme->nLocal, &V[i*ldV], 1, &V[i*ldV], 1, ctx);
+   for(i = 0; i < restartSize; i++) VecNorms[i] = sqrt(Num_dot_Sprimme(primme->nLocal, &V[i*ldV], 1, &V[i*ldV], 1, ctx));
    CHKERR(globalSum_Sprimme(VecNorms, restartSize, ctx));
 
    for (i = 0; i < restartSize; i++) {
-      CHKERR(Num_scal_Sprimme(ldV, 1/VecNorms[i], &V[i*ldV], 1, ctx));
-      CHKERR(Num_scal_Sprimme(ldW, 1/VecNorms[i], &W[i*ldW], 1, ctx));
-      CHKERR(Num_scal_Sprimme(ldSV, 1/VecNorms[i], &SV[i*ldSV], 1, ctx));
-      CHKERR(Num_scal_Sprimme(ldSW, 1/VecNorms[i], &SW[i*ldSW], 1, ctx));
+      CHKERR(Num_scal_Sprimme(ldV, 1.0/VecNorms[i], &V[i*ldV], 1, ctx));
+      CHKERR(Num_scal_Sprimme(ldW, 1.0/VecNorms[i], &W[i*ldW], 1, ctx));
+      CHKERR(Num_scal_Sprimme(ldSV, 1.0/VecNorms[i], &SV[i*ldSV], 1, ctx));
+      CHKERR(Num_scal_Sprimme(ldSW, 1.0/VecNorms[i], &SW[i*ldSW], 1, ctx));
    }
    
    CHKERR(Num_free_Sprimme(VecNorms, ctx));

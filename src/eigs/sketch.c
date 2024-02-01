@@ -302,10 +302,15 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
       CHKERR(Num_ggev_Sprimme("N", "V", trunc_basisSize, UtSWV, ldUtSWV, Sigma, ldSigma, ShVals, NULL, hVals_b, NULL, trunc_basisSize, trunc_hVecs, ldtrunc_hVecs, ctx)); 
       CHKERR(Num_gemm_Sprimme("C", "N", basisSize, trunc_basisSize, trunc_basisSize, 1.0, VVecst, ldVVecst, trunc_hVecs, ldtrunc_hVecs, 0.0, hVecs, ldhVecs, ctx)); 
 
+      SCALAR normalize_hvecs;
       for(i = 0; i < trunc_basisSize; i++)
       {
          hVals[i] = REAL_PART(ShVals[i]/hVals_b[i]);
          eval_perm[i] = i;
+
+         // Normalize the eigenvectors
+         normalize_hvecs = 1.0/sqrt(Num_dot_Sprimme(basisSize, &hVecs[i*ldhVecs], 1, &hVecs[i*ldhVecs], 1, ctx));
+         CHKERR(Num_scal_Sprimme(basisSize, normalize_hvecs, &hVecs[i*ldhVecs], 1, ctx));
       }
 
       /* Sort the eigenpairs */
@@ -327,7 +332,6 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
 
    CHKERR(broadcast_SHprimme(hVecs, basisSize*ldhVecs, ctx));
    CHKERR(broadcast_RHprimme(hVals, basisSize, ctx));
-   //CHKERR(broadcast_SHprimme(primme->stats.estimateLargestSVal, 1, ctx));
      
 return 0;
 #else
