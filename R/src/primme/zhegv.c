@@ -43,7 +43,7 @@ typedef char integer1;
 
 /* Extern is for use with -E */
 #ifndef Extern
-#define Extern extern
+#define Extern /*extern*/
 #endif
 
 /* I/O stuff */
@@ -397,7 +397,54 @@ static doublereal c_b613 = -1.;
 static real c_b1094 = 0.f;
 static real c_b1095 = 1.f;
 
-/* Subroutine */ int zheev_(char *jobz, char *uplo, integer *n, doublecomplex 
+/// Functions declarations extracted with cproto
+static int zheev_(char *jobz, char *uplo, integer *n, doublecomplex *a, integer *lda, doublereal *w, doublecomplex *work, integer *lwork, doublereal *rwork, integer *info);
+static int zhegs2_(integer *itype, char *uplo, integer *n, doublecomplex *a, integer *lda, doublecomplex *b, integer *ldb, integer *info);
+static int zhegst_(integer *itype, char *uplo, integer *n, doublecomplex *a, integer *lda, doublecomplex *b, integer *ldb, integer *info);
+static int zhetd2_(char *uplo, integer *n, doublecomplex *a, integer *lda, doublereal *d__, doublereal *e, doublecomplex *tau, integer *info);
+static int zhetrd_(char *uplo, integer *n, doublecomplex *a, integer *lda, doublereal *d__, doublereal *e, doublecomplex *tau, doublecomplex *work, integer *lwork, integer *info);
+static int zlacgv_(integer *n, doublecomplex *x, integer *incx);
+static void zladiv_(doublecomplex *ret_val, doublecomplex *x, doublecomplex *y);
+static doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a, integer *lda, doublereal *work);
+static int zlarf_(char *side, integer *m, integer *n, doublecomplex *v, integer *incv, doublecomplex *tau, doublecomplex *c__, integer *ldc, doublecomplex *work);
+static int zlarfb_(char *side, char *trans, char *direct, char *storev, integer *m, integer *n, integer *k, doublecomplex *v, integer *ldv, doublecomplex *t, integer *ldt, doublecomplex *c__, integer *ldc, doublecomplex *work, integer *ldwork);
+static int zlarfg_(integer *n, doublecomplex *alpha, doublecomplex *x, integer *incx, doublecomplex *tau);
+static int zlarft_(char *direct, char *storev, integer *n, integer *k, doublecomplex *v, integer *ldv, doublecomplex *tau, doublecomplex *t, integer *ldt);
+static int zlascl_(char *type__, integer *kl, integer *ku, doublereal *cfrom, doublereal *cto, integer *m, integer *n, doublecomplex *a, integer *lda, integer *info);
+static int zlaset_(char *uplo, integer *m, integer *n, doublecomplex *alpha, doublecomplex *beta, doublecomplex *a, integer *lda);
+static int zlasr_(char *side, char *pivot, char *direct, integer *m, integer *n, doublereal *c__, doublereal *s, doublecomplex *a, integer *lda);
+static int zlassq_(integer *n, doublecomplex *x, integer *incx, doublereal *scale, doublereal *sumsq);
+static int zlatrd_(char *uplo, integer *n, integer *nb, doublecomplex *a, integer *lda, doublereal *e, doublecomplex *tau, doublecomplex *w, integer *ldw);
+static int zpotf2_(char *uplo, integer *n, doublecomplex *a, integer *lda, integer *info);
+static int zpotrf_(char *uplo, integer *n, doublecomplex *a, integer *lda, integer *info);
+static int zsteqr_(char *compz, integer *n, doublereal *d__, doublereal *e, doublecomplex *z__, integer *ldz, doublereal *work, integer *info);
+static int zung2l_(integer *m, integer *n, integer *k, doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *work, integer *info);
+static int zung2r_(integer *m, integer *n, integer *k, doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *work, integer *info);
+static int zungql_(integer *m, integer *n, integer *k, doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *work, integer *lwork, integer *info);
+static int zungqr_(integer *m, integer *n, integer *k, doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *work, integer *lwork, integer *info);
+static int zungtr_(char *uplo, integer *n, doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *work, integer *lwork, integer *info);
+static logical disnan_(doublereal *din);
+static int dladiv_(doublereal *a, doublereal *b, doublereal *c__, doublereal *d__, doublereal *p, doublereal *q);
+static int dlae2_(doublereal *a, doublereal *b, doublereal *c__, doublereal *rt1, doublereal *rt2);
+static int dlaev2_(doublereal *a, doublereal *b, doublereal *c__, doublereal *rt1, doublereal *rt2, doublereal *cs1, doublereal *sn1);
+static logical dlaisnan_(doublereal *din1, doublereal *din2);
+static doublereal dlanst_(char *norm, integer *n, doublereal *d__, doublereal *e);
+static doublereal dlapy2_(doublereal *x, doublereal *y);
+static doublereal dlapy3_(doublereal *x, doublereal *y, doublereal *z__);
+static int dlartg_(doublereal *f, doublereal *g, doublereal *cs, doublereal *sn, doublereal *r__);
+static int dlascl_(char *type__, integer *kl, integer *ku, doublereal *cfrom, doublereal *cto, integer *m, integer *n, doublereal *a, integer *lda, integer *info);
+static int dlasrt_(char *id, integer *n, doublereal *d__, integer *info);
+static int dlassq_(integer *n, doublereal *x, integer *incx, doublereal *scale, doublereal *sumsq);
+static int dsterf_(integer *n, doublereal *d__, doublereal *e, integer *info);
+static doublereal dlamc3_(doublereal *a, doublereal *b);
+static integer ieeeck_(integer *ispec, real *zero, real *one);
+static integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1, integer *n2, integer *n3, integer *n4, ftnlen name_len, ftnlen opts_len);
+static integer ilazlc_(integer *m, integer *n, doublecomplex *a, integer *lda);
+static integer ilazlr_(integer *m, integer *n, doublecomplex *a, integer *lda);
+static integer iparmq_(integer *ispec, char *name__, char *opts, integer *n, integer *ilo, integer *ihi, integer *lwork);
+static logical lsame_(char *ca, char *cb);
+
+static /* Subroutine */ int zheev_(char *jobz, char *uplo, integer *n, doublecomplex 
 	*a, integer *lda, doublereal *w, doublecomplex *work, integer *lwork, 
 	doublereal *rwork, integer *info)
 {
@@ -412,35 +459,35 @@ static real c_b1095 = 1.f;
     doublereal anrm;
     integer imax;
     doublereal rmin, rmax;
-    extern /* Subroutine */ int dscal_(integer *, doublereal *, doublereal *, 
+    Extern /* Subroutine */ int dscal_(integer *, doublereal *, doublereal *, 
 	    integer *);
     doublereal sigma;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     integer iinfo;
     logical lower, wantz;
-    extern doublereal dlamch_(char *);
+    Extern doublereal dlamch_(char *);
     integer iscale;
     doublereal safmin;
-    extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
+    Extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *, ftnlen, ftnlen);
-    extern /* Subroutine */ int xerbla_(char *, integer *);
+    Extern /* Subroutine */ int xerbla_(char *, integer *);
     doublereal bignum;
-    extern doublereal zlanhe_(char *, char *, integer *, doublecomplex *, 
+    Extern doublereal zlanhe_(char *, char *, integer *, doublecomplex *, 
 	    integer *, doublereal *);
     integer indtau;
-    extern /* Subroutine */ int dsterf_(integer *, doublereal *, doublereal *,
+    Extern /* Subroutine */ int dsterf_(integer *, doublereal *, doublereal *,
 	     integer *), zlascl_(char *, integer *, integer *, doublereal *, 
 	    doublereal *, integer *, integer *, doublecomplex *, integer *, 
 	    integer *);
     integer indwrk;
-    extern /* Subroutine */ int zhetrd_(char *, integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zhetrd_(char *, integer *, doublecomplex *, 
 	    integer *, doublereal *, doublereal *, doublecomplex *, 
 	    doublecomplex *, integer *, integer *);
     integer llwork;
     doublereal smlnum;
     integer lwkopt;
     logical lquery;
-    extern /* Subroutine */ int zsteqr_(char *, integer *, doublereal *, 
+    Extern /* Subroutine */ int zsteqr_(char *, integer *, doublereal *, 
 	    doublereal *, doublecomplex *, integer *, doublereal *, integer *), zungtr_(char *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, doublecomplex *, integer *, integer *);
 
@@ -649,7 +696,7 @@ static real c_b1095 = 1.f;
 
 } /* zheev_ */
 
-/* Subroutine */ int zhegs2_(integer *itype, char *uplo, integer *n, 
+static /* Subroutine */ int zhegs2_(integer *itype, char *uplo, integer *n, 
 	doublecomplex *a, integer *lda, doublecomplex *b, integer *ldb, 
 	integer *info)
 {
@@ -662,12 +709,12 @@ static real c_b1095 = 1.f;
     integer k;
     doublecomplex ct;
     doublereal akk, bkk;
-    extern /* Subroutine */ int zher2_(char *, integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zher2_(char *, integer *, doublecomplex *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *);
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     logical upper;
-    extern /* Subroutine */ int zaxpy_(integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zaxpy_(integer *, doublecomplex *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *), ztrmv_(
 	    char *, char *, char *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *), ztrsv_(char *
@@ -954,7 +1001,7 @@ static real c_b1095 = 1.f;
 
 } /* zhegs2_ */
 
-/* Subroutine */ int zhegst_(integer *itype, char *uplo, integer *n, 
+static /* Subroutine */ int zhegst_(integer *itype, char *uplo, integer *n, 
 	doublecomplex *a, integer *lda, doublecomplex *b, integer *ldb, 
 	integer *info)
 {
@@ -964,12 +1011,12 @@ static real c_b1095 = 1.f;
 
     /* Local variables */
     integer k, kb, nb;
-    extern logical lsame_(char *, char *);
-    extern /* Subroutine */ int zhemm_(char *, char *, integer *, integer *, 
+    Extern logical lsame_(char *, char *);
+    Extern /* Subroutine */ int zhemm_(char *, char *, integer *, integer *, 
 	    doublecomplex *, doublecomplex *, integer *, doublecomplex *, 
 	    integer *, doublecomplex *, doublecomplex *, integer *);
     logical upper;
-    extern /* Subroutine */ int ztrmm_(char *, char *, char *, char *, 
+    Extern /* Subroutine */ int ztrmm_(char *, char *, char *, char *, 
 	    integer *, integer *, doublecomplex *, doublecomplex *, integer *,
 	     doublecomplex *, integer *), 
 	    ztrsm_(char *, char *, char *, char *, integer *, integer *, 
@@ -980,7 +1027,7 @@ static real c_b1095 = 1.f;
 	    integer *, doublecomplex *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *, doublereal *, doublecomplex *, 
 	    integer *), xerbla_(char *, integer *);
-    extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
+    Extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *, ftnlen, ftnlen);
 
 
@@ -1272,6 +1319,7 @@ static real c_b1095 = 1.f;
 
 } /* zhegst_ */
 
+__attribute__((weak))
 /* Subroutine */ int zhegv_(integer *itype, char *jobz, char *uplo, integer *
 	n, doublecomplex *a, integer *lda, doublecomplex *b, integer *ldb, 
 	doublereal *w, doublecomplex *work, integer *lwork, doublereal *rwork,
@@ -1282,26 +1330,26 @@ static real c_b1095 = 1.f;
 
     /* Local variables */
     integer nb, neig;
-    extern logical lsame_(char *, char *);
-    extern /* Subroutine */ int zheev_(char *, char *, integer *, 
+    Extern logical lsame_(char *, char *);
+    Extern /* Subroutine */ int zheev_(char *, char *, integer *, 
 	    doublecomplex *, integer *, doublereal *, doublecomplex *, 
 	    integer *, doublereal *, integer *);
     char trans[1];
     logical upper, wantz;
-    extern /* Subroutine */ int ztrmm_(char *, char *, char *, char *, 
+    Extern /* Subroutine */ int ztrmm_(char *, char *, char *, char *, 
 	    integer *, integer *, doublecomplex *, doublecomplex *, integer *,
 	     doublecomplex *, integer *), 
 	    ztrsm_(char *, char *, char *, char *, integer *, integer *, 
 	    doublecomplex *, doublecomplex *, integer *, doublecomplex *, 
 	    integer *), xerbla_(char *, 
 	    integer *);
-    extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
+    Extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *, ftnlen, ftnlen);
-    extern /* Subroutine */ int zhegst_(integer *, char *, integer *, 
+    Extern /* Subroutine */ int zhegst_(integer *, char *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *, integer *);
     integer lwkopt;
     logical lquery;
-    extern /* Subroutine */ int zpotrf_(char *, integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zpotrf_(char *, integer *, doublecomplex *, 
 	    integer *, integer *);
 
 
@@ -1528,7 +1576,7 @@ static real c_b1095 = 1.f;
 
 } /* zhegv_ */
 
-/* Subroutine */ int zhetd2_(char *uplo, integer *n, doublecomplex *a, 
+static /* Subroutine */ int zhetd2_(char *uplo, integer *n, doublecomplex *a, 
 	integer *lda, doublereal *d__, doublereal *e, doublecomplex *tau, 
 	integer *info)
 {
@@ -1540,18 +1588,18 @@ static real c_b1095 = 1.f;
     /* Local variables */
     integer i__;
     doublecomplex taui;
-    extern /* Subroutine */ int zher2_(char *, integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zher2_(char *, integer *, doublecomplex *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *);
     doublecomplex alpha;
-    extern logical lsame_(char *, char *);
-    extern /* Double Complex */ VOID zdotc_(doublecomplex *, integer *, 
+    Extern logical lsame_(char *, char *);
+    Extern /* Double Complex */ VOID zdotc_(doublecomplex *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *);
-    extern /* Subroutine */ int zhemv_(char *, integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zhemv_(char *, integer *, doublecomplex *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, doublecomplex *, integer *);
     logical upper;
-    extern /* Subroutine */ int zaxpy_(integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zaxpy_(integer *, doublecomplex *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *), xerbla_(
 	    char *, integer *), zlarfg_(integer *, doublecomplex *, 
 	    doublecomplex *, integer *, doublecomplex *);
@@ -1856,7 +1904,7 @@ static real c_b1095 = 1.f;
 
 } /* zhetd2_ */
 
-/* Subroutine */ int zhetrd_(char *uplo, integer *n, doublecomplex *a, 
+static /* Subroutine */ int zhetrd_(char *uplo, integer *n, doublecomplex *a, 
 	integer *lda, doublereal *d__, doublereal *e, doublecomplex *tau, 
 	doublecomplex *work, integer *lwork, integer *info)
 {
@@ -1866,16 +1914,16 @@ static real c_b1095 = 1.f;
 
     /* Local variables */
     integer i__, j, nb, kk, nx, iws;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     integer nbmin, iinfo;
     logical upper;
-    extern /* Subroutine */ int zhetd2_(char *, integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zhetd2_(char *, integer *, doublecomplex *, 
 	    integer *, doublereal *, doublereal *, doublecomplex *, integer *), zher2k_(char *, char *, integer *, integer *, 
 	    doublecomplex *, doublecomplex *, integer *, doublecomplex *, 
 	    integer *, doublereal *, doublecomplex *, integer *), xerbla_(char *, integer *);
-    extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
+    Extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *, ftnlen, ftnlen);
-    extern /* Subroutine */ int zlatrd_(char *, integer *, integer *, 
+    Extern /* Subroutine */ int zlatrd_(char *, integer *, integer *, 
 	    doublecomplex *, integer *, doublereal *, doublecomplex *, 
 	    doublecomplex *, integer *);
     integer ldwork, lwkopt;
@@ -2192,7 +2240,7 @@ static real c_b1095 = 1.f;
 
 } /* zhetrd_ */
 
-/* Subroutine */ int zlacgv_(integer *n, doublecomplex *x, integer *incx)
+static /* Subroutine */ int zlacgv_(integer *n, doublecomplex *x, integer *incx)
 {
     /* System generated locals */
     integer i__1, i__2;
@@ -2262,7 +2310,7 @@ static real c_b1095 = 1.f;
 
 } /* zlacgv_ */
 
-/* Double Complex */ VOID zladiv_(doublecomplex * ret_val, doublecomplex *x, 
+static /* Double Complex */ VOID zladiv_(doublecomplex * ret_val, doublecomplex *x, 
 	doublecomplex *y)
 {
     /* System generated locals */
@@ -2271,7 +2319,7 @@ static real c_b1095 = 1.f;
 
     /* Local variables */
     doublereal zi, zr;
-    extern /* Subroutine */ int dladiv_(doublereal *, doublereal *, 
+    Extern /* Subroutine */ int dladiv_(doublereal *, doublereal *, 
 	    doublereal *, doublereal *, doublereal *, doublereal *);
 
 
@@ -2312,7 +2360,7 @@ static real c_b1095 = 1.f;
 
 } /* zladiv_ */
 
-doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a, 
+static doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a, 
 	integer *lda, doublereal *work)
 {
     /* System generated locals */
@@ -2322,9 +2370,9 @@ doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a,
     /* Local variables */
     integer i__, j;
     doublereal sum, absa, scale;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     doublereal value;
-    extern /* Subroutine */ int zlassq_(integer *, doublecomplex *, integer *,
+    Extern /* Subroutine */ int zlassq_(integer *, doublecomplex *, integer *,
 	     doublereal *, doublereal *);
 
 
@@ -2542,7 +2590,7 @@ doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a,
 
 } /* zlanhe_ */
 
-/* Subroutine */ int zlarf_(char *side, integer *m, integer *n, doublecomplex 
+static /* Subroutine */ int zlarf_(char *side, integer *m, integer *n, doublecomplex 
 	*v, integer *incv, doublecomplex *tau, doublecomplex *c__, integer *
 	ldc, doublecomplex *work)
 {
@@ -2553,15 +2601,15 @@ doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a,
     /* Local variables */
     integer i__;
     logical applyleft;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     integer lastc;
-    extern /* Subroutine */ int zgerc_(integer *, integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zgerc_(integer *, integer *, doublecomplex *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *), zgemv_(char *, integer *, integer *, 
 	    doublecomplex *, doublecomplex *, integer *, doublecomplex *, 
 	    integer *, doublecomplex *, doublecomplex *, integer *);
     integer lastv;
-    extern integer ilazlc_(integer *, integer *, doublecomplex *, integer *), 
+    Extern integer ilazlc_(integer *, integer *, doublecomplex *, integer *), 
 	    ilazlr_(integer *, integer *, doublecomplex *, integer *);
 
 
@@ -2710,7 +2758,7 @@ doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a,
 
 } /* zlarf_ */
 
-/* Subroutine */ int zlarfb_(char *side, char *trans, char *direct, char *
+static /* Subroutine */ int zlarfb_(char *side, char *trans, char *direct, char *
 	storev, integer *m, integer *n, integer *k, doublecomplex *v, integer 
 	*ldv, doublecomplex *t, integer *ldt, doublecomplex *c__, integer *
 	ldc, doublecomplex *work, integer *ldwork)
@@ -2722,21 +2770,21 @@ doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a,
 
     /* Local variables */
     integer i__, j;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     integer lastc;
-    extern /* Subroutine */ int zgemm_(char *, char *, integer *, integer *, 
+    Extern /* Subroutine */ int zgemm_(char *, char *, integer *, integer *, 
 	    integer *, doublecomplex *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
 	    integer *);
     integer lastv;
-    extern /* Subroutine */ int zcopy_(integer *, doublecomplex *, integer *, 
+    Extern /* Subroutine */ int zcopy_(integer *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *), ztrmm_(char *, char *, char *, char *
 	    , integer *, integer *, doublecomplex *, doublecomplex *, integer 
 	    *, doublecomplex *, integer *);
-    extern integer ilazlc_(integer *, integer *, doublecomplex *, integer *);
-    extern /* Subroutine */ int zlacgv_(integer *, doublecomplex *, integer *)
+    Extern integer ilazlc_(integer *, integer *, doublecomplex *, integer *);
+    Extern /* Subroutine */ int zlacgv_(integer *, doublecomplex *, integer *)
 	    ;
-    extern integer ilazlr_(integer *, integer *, doublecomplex *, integer *);
+    Extern integer ilazlr_(integer *, integer *, doublecomplex *, integer *);
     char transt[1];
 
 
@@ -3538,7 +3586,7 @@ doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a,
 
 } /* zlarfb_ */
 
-/* Subroutine */ int zlarfg_(integer *n, doublecomplex *alpha, doublecomplex *
+static /* Subroutine */ int zlarfg_(integer *n, doublecomplex *alpha, doublecomplex *
 	x, integer *incx, doublecomplex *tau)
 {
     /* System generated locals */
@@ -3549,16 +3597,16 @@ doublereal zlanhe_(char *norm, char *uplo, integer *n, doublecomplex *a,
     /* Local variables */
     integer j, knt;
     doublereal beta, alphi, alphr;
-    extern /* Subroutine */ int zscal_(integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zscal_(integer *, doublecomplex *, 
 	    doublecomplex *, integer *);
     doublereal xnorm;
-    extern doublereal dlapy3_(doublereal *, doublereal *, doublereal *), 
+    Extern doublereal dlapy3_(doublereal *, doublereal *, doublereal *), 
 	    dznrm2_(integer *, doublecomplex *, integer *), dlamch_(char *);
     doublereal safmin;
-    extern /* Subroutine */ int zdscal_(integer *, doublereal *, 
+    Extern /* Subroutine */ int zdscal_(integer *, doublereal *, 
 	    doublecomplex *, integer *);
     doublereal rsafmn;
-    extern /* Double Complex */ VOID zladiv_(doublecomplex *, doublecomplex *,
+    Extern /* Double Complex */ VOID zladiv_(doublecomplex *, doublecomplex *,
 	     doublecomplex *);
 
 
@@ -3694,7 +3742,7 @@ L10:
 
 } /* zlarfg_ */
 
-/* Subroutine */ int zlarft_(char *direct, char *storev, integer *n, integer *
+static /* Subroutine */ int zlarft_(char *direct, char *storev, integer *n, integer *
 	k, doublecomplex *v, integer *ldv, doublecomplex *tau, doublecomplex *
 	t, integer *ldt)
 {
@@ -3705,14 +3753,14 @@ L10:
     /* Local variables */
     integer i__, j, prevlastv;
     doublecomplex vii;
-    extern logical lsame_(char *, char *);
-    extern /* Subroutine */ int zgemv_(char *, integer *, integer *, 
+    Extern logical lsame_(char *, char *);
+    Extern /* Subroutine */ int zgemv_(char *, integer *, integer *, 
 	    doublecomplex *, doublecomplex *, integer *, doublecomplex *, 
 	    integer *, doublecomplex *, doublecomplex *, integer *);
     integer lastv;
-    extern /* Subroutine */ int ztrmv_(char *, char *, char *, integer *, 
+    Extern /* Subroutine */ int ztrmv_(char *, char *, char *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *);
-    extern int zlacgv_(integer *, doublecomplex *, integer *);
+    Extern int zlacgv_(integer *, doublecomplex *, integer *);
 
 
 /*  -- LAPACK auxiliary routine (version 3.3.1) -- */
@@ -4027,7 +4075,7 @@ L10:
 
 } /* zlarft_ */
 
-/* Subroutine */ int zlascl_(char *type__, integer *kl, integer *ku, 
+static /* Subroutine */ int zlascl_(char *type__, integer *kl, integer *ku, 
 	doublereal *cfrom, doublereal *cto, integer *m, integer *n, 
 	doublecomplex *a, integer *lda, integer *info)
 {
@@ -4040,13 +4088,13 @@ L10:
     doublereal mul, cto1;
     logical done;
     doublereal ctoc;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     integer itype;
     doublereal cfrom1;
-    extern doublereal dlamch_(char *);
+    Extern doublereal dlamch_(char *);
     doublereal cfromc;
-    extern logical disnan_(doublereal *);
-    extern /* Subroutine */ int xerbla_(char *, integer *);
+    Extern logical disnan_(doublereal *);
+    Extern /* Subroutine */ int xerbla_(char *, integer *);
     doublereal bignum, smlnum;
 
 
@@ -4375,7 +4423,7 @@ L10:
 
 } /* zlascl_ */
 
-/* Subroutine */ int zlaset_(char *uplo, integer *m, integer *n, 
+static /* Subroutine */ int zlaset_(char *uplo, integer *m, integer *n, 
 	doublecomplex *alpha, doublecomplex *beta, doublecomplex *a, integer *
 	lda)
 {
@@ -4384,7 +4432,7 @@ L10:
 
     /* Local variables */
     integer i__, j;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
 
 
 /*  -- LAPACK auxiliary routine (version 3.2) -- */
@@ -4514,7 +4562,7 @@ L10:
 
 } /* zlaset_ */
 
-/* Subroutine */ int zlasr_(char *side, char *pivot, char *direct, integer *m,
+static /* Subroutine */ int zlasr_(char *side, char *pivot, char *direct, integer *m,
 	 integer *n, doublereal *c__, doublereal *s, doublecomplex *a, 
 	integer *lda)
 {
@@ -4525,9 +4573,9 @@ L10:
     /* Local variables */
     integer i__, j, info;
     doublecomplex temp;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     doublereal ctemp, stemp;
-    extern /* Subroutine */ int xerbla_(char *, integer *);
+    Extern /* Subroutine */ int xerbla_(char *, integer *);
 
 
 /*  -- LAPACK auxiliary routine (version 3.2) -- */
@@ -5096,7 +5144,7 @@ L10:
 
 } /* zlasr_ */
 
-/* Subroutine */ int zlassq_(integer *n, doublecomplex *x, integer *incx, 
+static /* Subroutine */ int zlassq_(integer *n, doublecomplex *x, integer *incx, 
 	doublereal *scale, doublereal *sumsq)
 {
     /* System generated locals */
@@ -5207,7 +5255,7 @@ L10:
 
 } /* zlassq_ */
 
-/* Subroutine */ int zlatrd_(char *uplo, integer *n, integer *nb, 
+static /* Subroutine */ int zlatrd_(char *uplo, integer *n, integer *nb, 
 	doublecomplex *a, integer *lda, doublereal *e, doublecomplex *tau, 
 	doublecomplex *w, integer *ldw)
 {
@@ -5219,12 +5267,12 @@ L10:
     /* Local variables */
     integer i__, iw;
     doublecomplex alpha;
-    extern logical lsame_(char *, char *);
-    extern /* Subroutine */ int zscal_(integer *, doublecomplex *, 
+    Extern logical lsame_(char *, char *);
+    Extern /* Subroutine */ int zscal_(integer *, doublecomplex *, 
 	    doublecomplex *, integer *);
-    extern /* Double Complex */ VOID zdotc_(doublecomplex *, integer *, 
+    Extern /* Double Complex */ VOID zdotc_(doublecomplex *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *);
-    extern /* Subroutine */ int zgemv_(char *, integer *, integer *, 
+    Extern /* Subroutine */ int zgemv_(char *, integer *, integer *, 
 	    doublecomplex *, doublecomplex *, integer *, doublecomplex *, 
 	    integer *, doublecomplex *, doublecomplex *, integer *), 
 	    zhemv_(char *, integer *, doublecomplex *, doublecomplex *, 
@@ -5594,7 +5642,7 @@ L10:
 
 } /* zlatrd_ */
 
-/* Subroutine */ int zpotf2_(char *uplo, integer *n, doublecomplex *a, 
+static /* Subroutine */ int zpotf2_(char *uplo, integer *n, doublecomplex *a, 
 	integer *lda, integer *info)
 {
     /* System generated locals */
@@ -5605,15 +5653,15 @@ L10:
     /* Local variables */
     integer j;
     doublereal ajj;
-    extern logical lsame_(char *, char *);
-    extern /* Double Complex */ VOID zdotc_(doublecomplex *, integer *, 
+    Extern logical lsame_(char *, char *);
+    Extern /* Double Complex */ VOID zdotc_(doublecomplex *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *);
-    extern /* Subroutine */ int zgemv_(char *, integer *, integer *, 
+    Extern /* Subroutine */ int zgemv_(char *, integer *, integer *, 
 	    doublecomplex *, doublecomplex *, integer *, doublecomplex *, 
 	    integer *, doublecomplex *, doublecomplex *, integer *);
     logical upper;
-    extern logical disnan_(doublereal *);
-    extern /* Subroutine */ int xerbla_(char *, integer *), zdscal_(
+    Extern logical disnan_(doublereal *);
+    Extern /* Subroutine */ int xerbla_(char *, integer *), zdscal_(
 	    integer *, doublereal *, doublecomplex *, integer *), zlacgv_(
 	    integer *, doublecomplex *, integer *);
 
@@ -5803,7 +5851,7 @@ L40:
 
 } /* zpotf2_ */
 
-/* Subroutine */ int zpotrf_(char *uplo, integer *n, doublecomplex *a, 
+static /* Subroutine */ int zpotrf_(char *uplo, integer *n, doublecomplex *a, 
 	integer *lda, integer *info)
 {
     /* System generated locals */
@@ -5812,19 +5860,19 @@ L40:
 
     /* Local variables */
     integer j, jb, nb;
-    extern logical lsame_(char *, char *);
-    extern /* Subroutine */ int zgemm_(char *, char *, integer *, integer *, 
+    Extern logical lsame_(char *, char *);
+    Extern /* Subroutine */ int zgemm_(char *, char *, integer *, integer *, 
 	    integer *, doublecomplex *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
 	    integer *), zherk_(char *, char *, integer *, 
 	    integer *, doublereal *, doublecomplex *, integer *, doublereal *,
 	     doublecomplex *, integer *);
     logical upper;
-    extern /* Subroutine */ int ztrsm_(char *, char *, char *, char *, 
+    Extern /* Subroutine */ int ztrsm_(char *, char *, char *, char *, 
 	    integer *, integer *, doublecomplex *, doublecomplex *, integer *,
 	     doublecomplex *, integer *), 
 	    zpotf2_(char *, integer *, doublecomplex *, integer *, integer *), xerbla_(char *, integer *);
-    extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
+    Extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *, ftnlen, ftnlen);
 
 
@@ -6017,7 +6065,7 @@ L40:
 
 } /* zpotrf_ */
 
-/* Subroutine */ int zsteqr_(char *compz, integer *n, doublereal *d__, 
+static /* Subroutine */ int zsteqr_(char *compz, integer *n, doublereal *d__, 
 	doublereal *e, doublecomplex *z__, integer *ldz, doublereal *work, 
 	integer *info)
 {
@@ -6034,34 +6082,34 @@ L40:
     integer lsv;
     doublereal tst, eps2;
     integer lend, jtot;
-    extern /* Subroutine */ int dlae2_(doublereal *, doublereal *, doublereal 
+    Extern /* Subroutine */ int dlae2_(doublereal *, doublereal *, doublereal 
 	    *, doublereal *, doublereal *);
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     doublereal anorm;
-    extern /* Subroutine */ int zlasr_(char *, char *, char *, integer *, 
+    Extern /* Subroutine */ int zlasr_(char *, char *, char *, integer *, 
 	    integer *, doublereal *, doublereal *, doublecomplex *, integer *), zswap_(integer *, doublecomplex *, 
 	    integer *, doublecomplex *, integer *), dlaev2_(doublereal *, 
 	    doublereal *, doublereal *, doublereal *, doublereal *, 
 	    doublereal *, doublereal *);
     integer lendm1, lendp1;
-    extern doublereal dlapy2_(doublereal *, doublereal *), dlamch_(char *);
+    Extern doublereal dlapy2_(doublereal *, doublereal *), dlamch_(char *);
     integer iscale;
-    extern /* Subroutine */ int dlascl_(char *, integer *, integer *, 
+    Extern /* Subroutine */ int dlascl_(char *, integer *, integer *, 
 	    doublereal *, doublereal *, integer *, integer *, doublereal *, 
 	    integer *, integer *);
     doublereal safmin;
-    extern /* Subroutine */ int dlartg_(doublereal *, doublereal *, 
+    Extern /* Subroutine */ int dlartg_(doublereal *, doublereal *, 
 	    doublereal *, doublereal *, doublereal *);
     doublereal safmax;
-    extern /* Subroutine */ int xerbla_(char *, integer *);
-    extern doublereal dlanst_(char *, integer *, doublereal *, doublereal *);
-    extern /* Subroutine */ int dlasrt_(char *, integer *, doublereal *, 
+    Extern /* Subroutine */ int xerbla_(char *, integer *);
+    Extern doublereal dlanst_(char *, integer *, doublereal *, doublereal *);
+    Extern /* Subroutine */ int dlasrt_(char *, integer *, doublereal *, 
 	    integer *);
     integer lendsv;
     doublereal ssfmin;
     integer nmaxit, icompz;
     doublereal ssfmax;
-    extern /* Subroutine */ int zlaset_(char *, integer *, integer *, 
+    Extern /* Subroutine */ int zlaset_(char *, integer *, integer *, 
 	    doublecomplex *, doublecomplex *, doublecomplex *, integer *);
 
 
@@ -6598,7 +6646,7 @@ L160:
 
 } /* zsteqr_ */
 
-/* Subroutine */ int zung2l_(integer *m, integer *n, integer *k, 
+static /* Subroutine */ int zung2l_(integer *m, integer *n, integer *k, 
 	doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *
 	work, integer *info)
 {
@@ -6608,7 +6656,7 @@ L160:
 
     /* Local variables */
     integer i__, j, l, ii;
-    extern /* Subroutine */ int zscal_(integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zscal_(integer *, doublecomplex *, 
 	    doublecomplex *, integer *), zlarf_(char *, integer *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
 	    integer *, doublecomplex *), xerbla_(char *, integer *);
@@ -6751,7 +6799,7 @@ L160:
 
 } /* zung2l_ */
 
-/* Subroutine */ int zung2r_(integer *m, integer *n, integer *k, 
+static /* Subroutine */ int zung2r_(integer *m, integer *n, integer *k, 
 	doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *
 	work, integer *info)
 {
@@ -6761,7 +6809,7 @@ L160:
 
     /* Local variables */
     integer i__, j, l;
-    extern /* Subroutine */ int zscal_(integer *, doublecomplex *, 
+    Extern /* Subroutine */ int zscal_(integer *, doublecomplex *, 
 	    doublecomplex *, integer *), zlarf_(char *, integer *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
 	    integer *, doublecomplex *), xerbla_(char *, integer *);
@@ -6906,7 +6954,7 @@ L160:
 
 } /* zung2r_ */
 
-/* Subroutine */ int zungql_(integer *m, integer *n, integer *k, 
+static /* Subroutine */ int zungql_(integer *m, integer *n, integer *k, 
 	doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *
 	work, integer *lwork, integer *info)
 {
@@ -6915,17 +6963,17 @@ L160:
 
     /* Local variables */
     integer i__, j, l, ib, nb, kk, nx, iws, nbmin, iinfo;
-    extern /* Subroutine */ int zung2l_(integer *, integer *, integer *, 
+    Extern /* Subroutine */ int zung2l_(integer *, integer *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
 	    integer *), xerbla_(char *, integer *);
-    extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
+    Extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *, ftnlen, ftnlen);
-    extern /* Subroutine */ int zlarfb_(char *, char *, char *, char *, 
+    Extern /* Subroutine */ int zlarfb_(char *, char *, char *, char *, 
 	    integer *, integer *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *);
     integer ldwork;
-    extern /* Subroutine */ int zlarft_(char *, char *, integer *, integer *, 
+    Extern /* Subroutine */ int zlarft_(char *, char *, integer *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
 	    integer *);
     logical lquery;
@@ -7170,7 +7218,7 @@ L160:
 
 } /* zungql_ */
 
-/* Subroutine */ int zungqr_(integer *m, integer *n, integer *k, 
+static /* Subroutine */ int zungqr_(integer *m, integer *n, integer *k, 
 	doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *
 	work, integer *lwork, integer *info)
 {
@@ -7179,17 +7227,17 @@ L160:
 
     /* Local variables */
     integer i__, j, l, ib, nb, ki, kk, nx, iws, nbmin, iinfo;
-    extern /* Subroutine */ int zung2r_(integer *, integer *, integer *, 
+    Extern /* Subroutine */ int zung2r_(integer *, integer *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
 	    integer *), xerbla_(char *, integer *);
-    extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
+    Extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *, ftnlen, ftnlen);
-    extern /* Subroutine */ int zlarfb_(char *, char *, char *, char *, 
+    Extern /* Subroutine */ int zlarfb_(char *, char *, char *, char *, 
 	    integer *, integer *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, integer *, 
 	    doublecomplex *, integer *);
     integer ldwork;
-    extern /* Subroutine */ int zlarft_(char *, char *, integer *, integer *, 
+    Extern /* Subroutine */ int zlarft_(char *, char *, integer *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
 	    integer *);
     integer lwkopt;
@@ -7425,7 +7473,7 @@ L160:
 
 } /* zungqr_ */
 
-/* Subroutine */ int zungtr_(char *uplo, integer *n, doublecomplex *a, 
+static /* Subroutine */ int zungtr_(char *uplo, integer *n, doublecomplex *a, 
 	integer *lda, doublecomplex *tau, doublecomplex *work, integer *lwork,
 	 integer *info)
 {
@@ -7434,15 +7482,15 @@ L160:
 
     /* Local variables */
     integer i__, j, nb;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     integer iinfo;
     logical upper;
-    extern /* Subroutine */ int xerbla_(char *, integer *);
-    extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
+    Extern /* Subroutine */ int xerbla_(char *, integer *);
+    Extern integer ilaenv_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *, ftnlen, ftnlen);
     integer lwkopt;
     logical lquery;
-    extern /* Subroutine */ int zungql_(integer *, integer *, integer *, 
+    Extern /* Subroutine */ int zungql_(integer *, integer *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
 	    integer *, integer *), zungqr_(integer *, integer *, integer *, 
 	    doublecomplex *, integer *, doublecomplex *, doublecomplex *, 
@@ -7656,13 +7704,13 @@ L160:
 
 } /* zungtr_ */
 
-logical disnan_(doublereal *din)
+static logical disnan_(doublereal *din)
 {
     /* System generated locals */
     logical ret_val;
 
     /* Local variables */
-    extern logical dlaisnan_(doublereal *, doublereal *);
+    Extern logical dlaisnan_(doublereal *, doublereal *);
 
 
 /*  -- LAPACK auxiliary routine (version 3.2.2) -- */
@@ -7690,7 +7738,7 @@ logical disnan_(doublereal *din)
     return ret_val;
 } /* disnan_ */
 
-/* Subroutine */ int dladiv_(doublereal *a, doublereal *b, doublereal *c__, 
+static /* Subroutine */ int dladiv_(doublereal *a, doublereal *b, doublereal *c__, 
 	doublereal *d__, doublereal *p, doublereal *q)
 {
     doublereal e, f;
@@ -7748,7 +7796,7 @@ logical disnan_(doublereal *din)
 
 } /* dladiv_ */
 
-/* Subroutine */ int dlae2_(doublereal *a, doublereal *b, doublereal *c__, 
+static /* Subroutine */ int dlae2_(doublereal *a, doublereal *b, doublereal *c__, 
 	doublereal *rt1, doublereal *rt2)
 {
     /* System generated locals */
@@ -7865,7 +7913,7 @@ logical disnan_(doublereal *din)
 
 } /* dlae2_ */
 
-/* Subroutine */ int dlaev2_(doublereal *a, doublereal *b, doublereal *c__, 
+static /* Subroutine */ int dlaev2_(doublereal *a, doublereal *b, doublereal *c__, 
 	doublereal *rt1, doublereal *rt2, doublereal *cs1, doublereal *sn1)
 {
     /* System generated locals */
@@ -8028,7 +8076,7 @@ logical disnan_(doublereal *din)
 
 } /* dlaev2_ */
 
-logical dlaisnan_(doublereal *din1, doublereal *din2)
+static logical dlaisnan_(doublereal *din1, doublereal *din2)
 {
     /* System generated locals */
     logical ret_val;
@@ -8071,7 +8119,7 @@ logical dlaisnan_(doublereal *din1, doublereal *din2)
     return ret_val;
 } /* dlaisnan_ */
 
-doublereal dlanst_(char *norm, integer *n, doublereal *d__, doublereal *e)
+static doublereal dlanst_(char *norm, integer *n, doublereal *d__, doublereal *e)
 {
     /* System generated locals */
     integer i__1;
@@ -8080,9 +8128,9 @@ doublereal dlanst_(char *norm, integer *n, doublereal *d__, doublereal *e)
     /* Local variables */
     integer i__;
     doublereal sum, scale;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     doublereal anorm;
-    extern /* Subroutine */ int dlassq_(integer *, doublereal *, integer *, 
+    Extern /* Subroutine */ int dlassq_(integer *, doublereal *, integer *, 
 	    doublereal *, doublereal *);
 
 
@@ -8202,7 +8250,7 @@ doublereal dlanst_(char *norm, integer *n, doublereal *d__, doublereal *e)
 
 } /* dlanst_ */
 
-doublereal dlapy2_(doublereal *x, doublereal *y)
+static doublereal dlapy2_(doublereal *x, doublereal *y)
 {
     /* System generated locals */
     doublereal ret_val, d__1;
@@ -8250,7 +8298,7 @@ doublereal dlapy2_(doublereal *x, doublereal *y)
 
 } /* dlapy2_ */
 
-doublereal dlapy3_(doublereal *x, doublereal *y, doublereal *z__)
+static doublereal dlapy3_(doublereal *x, doublereal *y, doublereal *z__)
 {
     /* System generated locals */
     doublereal ret_val, d__1, d__2, d__3;
@@ -8308,7 +8356,7 @@ doublereal dlapy3_(doublereal *x, doublereal *y, doublereal *z__)
 
 } /* dlapy3_ */
 
-/* Subroutine */ int dlartg_(doublereal *f, doublereal *g, doublereal *cs, 
+static /* Subroutine */ int dlartg_(doublereal *f, doublereal *g, doublereal *cs, 
 	doublereal *sn, doublereal *r__)
 {
     /* System generated locals */
@@ -8320,7 +8368,7 @@ doublereal dlapy3_(doublereal *x, doublereal *y, doublereal *z__)
     doublereal f1, g1, eps, scale;
     integer count;
     doublereal safmn2, safmx2;
-    extern doublereal dlamch_(char *);
+    Extern doublereal dlamch_(char *);
     doublereal safmin;
 
 
@@ -8467,7 +8515,7 @@ L30:
 
 } /* dlartg_ */
 
-/* Subroutine */ int dlascl_(char *type__, integer *kl, integer *ku, 
+static /* Subroutine */ int dlascl_(char *type__, integer *kl, integer *ku, 
 	doublereal *cfrom, doublereal *cto, integer *m, integer *n, 
 	doublereal *a, integer *lda, integer *info)
 {
@@ -8479,13 +8527,13 @@ L30:
     doublereal mul, cto1;
     logical done;
     doublereal ctoc;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     integer itype;
     doublereal cfrom1;
-    extern doublereal dlamch_(char *);
+    Extern doublereal dlamch_(char *);
     doublereal cfromc;
-    extern logical disnan_(doublereal *);
-    extern /* Subroutine */ int xerbla_(char *, integer *);
+    Extern logical disnan_(doublereal *);
+    Extern /* Subroutine */ int xerbla_(char *, integer *);
     doublereal bignum, smlnum;
 
 
@@ -8793,7 +8841,7 @@ L10:
 
 } /* dlascl_ */
 
-/* Subroutine */ int dlasrt_(char *id, integer *n, doublereal *d__, integer *
+static /* Subroutine */ int dlasrt_(char *id, integer *n, doublereal *d__, integer *
 	info)
 {
     /* System generated locals */
@@ -8805,11 +8853,11 @@ L10:
     integer dir;
     doublereal tmp;
     integer endd;
-    extern logical lsame_(char *, char *);
+    Extern logical lsame_(char *, char *);
     integer stack[64]	/* was [2][32] */;
     doublereal dmnmx;
     integer start;
-    extern /* Subroutine */ int xerbla_(char *, integer *);
+    Extern /* Subroutine */ int xerbla_(char *, integer *);
     integer stkpnt;
 
 
@@ -9051,7 +9099,7 @@ L110:
 
 } /* dlasrt_ */
 
-/* Subroutine */ int dlassq_(integer *n, doublereal *x, integer *incx, 
+static /* Subroutine */ int dlassq_(integer *n, doublereal *x, integer *incx, 
 	doublereal *scale, doublereal *sumsq)
 {
     /* System generated locals */
@@ -9143,7 +9191,7 @@ L110:
 
 } /* dlassq_ */
 
-/* Subroutine */ int dsterf_(integer *n, doublereal *d__, doublereal *e, 
+static /* Subroutine */ int dsterf_(integer *n, doublereal *d__, doublereal *e, 
 	integer *info)
 {
     /* System generated locals */
@@ -9161,19 +9209,19 @@ L110:
     integer lend;
     doublereal rmax;
     integer jtot;
-    extern /* Subroutine */ int dlae2_(doublereal *, doublereal *, doublereal 
+    Extern /* Subroutine */ int dlae2_(doublereal *, doublereal *, doublereal 
 	    *, doublereal *, doublereal *);
     doublereal gamma, alpha, sigma, anorm;
-    extern doublereal dlapy2_(doublereal *, doublereal *), dlamch_(char *);
+    Extern doublereal dlapy2_(doublereal *, doublereal *), dlamch_(char *);
     integer iscale;
-    extern /* Subroutine */ int dlascl_(char *, integer *, integer *, 
+    Extern /* Subroutine */ int dlascl_(char *, integer *, integer *, 
 	    doublereal *, doublereal *, integer *, integer *, doublereal *, 
 	    integer *, integer *);
     doublereal oldgam, safmin;
-    extern /* Subroutine */ int xerbla_(char *, integer *);
+    Extern /* Subroutine */ int xerbla_(char *, integer *);
     doublereal safmax;
-    extern doublereal dlanst_(char *, integer *, doublereal *, doublereal *);
-    extern /* Subroutine */ int dlasrt_(char *, integer *, doublereal *, 
+    Extern doublereal dlanst_(char *, integer *, doublereal *, doublereal *);
+    Extern /* Subroutine */ int dlasrt_(char *, integer *, doublereal *, 
 	    integer *);
     integer lendsv;
     doublereal ssfmin;
@@ -9575,7 +9623,7 @@ L180:
 
 /* *********************************************************************** */
 
-doublereal dlamc3_(doublereal *a, doublereal *b)
+static doublereal dlamc3_(doublereal *a, doublereal *b)
 {
     /* System generated locals */
     doublereal ret_val;
@@ -9613,7 +9661,7 @@ doublereal dlamc3_(doublereal *a, doublereal *b)
 
 
 /* *********************************************************************** */
-integer ieeeck_(integer *ispec, real *zero, real *one)
+static integer ieeeck_(integer *ispec, real *zero, real *one)
 {
     /* System generated locals */
     integer ret_val;
@@ -9763,7 +9811,7 @@ integer ieeeck_(integer *ispec, real *zero, real *one)
     return ret_val;
 } /* ieeeck_ */
 
-integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1, 
+static integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1, 
 	integer *n2, integer *n3, integer *n4, ftnlen name_len, ftnlen 
 	opts_len)
 {
@@ -9777,9 +9825,9 @@ integer ilaenv_(integer *ispec, char *name__, char *opts, integer *n1,
     logical cname;
     integer nbmin;
     logical sname;
-    extern integer ieeeck_(integer *, real *, real *);
+    Extern integer ieeeck_(integer *, real *, real *);
     char subnam[6];
-    extern integer iparmq_(integer *, char *, char *, integer *, integer *, 
+    Extern integer iparmq_(integer *, char *, char *, integer *, integer *, 
 	    integer *, integer *);
 
 
@@ -10382,7 +10430,7 @@ L160:
 
 } /* ilaenv_ */
 
-integer ilazlc_(integer *m, integer *n, doublecomplex *a, integer *lda)
+static integer ilazlc_(integer *m, integer *n, doublecomplex *a, integer *lda)
 {
     /* System generated locals */
     integer a_dim1, a_offset, ret_val, i__1, i__2;
@@ -10453,7 +10501,7 @@ integer ilazlc_(integer *m, integer *n, doublecomplex *a, integer *lda)
     return ret_val;
 } /* ilazlc_ */
 
-integer ilazlr_(integer *m, integer *n, doublecomplex *a, integer *lda)
+static integer ilazlr_(integer *m, integer *n, doublecomplex *a, integer *lda)
 {
     /* System generated locals */
     integer a_dim1, a_offset, ret_val, i__1, i__2;
@@ -10524,7 +10572,7 @@ integer ilazlr_(integer *m, integer *n, doublecomplex *a, integer *lda)
     return ret_val;
 } /* ilazlr_ */
 
-integer iparmq_(integer *ispec, char *name__, char *opts, integer *n, integer 
+static integer iparmq_(integer *ispec, char *name__, char *opts, integer *n, integer 
 	*ilo, integer *ihi, integer *lwork)
 {
     /* System generated locals */
@@ -10781,7 +10829,7 @@ integer iparmq_(integer *ispec, char *name__, char *opts, integer *n, integer
     return ret_val;
 } /* iparmq_ */
 
-logical lsame_(char *ca, char *cb)
+static logical lsame_(char *ca, char *cb)
 {
     /* System generated locals */
     logical ret_val;
