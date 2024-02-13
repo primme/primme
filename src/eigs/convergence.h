@@ -126,8 +126,9 @@
 int check_convergence_dprimme(dummy_type_dprimme *X, PRIMME_INT ldX, int givenX, dummy_type_dprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_dprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_dprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_dprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
-      dummy_type_dprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_dprimme *blockNorms, dummy_type_dprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(check_practical_convergence)
 #  define check_practical_convergence CONCAT(check_practical_convergence,WITH_KIND(SCALAR_SUF))
 #endif
@@ -138,8 +139,9 @@ int check_practical_convergencedprimme(dummy_type_dprimme *R, PRIMME_INT ldR, du
 int check_convergence_hprimme(dummy_type_hprimme *X, PRIMME_INT ldX, int givenX, dummy_type_hprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_hprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_hprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencehprimme(dummy_type_hprimme *R, PRIMME_INT ldR, dummy_type_hprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_hprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -147,8 +149,9 @@ int check_practical_convergencehprimme(dummy_type_hprimme *R, PRIMME_INT ldR, du
 int check_convergence_kprimme_normal(dummy_type_kprimme *X, PRIMME_INT ldX, int givenX, dummy_type_kprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_kprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_cprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_cprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencekprimme_normal(dummy_type_kprimme *R, PRIMME_INT ldR, dummy_type_kprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_kprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -156,8 +159,9 @@ int check_practical_convergencekprimme_normal(dummy_type_kprimme *R, PRIMME_INT 
 int check_convergence_kprimme(dummy_type_kprimme *X, PRIMME_INT ldX, int givenX, dummy_type_kprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_kprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencekprimme(dummy_type_kprimme *R, PRIMME_INT ldR, dummy_type_kprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_kprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -165,8 +169,9 @@ int check_practical_convergencekprimme(dummy_type_kprimme *R, PRIMME_INT ldR, du
 int check_convergence_sprimme(dummy_type_sprimme *X, PRIMME_INT ldX, int givenX, dummy_type_sprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_sprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_sprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencesprimme(dummy_type_sprimme *R, PRIMME_INT ldR, dummy_type_sprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_sprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -174,8 +179,9 @@ int check_practical_convergencesprimme(dummy_type_sprimme *R, PRIMME_INT ldR, du
 int check_convergence_cprimme_normal(dummy_type_cprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_cprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_cprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecprimme_normal(dummy_type_cprimme *R, PRIMME_INT ldR, dummy_type_cprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -183,8 +189,9 @@ int check_practical_convergencecprimme_normal(dummy_type_cprimme *R, PRIMME_INT 
 int check_convergence_cprimme(dummy_type_cprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecprimme(dummy_type_cprimme *R, PRIMME_INT ldR, dummy_type_cprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -192,8 +199,9 @@ int check_practical_convergencecprimme(dummy_type_cprimme *R, PRIMME_INT ldR, du
 int check_convergence_zprimme_normal(dummy_type_zprimme *X, PRIMME_INT ldX, int givenX, dummy_type_zprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_zprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
-      dummy_type_zprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_dprimme *blockNorms, dummy_type_zprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencezprimme_normal(dummy_type_zprimme *R, PRIMME_INT ldR, dummy_type_zprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_zprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_dprimme *blockNorms,
@@ -201,8 +209,9 @@ int check_practical_convergencezprimme_normal(dummy_type_zprimme *R, PRIMME_INT 
 int check_convergence_zprimme(dummy_type_zprimme *X, PRIMME_INT ldX, int givenX, dummy_type_zprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_zprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
-      dummy_type_dprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_dprimme *blockNorms, dummy_type_dprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencezprimme(dummy_type_zprimme *R, PRIMME_INT ldR, dummy_type_zprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_zprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_dprimme *blockNorms,
@@ -210,8 +219,9 @@ int check_practical_convergencezprimme(dummy_type_zprimme *R, PRIMME_INT ldR, du
 int check_convergence_magma_hprimme(dummy_type_magma_hprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_hprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_magma_hprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_magma_hprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencemagma_hprimme(dummy_type_magma_hprimme *R, PRIMME_INT ldR, dummy_type_magma_hprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_magma_hprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -219,8 +229,9 @@ int check_practical_convergencemagma_hprimme(dummy_type_magma_hprimme *R, PRIMME
 int check_convergence_magma_kprimme_normal(dummy_type_magma_kprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_kprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_magma_kprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_magma_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_cprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_cprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencemagma_kprimme_normal(dummy_type_magma_kprimme *R, PRIMME_INT ldR, dummy_type_magma_kprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_magma_kprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -228,8 +239,9 @@ int check_practical_convergencemagma_kprimme_normal(dummy_type_magma_kprimme *R,
 int check_convergence_magma_kprimme(dummy_type_magma_kprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_kprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_magma_kprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_magma_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencemagma_kprimme(dummy_type_magma_kprimme *R, PRIMME_INT ldR, dummy_type_magma_kprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_magma_kprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -237,8 +249,9 @@ int check_practical_convergencemagma_kprimme(dummy_type_magma_kprimme *R, PRIMME
 int check_convergence_magma_sprimme(dummy_type_magma_sprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_sprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_magma_sprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_magma_sprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencemagma_sprimme(dummy_type_magma_sprimme *R, PRIMME_INT ldR, dummy_type_magma_sprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_magma_sprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -246,8 +259,9 @@ int check_practical_convergencemagma_sprimme(dummy_type_magma_sprimme *R, PRIMME
 int check_convergence_magma_cprimme_normal(dummy_type_magma_cprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_cprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_magma_cprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_magma_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_cprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_cprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencemagma_cprimme_normal(dummy_type_magma_cprimme *R, PRIMME_INT ldR, dummy_type_magma_cprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_magma_cprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -255,8 +269,9 @@ int check_practical_convergencemagma_cprimme_normal(dummy_type_magma_cprimme *R,
 int check_convergence_magma_cprimme(dummy_type_magma_cprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_cprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_magma_cprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_magma_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencemagma_cprimme(dummy_type_magma_cprimme *R, PRIMME_INT ldR, dummy_type_magma_cprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_magma_cprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -264,8 +279,9 @@ int check_practical_convergencemagma_cprimme(dummy_type_magma_cprimme *R, PRIMME
 int check_convergence_magma_dprimme(dummy_type_magma_dprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_dprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_magma_dprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_magma_dprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_dprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
-      dummy_type_dprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_dprimme *blockNorms, dummy_type_dprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencemagma_dprimme(dummy_type_magma_dprimme *R, PRIMME_INT ldR, dummy_type_magma_dprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_magma_dprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_dprimme *blockNorms,
@@ -273,8 +289,9 @@ int check_practical_convergencemagma_dprimme(dummy_type_magma_dprimme *R, PRIMME
 int check_convergence_magma_zprimme_normal(dummy_type_magma_zprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_zprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_magma_zprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_magma_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
-      dummy_type_zprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_dprimme *blockNorms, dummy_type_zprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencemagma_zprimme_normal(dummy_type_magma_zprimme *R, PRIMME_INT ldR, dummy_type_magma_zprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_magma_zprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_dprimme *blockNorms,
@@ -282,8 +299,9 @@ int check_practical_convergencemagma_zprimme_normal(dummy_type_magma_zprimme *R,
 int check_convergence_magma_zprimme(dummy_type_magma_zprimme *X, PRIMME_INT ldX, int givenX, dummy_type_magma_zprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_magma_zprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_magma_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
-      dummy_type_dprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_dprimme *blockNorms, dummy_type_dprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencemagma_zprimme(dummy_type_magma_zprimme *R, PRIMME_INT ldR, dummy_type_magma_zprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_magma_zprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_dprimme *blockNorms,
@@ -291,8 +309,9 @@ int check_practical_convergencemagma_zprimme(dummy_type_magma_zprimme *R, PRIMME
 int check_convergence_cublas_hprimme(dummy_type_cublas_hprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cublas_hprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cublas_hprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cublas_hprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecublas_hprimme(dummy_type_cublas_hprimme *R, PRIMME_INT ldR, dummy_type_cublas_hprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cublas_hprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -300,8 +319,9 @@ int check_practical_convergencecublas_hprimme(dummy_type_cublas_hprimme *R, PRIM
 int check_convergence_cublas_kprimme_normal(dummy_type_cublas_kprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cublas_kprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cublas_kprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cublas_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_cprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_cprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecublas_kprimme_normal(dummy_type_cublas_kprimme *R, PRIMME_INT ldR, dummy_type_cublas_kprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cublas_kprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -309,8 +329,9 @@ int check_practical_convergencecublas_kprimme_normal(dummy_type_cublas_kprimme *
 int check_convergence_cublas_kprimme(dummy_type_cublas_kprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cublas_kprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cublas_kprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cublas_kprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecublas_kprimme(dummy_type_cublas_kprimme *R, PRIMME_INT ldR, dummy_type_cublas_kprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cublas_kprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -318,8 +339,9 @@ int check_practical_convergencecublas_kprimme(dummy_type_cublas_kprimme *R, PRIM
 int check_convergence_cublas_sprimme(dummy_type_cublas_sprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cublas_sprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cublas_sprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cublas_sprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_sprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecublas_sprimme(dummy_type_cublas_sprimme *R, PRIMME_INT ldR, dummy_type_cublas_sprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cublas_sprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -327,8 +349,9 @@ int check_practical_convergencecublas_sprimme(dummy_type_cublas_sprimme *R, PRIM
 int check_convergence_cublas_cprimme_normal(dummy_type_cublas_cprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cublas_cprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cublas_cprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cublas_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_cprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_cprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecublas_cprimme_normal(dummy_type_cublas_cprimme *R, PRIMME_INT ldR, dummy_type_cublas_cprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cublas_cprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -336,8 +359,9 @@ int check_practical_convergencecublas_cprimme_normal(dummy_type_cublas_cprimme *
 int check_convergence_cublas_cprimme(dummy_type_cublas_cprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cublas_cprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cublas_cprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cublas_cprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_cprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_sprimme *blockNorms,
-      dummy_type_sprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_sprimme *blockNorms, dummy_type_sprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecublas_cprimme(dummy_type_cublas_cprimme *R, PRIMME_INT ldR, dummy_type_cublas_cprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cublas_cprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_sprimme *blockNorms,
@@ -345,8 +369,9 @@ int check_practical_convergencecublas_cprimme(dummy_type_cublas_cprimme *R, PRIM
 int check_convergence_cublas_dprimme(dummy_type_cublas_dprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cublas_dprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cublas_dprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cublas_dprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_dprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
-      dummy_type_dprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_dprimme *blockNorms, dummy_type_dprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecublas_dprimme(dummy_type_cublas_dprimme *R, PRIMME_INT ldR, dummy_type_cublas_dprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cublas_dprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_dprimme *blockNorms,
@@ -354,8 +379,9 @@ int check_practical_convergencecublas_dprimme(dummy_type_cublas_dprimme *R, PRIM
 int check_convergence_cublas_zprimme_normal(dummy_type_cublas_zprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cublas_zprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cublas_zprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cublas_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
-      dummy_type_zprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_dprimme *blockNorms, dummy_type_zprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecublas_zprimme_normal(dummy_type_cublas_zprimme *R, PRIMME_INT ldR, dummy_type_cublas_zprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cublas_zprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_dprimme *blockNorms,
@@ -363,8 +389,9 @@ int check_practical_convergencecublas_zprimme_normal(dummy_type_cublas_zprimme *
 int check_convergence_cublas_zprimme(dummy_type_cublas_zprimme *X, PRIMME_INT ldX, int givenX, dummy_type_cublas_zprimme *R,
       PRIMME_INT ldR, int givenR, dummy_type_cublas_zprimme *evecs, int numLocked,
       PRIMME_INT ldevecs, dummy_type_cublas_zprimme *Bevecs, PRIMME_INT ldBevecs, dummy_type_zprimme *VtBV,
-      int ldVtBV, int left, int right, int *flags, dummy_type_dprimme *blockNorms,
-      dummy_type_dprimme *hVals, int *reset, int practConvCheck, primme_context ctx);
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      dummy_type_dprimme *blockNorms, dummy_type_dprimme *hVals, int *reset, int practConvCheck,
+      primme_context ctx);
 int check_practical_convergencecublas_zprimme(dummy_type_cublas_zprimme *R, PRIMME_INT ldR, dummy_type_cublas_zprimme *evecs,
       int evecsSize, PRIMME_INT ldevecs, dummy_type_cublas_zprimme *Bevecs, PRIMME_INT ldBevecs,
       int left, int *iev, int numToProject, int *flags, dummy_type_dprimme *blockNorms,

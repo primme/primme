@@ -86,8 +86,9 @@ TEMPLATE_PLEASE
 int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       PRIMME_INT ldR, int givenR, SCALAR *evecs, int numLocked,
       PRIMME_INT ldevecs, SCALAR *Bevecs, PRIMME_INT ldBevecs, HSCALAR *VtBV,
-      int ldVtBV, int left, int right, int *flags, HREAL *blockNorms,
-      HEVAL *hVals, int *reset, int practConvCheck, primme_context ctx) {
+      int ldVtBV, int left, int right, int *global_idx, int *flags,
+      HREAL *blockNorms, HEVAL *hVals, int *reset, int practConvCheck,
+      primme_context ctx) {
 
    primme_params *primme = ctx.primme;
    int i;                  /* Loop variable                                      */
@@ -146,6 +147,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
          continue;
       }
 
+      isConv = global_idx ? global_idx[i - left] : numLocked + i;
       CHKERR(convTestFun_Sprimme(hVals[i], X ? &X[ldX * (i - left)] : NULL,
             givenX, blockNorms[i - left], &isConv, ctx));
 
@@ -200,7 +202,6 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
    CHKERR(Num_free_iprimme(toProject, ctx));
 
    return 0;
-
 }
 
 /*******************************************************************************

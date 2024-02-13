@@ -765,11 +765,12 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                            sqrt(max(blockNorms[i] * blockNorms[i] -
                                           normRlockedi * (1. + normXx),
                                  0.0));
+                     int global_idx = numLocked + basisSize + i;
                      CHKERR(check_convergence_Sprimme(&V[(basisSize + i) * ldV],
                            ldV, 1 /* given X */, NULL, 0, 0 /* not given R */,
                            evecs, numLocked, ldevecs, Bevecs, ldBevecs, VtBV,
-                           ldVtBV, 0, 1, &flags[iev[i]], &newBlockNorm,
-                           &hVals[iev[i]], &reset,
+                           ldVtBV, 0, 1, &global_idx, &flags[iev[i]],
+                           &newBlockNorm, &hVals[iev[i]], &reset,
                            -1 /* don't check practically convergence */, ctx));
                      basisNorms[iev[i]] = newBlockNorm;
                      if (flags[iev[i]] == CONVERGED) {
@@ -1486,6 +1487,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    HEVAL *hValsBlock;      /* contiguous copy of the hVals to be tested */
    HSCALAR *hVecsBlock;    /* contiguous copy of the hVecs columns to be tested */     
    int *flagsBlock;        /* contiguous copy of the flags to be tested */
+   int *global_idx;        /* contiguous copy of the flags to be tested */
    HEVAL *hValsBlock0;     /* workspace for hValsBlock */
    HSCALAR *hVecsBlock0;   /* workspace for hVecsBlock */
    HREAL *XNorms=NULL;     /* 2-norm of V*hVecs */
@@ -1496,6 +1498,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          maxBlockSize, &hValsBlock0, ctx));
    CHKERR(Num_malloc_SHprimme(ldhVecs*maxBlockSize, &hVecsBlock0, ctx));
    CHKERR(Num_malloc_iprimme(maxBlockSize, &flagsBlock, ctx));
+   CHKERR(Num_malloc_iprimme(maxBlockSize, &global_idx, ctx));
    if (primme->massMatrixMatvec) {
       CHKERR(Num_malloc_RHprimme(maxBlockSize, &XNorms, ctx));
    }
@@ -1533,12 +1536,14 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    *recentlyConverged = 0;
    while (1) {
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
-      for (i=*blockSize; i<blockNormsSize; i++)
+      for (i = *blockSize; i < blockNormsSize; i++) {
          flagsBlock[i-*blockSize] = flags[iev[i]];
+         global_idx[i - *blockSize] = numLocked + iev[i];
+      }
       CHKERR(check_convergence_Sprimme(X ? &X[(*blockSize) * ldV] : NULL, ldV,
             computeXR, R ? &R[(*blockSize) * ldW] : NULL, ldW, computeXR, evecs,
             numLocked, ldevecs, Bevecs, ldBevecs, VtBV, ldVtBV, 0,
-            blockNormsSize, flagsBlock,
+            blockNormsSize, global_idx, flagsBlock,
             blockNorms ? &blockNorms[*blockSize] : NULL, hValsBlock, reset,
             practConvChecking, ctx));
 
@@ -1883,8 +1888,8 @@ STATIC int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    /* Check for convergence of the residual norms. */
 
    CHKERR(check_convergence_Sprimme(V, ldV, 1 /* given X */, W, ldW,
-         1 /* R given */, NULL, 0, 0, NULL, 0, NULL, 0, 0, basisSize, flags,
-         resNorms, hVals, NULL, 0, ctx));
+         1 /* R given */, NULL, 0, 0, NULL, 0, NULL, 0, 0, basisSize, NULL,
+         flags, resNorms, hVals, NULL, 0, ctx));
 
    /* Return the number of consecutive pairs converged  */
 

@@ -955,7 +955,7 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
    permute_vecs_iprimme(flags, basisSize, restartPerm, ctx);
    CHKERR(check_convergence_Sprimme(&V[ldV * left], ldV, 1 /* X given */, NULL,
          0, 0 /* R not given */, NULL, *numLocked, 0, NULL, 0, NULL, 0, left,
-         left + numPacked, flags, lockedResNorms, hVals, NULL, 0, ctx));
+         left + numPacked, NULL, flags, lockedResNorms, hVals, NULL, 0, ctx));
 
    /* -------------------------------------------------------------- */
    /* Copy the values for the converged values into evals            */
