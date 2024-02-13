@@ -1708,6 +1708,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    CHKERR(KIND(Num_free_RHprimme, Num_free_SHprimme)(hValsBlock0, ctx));
    CHKERR(Num_free_SHprimme(hVecsBlock0, ctx));
    CHKERR(Num_free_iprimme(flagsBlock, ctx));
+   CHKERR(Num_free_iprimme(global_idx, ctx));
    CHKERR(Num_free_RHprimme(XNorms, ctx));
 
    return 0;
