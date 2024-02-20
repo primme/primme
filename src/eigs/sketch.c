@@ -139,6 +139,8 @@ int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV,
 
    primme_params *primme = ctx.primme;
  
+   double t0 = primme_wTimer();
+
    SCALAR *V_row;    /* Used to temporarily store a row in V to avoid numberous memory accesses */
    PRIMME_INT i, j;
    PRIMME_INT nnzPerCol = primme->sketchingParams.nnzPerCol;
@@ -157,6 +159,8 @@ int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV,
    /* Find the sketched basis */
    CHKERR(globalSum_Sprimme(&SV[basisSize*ldSV], blockSize*ldSV, ctx));  
  
+   if (primme) primme->stats.timeSketchMatvec += primme_wTimer() - t0;
+
    return 0;
 }
 
@@ -190,7 +194,7 @@ int sketched_residuals_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_I
 
    Num_free_Sprimme(SVhVecs, ctx);
    Num_free_Sprimme(SWhVecs, ctx);
-  
+
 return 0;
 }
 
@@ -232,6 +236,8 @@ TEMPLATE_PLEASE
 int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW, HSCALAR *hVecs, PRIMME_INT ldhVecs, HREAL *hVals, PRIMME_INT basisSize, primme_context ctx) {
 #ifdef USE_HERMITIAN
    primme_params *primme = ctx.primme;
+
+   double t0 = primme_wTimer();
 
    PRIMME_INT i; /* Loop variable */
    
@@ -333,6 +339,8 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *SW, PRIMME_INT ldSW
    CHKERR(broadcast_SHprimme(hVecs, basisSize*ldhVecs, ctx));
    CHKERR(broadcast_RHprimme(hVals, basisSize, ctx));
      
+   if (primme) primme->stats.timeSketching += primme_wTimer() - t0;
+
 return 0;
 #else
    (void)SV;

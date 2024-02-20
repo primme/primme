@@ -113,15 +113,18 @@ tags:
 # Convenient actions to build half precision (optional)
 #
 
-lib-debug-sanitize all_tests-debug-sanitize: export CFLAGS += -g -O0 -fsanitize=undefined,address
-lib-debug-sanitize all_tests-debug-sanitize: export LDFLAGS += -g -O0 -fsanitize=undefined,address
+lib-debug-sanitize all_tests-debug-sanitize: export CFLAGS += -O2 -fsanitize=undefined,address
+#lib-debug-sanitize all_tests-debug-sanitize: export CFLAGS += -g -O0 -fsanitize=undefined,address
+#lib-debug-sanitize all_tests-debug-sanitize: export LDFLAGS += -g -O0 -fsanitize=undefined,address
+lib-debug-sanitize all_tests-debug-sanitize: export LDFLAGS += -O2 -fsanitize=undefined,address
 lib-debug-sanitize: lib
 all_tests-debug-sanitize: all_tests
 
 lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export PRIMME_WITH_HALF := yes
 lib-clang-half matlab-clang-half lib-clang-half-debug matlab-clang-half-debug: export CC := clang
 lib-clang-half matlab-clang-half: export CFLAGS += -march=native -Ofast
-lib-clang-half-debug matlab-clang-half-debug: export CFLAGS := -O0 -g -fPIC
+#lib-clang-half-debug matlab-clang-half-debug: export CFLAGS := -O0 -g -fPIC
+lib-clang-half-debug matlab-clang-half-debug: export CFLAGS := -O2 -fPIC
 lib-clang-half lib-clang-half-debug: lib
 all_tests-clang-half-debug: export CC := clang
 all_tests-clang-half-debug: export CXX := clang++

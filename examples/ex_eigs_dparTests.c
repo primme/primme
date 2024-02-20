@@ -127,8 +127,8 @@ int main (int argc, char *argv[]) {
    primme.eps = 1e-1;      /* ||r|| <= eps * ||matrix|| */
    primme.aNorm = 1.0;
    primme.target = primme_largest;
-   primme.maxMatvecs = 1000;
-   primme.maxOuterIterations = 1000;
+   //primme.maxMatvecs = 1000;
+   //primme.maxOuterIterations = 1000;
 
    primme.dynamicMethodSwitch = 0;
    primme.expansionParams.expansion = primme_expansion_davidson;
@@ -238,15 +238,14 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
       fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
-      fprintf(primme.outputFile, "Elapsed Time    : %-22.10E\n", primme.stats.elapsedTime);
-      fprintf(primme.outputFile, "MatVec Time     : %-22.10E\n", primme.stats.timeMatvec);
-      fprintf(primme.outputFile, "Precond Time    : %-22.10E\n", primme.stats.timePrecond);
-      fprintf(primme.outputFile, "Ortho Time      : %-22.10E\n", primme.stats.timeOrtho);
-      fprintf(primme.outputFile, "GlobalSum Time  : %-22.10E\n", primme.stats.timeGlobalSum);
-      fprintf(primme.outputFile, "Broadcast Time  : %-22.10E\n", primme.stats.timeBroadcast);
-      fprintf(primme.outputFile, "Krylov Time     : %-22.10E\n", primme.stats.timeKrylov);
-      fprintf(primme.outputFile, "Sketching Time  : %-22.10E\n", primme.stats.timeSketching);
-      fprintf(primme.outputFile, "Residual Time   : %-22.10E\n", primme.stats.timeResiduals);
+      fprintf(primme.outputFile, "Elapsed Time        : %-22.10E\n", primme.stats.elapsedTime);
+      fprintf(primme.outputFile, "MatVec Time         : %-22.10E\n", primme.stats.timeMatvec);
+      fprintf(primme.outputFile, "Precond Time        : %-22.10E\n", primme.stats.timePrecond);
+      fprintf(primme.outputFile, "Ortho Time          : %-22.10E\n", primme.stats.timeOrtho);
+      fprintf(primme.outputFile, "GlobalSum Time      : %-22.10E\n", primme.stats.timeGlobalSum);
+      fprintf(primme.outputFile, "Broadcast Time      : %-22.10E\n", primme.stats.timeBroadcast);
+      fprintf(primme.outputFile, "SketchedMatvec Time : %-22.10E\n", primme.stats.timeSketchMatvec);
+      fprintf(primme.outputFile, "Sketching Time      : %-22.10E\n", primme.stats.timeSketching);
 
       if (primme.stats.lockingIssue) {
          fprintf(primme.outputFile, "\nA locking problem has occurred.\n");

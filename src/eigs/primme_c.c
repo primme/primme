@@ -660,7 +660,7 @@ STATIC void default_monitor(void *basisEvals_, int *basisSize, int *basisFlags,
 #endif
 
                      (double)basisNorms[iblock[i]]);
-            }
+            } 
          }
          break;
       case primme_event_inner_iteration:

@@ -115,56 +115,28 @@ typedef struct {
 #if 0
 STATIC void displayModel(primme_CostModel *model);
 #endif
+
 TEMPLATE_PLEASE
-int Num_compute_resNorms_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
-      SCALAR *hVecs, SCALAR *hVals, PRIMME_INT basisSize, SCALAR *resNorms, 
-      PRIMME_INT num_resNorms, primme_context ctx) {
+int print_timings_Sprimme(primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
-   int i;      /* Loop variable */
-   SCALAR *VhVecs;
-   SCALAR *WhVecs;
-   SCALAR *residuals;
-   SCALAR *VhVecs_norms;
+   printf("Iterations: %-" PRIMME_INT_P "\n", primme->stats.numOuterIterations); 
+   printf("Restarts  : %-" PRIMME_INT_P "\n", primme->stats.numRestarts);
+   printf("Matvecs   : %-" PRIMME_INT_P "\n", primme->stats.numMatvecs);
+   printf("Preconds  : %-" PRIMME_INT_P "\n", primme->stats.numPreconds);
+   printf("Elapsed Time        : %-22.10E\n", primme->stats.elapsedTime);
+   printf("MatVec Time         : %-22.10E\n", primme->stats.timeMatvec);
+   printf("Precond Time        : %-22.10E\n", primme->stats.timePrecond);
+   printf("Ortho Time          : %-22.10E\n", primme->stats.timeOrtho);
+   printf("GlobalSum Time      : %-22.10E\n", primme->stats.timeGlobalSum);
+   printf("Broadcast Time      : %-22.10E\n", primme->stats.timeBroadcast);
+   printf("SketchedMatvec Time : %-22.10E\n", primme->stats.timeSketchMatvec);
+   printf("Sketching Time      : %-22.10E\n", primme->stats.timeSketching);
 
-   CHKERR(Num_malloc_Sprimme(ldV*num_resNorms, &VhVecs, ctx));
-   CHKERR(Num_malloc_Sprimme(ldW*num_resNorms, &WhVecs, ctx));
-   CHKERR(Num_malloc_Sprimme(ldW*num_resNorms, &residuals, ctx));
-   CHKERR(Num_malloc_Sprimme(num_resNorms, &VhVecs_norms, ctx));
-
-   // VhVecs = V * hVecs
-   CHKERR(Num_gemm_Sprimme("N", "N", ldV, num_resNorms, basisSize, 1.0, V, ldV, hVecs, primme->maxBasisSize, 0.0, VhVecs, ldV, ctx));
-   CHKERR(Num_gemm_Sprimme("N", "N", ldW, num_resNorms, basisSize, 1.0, W, ldW, hVecs, primme->maxBasisSize, 0.0, WhVecs, ldW, ctx));
-
-   // Compute vecnorm(VhVecs)
-   for(i = 0; i < num_resNorms; i++) VhVecs_norms[i] = sqrt(REAL_PART(Num_dot_Sprimme(ldV, &VhVecs[i*ldV], 1, &VhVecs[i*ldV], 1, ctx)));
-   CHKERR(globalSum_Sprimme(VhVecs_norms, num_resNorms, ctx));
-
-   // VhVecs * Eval
-   for(i = 0; i < num_resNorms; i++) CHKERR(Num_scal_Sprimme(ldV, hVals[i], &VhVecs[i*ldV], 1, ctx));
-
-   // R = W*hVecs - V*hVecs*Evals
-   CHKERR(Num_copy_matrix_Sprimme(WhVecs, ldW, num_resNorms, ldW, residuals, ldW, ctx));
-   CHKERR(Num_axpy_Sprimme(max(ldV, ldW)*num_resNorms, -1.0, VhVecs, 1, residuals, 1, ctx));
-
-   // resNorms = sqrt(dot(R, R))/VhVecs_norms
-   for(i = 0; i < num_resNorms; i++) resNorms[i] = sqrt(REAL_PART(Num_dot_Sprimme(ldV, &VhVecs[i*ldV], 1, &VhVecs[i*ldV], 1, ctx)));  
-   CHKERR(globalSum_Sprimme(resNorms, num_resNorms, ctx));
-
-   // Report resNorms
-   for(i = 0; i < num_resNorms; i++) {
-      printf("Resnorm[%d] = %E, VhVecs_norms[%d] = %E, hVals[%d] = %E\n", i, resNorms[i], i, VhVecs_norms[i], i, hVals[i]);
-      resNorms[i] = resNorms[i]/VhVecs_norms[i];
-   }
-
-   CHKERR(Num_free_Sprimme(VhVecs, ctx));
-   CHKERR(Num_free_Sprimme(WhVecs, ctx));
-   CHKERR(Num_free_Sprimme(residuals, ctx));
-   CHKERR(Num_free_Sprimme(VhVecs_norms, ctx));
-
-return 0;
+   return 0;
 }
+
 
 /******************************************************************************
  * Subroutine main_iter - This routine implements a more general, parallel, 
@@ -430,6 +402,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.timeOrtho                     = 0.0;
    primme->stats.timeGlobalSum                 = 0.0;
    primme->stats.timeBroadcast                 = 0.0;
+   primme->stats.timeSketching                 = 0.0;
+   primme->stats.timeSketchMatvec              = 0.0;
+   primme->stats.timeResiduals                 = 0.0;
    primme->stats.timeDense                     = 0.0;
    primme->stats.estimateMinEVal               = HUGE_VAL;
    primme->stats.estimateMaxEVal               = -HUGE_VAL;
@@ -570,6 +545,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                   primme->stats.numOuterIterations < primme->maxOuterIterations) ) {
 
             primme->stats.numOuterIterations++;
+            // XXX: FOR TESTING
+            if(primme->procID == 0 && primme->stats.numOuterIterations % 100 == 0) CHKERR(print_timings_Sprimme(ctx));
 
             /* When QR are computed and there are more than one target shift, */
             /* limit blockSize and the converged values to one.               */
@@ -1684,6 +1661,8 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.timeMatvec                    = 0.0;
    primme->stats.timePrecond                   = 0.0;
    primme->stats.timeOrtho                     = 0.0;
+   primme->stats.timeSketching                 = 0.0;
+   primme->stats.timeSketchMatvec              = 0.0;
    primme->stats.timeGlobalSum                 = 0.0;
    primme->stats.timeBroadcast                 = 0.0;
    primme->stats.timeDense                     = 0.0;
@@ -1788,6 +1767,9 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
             primme->stats.numOuterIterations++;
 
+            // XXX: FOR TESTING
+            if(primme->procID == 0 && primme->stats.numOuterIterations % 100 == 0) CHKERR(print_timings_Sprimme(ctx));
+
             /* When QR are computed and there are more than one target shift, */
             /* limit blockSize and the converged values to one.               */
 
@@ -1847,20 +1829,6 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             for(i = 0; i < primme->numEvals; i++) {
                if(flags[i] == CONVERGED) numConverged++;
             }
-
-            // XXX: FOR DEBUGGING PURPOSES
-            SCALAR *new_basisNorms;
-            CHKERR(Num_malloc_Sprimme(basisSize, &new_basisNorms, ctx));            
-            CHKERR(Num_compute_resNorms_Sprimme(V, ldV, W, ldW, hVecs, hVals, basisSize, new_basisNorms, primme->numEvals, ctx));
-
-            if(primme->procID == 0){
-               printf("Eigenvalues and their residuals at basisSize %d (numConverged = %d):\n", basisSize, numConverged);
-               for(int k = 0; k < primme->numEvals; k++) printf("Eval[%d] = %E, ResNorm[%d] = %E || hVal[%d] = %E, BasisNorms[%d] (OLD) = %E, BasisNorms[%d] (NEW) = %E, Flag[%d] = %d\n", k, evals[k], k, resNorms[k], k, hVals[k], k, basisNorms[k], k, new_basisNorms[k], k, flags[k]);
-               printf("\n");
-            }
-
-            CHKERR(Num_free_Sprimme(new_basisNorms, ctx));
-            // XXX: END DEBUGGING CODE
 
             /* Report iteration */
             CHKERR(monitorFun_Sprimme(hVals, basisSize, flags, iev, blockSize,
@@ -2123,7 +2091,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
          assert(ldV == ldW); /* this function assumes ldV == ldW */
 
-         CHKERR(restart_sketched(V, ldV, W, ldW, SV, ldSV, SW, ldSW, hVecs, primme->maxBasisSize, hVals, min(basisSize, primme->minRestartSize), &basisSize, ctx));
+         CHKERR(restart_sketched(V, ldV, W, ldW, SV, ldSV, SW, ldSW, hVecs, basisSize, hVals, min(basisSize, primme->minRestartSize), &basisSize, ctx));
 
          restartsSinceReset++;
 
@@ -2207,6 +2175,9 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       CHKERR(ortho_Sprimme(V, ldV, NULL, 0, 0, basisSize-1, NULL, 0, 0, primme->nLocal, primme->iseed, ctx));   
       CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW, 0, basisSize, ctx));
+      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketched_RR_Sprimme(SV, ldSV, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
       CHKERR(verify_norms(V, ldV, W, ldW, NULL, 0, hVals,
             restartLimitReached ? primme->numEvals : numConverged, resNorms,

@@ -39,7 +39,7 @@ ifeq ($(PRIMME_WITH_MAGMA),yes)
 endif
 
 $(EXAMPLES_C): %: %.o
-	$(CLDR) -o $@ $@.o -g $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
 
 $(EXAMPLES_CXX): %: %.o
 	$(CXX) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
@@ -91,7 +91,7 @@ veryclean: clean
 	@rm -f $(EXAMPLES_C) $(EXAMPLES_F) $(EXAMPLES_CXX)
 
 ifeq ($(UNAME), FreeBSD)
-  M4 ?= m4 -g
+  M4 ?= m4 
 else
   M4 ?= m4
 endif
