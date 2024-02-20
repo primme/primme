@@ -1507,7 +1507,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    primme_params *primme = ctx.primme;
                             /* primme parameters */
-   int i;                   /* Loop variable                                 */
+   int i, j;                /* Loop variables                                */
    int blockSize;           /* Current block size                            */
    int availableBlockSize;  /* There is enough space in basis for this block */
    int basisSize;           /* Current size of the basis V                   */
@@ -1866,7 +1866,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             /* Normalize the corrections                                     */
 
             SCALAR normalize;
-            for(int j = basisSize; j < basisSize + blockSize; j++) {
+            for(j = basisSize; j < basisSize + blockSize; j++) {
                normalize = sqrt(REAL_PART(Num_dot_Sprimme(ldV, &V[ldV * j], 1, &V[ldV * j], 1, ctx)));
                CHKERR(globalSum_Sprimme(&normalize, 1, ctx));
                CHKERR(Num_scal_Sprimme(ldV, 1.0/normalize, &V[j*ldV], 1, ctx));
