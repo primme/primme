@@ -1,7 +1,7 @@
 #---------------------------------------------------------------
 #             LINKING FLAGS FOR THE TEST PROGRAMS
 # 	      in ZTEST and DTEST test directories
-#     Linking primme, BLAS/LAPACK for various architectures. 
+#     Linking primme, BLAS/LAPACK for various architectures.
 #        Makefiles in TEST must also include Make_flags
 #---------------------------------------------------------------
 
@@ -64,8 +64,8 @@ endif
 # Mac OS X
 #
 # LDFLAGS = -Wl,-framework -Wl,vecLib -m64        # Mac OS X 10.0
-# LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
-# LIBS = -lm
+LDFLAGS = -Wl,-framework -Wl,Accelerate -m64    # Mac OS X 10.3
+LIBS = -lm
 #---------------------------------------------------------------
 # Using Intel compilers
 #
@@ -73,7 +73,7 @@ endif
 #---------------------------------------------------------------
 # Sun Solaris, SunOS 5.9  using sunperf math library
 #
-# LDFLAGS = 
+# LDFLAGS =
 # LIBS = -lm -lrt -xlic_lib=sunperf
 #---------------------------------------------------------------
 # Cray
@@ -89,6 +89,6 @@ endif
 #---------------------------------------------------------------
 
 #---------------------------------------------------------------
-# Link any other sequential or parallel libraries 
+# Link any other sequential or parallel libraries
 # in the test makefiles
 #---------------------------------------------------------------

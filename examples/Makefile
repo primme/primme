@@ -46,13 +46,13 @@ endif
 
 
 $(EXAMPLES_C): %: %.o
-	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS)
 
 $(EXAMPLES_CXX): %: %.o
-	$(CXX) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(CXX) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS)
 
 $(EXAMPLES_F): % : %.o
-	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 
+	$(FLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS)
 
 .c.o:
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -c $< -o $@
@@ -102,6 +102,9 @@ ifeq ($(UNAME), FreeBSD)
 else
   M4 ?= m4
 endif
+
+ex_mine.c: ex1_c.m4
+	$(M4) ex1_c.m4 > $@
 
 ex_eigs_dseq.c: ex_c.m4
 	$(M4) ex_c.m4 > $@

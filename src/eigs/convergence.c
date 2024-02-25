@@ -51,7 +51,7 @@
 #ifdef SUPPORTED_TYPE
 
 /*******************************************************************************
- * Subroutine check_convergence - This procedure checks the block vectors for  
+ * Subroutine check_convergence - This procedure checks the block vectors for
  *    convergence.
  *
  * INPUT ARRAYS AND PARAMETERS
@@ -75,7 +75,7 @@
  * ----------------------------------
  * R              The residual vectors of the Ritz vectors in the block
  *                (this routine may remove the evecs directions in some vectors)
- * flags          Array indicating which eigenvectors have converged     
+ * flags          Array indicating which eigenvectors have converged
  *
  * OUTPUT ARRAYS AND PARAMETERS
  * ----------------------------
@@ -122,7 +122,7 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
 
    numToProject = 0;
    for (i=left; i < right; i++) {
-       
+
       /* Refine doesn't order the pairs considering closest_leq/gep. */
       /* Then ignore values so that value +-residual is completely   */
       /* outside of the desired region.                              */
@@ -148,6 +148,13 @@ int check_convergence_Sprimme(SCALAR *X, PRIMME_INT ldX, int givenX, SCALAR *R,
       }
 
       isConv = global_idx ? global_idx[i - left] : numLocked + i;
+      if (global_idx) {
+         //called from main, (prepare_cand or practical conv. Add 1 and make negative
+          isConv = -(isConv+1);
+      } else {
+         // called from restart. Just add 1 and leave it positive.
+          isConv = isConv+1;
+      }
       CHKERR(convTestFun_Sprimme(hVals[i], X ? &X[ldX * (i - left)] : NULL,
             givenX, blockNorms[i - left], &isConv, ctx));
 
@@ -265,7 +272,7 @@ STATIC int check_practical_convergence(SCALAR *R, PRIMME_INT ldR, SCALAR *evecs,
       /* ------------------------------------------------------------------ */
 
       blockNorms[iev[i]] = norms[i];
-     
+
       if (norms[i] <= tol) {
          PRINTF(5, " PRACTICALLY_CONVERGED %d norm(I-BQQt)r %e",
                left + iev[i], (double)blockNorms[i]);

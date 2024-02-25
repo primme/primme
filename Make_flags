@@ -26,39 +26,39 @@ SOLIBRARY = libprimme.$(SLIB)
 #---------------------------------------------------------------
 # POSIX systems (e.g., Linux, MinGW, Cygwin)
 #---------------------------------------------------------------
-CC       ?= cc
-F77      := gfortran
-FC       := gfortran
-DEFINES  ?= -DF77UNDERSCORE 
-CFLAGS   ?= -O -fPIC -DNDEBUG
-FFLAGS   ?= -fno-second-underscore -O
-PRIMME_WITH_HALF ?= no
-ifeq ($(PRIMME_WITH_HALF), yes)
-    CFLAGS += -DPRIMME_WITH_HALF
-endif
-PRIMME_WITH_FLOAT ?= yes
-ifneq ($(PRIMME_WITH_FLOAT), yes)
-    CFLAGS += -DPRIMME_WITHOUT_FLOAT
-endif
+# CC       ?= cc
+# F77      := gfortran
+# FC       := gfortran
+# DEFINES  ?= -DF77UNDERSCORE
+# CFLAGS   ?= -O -fPIC -DNDEBUG
+# FFLAGS   ?= -fno-second-underscore -O
+# PRIMME_WITH_HALF ?= no
+# ifeq ($(PRIMME_WITH_HALF), yes)
+#     CFLAGS += -DPRIMME_WITH_HALF
+# endif
+# PRIMME_WITH_FLOAT ?= yes
+# ifneq ($(PRIMME_WITH_FLOAT), yes)
+#     CFLAGS += -DPRIMME_WITHOUT_FLOAT
+# endif
 
 
 # GPUs compiler flags
 #---------------------------------------------------------------
 # MAGMADIR = /usr/local/magma-2.5.0
-PRIMME_WITH_MAGMA ?= $(if $(findstring undefined,$(origin MAGMADIR)),no,yes)
-# CUDADIR  ?= /usr/local/cuda
-PRIMME_WITH_CUDA ?= $(if $(findstring undefined,$(origin CUDADIR)),no,yes)
-ifeq ($(PRIMME_WITH_CUDA), yes)
-    ifeq ($(PRIMME_WITH_MAGMA), yes)
-        override CFLAGS += -I$(MAGMADIR)/include -DPRIMME_WITH_MAGMA
-    endif
-    override CFLAGS += -I$(CUDADIR)/include -DPRIMME_WITH_CUBLAS
-endif
-# ROCMDIR ?= $(shell hipconfig -R)
-PRIMME_WITH_HIPBLAS ?= $(if $(findstring undefined,$(origin ROCMDIR)),no,yes)
-ifeq ($(PRIMME_WITH_HIPBLAS), yes)
-    override CFLAGS += $(shell hipconfig -C) -I$(ROCMDIR)/include -DPRIMME_WITH_HIPBLAS
-endif
+# PRIMME_WITH_MAGMA ?= $(if $(findstring undefined,$(origin MAGMADIR)),no,yes)
+# # CUDADIR  ?= /usr/local/cuda
+# PRIMME_WITH_CUDA ?= $(if $(findstring undefined,$(origin CUDADIR)),no,yes)
+# ifeq ($(PRIMME_WITH_CUDA), yes)
+#     ifeq ($(PRIMME_WITH_MAGMA), yes)
+#         override CFLAGS += -I$(MAGMADIR)/include -DPRIMME_WITH_MAGMA
+#     endif
+#     override CFLAGS += -I$(CUDADIR)/include -DPRIMME_WITH_CUBLAS
+# endif
+# # ROCMDIR ?= $(shell hipconfig -R)
+# PRIMME_WITH_HIPBLAS ?= $(if $(findstring undefined,$(origin ROCMDIR)),no,yes)
+# ifeq ($(PRIMME_WITH_HIPBLAS), yes)
+#     override CFLAGS += $(shell hipconfig -C) -I$(ROCMDIR)/include -DPRIMME_WITH_HIPBLAS
+# endif
 
 #---------------------------------------------------------------
 # IBM architectures
@@ -69,11 +69,11 @@ endif
 #FFLAGS   = -O2
 #---------------------------------------------------------------
 # Mac OS X
-#CC       = clang
-#F77      = gfortran
-#DEFINES  = -DF77UNDERSCORE 
-#CFLAGS   = -O2
-#FFLAGS   = -fno-second-underscore -O2
+CC       = clang
+F77      = gfortran
+DEFINES  = -DF77UNDERSCORE
+CFLAGS   = -O3
+FFLAGS   = -fno-second-underscore -O2
 #---------------------------------------------------------------
 # Using Intel compilers
 #CC       = icc
