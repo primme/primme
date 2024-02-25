@@ -1536,11 +1536,6 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    *recentlyConverged = 0;
    while (1) {
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
-      /* for (i = *blockSize; i < blockNormsSize; i++) { */
-      /*    flagsBlock[i-*blockSize] = flags[iev[i]]; */
-      /*    global_idx[i - *blockSize] = numLocked + iev[i]; */
-      /* } */
-      /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
       for (i = *blockSize; i < *blockSize+blockNormsSize; i++) {
          flagsBlock[i - *blockSize] = flags[iev[i]];
          global_idx[i - *blockSize] = numLocked + iev[i];
