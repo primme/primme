@@ -10,7 +10,7 @@ INCLUDE := -I../include
 FINCLUDE := -I../include
 LIBS := ../lib/libprimme.a $(LIBS)
 
-EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_eigs_zseq_normal ex_svds_dseq ex_svds_zseq
+EXAMPLES_C = ex_eigs_dseq ex_eigs_zseq ex_eigs_zseq_normal ex_svds_dseq ex_svds_zseq ex_mine
 EXAMPLES_CXX = ex_eigs_zseqxx ex_svds_zseqxx
 EXAMPLES_F = ex_eigs_dseqf77 ex_eigs_zseqf77 ex_svds_dseqf77 ex_svds_zseqf77 ex_eigs_dseqf90 ex_svds_dseqf90
 
