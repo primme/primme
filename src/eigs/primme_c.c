@@ -288,6 +288,7 @@ int wrapper_Sprimme(void *evals, void *evecs, void *resNorms,
    /* zero out the timer */
 
    double t0 = primme_wTimer();
+   primme->stats.elapsedTime = t0;  // XXX: Added this for debugging purposes - Heather
 
    /* Set some defaults for sequential programs */
 
@@ -547,6 +548,7 @@ STATIC int check_input(
       }
    }
 
+   printf("Return = %d\n", ret);
    return ret;
 }
 

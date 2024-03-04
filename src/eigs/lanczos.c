@@ -124,7 +124,7 @@ int print_lanczos_timings_Sprimme(primme_context ctx) {
    printf("Restarts  : %-" PRIMME_INT_P "\n", primme->stats.numRestarts);
    printf("Matvecs   : %-" PRIMME_INT_P "\n", primme->stats.numMatvecs);
    printf("Preconds  : %-" PRIMME_INT_P "\n", primme->stats.numPreconds);
-   printf("Elapsed Time        : %-22.10E\n", primme->stats.elapsedTime);
+   printf("Elapsed Time        : %-22.10E\n", primme_wTimer() - primme->stats.elapsedTime);
    printf("MatVec Time         : %-22.10E\n", primme->stats.timeMatvec);
    printf("Precond Time        : %-22.10E\n", primme->stats.timePrecond);
    printf("Ortho Time          : %-22.10E\n", primme->stats.timeOrtho);
@@ -390,7 +390,6 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          } /* End non-sketching */
 
          /* Check how many pairs have converged basis in approximate residual */
-         numConverged = 0;
          for(j = 0; j < primme->numEvals; j++) {
             if(j < numEvals) {
                resNorms[j] = fabs(H[(i-blockSize)*ldH + i]*hVecs[(i+blockSize)*j+(i+blockSize)-1]);
@@ -398,16 +397,18 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                resNorms[j] = 1.0;
             }
          }
+         numConverged = 0;
          CHKERR(globalSum_Rprimme(resNorms, numEvals, ctx));
-         if(resNorms[j] < primme->aNorm*primme->eps) numConverged++;
+         for(j = 0; j < primme->numEvals; j++) if(resNorms[j] < primme->aNorm*primme->eps) numConverged++;
 
          /* FOR TESTING: Print residual information */
          if(primme->procID == 0){
+            printf("BasisSize %ld: NumConverged = %d, Convergence Tolerance = %.6E (%.6E x %.6E)\n", i+blockSize, numConverged, primme->aNorm*primme->eps, primme->aNorm, primme->eps);
             for(j = 0; j < primme->numEvals; j++){
                if(j < numEvals) {
-                  printf("Iteration %ld Eval[%ld] = %lf, ResNorm[%ld] = %.6E\n", i, j, hVals[j], j, resNorms[j]);
+                  printf("BasisSize %ld Eval[%ld] = %lf, ResNorm[%ld] = %.6E\n", i+blockSize, j, hVals[j], j, resNorms[j]);
                } else {
-                  printf("Iteration %ld Eval[%ld] = %lf, ResNorm[%ld] = %.6E\n", i, j, 0.0, j, 0.0);
+                  printf("BasisSize %ld Eval[%ld] = %lf, ResNorm[%ld] = %.6E\n", i+blockSize, j, 0.0, j, 0.0);
                }
             }
          }
@@ -456,7 +457,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       primme->stats.numOuterIterations++;
 
       //Report timings
-      if(primme->procID == 0 && primme->stats.numOuterIterations % 100 == 0) CHKERR(print_lanczos_timings_Sprimme(ctx));
+      if(primme->procID == 0 && (primme->stats.numOuterIterations % 100 == 0 || i % 100 == 0)) CHKERR(print_lanczos_timings_Sprimme(ctx));
 
    } /* End basis build */
 

@@ -122,7 +122,7 @@ int main (int argc, char *argv[]) {
    primme.numEvals = 10;   /* Number of wanted eigenpairs */
    primme.maxBlockSize = 1;
    primme.printLevel = 4;
-   primme.minRestartSize = 10;
+   //primme.minRestartSize = 10;
    primme.locking = 0;
    primme.eps = 1e-1;      /* ||r|| <= eps * ||matrix|| */
    primme.aNorm = 1.0;

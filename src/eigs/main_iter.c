@@ -125,7 +125,7 @@ int print_timings_Sprimme(primme_context ctx) {
    printf("Restarts  : %-" PRIMME_INT_P "\n", primme->stats.numRestarts);
    printf("Matvecs   : %-" PRIMME_INT_P "\n", primme->stats.numMatvecs);
    printf("Preconds  : %-" PRIMME_INT_P "\n", primme->stats.numPreconds);
-   printf("Elapsed Time        : %-22.10E\n", primme->stats.elapsedTime);
+   printf("Elapsed Time        : %-22.10E\n", primme_wTimer() - primme->stats.elapsedTime);
    printf("MatVec Time         : %-22.10E\n", primme->stats.timeMatvec);
    printf("Precond Time        : %-22.10E\n", primme->stats.timePrecond);
    printf("Ortho Time          : %-22.10E\n", primme->stats.timeOrtho);
