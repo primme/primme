@@ -204,6 +204,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    *ret = PRIMME_MAIN_ITER_FAILURE;
 
    primme_params *primme = ctx.primme;
+   primme->stats.elapsedTime = primme_wTimer();  // XXX: Added this for debugging purposes - Heather
                             /* primme parameters */
    int i;                   /* Loop variable                                 */
    int blockSize;           /* Current block size                            */
@@ -1506,6 +1507,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    *ret = PRIMME_MAIN_ITER_FAILURE;
 
    primme_params *primme = ctx.primme;
+   primme->stats.elapsedTime = primme_wTimer();  // XXX: Added this for debugging purposes - Heather
                             /* primme parameters */
    int i, j;                /* Loop variables                                */
    int blockSize;           /* Current block size                            */
