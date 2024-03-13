@@ -547,7 +547,6 @@ STATIC int check_input(
       }
    }
 
-   printf("Return = %d\n", ret);
    return ret;
 }
 
