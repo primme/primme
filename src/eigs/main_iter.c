@@ -125,7 +125,7 @@ int print_timings_Sprimme(primme_context ctx) {
    printf("Restarts  : %-" PRIMME_INT_P "\n", primme->stats.numRestarts);
    printf("Matvecs   : %-" PRIMME_INT_P "\n", primme->stats.numMatvecs);
    printf("Preconds  : %-" PRIMME_INT_P "\n", primme->stats.numPreconds);
-   printf("Elapsed Time        : %-22.10E\n", primme_wTimer() - primme->stats.elapsedTime);
+   printf("Elapsed Time        : %-22.10E\n", primme->stats.elapsedTime);
    printf("MatVec Time         : %-22.10E\n", primme->stats.timeMatvec);
    printf("Precond Time        : %-22.10E\n", primme->stats.timePrecond);
    printf("Ortho Time          : %-22.10E\n", primme->stats.timeOrtho);
@@ -204,7 +204,10 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    *ret = PRIMME_MAIN_ITER_FAILURE;
 
    primme_params *primme = ctx.primme;
-   primme->stats.elapsedTime = primme_wTimer();  // XXX: Added this for debugging purposes - Heather
+
+   double elapsed_time = primme_wTimer();
+   primme->stats.elapsedTime = 0.0;  // XXX: Added this for debugging purposes - Heather
+
                             /* primme parameters */
    int i;                   /* Loop variable                                 */
    int blockSize;           /* Current block size                            */
@@ -547,7 +550,10 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
             primme->stats.numOuterIterations++;
             // XXX: FOR TESTING
-            if(primme->procID == 0 && primme->stats.numOuterIterations % 100 == 0) CHKERR(print_timings_Sprimme(ctx));
+            if(primme->procID == 0 && primme->stats.numOuterIterations % 100 == 0){
+               primme->stats.elapsedTime = primme_wTimer() - elapsed_time;
+               CHKERR(print_timings_Sprimme(ctx));
+            }
 
             /* When QR are computed and there are more than one target shift, */
             /* limit blockSize and the converged values to one.               */
@@ -1507,7 +1513,9 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    *ret = PRIMME_MAIN_ITER_FAILURE;
 
    primme_params *primme = ctx.primme;
-   primme->stats.elapsedTime = primme_wTimer();  // XXX: Added this for debugging purposes - Heather
+   double elapsed_time = primme_wTimer();
+   primme->stats.elapsedTime = 0.0;  // XXX: Added this for debugging purposes - Heather
+
                             /* primme parameters */
    int i, j;                /* Loop variables                                */
    int blockSize;           /* Current block size                            */
@@ -1770,7 +1778,10 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             primme->stats.numOuterIterations++;
 
             // XXX: FOR TESTING
-            if(primme->procID == 0 && primme->stats.numOuterIterations % 100 == 0) CHKERR(print_timings_Sprimme(ctx));
+            if(primme->procID == 0 && primme->stats.numOuterIterations % 100 == 0){
+               primme->stats.elapsedTime = primme_wTimer() - elapsed_time;  // XXX: Added this for debugging purposes - Heather
+               CHKERR(print_timings_Sprimme(ctx));
+            }
 
             /* When QR are computed and there are more than one target shift, */
             /* limit blockSize and the converged values to one.               */
