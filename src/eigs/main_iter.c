@@ -117,10 +117,11 @@ STATIC void displayModel(primme_CostModel *model);
 #endif
 
 TEMPLATE_PLEASE
-int print_timings_Sprimme(primme_context ctx) {
+int print_timings_Sprimme(PRIMME_INT basisSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
+   printf("Basis size: %-" PRIMME_INT_P "\n", basisSize); 
    printf("Iterations: %-" PRIMME_INT_P "\n", primme->stats.numOuterIterations); 
    printf("Restarts  : %-" PRIMME_INT_P "\n", primme->stats.numRestarts);
    printf("Matvecs   : %-" PRIMME_INT_P "\n", primme->stats.numMatvecs);
@@ -132,7 +133,9 @@ int print_timings_Sprimme(primme_context ctx) {
    printf("GlobalSum Time      : %-22.10E\n", primme->stats.timeGlobalSum);
    printf("Broadcast Time      : %-22.10E\n", primme->stats.timeBroadcast);
    printf("SketchedMatvec Time : %-22.10E\n", primme->stats.timeSketchMatvec);
-   printf("Sketching Time      : %-22.10E\n", primme->stats.timeSketching);
+   printf("Rayleigh-Ritz Time  : %-22.10E\n", primme->stats.timeRR);
+   printf("Stabilization Time  : %-22.10E\n", primme->stats.timeStabilization);
+   printf("Residual Time       : %-22.10E\n", primme->stats.timeResiduals);
 
    return 0;
 }
@@ -206,6 +209,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme_params *primme = ctx.primme;
 
    double elapsed_time = primme_wTimer();
+   double solve_timer;
    primme->stats.elapsedTime = 0.0;  // XXX: Added this for debugging purposes - Heather
 
                             /* primme parameters */
@@ -406,8 +410,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.timeOrtho                     = 0.0;
    primme->stats.timeGlobalSum                 = 0.0;
    primme->stats.timeBroadcast                 = 0.0;
-   primme->stats.timeSketching                 = 0.0;
+   primme->stats.timeRR                        = 0.0;
    primme->stats.timeSketchMatvec              = 0.0;
+   primme->stats.timeStabilization             = 0.0;
    primme->stats.timeResiduals                 = 0.0;
    primme->stats.timeDense                     = 0.0;
    primme->stats.estimateMinEVal               = HUGE_VAL;
@@ -506,6 +511,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             basisSize, 0 /*unsymmetric*/, ctx));
       }
 
+      
+      solve_timer = primme_wTimer(); // XXX: Debugging
       CHKERR(solve_H_SHprimme(H, basisSize, primme->maxBasisSize,
             VtBV
                   ? &VtBV[(primme->numOrthoConst + numLocked) * ldVtBV +
@@ -514,6 +521,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             ldVtBV, R, primme->maxBasisSize, QtV, primme->maxBasisSize, QtQ,
             ldQtQ, hU, basisSize, hVecs, basisSize, hVals, hSVals,
             numConverged, ctx));
+      primme->stats.timeRR += primme_wTimer() - solve_timer;
 
       numArbitraryVecs = 0;
       maxRecentlyConverged = availableBlockSize = blockSize = 0;
@@ -552,7 +560,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             // XXX: FOR TESTING
             if(primme->procID == 0 && primme->stats.numOuterIterations % 100 == 0){
                primme->stats.elapsedTime = primme_wTimer() - elapsed_time;
-               CHKERR(print_timings_Sprimme(ctx));
+               CHKERR(print_timings_Sprimme(basisSize, ctx));
             }
 
             /* When QR are computed and there are more than one target shift, */
@@ -874,6 +882,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             basisSize += blockSize;
             blockSize = 0;
 
+            solve_timer = primme_wTimer();
             CHKERR(solve_H_SHprimme(H, basisSize, primme->maxBasisSize,
                   VtBV
                         ? &VtBV[(primme->numOrthoConst + numLocked) * ldVtBV +
@@ -882,6 +891,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                   ldVtBV, R, primme->maxBasisSize, QtV, primme->maxBasisSize,
                   QtQ, ldQtQ, hU, basisSize, hVecs, basisSize, hVals, hSVals,
                   numConverged, ctx));
+            primme->stats.timeRR += primme_wTimer() - solve_timer;
 
             numArbitraryVecs = 0;
             candidates_prepared = 0;
@@ -1193,6 +1203,8 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      primme->maxBasisSize, primme->nLocal, basisSize, numNew,
                      0/*unsymmetric*/, ctx));
             basisSize += numNew;
+
+            solve_timer = primme_wTimer();
             CHKERR(solve_H_SHprimme(H, basisSize, primme->maxBasisSize,
                   VtBV
                         ? &VtBV[(primme->numOrthoConst + numLocked) * ldVtBV +
@@ -1201,6 +1213,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                   ldVtBV, R, primme->maxBasisSize, QtV, primme->maxBasisSize,
                   QtQ, ldQtQ, hU, basisSize, hVecs, basisSize, hVals,
                   hSVals, numConverged, ctx));
+            primme->stats.timeRR += primme_wTimer() - solve_timer;
          }
  
          primme->stats.numRestarts++;
@@ -1581,13 +1594,14 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    /* Variables for sketching */
    SCALAR *SV;              /* Sketched Basis vectors                     */
+   SCALAR *T;               /* The "R" factor in the QR decomposition of SV */
    SCALAR *SW;              /* Projected sketched Basis vectors           */
    SCALAR *V_temp;          /* Work array for sketching                   */
    SCALAR *S_vals;          /* Holds the nonzero entries of the sketching matrix  */
    REAL *normalize_evecs;   /* For normalizing the sketched Ritz vectors  */
    PRIMME_INT *S_rows;      /* Holds the row numbers of the nonzero entries       */
    PRIMME_INT nnzPerCol;  /* NNZ per column in the sketching matrix     */
-   PRIMME_INT ldSV, ldSW;   /* Leading dimensions of SV and SW            */
+   PRIMME_INT ldSV, ldT, ldSW;   /* Leading dimensions of SV, T, and SW   */
 
 
    /* -------------------------------------------------------------- */
@@ -1641,12 +1655,14 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    /* Allocate space for the variables needed for sketching (if needed) */
    ldSV = ldSW = primme->sketchingParams.sketchSize;
+   ldT = primme->maxBasisSize;
    nnzPerCol = primme->sketchingParams.nnzPerCol;  
    
    S_rows = (PRIMME_INT*)malloc(nnzPerCol*primme->nLocal*sizeof(PRIMME_INT));
 
    CHKERR(Num_malloc_Sprimme(primme->nLocal*nnzPerCol, &S_vals, ctx));
    CHKERR(Num_malloc_Sprimme(ldSV*primme->maxBasisSize, &SV, ctx));
+   CHKERR(Num_malloc_Sprimme(ldT*ldT, &T, ctx));
    CHKERR(Num_malloc_Sprimme(ldSW*primme->maxBasisSize, &SW, ctx));
    CHKERR(Num_malloc_Sprimme(ldV*primme->maxBasisSize, &V_temp, ctx));
 
@@ -1671,8 +1687,10 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.timeMatvec                    = 0.0;
    primme->stats.timePrecond                   = 0.0;
    primme->stats.timeOrtho                     = 0.0;
-   primme->stats.timeSketching                 = 0.0;
+   primme->stats.timeRR                        = 0.0;
    primme->stats.timeSketchMatvec              = 0.0;
+   primme->stats.timeStabilization             = 0.0;
+   primme->stats.timeResiduals                 = 0.0;
    primme->stats.timeGlobalSum                 = 0.0;
    primme->stats.timeBroadcast                 = 0.0;
    primme->stats.timeDense                     = 0.0;
@@ -1737,10 +1755,10 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       targetShiftIndex = 0;
 
-      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, 0, basisSize, S_rows, S_vals, ctx));
-      CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, 0, basisSize, S_rows, S_vals, ctx));
 
-      CHKERR(sketched_RR_Sprimme(SV, ldSV, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+      CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
       numArbitraryVecs = 0;
       maxRecentlyConverged = availableBlockSize = blockSize = 0;
@@ -1780,7 +1798,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             // XXX: FOR TESTING
             if(primme->procID == 0 && primme->stats.numOuterIterations % 100 == 0){
                primme->stats.elapsedTime = primme_wTimer() - elapsed_time;  // XXX: Added this for debugging purposes - Heather
-               CHKERR(print_timings_Sprimme(ctx));
+               CHKERR(print_timings_Sprimme(basisSize, ctx));
             }
 
             /* When QR are computed and there are more than one target shift, */
@@ -1891,8 +1909,8 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      basisSize, blockSize, ctx));
 
             /* Copy hVecs into prevhVecs */
-            CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, basisSize, blockSize, S_rows, S_vals, ctx));
-            CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, basisSize, blockSize, S_rows, S_vals, ctx));
+            CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, basisSize, blockSize, S_rows, S_vals, ctx));
+            CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, basisSize, blockSize, S_rows, S_vals, ctx));
 
             CHKERR(Num_copy_matrix_SHprimme(hVecs, basisSize, basisSize,
                   basisSize, prevhVecs, primme->maxBasisSize, ctx));
@@ -1904,7 +1922,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             basisSize += blockSize;
             blockSize = 0;
 
-            CHKERR(sketched_RR_Sprimme(SV, ldSV, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+            CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
             numArbitraryVecs = 0;
             candidates_prepared = 0;
@@ -2104,7 +2122,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
          assert(ldV == ldW); /* this function assumes ldV == ldW */
 
-         CHKERR(restart_sketched(V, ldV, W, ldW, SV, ldSV, SW, ldSW, hVecs, basisSize, hVals, min(basisSize, primme->minRestartSize), &basisSize, ctx));
+         CHKERR(restart_sketched(V, ldV, W, ldW, SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, min(basisSize, primme->minRestartSize), &basisSize, S_rows, S_vals, ctx));
 
          restartsSinceReset++;
 
@@ -2144,11 +2162,11 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW,
                      basisSize, numNew, ctx));
 
-            CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, basisSize, numNew, S_rows, S_vals, ctx));
-            CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, basisSize, numNew, S_rows, S_vals, ctx));
+            CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, basisSize, numNew, S_rows, S_vals, ctx));
+            CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, basisSize, numNew, S_rows, S_vals, ctx));
 
             basisSize += numNew;
-            CHKERR(sketched_RR_Sprimme(SV, ldSV, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+            CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
          }
  
          primme->stats.numRestarts++;
@@ -2188,9 +2206,9 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       CHKERR(ortho_Sprimme(V, ldV, NULL, 0, 0, basisSize-1, NULL, 0, 0, primme->nLocal, primme->iseed, ctx));   
       CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW, 0, basisSize, ctx));
-      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, 0, basisSize, S_rows, S_vals, ctx));
-      CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, 0, basisSize, S_rows, S_vals, ctx));
-      CHKERR(sketched_RR_Sprimme(SV, ldSV, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
       CHKERR(verify_norms(V, ldV, W, ldW, NULL, 0, hVals,
             restartLimitReached ? primme->numEvals : numConverged, resNorms,
@@ -2308,6 +2326,7 @@ clean:
    CHKERR(Num_free_Rprimme(normalize_evecs, ctx));
 
    CHKERR(Num_free_Sprimme(SV, ctx));
+   CHKERR(Num_free_Sprimme(T, ctx));
    CHKERR(Num_free_Sprimme(SW, ctx));
    CHKERR(Num_free_Sprimme(S_vals, ctx));
    CHKERR(Num_free_Sprimme(V_temp, ctx));
@@ -2515,6 +2534,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             blockNorms[*blockSize] = blockNorms[blki];
             iev[*blockSize] = iev[blki];
             if (computeXR) {
+               double resid_timer = primme_wTimer();  // XXX: For monitoring
                CHKERR(Num_copy_matrix_Sprimme(&X[blki * ldV], nLocal, 1, ldV,
                      &X[(*blockSize) * ldV], ldV, ctx));
                CHKERR(Num_copy_matrix_Sprimme(&R[blki * ldW], nLocal, 1, ldW,
@@ -2523,6 +2543,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                   CHKERR(Num_copy_matrix_Sprimme(&BX[blki * ldBV], nLocal, 1,
                         ldBV, &BX[(*blockSize) * ldBV], ldBV, ctx));
                }
+               primme->stats.timeResiduals += primme_wTimer() - resid_timer;
             }
             (*blockSize)++;
          }
@@ -2565,6 +2586,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* blockNorms(basisSize:) = norms(R(basisSize:)) */
 
       assert(ldV == ldW); /* This functions only works in this way */
+      double resid_timer = primme_wTimer();
       CHKERR(Num_update_VWXR_Sprimme(V, W, BV, nLocal, basisSize, ldV,
                hVecsBlock, basisSize, ldhVecs, hValsBlock,
                X?&X[(*blockSize)*ldV]:NULL, 0, computeXR?blockNormsSize:0, ldV,
@@ -2580,6 +2602,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                NULL, 0, 0,
                XNorms?&XNorms[*blockSize]:NULL, 0, primme->massMatrixMatvec?blockNormsSize:0,
                ctx));
+      primme->stats.timeResiduals += primme_wTimer() - resid_timer;
 
       /* Don't trust residual norm smaller than the error in the residual norm */
 
@@ -2668,8 +2691,10 @@ STATIC int copy_back_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    if (primme->projectionParams.projection != primme_proj_RR &&
          primme->projectionParams.projection != primme_proj_sketched &&
          primme->numTargetShifts > numConverged) {
+      double solve_timer = primme_wTimer();
       CHKERR(solve_H_RR_SHprimme(H, ldH, VtBV, ldVtBV, hVecs, ldhVecs, hVals,
             basisSize, numConverged, ctx));
+      primme->stats.timeRR += primme_wTimer() - solve_timer;
    }
 
    int i = 0;

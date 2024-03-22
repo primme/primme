@@ -245,7 +245,9 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "GlobalSum Time      : %-22.10E\n", primme.stats.timeGlobalSum);
       fprintf(primme.outputFile, "Broadcast Time      : %-22.10E\n", primme.stats.timeBroadcast);
       fprintf(primme.outputFile, "SketchedMatvec Time : %-22.10E\n", primme.stats.timeSketchMatvec);
-      fprintf(primme.outputFile, "Sketching Time      : %-22.10E\n", primme.stats.timeSketching);
+      fprintf(primme.outputFile, "Rayleigh-Ritz Time  : %-22.10E\n", primme.stats.timeRR);
+      fprintf(primme.outputFile, "Stabilization Time  : %-22.10E\n", primme.stats.timeStabilization);
+      fprintf(primme.outputFile, "Residual Time       : %-22.10E\n", primme.stats.timeResiduals);
 
       if (primme.stats.lockingIssue) {
          fprintf(primme.outputFile, "\nA locking problem has occurred.\n");

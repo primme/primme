@@ -1773,21 +1773,22 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
  ******************************************************************************/
 
 STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV, 
-      int ldSV, SCALAR *SW, int ldSW,  HSCALAR *hVecs, int ldhVecs, HEVAL *hVals, int restartSize, 
-      int *basisSize, primme_context ctx) {
+      int ldSV, SCALAR *T, int ldT, SCALAR *SW, int ldSW,  HSCALAR *hVecs, 
+      int ldhVecs, HEVAL *hVals, int restartSize, int *basisSize, 
+      PRIMME_INT *S_rows, SCALAR *S_vals, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
    int i;          /* Loop variable                                     */
    SCALAR *V_temp;
-   SCALAR *SV_temp;
+   //SCALAR *SV_temp;
    SCALAR *VecNorms;
    SCALAR *hVecs_temp;
 
    int old_basisSize = *basisSize;
 
    CHKERR(Num_malloc_Sprimme(ldV*restartSize, &V_temp, ctx)); 
-   CHKERR(Num_malloc_Sprimme(ldSV*restartSize, &SV_temp, ctx)); 
+   //CHKERR(Num_malloc_Sprimme(ldSV*restartSize, &SV_temp, ctx)); 
    CHKERR(Num_malloc_Sprimme(restartSize, &VecNorms, ctx)); 
    CHKERR(Num_malloc_Sprimme(old_basisSize*restartSize, &hVecs_temp, ctx)); 
 
@@ -1819,14 +1820,14 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
    CHKERR(Num_free_Sprimme(V_temp, ctx));
 
    // SV = SV * hVecs
-   CHKERR(Num_gemm_SHprimme("N", "N", ldSV, restartSize, old_basisSize, 1.0, SV, ldSV, hVecs, ldhVecs, 0.0, SV_temp, ldSV, ctx));
-   CHKERR(Num_copy_matrix_Sprimme(SV_temp, ldSV, restartSize, ldSV, SV, ldSV, ctx));  // Copy the temporary matrix back into SV
+   //CHKERR(Num_gemm_SHprimme("N", "N", ldSV, restartSize, old_basisSize, 1.0, SV, ldSV, hVecs, ldhVecs, 0.0, SV_temp, ldSV, ctx));
+   //CHKERR(Num_copy_matrix_Sprimme(SV_temp, ldSV, restartSize, ldSV, SV, ldSV, ctx));  // Copy the temporary matrix back into SV
 
    // SW = SW * hVecs
    assert(ldSV == ldSW);
-   CHKERR(Num_gemm_SHprimme("N", "N", ldSV, restartSize, old_basisSize, 1.0, SW, ldSW, hVecs, ldhVecs, 0.0, SV_temp, ldSW, ctx));
-   CHKERR(Num_copy_matrix_Sprimme(SV_temp, ldSV, restartSize, ldSW, SW, ldSW, ctx));  // Copy the temporary matrix back into SW
-   CHKERR(Num_free_Sprimme(SV_temp, ctx));
+   //CHKERR(Num_gemm_SHprimme("N", "N", ldSV, restartSize, old_basisSize, 1.0, SW, ldSW, hVecs, ldhVecs, 0.0, SV_temp, ldSW, ctx));
+   //CHKERR(Num_copy_matrix_Sprimme(SV_temp, ldSV, restartSize, ldSW, SW, ldSW, ctx));  // Copy the temporary matrix back into SW
+   //CHKERR(Num_free_Sprimme(SV_temp, ctx));
 
    // Normalize the matrices
    for(i = 0; i < restartSize; i++) VecNorms[i] = sqrt(Num_dot_Sprimme(primme->nLocal, &V[i*ldV], 1, &V[i*ldV], 1, ctx));
@@ -1835,14 +1836,17 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
    for (i = 0; i < restartSize; i++) {
       CHKERR(Num_scal_Sprimme(ldV, 1.0/VecNorms[i], &V[i*ldV], 1, ctx));
       CHKERR(Num_scal_Sprimme(ldW, 1.0/VecNorms[i], &W[i*ldW], 1, ctx));
-      CHKERR(Num_scal_Sprimme(ldSV, 1.0/VecNorms[i], &SV[i*ldSV], 1, ctx));
-      CHKERR(Num_scal_Sprimme(ldSW, 1.0/VecNorms[i], &SW[i*ldSW], 1, ctx));
+      //CHKERR(Num_scal_Sprimme(ldSV, 1.0/VecNorms[i], &SV[i*ldSV], 1, ctx));
+      //CHKERR(Num_scal_Sprimme(ldSW, 1.0/VecNorms[i], &SW[i*ldSW], 1, ctx));
    }
    
    CHKERR(Num_free_Sprimme(VecNorms, ctx));
-  
+     
+
    // Update eiganpairs and residuals
-   CHKERR(sketched_RR_Sprimme(SV, ldSV, SW, ldSW, hVecs, restartSize, hVals, restartSize, ctx));
+   CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, 0, restartSize, S_rows, S_vals, ctx));
+   CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, 0, restartSize, S_rows, S_vals, ctx));
+   CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, restartSize, hVals, restartSize, ctx));
  
    (*basisSize) = restartSize;
 

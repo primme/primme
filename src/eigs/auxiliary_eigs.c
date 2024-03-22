@@ -179,7 +179,6 @@ void primme_free_context(primme_context ctx) {
  * W          A*V
  ******************************************************************************/
 
-// XXX: Eloy - possible change below?
 /*******************************************************************************
  * Subroutine matrixMatvec_ - Computes A*V
  *           for column indices basisSize through basisSize+blockSize-1
