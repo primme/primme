@@ -348,7 +348,7 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
 
          /* Solve the eigenproblem */
          CHKERR(Num_copy_matrix_Sprimme(T, basisSize, basisSize, ldT, T_temp, basisSize, ctx)); /* Ensure T is not overwritten */
-         CHKERR(Num_ggev_Sprimme("N", "V", basisSize, UtSW, basisSize, T, ldT, hVals_a, NULL, hVals_b, NULL, basisSize, hVecs, ldhVecs, ctx)); 
+         CHKERR(Num_ggev_Sprimme("N", "V", basisSize, UtSW, basisSize, T_temp, ldT, hVals_a, NULL, hVals_b, NULL, basisSize, hVecs, ldhVecs, ctx)); 
 
       } /* End eigenproblem (with or without stabilization) */
 
