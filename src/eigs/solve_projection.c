@@ -1024,7 +1024,7 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
       Vnorms[i] = sqrt(REAL_PART(
             Num_dot_SHprimme(m, &V[ldV * i], 1, &V[ldV * i], 1, ctx)));
    }
-      
+
    /* Compute V'*W[n0:n-1] */
 
    HSCALAR *ip = NULL;
@@ -1056,7 +1056,7 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
       if (jmax < 0) {
          jmax = i;
       }
-
+      //printf("i = %d, jmax = %d, ipmax = %lf\n", i, jmax, ipmax);
       /* Assign the map */
 
       p[i] = jmax;
