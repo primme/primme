@@ -162,7 +162,6 @@ int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV,
 
    /* Find the sketched basis */
    CHKERR(globalSum_Sprimme(&SV[basisSize*ldSV], blockSize*ldSV, ctx));  
- 
    if (T) CHKERR(ortho_Sprimme(SV, ldSV, T, ldT, basisSize, basisSize+blockSize-1, NULL, 0, 0, primme->maxBasisSize, primme->iseed, ctx));
 
    if (primme) primme->stats.timeSketchMatvec += primme_wTimer() - t0;
@@ -258,6 +257,7 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
       SCALAR *hVals_b;        /* The "beta" eigenvalues returned from LaPack's GGEV */ 
       SCALAR normalize_hvecs; /* For normalizing the returned eigenvectors from LaPack's GGEV*/
       SCALAR *UtSW;           /* For solving the generalized eigenvalue problem */
+      SCALAR *T_temp;         /* For taking the SVD of T */
 
       REAL *sing_vals;  /* Returned singular values from the SVD */
       int *eval_perm;   /* To sort the eigenpairs */
@@ -268,20 +268,21 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
       CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &UtSW, ctx));
       CHKERR(Num_malloc_Sprimme(basisSize, &hVals_a, ctx));
       CHKERR(Num_malloc_Sprimme(basisSize, &hVals_b, ctx));
+      CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &T_temp, ctx));
 
       CHKERR(Num_malloc_Rprimme(basisSize, &sing_vals, ctx));
       CHKERR(Num_malloc_iprimme(basisSize, &eval_perm, ctx));
 
       /* Check condition number to see if stabilization is needed */
-      CHKERR(Num_gesvd_Sprimme("N", "N", basisSize, basisSize, T, ldT, sing_vals, NULL, basisSize, NULL, basisSize, ctx));
+      CHKERR(Num_copy_matrix_Sprimme(T, basisSize, basisSize, ldT, T_temp, basisSize, ctx)); /* Ensure T is not overwritten */
+      CHKERR(Num_gesvd_Sprimme("N", "N", basisSize, basisSize, T_temp, basisSize, sing_vals, NULL, basisSize, NULL, basisSize, ctx));
+
       cond_est = sing_vals[0]/sing_vals[basisSize-1]; 
       primme->stats.estimateLargestSVal = sing_vals[0];
       printf("Estimated Cond Num: %E\n", cond_est);
 
       /* XXX: Stabilization needed */
-      //if(cond_est > 1/MACHINE_EPSILON) {
-      if(1) {
-
+      if(cond_est > 1/MACHINE_EPSILON) {
          double stab_time = primme_wTimer(); // For monitoring
 
          /* Truncate the basis for stabilization */
@@ -341,10 +342,12 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
       /* XXX: Stabilization NOT needed */
       } else {
     
-         /* Compute left-hand-side of the eigenproblem */ 
+         /* Compute left-hand-side of the eigenproblem */
+         assert(ldSV == ldSW); 
          CHKERR(Num_gemm_Sprimme("C", "N", basisSize, basisSize, ldSV, 1.0, SV, ldSV, SW, ldSW, 0.0, UtSW, basisSize, ctx));
 
          /* Solve the eigenproblem */
+         CHKERR(Num_copy_matrix_Sprimme(T, basisSize, basisSize, ldT, T_temp, basisSize, ctx)); /* Ensure T is not overwritten */
          CHKERR(Num_ggev_Sprimme("N", "V", basisSize, UtSW, basisSize, T, ldT, hVals_a, NULL, hVals_b, NULL, basisSize, hVecs, ldhVecs, ctx)); 
 
       } /* End eigenproblem (with or without stabilization) */
@@ -371,6 +374,7 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
       CHKERR(Num_free_Sprimme(hVals_a, ctx)); 
       CHKERR(Num_free_Sprimme(hVals_b, ctx)); 
       CHKERR(Num_free_iprimme(eval_perm, ctx)); 
+      CHKERR(Num_free_Sprimme(T_temp, ctx)); 
 
    } /* End if procID == 0 */
 

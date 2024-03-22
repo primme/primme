@@ -260,6 +260,8 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       CHKERR(Num_malloc_Rprimme(primme->numEvals, &normalize_evecs, ctx));
 
+      CHKERR(Num_zero_matrix_SHprimme(T, ldT, ldT, ldT, ctx));
+
       /* Build Sketch CSR Locally */
       CHKERR(build_sketch_Sprimme(S_rows, S_vals, ctx));
 
