@@ -1842,6 +1842,96 @@ int Num_ggev_Sprimme(const char *jobvl, const char *jobvr, PRIMME_INT n, SCALAR 
    return 0;
 }
 
+/*******************************************************************************
+ * Subroutine Num_trcon_Sprimme - estimates the reciprocal of the condition number of a
+ * triangular matrix A, in either the 1-norm or the infinity-norm. 
+ *
+ * Input/Output parameters
+ * -----------------------
+ * norm              Specifies whether the 1-norm condition number or the
+ *                   infinity-norm condition number is required:
+ *                   = '1' or 'O':  1-norm;
+ *                   = 'I':         Infinity-norm. *
+ *
+ * uplo              = 'U':  A is upper triangular;
+ *                   = 'L':  A is lower triangular.
+ *
+ * diag              = 'N':  A is non-unit triangular;
+ *                   = 'U':  A is unit triangular.
+ *
+ * n                 The order of matrix A. n >= 0.
+ *
+ * a                 The triangular matrix A.  If UPLO = 'U', the leading N-by-N
+ *                   upper triangular part of the array A contains the upper
+ *                   triangular matrix, and the strictly lower triangular part of
+ *                   A is not referenced.  If UPLO = 'L', the leading N-by-N lower
+ *                   triangular part of the array A contains the lower triangular
+ *                   matrix, and the strictly upper triangular part of A is not
+ *                   referenced.  If DIAG = 'U', the diagonal elements of A are
+ *                   also not referenced and are assumed to be 1.
+ *
+ * lda               The leading dimension of A
+ *
+ * rcond             The reciprocal of the condition number of the matrix A,
+ *                   computed as RCOND = 1/(norm(A) * norm(inv(A))).
+ * 
+ * Return
+ * ------
+ * error code
+ *
+ ******************************************************************************/
+
+TEMPLATE_PLEASE
+int Num_trcon_Sprimme(const char *norm, const char *uplo,  const char *diag, PRIMME_INT n, SCALAR *a, PRIMME_INT lda, REAL *rcond, primme_context ctx) {
+ 
+   PRIMME_BLASINT ln = n;
+   PRIMME_BLASINT llda = lda;
+   PRIMME_BLASINT linfo = 0;
+
+   /* Zero dimension matrix may cause problems */
+   if (n == 0) return 0;
+
+   REAL *rwork;
+
+#if defined(USE_COMPLEX)
+
+   SCALAR *work;
+   PRIMME_BLASINT lwork = 2*n;
+
+   REAL lrcond = 0.0;
+
+   CHKERR(Num_malloc_Sprimme(lwork, &work, ctx));
+   CHKERR(Num_malloc_Rprimme(ln, &rwork, ctx));
+
+   XTRCON(norm, uplo, diag, &ln, a, &llda, &lrcond, work, rwork, &linfo);
+   *rcond = (REAL)lrcond;
+
+   CHKERR(Num_free_Sprimme(work, ctx));
+
+#else
+
+   PRIMME_BLASINT *work;
+   PRIMME_BLASINT lwork = 3*n;
+
+   PRIMME_BLASINT lrcond = 0;
+   
+   CHKERR(Num_malloc_Rprimme(lwork, &rwork, ctx));
+   CHKERR(Num_malloc_iblasprimme(ln, &work, ctx));
+
+   XTRCON(norm, uplo, diag, &ln, a, &llda, &lrcond, rwork, work, &linfo);
+   *rcond = (REAL)lrcond;
+
+   CHKERR(Num_free_iblasprimme(work, ctx));
+
+#endif
+
+   CHKERR(Num_free_Rprimme(rwork, ctx));
+   CHKERRM(linfo != 0, PRIMME_LAPACK_FAILURE, "Error in xtrcon with info %d", (int)linfo);
+
+   return 0;
+}
+
+
 #endif /* USE_HOST */
 
 #endif /* SUPPORTED_TYPE */
