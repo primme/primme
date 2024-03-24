@@ -162,8 +162,11 @@ int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV,
 
    /* Find the sketched basis */
    CHKERR(globalSum_Sprimme(&SV[basisSize*ldSV], blockSize*ldSV, ctx));  
-   CHKERR(Num_zero_matrix_Sprimme(&T[basisSize], blockSize, basisSize, ldT, ctx));
-   CHKERR(ortho_Sprimme(SV, ldSV, T, ldT, basisSize, basisSize+blockSize-1, NULL, 0, 0, ldSV, primme->iseed, ctx));
+
+   if(T) {
+      CHKERR(Num_zero_matrix_Sprimme(&T[basisSize], blockSize, basisSize, ldT, ctx));
+      CHKERR(ortho_Sprimme(SV, ldSV, T, ldT, basisSize, basisSize+blockSize-1, NULL, 0, 0, ldSV, primme->iseed, ctx));
+   }
 
    if (primme) primme->stats.timeSketchMatvec += primme_wTimer() - t0;
 

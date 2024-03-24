@@ -1666,7 +1666,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(Num_malloc_Sprimme(ldV*primme->maxBasisSize, &V_temp, ctx));
 
    CHKERR(Num_malloc_Rprimme(primme->numEvals, &normalize_evecs, ctx));
-   CHKERR(Num_zero_matrix_Sprimme(T, ldT, ldT, 1, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(T, ldT, ldT, ldT, ctx));
 
 
 
