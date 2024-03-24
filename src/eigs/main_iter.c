@@ -1574,7 +1574,6 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    HSCALAR *hVecs;          /* Eigenvectors of H                             */
    HSCALAR *prevhVecs=NULL; /* hVecs from previous iteration                 */
 
-   PRIMME_INT ldQ;          /* The leading dimension of Q                    */
    HSCALAR *hVecsRot = NULL; /* transformation of hVecs in arbitrary vectors  */
 
    HEVAL *hVals;           /* Eigenvalues of H                              */
@@ -1610,9 +1609,9 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    maxEvecsSize = primme->numOrthoConst + primme->numEvals;
 
-   /* Use leading dimension ldOPs for the large dimension mats: V, W and Q */
+   /* Use leading dimension ldOPs for the large dimension mats: V, W */
 
-   ldV = ldW = ldBV = ldQ = primme->ldOPs;
+   ldV = ldW = ldBV = primme->ldOPs;
    ldBevecs = primme->massMatrixMatvec ? primme->ldOPs : ldevecs;
    if (primme->massMatrixMatvec) {
       CHKERR(Num_malloc_Sprimme(ldBV*primme->maxBasisSize, &BV, ctx));
@@ -1667,6 +1666,8 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(Num_malloc_Sprimme(ldV*primme->maxBasisSize, &V_temp, ctx));
 
    CHKERR(Num_malloc_Rprimme(primme->numEvals, &normalize_evecs, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(T, ldT, ldT, 1, ctx));
+
 
 
    /* -------------------------------------------------------------- */
