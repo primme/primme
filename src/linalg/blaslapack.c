@@ -1898,13 +1898,10 @@ int Num_trcon_Sprimme(const char *norm, const char *uplo,  const char *diag, PRI
    SCALAR *work;
    PRIMME_BLASINT lwork = 2*n;
 
-   REAL lrcond = 0.0;
-
    CHKERR(Num_malloc_Sprimme(lwork, &work, ctx));
    CHKERR(Num_malloc_Rprimme(ln, &rwork, ctx));
 
-   XTRCON(norm, uplo, diag, &ln, a, &llda, &lrcond, work, rwork, &linfo);
-   *rcond = (REAL)lrcond;
+   XTRCON(norm, uplo, diag, &ln, a, &llda, rcond, work, rwork, &linfo);
 
    CHKERR(Num_free_Sprimme(work, ctx));
 
@@ -1913,13 +1910,10 @@ int Num_trcon_Sprimme(const char *norm, const char *uplo,  const char *diag, PRI
    PRIMME_BLASINT *work;
    PRIMME_BLASINT lwork = 3*n;
 
-   PRIMME_BLASINT lrcond = 0;
-   
    CHKERR(Num_malloc_Rprimme(lwork, &rwork, ctx));
    CHKERR(Num_malloc_iblasprimme(ln, &work, ctx));
 
-   XTRCON(norm, uplo, diag, &ln, a, &llda, &lrcond, rwork, work, &linfo);
-   *rcond = (REAL)lrcond;
+   XTRCON(norm, uplo, diag, &ln, a, &llda, rcond, rwork, work, &linfo);
 
    CHKERR(Num_free_iblasprimme(work, ctx));
 

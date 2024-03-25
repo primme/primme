@@ -1593,6 +1593,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    /* Variables for sketching */
    SCALAR *SV;              /* Sketched Basis vectors                     */
+   SCALAR *Q;               /* The "Q" factor in the QR decomposition of SV */
    SCALAR *T;               /* The "R" factor in the QR decomposition of SV */
    SCALAR *SW;              /* Projected sketched Basis vectors           */
    SCALAR *V_temp;          /* Work array for sketching                   */
@@ -1600,7 +1601,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    REAL *normalize_evecs;   /* For normalizing the sketched Ritz vectors  */
    PRIMME_INT *S_rows;      /* Holds the row numbers of the nonzero entries       */
    PRIMME_INT nnzPerCol;  /* NNZ per column in the sketching matrix     */
-   PRIMME_INT ldSV, ldT, ldSW;   /* Leading dimensions of SV, T, and SW   */
+   PRIMME_INT ldSV, ldQ, ldT, ldSW;   /* Leading dimensions of SV, T, and SW   */
 
 
    /* -------------------------------------------------------------- */
@@ -1653,7 +1654,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(Num_malloc_iprimme(maxEvecsSize, &ipivot, ctx));
 
    /* Allocate space for the variables needed for sketching (if needed) */
-   ldSV = ldSW = primme->sketchingParams.sketchSize;
+   ldSV = ldSW = ldQ = primme->sketchingParams.sketchSize;
    ldT = primme->maxBasisSize;
    nnzPerCol = primme->sketchingParams.nnzPerCol;  
    
@@ -1661,11 +1662,13 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    CHKERR(Num_malloc_Sprimme(primme->nLocal*nnzPerCol, &S_vals, ctx));
    CHKERR(Num_malloc_Sprimme(ldSV*primme->maxBasisSize, &SV, ctx));
+   CHKERR(Num_malloc_Sprimme(ldQ*primme->maxBasisSize, &Q, ctx));
    CHKERR(Num_malloc_Sprimme(ldT*ldT, &T, ctx));
    CHKERR(Num_malloc_Sprimme(ldSW*primme->maxBasisSize, &SW, ctx));
    CHKERR(Num_malloc_Sprimme(ldV*primme->maxBasisSize, &V_temp, ctx));
 
    CHKERR(Num_malloc_Rprimme(primme->numEvals, &normalize_evecs, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(SV, ldSV, primme->maxBasisSize, ldSV, ctx));
    CHKERR(Num_zero_matrix_Sprimme(T, ldT, ldT, ldT, ctx));
 
 
@@ -1756,10 +1759,10 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       targetShiftIndex = 0;
 
-      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, 0, basisSize, S_rows, S_vals, ctx));
-      CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, Q, ldQ, T, ldT, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, NULL, 0, 0, basisSize, S_rows, S_vals, ctx));
 
-      CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+      CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
       numArbitraryVecs = 0;
       maxRecentlyConverged = availableBlockSize = blockSize = 0;
@@ -1910,8 +1913,8 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
                      basisSize, blockSize, ctx));
 
             /* Copy hVecs into prevhVecs */
-            CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, basisSize, blockSize, S_rows, S_vals, ctx));
-            CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, basisSize, blockSize, S_rows, S_vals, ctx));
+            CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, Q, ldQ, T, ldT, basisSize, blockSize, S_rows, S_vals, ctx));
+            CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, NULL, 0, basisSize, blockSize, S_rows, S_vals, ctx));
 
             CHKERR(Num_copy_matrix_SHprimme(hVecs, basisSize, basisSize,
                   basisSize, prevhVecs, primme->maxBasisSize, ctx));
@@ -1923,7 +1926,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             basisSize += blockSize;
             blockSize = 0;
 
-            CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+            CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
             numArbitraryVecs = 0;
             candidates_prepared = 0;
@@ -2123,7 +2126,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
          assert(ldV == ldW); /* this function assumes ldV == ldW */
 
-         CHKERR(restart_sketched(V, ldV, W, ldW, SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, min(basisSize, primme->minRestartSize), &basisSize, S_rows, S_vals, ctx));
+         CHKERR(restart_sketched(V, ldV, W, ldW, SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, min(basisSize, primme->minRestartSize), &basisSize, S_rows, S_vals, ctx));
 
          restartsSinceReset++;
 
@@ -2163,11 +2166,11 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW,
                      basisSize, numNew, ctx));
 
-            CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, basisSize, numNew, S_rows, S_vals, ctx));
-            CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, basisSize, numNew, S_rows, S_vals, ctx));
+            CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, Q, ldQ, T, ldT, basisSize, numNew, S_rows, S_vals, ctx));
+            CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, NULL, 0, basisSize, numNew, S_rows, S_vals, ctx));
 
             basisSize += numNew;
-            CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+            CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
          }
  
          primme->stats.numRestarts++;
@@ -2207,9 +2210,9 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
       CHKERR(ortho_Sprimme(V, ldV, NULL, 0, 0, basisSize-1, NULL, 0, 0, primme->nLocal, primme->iseed, ctx));   
       CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW, 0, basisSize, ctx));
-      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, 0, basisSize, S_rows, S_vals, ctx));
-      CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, 0, basisSize, S_rows, S_vals, ctx));
-      CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+      CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, Q, ldQ, T, ldT, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, NULL, 0, 0, basisSize, S_rows, S_vals, ctx));
+      CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
       CHKERR(verify_norms(V, ldV, W, ldW, NULL, 0, hVals,
             restartLimitReached ? primme->numEvals : numConverged, resNorms,
@@ -2327,6 +2330,7 @@ clean:
    CHKERR(Num_free_Rprimme(normalize_evecs, ctx));
 
    CHKERR(Num_free_Sprimme(SV, ctx));
+   CHKERR(Num_free_Sprimme(Q, ctx));
    CHKERR(Num_free_Sprimme(T, ctx));
    CHKERR(Num_free_Sprimme(SW, ctx));
    CHKERR(Num_free_Sprimme(S_vals, ctx));

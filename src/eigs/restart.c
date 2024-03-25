@@ -1773,7 +1773,7 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
  ******************************************************************************/
 
 STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV, 
-      int ldSV, SCALAR *T, int ldT, SCALAR *SW, int ldSW,  HSCALAR *hVecs, 
+      int ldSV, SCALAR *Q, PRIMME_INT ldQ, SCALAR *T, int ldT, SCALAR *SW, int ldSW,  HSCALAR *hVecs, 
       int ldhVecs, HEVAL *hVals, int restartSize, int *basisSize, 
       PRIMME_INT *S_rows, SCALAR *S_vals, primme_context ctx) {
 
@@ -1844,9 +1844,9 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
      
 
    // Update eiganpairs and residuals
-   CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, T, ldT, 0, restartSize, S_rows, S_vals, ctx));
-   CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, 0, restartSize, S_rows, S_vals, ctx));
-   CHKERR(sketched_RR_Sprimme(SV, ldSV, T, ldT, SW, ldSW, hVecs, restartSize, hVals, restartSize, ctx));
+   CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, Q, ldQ, T, ldT, 0, restartSize, S_rows, S_vals, ctx));
+   CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, NULL, 0, 0, restartSize, S_rows, S_vals, ctx));
+   CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, restartSize, hVals, restartSize, ctx));
  
    (*basisSize) = restartSize;
 
