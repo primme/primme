@@ -166,7 +166,6 @@ int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV,
    if(T) {
       CHKERR(Num_copy_matrix_Sprimme(&SV[basisSize*ldSV], ldSV, blockSize, ldSV, &Q[ldQ*basisSize], ldQ, ctx));
       CHKERR(Num_zero_matrix_Sprimme(&T[basisSize], blockSize, basisSize, ldT, ctx));
-      //CHKERR(ortho_Sprimme(Q, ldQ, T, ldT, basisSize, basisSize+blockSize-1, NULL, 0, 0, ldQ, primme->iseed, ctx));
       CHKERR(Bortho_local_Sprimme(Q, ldQ, T, ldT, basisSize, basisSize+blockSize-1, NULL, 0, 0, ldQ, NULL, 0, primme->iseed, ctx));
    }
 

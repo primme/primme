@@ -1774,8 +1774,7 @@ STATIC int restart_RR(HSCALAR *H, int ldH, HSCALAR *VtBV, int ldVtBV,
 
 STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV, 
       int ldSV, SCALAR *Q, PRIMME_INT ldQ, SCALAR *T, int ldT, SCALAR *SW, int ldSW,  HSCALAR *hVecs, 
-      int ldhVecs, HEVAL *hVals, int restartSize, int *basisSize, 
-      PRIMME_INT *S_rows, SCALAR *S_vals, primme_context ctx) {
+      int ldhVecs, HEVAL *hVals, int restartSize, int *basisSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
@@ -1783,13 +1782,11 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
    SCALAR *V_temp;
    SCALAR *SV_temp;
    SCALAR *VecNorms;
-   SCALAR *q;
 
    int old_basisSize = *basisSize;
    CHKERR(Num_malloc_Sprimme(ldV*restartSize, &V_temp, ctx)); 
    CHKERR(Num_malloc_Sprimme(ldSV*restartSize, &SV_temp, ctx)); 
    CHKERR(Num_malloc_Sprimme(restartSize, &VecNorms, ctx)); 
-   CHKERR(Num_malloc_Sprimme(old_basisSize*restartSize, &q, ctx));
 
    //CHKERR(Num_malloc_Sprimme(old_basisSize*restartSize, &hVecs_temp, ctx)); 
 
@@ -1827,9 +1824,6 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
    CHKERR(Num_copy_matrix_Sprimme(SV_temp, ldSV, restartSize, ldSW, SW, ldSW, ctx));  // Copy the temporary matrix back into SW
    CHKERR(Num_free_Sprimme(SV_temp, ctx));
 
-   // q = T * hVecs 
-   CHKERR(Num_gemm_Sprimme("N", "N", old_basisSize, restartSize, old_basisSize, 1.0, T, ldT, hVecs, ldhVecs, 0.0, q, old_basisSize, ctx));
-
    // Normalize the matrices
    for(i = 0; i < restartSize; i++) VecNorms[i] = sqrt(Num_dot_Sprimme(primme->nLocal, &V[i*ldV], 1, &V[i*ldV], 1, ctx));
    CHKERR(globalSum_Sprimme(VecNorms, restartSize, ctx));
@@ -1839,19 +1833,31 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
       CHKERR(Num_scal_Sprimme(ldW, 1.0/VecNorms[i], &W[i*ldW], 1, ctx));
       CHKERR(Num_scal_Sprimme(ldSV, 1.0/VecNorms[i], &SV[i*ldSV], 1, ctx));
       CHKERR(Num_scal_Sprimme(ldSW, 1.0/VecNorms[i], &SW[i*ldSW], 1, ctx));
-      CHKERR(Num_scal_Sprimme(old_basisSize, 1.0/VecNorms[i], &q[i*old_basisSize], 1, ctx));
    }
   
-   // Recompute Q and R factors
-   CHKERR(ortho_Sprimme(q, old_basisSize, T, ldT, 0, restartSize-1, NULL, 0, 0, old_basisSize, primme->iseed, ctx)); // [q, r] = qr(T*hVecs*Vn)
-   SCALAR *Q_temp;
-   CHKERR(Num_malloc_Sprimme(ldQ*old_basisSize, &Q_temp, ctx)); 
-   CHKERR(Num_copy_matrix_Sprimme(Q, ldQ, old_basisSize, ldQ, Q_temp, ldQ, ctx));  // Temporary matrix to not overwrite Q
-   CHKERR(Num_gemm_SHprimme("N", "N", ldQ, restartSize, old_basisSize, 1.0, Q_temp, ldQ, q, old_basisSize, 0.0, Q, ldQ, ctx)); // Q = Q*q
+   // Recompute Q and R factors of the sketched basis, but only for process 0
+   if(primme->procID == 0){
+      SCALAR *q;
+      SCALAR *Q_temp;
+
+      CHKERR(Num_malloc_Sprimme(old_basisSize*restartSize, &q, ctx));
+      CHKERR(Num_malloc_Sprimme(ldQ*old_basisSize, &Q_temp, ctx)); 
+
+      CHKERR(Num_copy_matrix_Sprimme(Q, ldQ, old_basisSize, ldQ, Q_temp, ldQ, ctx));  // Temporary matrix to not overwrite Q
+
+      // q = T * hVecs * Vn
+      CHKERR(Num_gemm_Sprimme("N", "N", old_basisSize, restartSize, old_basisSize, 1.0, T, ldT, hVecs, ldhVecs, 0.0, q, old_basisSize, ctx)); // bar(q) = T * hVecs
+      for (i = 0; i < restartSize; i++) CHKERR(Num_scal_Sprimme(old_basisSize, 1.0/VecNorms[i], &q[i*old_basisSize], 1, ctx));                // bar(q) *= Vn
+
+      // [q, r] = qr(bar(q))
+      CHKERR(Bortho_local_Sprimme(q, old_basisSize, T, ldT, 0, restartSize-1, NULL, 0, 0, old_basisSize, NULL, 0, primme->iseed, ctx));
+      CHKERR(Num_gemm_Sprimme("N", "N", ldQ, restartSize, old_basisSize, 1.0, Q_temp, ldQ, q, old_basisSize, 0.0, Q, ldQ, ctx)); // Q = Q*q
+
+      CHKERR(Num_free_Sprimme(Q_temp, ctx));
+      CHKERR(Num_free_Sprimme(q, ctx));
+   }
 
    CHKERR(Num_free_Sprimme(VecNorms, ctx));
-   CHKERR(Num_free_Sprimme(Q_temp, ctx));
-   CHKERR(Num_free_Sprimme(q, ctx));
 
    // Update eiganpairs and residuals
    CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, restartSize, hVals, restartSize, ctx));

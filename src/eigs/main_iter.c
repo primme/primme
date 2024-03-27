@@ -1593,8 +1593,8 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
    /* Variables for sketching */
    SCALAR *SV;              /* Sketched Basis vectors                     */
-   SCALAR *Q;               /* The "Q" factor in the QR decomposition of SV */
-   SCALAR *T;               /* The "R" factor in the QR decomposition of SV */
+   SCALAR *Q = NULL;        /* The "Q" factor in the QR decomposition of SV */
+   SCALAR *T = NULL;        /* The "R" factor in the QR decomposition of SV */
    SCALAR *SW;              /* Projected sketched Basis vectors           */
    SCALAR *V_temp;          /* Work array for sketching                   */
    SCALAR *S_vals;          /* Holds the nonzero entries of the sketching matrix  */
@@ -1602,7 +1602,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    PRIMME_INT *S_rows;      /* Holds the row numbers of the nonzero entries       */
    PRIMME_INT nnzPerCol;  /* NNZ per column in the sketching matrix     */
    PRIMME_INT ldSV, ldQ, ldT, ldSW;   /* Leading dimensions of SV, T, and SW   */
-
+   ldQ = ldT = 0;
 
    /* -------------------------------------------------------------- */
    /* Allocate objects                                               */
@@ -1654,23 +1654,28 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    CHKERR(Num_malloc_iprimme(maxEvecsSize, &ipivot, ctx));
 
    /* Allocate space for the variables needed for sketching (if needed) */
-   ldSV = ldSW = ldQ = primme->sketchingParams.sketchSize;
-   ldT = primme->maxBasisSize;
+   ldSV = ldSW = primme->sketchingParams.sketchSize;
    nnzPerCol = primme->sketchingParams.nnzPerCol;  
    
    S_rows = (PRIMME_INT*)malloc(nnzPerCol*primme->nLocal*sizeof(PRIMME_INT));
 
    CHKERR(Num_malloc_Sprimme(primme->nLocal*nnzPerCol, &S_vals, ctx));
    CHKERR(Num_malloc_Sprimme(ldSV*primme->maxBasisSize, &SV, ctx));
-   CHKERR(Num_malloc_Sprimme(ldQ*primme->maxBasisSize, &Q, ctx));
-   CHKERR(Num_malloc_Sprimme(ldT*ldT, &T, ctx));
    CHKERR(Num_malloc_Sprimme(ldSW*primme->maxBasisSize, &SW, ctx));
    CHKERR(Num_malloc_Sprimme(ldV*primme->maxBasisSize, &V_temp, ctx));
 
    CHKERR(Num_malloc_Rprimme(primme->numEvals, &normalize_evecs, ctx));
    CHKERR(Num_zero_matrix_Sprimme(SV, ldSV, primme->maxBasisSize, ldSV, ctx));
-   CHKERR(Num_zero_matrix_Sprimme(T, ldT, ldT, ldT, ctx));
 
+   if(primme->procID == 0) {
+      ldQ = primme->sketchingParams.sketchSize;
+      ldT = primme->maxBasisSize;
+
+      CHKERR(Num_malloc_Sprimme(ldQ*primme->maxBasisSize, &Q, ctx));
+      CHKERR(Num_malloc_Sprimme(ldT*ldT, &T, ctx));
+
+      CHKERR(Num_zero_matrix_Sprimme(T, ldT, ldT, ldT, ctx));
+   }
 
 
    /* -------------------------------------------------------------- */
@@ -2126,7 +2131,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
          assert(ldV == ldW); /* this function assumes ldV == ldW */
 
-         CHKERR(restart_sketched(V, ldV, W, ldW, SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, min(basisSize, primme->minRestartSize), &basisSize, S_rows, S_vals, ctx));
+         CHKERR(restart_sketched(V, ldV, W, ldW, SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, min(basisSize, primme->minRestartSize), &basisSize, ctx));
 
          restartsSinceReset++;
 
@@ -2330,11 +2335,14 @@ clean:
    CHKERR(Num_free_Rprimme(normalize_evecs, ctx));
 
    CHKERR(Num_free_Sprimme(SV, ctx));
-   CHKERR(Num_free_Sprimme(Q, ctx));
-   CHKERR(Num_free_Sprimme(T, ctx));
    CHKERR(Num_free_Sprimme(SW, ctx));
    CHKERR(Num_free_Sprimme(S_vals, ctx));
    CHKERR(Num_free_Sprimme(V_temp, ctx));
+
+   if(primme->procID == 0){
+      CHKERR(Num_free_Sprimme(Q, ctx));
+      CHKERR(Num_free_Sprimme(T, ctx));
+   }
 
    return 0;
 }
@@ -2809,8 +2817,7 @@ STATIC int verify_norms(SCALAR *V, PRIMME_INT ldV, SCALAR *W, PRIMME_INT ldW,
    }
       
    CHKERR(globalSum_RHprimme(resNorms, basisSize, ctx));
-   for (i=0; i < basisSize; i++)
-      resNorms[i] = sqrt(resNorms[i]);
+   for (i=0; i < basisSize; i++) resNorms[i] = sqrt(resNorms[i]);
 
    /* Check for convergence of the residual norms. */
 
