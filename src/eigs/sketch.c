@@ -136,7 +136,7 @@ int build_sketch_Sprimme(PRIMME_INT *S_rows, SCALAR *S_vals, primme_context ctx)
  * 
  * Input/Output
  *    T  - The "R" factor in the QR decomposition of SV
- *       - If "T" != NULL, then SV will be the "Q" factor
+ *       
  ******************************************************************************/
 TEMPLATE_PLEASE
 int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV, SCALAR *Q, PRIMME_INT ldQ, SCALAR *T, PRIMME_INT ldT, PRIMME_INT basisSize, PRIMME_INT blockSize, PRIMME_INT *S_rows, SCALAR *S_vals, primme_context ctx) {
@@ -160,13 +160,14 @@ int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV,
    }
    CHKERR(Num_free_Sprimme(V_row, ctx)); 
 
-   /* Find the sketched basis */
+   /* GlobalSum the sketched basis */
    CHKERR(globalSum_Sprimme(&SV[basisSize*ldSV], blockSize*ldSV, ctx));  
 
    if(T) {
       CHKERR(Num_copy_matrix_Sprimme(&SV[basisSize*ldSV], ldSV, blockSize, ldSV, &Q[ldQ*basisSize], ldQ, ctx));
       CHKERR(Num_zero_matrix_Sprimme(&T[basisSize], blockSize, basisSize, ldT, ctx));
-      CHKERR(ortho_Sprimme(Q, ldQ, T, ldT, basisSize, basisSize+blockSize-1, NULL, 0, 0, ldQ, primme->iseed, ctx));
+      //CHKERR(ortho_Sprimme(Q, ldQ, T, ldT, basisSize, basisSize+blockSize-1, NULL, 0, 0, ldQ, primme->iseed, ctx));
+      CHKERR(Bortho_local_Sprimme(Q, ldQ, T, ldT, basisSize, basisSize+blockSize-1, NULL, 0, 0, ldQ, NULL, 0, primme->iseed, ctx));
    }
 
    if (primme) primme->stats.timeSketchMatvec += primme_wTimer() - t0;
