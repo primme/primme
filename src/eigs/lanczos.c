@@ -323,7 +323,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       if(primme->projectionParams.projection == primme_proj_sketched)
          CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, Q, ldQ, T, ldT, i, blockSize, S_rows, S_vals, ctx));
 
-      if(primme->printLevel >= 2 && (PRIMME_INT)(i+blockSize) % 10 == 0)
+      if(primme->printLevel >= 2 && (PRIMME_INT)(i+blockSize) % 100 == 0)
       {
          primme->initSize = 0;
          PRIMME_INT numEvals = min(i+blockSize, primme->numEvals);
