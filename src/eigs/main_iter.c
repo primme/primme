@@ -125,6 +125,7 @@ int print_timings_Sprimme(PRIMME_INT basisSize, primme_context ctx) {
    printf("Iterations: %-" PRIMME_INT_P "\n", primme->stats.numOuterIterations); 
    printf("Restarts  : %-" PRIMME_INT_P "\n", primme->stats.numRestarts);
    printf("Matvecs   : %-" PRIMME_INT_P "\n", primme->stats.numMatvecs);
+   printf("Sketched Matvecs   : %-" PRIMME_INT_P "\n", primme->stats.numSketchedMatvecs);
    printf("Preconds  : %-" PRIMME_INT_P "\n", primme->stats.numPreconds);
    printf("Elapsed Time        : %-22.10E\n", primme->stats.elapsedTime);
    printf("MatVec Time         : %-22.10E\n", primme->stats.timeMatvec);
@@ -397,6 +398,7 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.numOuterIterations            = 0; 
    primme->stats.numRestarts                   = 0;
    primme->stats.numMatvecs                    = 0;
+   primme->stats.numSketchedMatvecs            = 0;
    primme->stats.numPreconds                   = 0;
    primme->stats.numGlobalSum                  = 0;
    primme->stats.numBroadcast                  = 0;
@@ -1685,6 +1687,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    primme->stats.numOuterIterations            = 0; 
    primme->stats.numRestarts                   = 0;
    primme->stats.numMatvecs                    = 0;
+   primme->stats.numSketchedMatvecs            = 0;
    primme->stats.numPreconds                   = 0;
    primme->stats.numGlobalSum                  = 0;
    primme->stats.numBroadcast                  = 0;

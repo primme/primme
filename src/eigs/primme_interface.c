@@ -178,6 +178,7 @@ void primme_initialize(primme_params *primme) {
    primme->stats.numOuterIterations            = 0; 
    primme->stats.numRestarts                   = 0;
    primme->stats.numMatvecs                    = 0;
+   primme->stats.numSketchedMatvecs            = 0;
    primme->stats.numPreconds                   = 0;
    primme->stats.numGlobalSum                  = 0;
    primme->stats.flopsDense                    = 0.0;
@@ -984,6 +985,9 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_numMatvecs:
               *(PRIMME_INT*)value = primme->stats.numMatvecs;
       break;
+      case PRIMME_stats_numSketchedMatvecs:
+              *(PRIMME_INT*)value = primme->stats.numSketchedMatvecs;
+      break;
       case PRIMME_stats_numPreconds:
               *(PRIMME_INT*)value = primme->stats.numPreconds;
       break;
@@ -1312,6 +1316,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       case PRIMME_stats_numMatvecs:
               primme->stats.numMatvecs = *(PRIMME_INT*)value;
       break;
+      case PRIMME_stats_numSketchedMatvecs:
+              primme->stats.numSketchedMatvecs = *(PRIMME_INT*)value;
+      break;
       case PRIMME_stats_numPreconds:
               primme->stats.numPreconds = *(PRIMME_INT*)value;
       break;
@@ -1504,6 +1511,7 @@ int primme_member_info(primme_params_label *label, const char **label_name,
    IF_IS(stats_numOuterIterations     , stats_numOuterIterations);
    IF_IS(stats_numRestarts            , stats_numRestarts);
    IF_IS(stats_numMatvecs             , stats_numMatvecs);
+   IF_IS(stats_numSketchedMatvecs     , stats_numSketchedMatvecs);
    IF_IS(stats_numPreconds            , stats_numPreconds);
    IF_IS(stats_numGlobalSum           , stats_numGlobalSum);
    IF_IS(stats_volumeGlobalSum        , stats_volumeGlobalSum);
@@ -1582,6 +1590,7 @@ int primme_member_info(primme_params_label *label, const char **label_name,
       case PRIMME_stats_numOuterIterations:
       case PRIMME_stats_numRestarts:
       case PRIMME_stats_numMatvecs:
+      case PRIMME_stats_numSketchedMatvecs:
       case PRIMME_stats_numPreconds:
       case PRIMME_stats_numGlobalSum:
       case PRIMME_stats_volumeGlobalSum:

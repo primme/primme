@@ -237,6 +237,7 @@ int main (int argc, char *argv[]) {
       fprintf(primme.outputFile, "Iterations: %-" PRIMME_INT_P "\n", primme.stats.numOuterIterations); 
       fprintf(primme.outputFile, "Restarts  : %-" PRIMME_INT_P "\n", primme.stats.numRestarts);
       fprintf(primme.outputFile, "Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numMatvecs);
+      fprintf(primme.outputFile, "Sketched Matvecs   : %-" PRIMME_INT_P "\n", primme.stats.numSketchedMatvecs);
       fprintf(primme.outputFile, "Preconds  : %-" PRIMME_INT_P "\n", primme.stats.numPreconds);
       fprintf(primme.outputFile, "Elapsed Time        : %-22.10E\n", primme.stats.elapsedTime);
       fprintf(primme.outputFile, "MatVec Time         : %-22.10E\n", primme.stats.timeMatvec);

@@ -127,6 +127,7 @@ typedef struct primme_stats {
    PRIMME_INT numOuterIterations;
    PRIMME_INT numRestarts;
    PRIMME_INT numMatvecs;
+   PRIMME_INT numSketchedMatvecs;
    PRIMME_INT numPreconds;
    PRIMME_INT numGlobalSum;         /* times called globalSumReal */
    PRIMME_INT numBroadcast;         /* times called broadcastReal */
@@ -417,7 +418,8 @@ typedef enum {
    PRIMME_queue                                  = 88  ,
    PRIMME_profile                                = 89  ,
    PRIMME_expansionParams_expansion              = 90  ,
-   PRIMME_residualParams_residual                = 91  
+   PRIMME_residualParams_residual                = 91  ,
+   PRIMME_stats_numSketchedMatvecs               = 92  
 } primme_params_label;
 
 /* Hermitian operator */

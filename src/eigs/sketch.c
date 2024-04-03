@@ -169,7 +169,10 @@ int sketch_basis_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *SV, PRIMME_INT ldSV,
       CHKERR(Bortho_local_Sprimme(Q, ldQ, T, ldT, basisSize, basisSize+blockSize-1, NULL, 0, 0, ldQ, NULL, 0, primme->iseed, ctx));
    }
 
-   if (primme) primme->stats.timeSketchMatvec += primme_wTimer() - t0;
+   if (primme) {
+      primme->stats.timeSketchMatvec += primme_wTimer() - t0;
+      primme->stats.numSketchedMatvecs += blockSize;
+   }
 
    return 0;
 }
