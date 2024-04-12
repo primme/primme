@@ -143,6 +143,7 @@ typedef struct primme_stats {
    double timeBroadcast;            /* time expend by broadcastReal  */
    double timeDense;                /* time expend by Num_update_VWXR_Sprimme */
    double timeSketchMatvec;         /* time expend by sketched MatVec */
+   double timeRestart;              /* time expend by restarting */
    double timeStabilization;        /* time expend by stabilization in Sketched RR */
    double timeRR;                   /* time expend by Rayleigh-Ritz (sketching or nonsketching) */
    double timeResiduals;            /* time expend by computing residuals */
