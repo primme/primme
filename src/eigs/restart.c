@@ -1803,7 +1803,8 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
    * ----------------------------------------------- */
 
    // Orthogonalize hVecs
-   CHKERR(ortho_Sprimme(hVecs, old_basisSize, NULL, 0, 0, restartSize-1, NULL, 0, 0, old_basisSize, primme->iseed, ctx));
+   //CHKERR(ortho_Sprimme(hVecs, old_basisSize, NULL, 0, 0, restartSize-1, NULL, 0, 0, old_basisSize, primme->iseed, ctx));
+   CHKERR(Bortho_local_Sprimme(hVecs, old_basisSize, NULL, 0, 0, restartSize-1, NULL, 0, 0, old_basisSize, NULL, 0, primme->iseed, ctx));
 
    // V = V * hVecs
    CHKERR(Num_gemm_SHprimme("N", "N", ldV, restartSize, old_basisSize, 1.0, V, ldV, hVecs, ldhVecs, 0.0, V_temp, ldV, ctx));
