@@ -574,13 +574,24 @@ STATIC void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
    (void)eval; /* unused parameter */
    (void)evec; /* unused parameter */
 
-   if (primme->massMatrixMatvec == NULL) {
-      *isConv = *rNorm < max(primme->eps, MACHINE_EPSILON * 2) *
-                               problemNorm_Sprimme(0, primme);
-   }
-   else {
-      *isConv = *rNorm < max(primme->eps, MACHINE_EPSILON) *
-                               problemNorm_Sprimme(0, primme);
+   if(primme->projectionParams.projection != primme_proj_sketched){
+      if (primme->massMatrixMatvec == NULL) {
+         *isConv = *rNorm < max(primme->eps, MACHINE_EPSILON * 2) *
+                                  problemNorm_Sprimme(0, primme);
+      }
+      else {
+         *isConv = *rNorm < max(primme->eps, MACHINE_EPSILON) *
+                                  problemNorm_Sprimme(0, primme);
+      }
+   } else { // XXX: Made changes to "fix" convergence bug with sketching - Heather
+      if (primme->massMatrixMatvec == NULL) {
+         *isConv = *rNorm < max(primme->eps * 2, MACHINE_EPSILON * 2) *
+                                  problemNorm_Sprimme(0, primme);
+      }
+      else {
+         *isConv = *rNorm < max(primme->eps * 2, MACHINE_EPSILON) *
+                                  problemNorm_Sprimme(0, primme);
+      }
    }
    *ierr = 0;
 }
