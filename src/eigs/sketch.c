@@ -385,8 +385,10 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
 
    } /* End if procID == 0 */
 
-   CHKERR(broadcast_SHprimme(hVecs, basisSize*ldhVecs, ctx));
-   CHKERR(broadcast_RHprimme(hVals, basisSize, ctx));
+   //CHKERR(broadcast_SHprimme(hVecs, basisSize*ldhVecs, ctx));
+   //CHKERR(broadcast_RHprimme(hVals, basisSize, ctx));
+   CHKERR(broadcast_SHprimme(hVecs, min(basisSize, primme->numEvals)*ldhVecs, ctx));
+   CHKERR(broadcast_RHprimme(hVals, min(basisSize, primme->numEvals), ctx));
      
    if (primme) primme->stats.timeRR += primme_wTimer() - t0;
 
