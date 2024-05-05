@@ -1729,6 +1729,9 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
    PRIMME_INT ldSV, ldQ, ldT, ldSW;   /* Leading dimensions of SV, T, and SW   */
    ldQ = ldT = 0;
 
+   /* XXX: Cheap fix for infinite loop on verification. Flag indicating whether I've already doubled convergence. */
+   int double_eps = 0;      
+
    /* -------------------------------------------------------------- */
    /* Allocate objects                                               */
    /* -------------------------------------------------------------- */
@@ -2346,6 +2349,11 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, NULL, 0, 0, basisSize, S_rows, S_vals, ctx));
       CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
+      /* For debugging -- Heather */
+      if(!double_eps){
+         primme->eps *= 2.0;
+         double_eps = 1;
+      }
       CHKERR(verify_norms(V, ldV, W, ldW, NULL, 0, hVals,
             restartLimitReached ? primme->numEvals : numConverged, resNorms,
             flags, &numConverged, ctx));
