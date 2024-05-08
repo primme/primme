@@ -670,11 +670,17 @@ typedef struct primme_context_str {
 #define FORTRAN_FUNCTION(X) X
 #endif
 
+#ifdef __cplusplus
+#include <algorithm>
+using std::max;
+using std::min;
+#else
 #ifndef max
-#  define max(a, b) ((a) > (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
 #ifndef min
-#  define min(a, b) ((a) < (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
 #endif
 
 /* Number of rows processed as once for streaming operation */

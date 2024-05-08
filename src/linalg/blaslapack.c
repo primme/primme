@@ -784,7 +784,7 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, PRIMME_INT n,
    }
 
    while(m > 0) {
-      lm = (PRIMME_BLASINT)min(m, PRIMME_BLASINT_MAX-1);
+      lm = (PRIMME_BLASINT)min(m, (PRIMME_INT)PRIMME_BLASINT_MAX - 1);
       XGEMV(transa, &lm, &ln, (const BLASSCALAR *)&alpha, (const BLASSCALAR *)a,
             &llda, (const BLASSCALAR *)x, &lincx, (const BLASSCALAR *)&beta,
             (BLASSCALAR *)y, &lincy STRING_LEN1);
@@ -889,7 +889,7 @@ int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, PRIMME_INT incx,
    CHKERR(to_blas_int(incy, &lincy));
 
    while(n > 0) {
-      ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
+      ln = (PRIMME_BLASINT)min(n, (PRIMME_INT)PRIMME_BLASINT_MAX - 1);
       XAXPY(&ln, (const BLASSCALAR *)&alpha, (const BLASSCALAR *)x, &lincx,
             (BLASSCALAR *)y, &lincy);
       n -= (PRIMME_INT)ln;
@@ -944,7 +944,7 @@ HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, PRIMME_INT incx, SCALAR *y,
    XSCALAR r = 0.0, ONEf = 1.0;
 
    while(n > 0) {
-      ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
+      ln = (PRIMME_BLASINT)min(n, (PRIMME_INT)PRIMME_BLASINT_MAX - 1);
       if (incx == 1) {
          XGEMV("C", &ln, &ONE, &ONEf, x, &ln, y, &lincy, &ONEf, &r, &ONE);
          SET_COMPLEX(r, CONJ(TO_COMPLEX(r)));
@@ -967,7 +967,7 @@ HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, PRIMME_INT incx, SCALAR *y,
    HSCALAR r = 0.0;
 
    while(n > 0) {
-      ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
+      ln = (PRIMME_BLASINT)min(n, (PRIMME_INT)PRIMME_BLASINT_MAX - 1);
       r += XDOT(&ln, (const BLASSCALAR *)x, &lincx, (BLASSCALAR *)y, &lincy);
       n -= (PRIMME_INT)ln;
       x += ln;
@@ -1013,7 +1013,7 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
    }
 
    while(length > 0) {
-      llength = (PRIMME_BLASINT)min(length, PRIMME_BLASINT_MAX-1);
+      llength = (PRIMME_BLASINT)min(length, (PRIMME_INT)PRIMME_BLASINT_MAX - 1);
       XLARNV(&lidist, liseed, &llength, x);
       length -= (PRIMME_INT)llength;
       x += llength;
@@ -1051,7 +1051,7 @@ int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, PRIMME_INT incx,
    CHKERR(to_blas_int(incx, &lincx));
 
    while(n > 0) {
-      ln = (PRIMME_BLASINT)min(n, PRIMME_BLASINT_MAX-1);
+      ln = (PRIMME_BLASINT)min(n, (PRIMME_INT)PRIMME_BLASINT_MAX - 1);
       XSCAL(&ln, (const BLASSCALAR *)&alpha, (BLASSCALAR *)x, &lincx);
       n -= (PRIMME_INT)ln;
       x += ln;

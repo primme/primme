@@ -565,11 +565,11 @@ STATIC void convTestFunAbsolute(double *eval, void *evec, double *rNorm,
    (void)evec; /* unused parameter */
 
    if (primme->massMatrixMatvec == NULL) {
-      *isConv = *rNorm < max(primme->eps, MACHINE_EPSILON * 2) *
+      *isConv = *rNorm < max(primme->eps, (double)MACHINE_EPSILON * 2) *
                                problemNorm_Sprimme(0, primme);
    }
    else {
-      *isConv = *rNorm < max(primme->eps, MACHINE_EPSILON) *
+      *isConv = *rNorm < max(primme->eps, (double)MACHINE_EPSILON) *
                                problemNorm_Sprimme(0, primme);
    }
    *ierr = 0;

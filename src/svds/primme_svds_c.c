@@ -753,10 +753,11 @@ STATIC int copy_last_params_from_svds(int stage, HREAL *svals, SCALAR *svecs,
       double min_val = max(primme_svds->aNorm * MACHINE_EPSILON,
             primme_svds->stats.estimateErrorOnA * 2);
       for (i = 0; i < primme_svds->initSize; i++) {
-         primme->targetShifts[i] =
-               max(sqrt(fabs(max(svals[i] - max(rnorms[i], min_val), 0.0) *
-                             svals[i])),
-                     min_val);
+         primme->targetShifts[i] = max(
+               sqrt(fabs(max((double)svals[i] - max((double)rnorms[i], min_val),
+                               0.0) *
+                         svals[i])),
+               min_val);
       }
       for (; i < primme_svds->numSvals; i++) {
          primme->targetShifts[i] = min_val;
@@ -937,7 +938,7 @@ STATIC int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
 
    if (method == primme_svds_op_AtA || method == primme_svds_op_AAt) {
       for (i = 0; i < primme->initSize; i++) {
-         svals[i] = sqrt(max(0.0, svals[i]));
+         svals[i] = sqrt(max(0.0, (double)svals[i]));
       }
    }
 
@@ -1051,7 +1052,7 @@ STATIC int copy_last_params_to_svds(int stage, HREAL *svals, SCALAR *svecs,
       case primme_svds_op_AtA:
       case primme_svds_op_AAt:
          for (i = 0; i < primme_svds->initSize; i++) {
-            rnorms[i] = min(rnorms[i] / svals[i], primme_svds->aNorm);
+            rnorms[i] = min((double)rnorms[i] / svals[i], primme_svds->aNorm);
          }
          break;
       case primme_svds_op_augmented:

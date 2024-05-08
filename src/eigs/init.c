@@ -177,7 +177,8 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
    } else {
       initSize = min(primme->minRestartSize, primme->initSize);
    }
-   initSize = max(0, min(primme->n - primme->numOrthoConst, initSize));
+   initSize = max((PRIMME_INT)0,
+         min(primme->n - primme->numOrthoConst, (PRIMME_INT)initSize));
    *numGuesses = primme->initSize - initSize;
    *nextGuess = primme->numOrthoConst + initSize;
 
@@ -195,7 +196,8 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
       break;
    default: assert(0);
    }
-   random = max(0, min(primme->n - primme->numOrthoConst - initSize, random));
+   random = max((PRIMME_INT)0,
+         min(primme->n - primme->numOrthoConst - initSize, (PRIMME_INT)random));
    for (i = 0; i < random; i++) {
       Num_larnv_Sprimme(
             2, primme->iseed, nLocal, &V[ldV * (initSize + i)], ctx);
@@ -210,8 +212,8 @@ int init_basis_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV, SCALAR *W,
    CHKERR(matrixMatvec_Sprimme(V, nLocal, ldV, W, ldW, 0, *basisSize, ctx));
 
    if (primme->initBasisMode == primme_init_krylov) {
-      int minRestartSize =
-            min(primme->minRestartSize, primme->n - primme->numOrthoConst);
+      int minRestartSize = min((PRIMME_INT)primme->minRestartSize,
+            primme->n - primme->numOrthoConst);
       CHKERR(init_block_krylov(V, nLocal, ldV, W, ldW, BV, ldBV, *basisSize,
             minRestartSize - 1, evecs, ldevecs, primme->numOrthoConst, VtBV,
             ldVtBV, fVtBV, ldfVtBV, maxRank, ctx));

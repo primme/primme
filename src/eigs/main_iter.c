@@ -1015,9 +1015,9 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Limit basisSize to the matrix dimension */
 
-            availableBlockSize =
-                  max(0, min(availableBlockSize,
-                               primme->n - numLocked - primme->numOrthoConst));
+            availableBlockSize = max((PRIMME_INT)0,
+                  min((PRIMME_INT)availableBlockSize,
+                        primme->n - numLocked - primme->numOrthoConst));
 
             // Calling prepare_candidates before restarting is compulsory when:
             // - the order of the Ritz pairs depends on the residual vector
@@ -1137,10 +1137,11 @@ int main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
             /* Don't increase basis size beyond matrix dimension */
 
-            numNew = max(0,
-                  min(basisSize+numNew+primme->numOrthoConst+numLocked,
-                     primme->n)
-                  - primme->numOrthoConst - numLocked - basisSize);
+            numNew = max((PRIMME_INT)0,
+                  min((PRIMME_INT)basisSize + numNew + primme->numOrthoConst +
+                              numLocked,
+                        primme->n) -
+                        primme->numOrthoConst - numLocked - basisSize);
 
             CHKERR(Num_copy_matrix_Sprimme(&evecs[nextGuess * ldevecs],
                   primme->nLocal, numNew, ldevecs, &V[basisSize * ldV], ldV,
@@ -1550,7 +1551,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
 
    if (blockNormsSize > 0) {
       for (*smallestResNorm = HUGE_VAL, i=0; i < blockNormsSize; i++) {
-         *smallestResNorm = min(*smallestResNorm, blockNorms[i]);
+         *smallestResNorm = min(*smallestResNorm, (double)blockNorms[i]);
       }
    }
 
@@ -1582,7 +1583,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             evals0[i] = evals[map[i]];
             resNorms0[i] = resNorms[map[i]];
             primme->stats.maxConvTol =
-                  max(primme->stats.maxConvTol, resNorms0[i]);
+                  max(primme->stats.maxConvTol, (double)resNorms0[i]);
          } else {
             evals0[i] = HUGE_VAL;
             resNorms0[i] = HUGE_VAL;
@@ -1642,7 +1643,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
                resNorms[iev[blki]] = blockNorms[blki];
                if (flagsBlock[i] == CONVERGED)
                   primme->stats.maxConvTol =
-                        max(primme->stats.maxConvTol, blockNorms[blki]);
+                        max(primme->stats.maxConvTol, (double)blockNorms[blki]);
             }
 
             /* Count the new solution */
@@ -1673,7 +1674,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
             if (*blockSize == 0) {
                *smallestResNorm = HUGE_VAL;
             }
-            *smallestResNorm = min(*smallestResNorm, blockNorms[blki]);
+            *smallestResNorm = min(*smallestResNorm, (double)blockNorms[blki]);
 
             blockNorms[*blockSize] = blockNorms[blki];
             iev[*blockSize] = iev[blki];
@@ -1762,7 +1763,8 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
       /* Don't trust residual norm smaller than the error in the residual norm */
 
       for (i = *blockSize; i < blockNormsSize; i++) {
-         blockNorms[i] = max(blockNorms[i], primme->stats.estimateResidualError);
+         blockNorms[i] =
+               max((double)blockNorms[i], primme->stats.estimateResidualError);
       }
 
 
@@ -1772,8 +1774,8 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
          for (i=0; i<blockNormsSize; i++) {
             primme->stats.estimateBNorm = max(
                   primme->stats.estimateBNorm, 1.0 / XNorms[*blockSize + i]);
-            primme->stats.estimateInvBNorm = max(
-                  primme->stats.estimateInvBNorm, XNorms[*blockSize + i]);
+            primme->stats.estimateInvBNorm = max(primme->stats.estimateInvBNorm,
+                  (double)XNorms[*blockSize + i]);
          }
       }
    }

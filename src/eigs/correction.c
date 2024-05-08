@@ -279,13 +279,15 @@ int solve_correction_Sprimme(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
        
             if (primme->target == primme_smallest) {
                blockOfShifts[blockIndex] = eval - robustShift;
-               if (sortedIndex > 0) blockOfShifts[blockIndex] = 
-                  max(blockOfShifts[blockIndex], sortedRitzVals[sortedIndex-1]);
+               if (sortedIndex > 0)
+                  blockOfShifts[blockIndex] = max(blockOfShifts[blockIndex],
+                        (double)sortedRitzVals[sortedIndex - 1]);
             }
             else {
                blockOfShifts[blockIndex] = eval + robustShift;
-               if (sortedIndex > 0) blockOfShifts[blockIndex] = 
-                  min(blockOfShifts[blockIndex], sortedRitzVals[sortedIndex-1]);
+               if (sortedIndex > 0)
+                  blockOfShifts[blockIndex] = min(blockOfShifts[blockIndex],
+                        (double)sortedRitzVals[sortedIndex - 1]);
             } /* robust shifting */
    
          }  /* for loop */
@@ -584,12 +586,13 @@ STATIC HREAL computeRobustShift(int blockIndex, double resNorm,
    /* in The Symmetric Eigenvalue Problem by B.N. Parlett.                 */
 
    if (gap > resNorm) {
-      epsilon = min(
-            delta, min(resNorm * resNorm * primme->stats.estimateInvBNorm / gap,
-                         lowerGap));
+      epsilon = min((double)delta,
+            min(resNorm * resNorm * primme->stats.estimateInvBNorm / gap,
+                  (double)lowerGap));
    }
    else {
-      epsilon = min(resNorm * sqrt(primme->stats.estimateInvBNorm), lowerGap);
+      epsilon = min(
+            resNorm * sqrt(primme->stats.estimateInvBNorm), (double)lowerGap);
    }
 
    *approxOlsenShift = min(delta, epsilon);

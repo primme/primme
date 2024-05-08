@@ -284,10 +284,11 @@ int restart_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT nLocal,
    /* size isn't larger than the current basis size.                          */
    /* ----------------------------------------------------------------------- */
 
-   numPrevRetained = max(0, min(min(
-         numPrevRetained,
-         primme->maxBasisSize - restartSize - 1),
-         primme->n - restartSize - *numConverged - primme->numOrthoConst));
+   numPrevRetained =
+         max((PRIMME_INT)0, min((PRIMME_INT)min(numPrevRetained,
+                                      primme->maxBasisSize - restartSize - 1),
+                                  primme->n - restartSize - *numConverged -
+                                        primme->numOrthoConst));
 
    /* ----------------------------------------------------------------------- */
    /* Restarting with a small number of coefficient vectors from the previous */
@@ -633,7 +634,7 @@ STATIC int restart_soft_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
          if (flags[i] == CONVERGED) {
             if (*numConverged == 0) primme->stats.maxConvTol = 0.0;
             primme->stats.maxConvTol =
-               max(primme->stats.maxConvTol, resNorms[i]);
+                  max(primme->stats.maxConvTol, (double)resNorms[i]);
          }
          (*numConverged)++;
       }
@@ -1199,7 +1200,8 @@ STATIC int restart_locking_Sprimme(int *restartSize, SCALAR *V, SCALAR *W,
 
          /* Update maxConvTol if it wasn't practically converged */
          if (flags[i] == CONVERGED) {
-            primme->stats.maxConvTol = max(primme->stats.maxConvTol, resNorm);
+            primme->stats.maxConvTol =
+                  max(primme->stats.maxConvTol, (double)resNorm);
          }
       }
    }
@@ -1300,7 +1302,7 @@ int Num_aux_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV,
    /* Don't trust residual norm smaller than the error in the residual norm */
 
    for (i = 0; i < nre - nrb; i++) {
-      rnorms[i] = max(rnorms[i], primme->stats.estimateResidualError);
+      rnorms[i] = max((double)rnorms[i], primme->stats.estimateResidualError);
    }
 
    /* Update VtBV */
@@ -2500,7 +2502,7 @@ STATIC int compute_residual_columns(PRIMME_INT m, HEVAL *evals, SCALAR *x,
       PRIMME_INT ldro, SCALAR *xd, SCALAR *Bxd, int nd, int *pd,
       PRIMME_INT ldxd, SCALAR *rd, PRIMME_INT ldrd, primme_context ctx) {
 
-   int i, id, k, io, M=min(m,PRIMME_BLOCK_SIZE);
+   int i, id, k, io, M = min(m, (PRIMME_INT)PRIMME_BLOCK_SIZE);
 
    /* Quick exit */
 
@@ -2519,7 +2521,7 @@ STATIC int compute_residual_columns(PRIMME_INT m, HEVAL *evals, SCALAR *x,
    CHKERR(Num_malloc_Sprimme(nd*M, &R0, ctx));
    if (Bxo) CHKERR(Num_malloc_Sprimme(nd*M, &BX0, ctx));
 
-   for (k=0; k<m; k+=M, M=min(M,m-k)) {
+   for (k = 0; k < m; k += M, M = min((PRIMME_INT)M, m - k)) {
       for (i=id=io=0; i < n || id < nd; id++) {
          if (id < nd && io < no && pd[id] == io+io0) {
             CHKERR(Num_copy_matrix_Sprimme(

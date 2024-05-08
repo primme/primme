@@ -694,7 +694,8 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
          /* N(i) = ||Xc(:,i)||; normXc = max ||N(i)|| */
 
          for (i=0; i<b2-b1; i++) {
-            N[i] = sqrt(max(ABS(C[(b2-b1)*i+i]), eps_orth));
+            N[i] = sqrt(
+                  max((double)ABS(C[(b2 - b1) * i + i]), (double)eps_orth));
          }
          for (i = 0; i < b2 - b1; i++)
             for (j = 0; j <= i; j++) C[(b2 - b1) * i + j] /= N[i] * N[j];
@@ -706,7 +707,7 @@ STATIC int Bortho_block_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *VLtBVL,
          /* D = sqrt(D) */
 
          for (i=0; i<b2-b1; i++) {
-            D[i] = sqrt(max(D[i], eps_orth * (b2 - b1)));
+            D[i] = sqrt(max((double)D[i], eps_orth * (b2 - b1)));
          }
       }
 
@@ -854,11 +855,12 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
             "C", "N", nQ, nX, mQ, 1.0, Q, ldQ, X, ldX, 0.0, y, nQ, ctx));
    }
    else {
-      int m=min(M, mQ);
+      int m = min((PRIMME_INT)M, mQ);
       SCALAR *X0;
       CHKERR(Num_malloc_Sprimme(m*nX, &X0, ctx));
       CHKERR(Num_zero_matrix_SHprimme(y, nQ, nX, nQ, ctx));
-      for (i=0, m=min(M,mQ); i < mQ; i+=m, m=min(m,mQ-i)) {
+      for (i = 0, m = min((PRIMME_INT)M, mQ); i < mQ;
+            i += m, m = min((PRIMME_INT)m, mQ - i)) {
          CHKERR(Num_copy_matrix_columns_Sprimme(
                &X[i], m, inX, nX, ldX, X0, NULL, m, ctx));
          CHKERR(Num_gemm_ddh_Sprimme(
@@ -894,12 +896,12 @@ int ortho_single_iteration_Sprimme(SCALAR *Q, int nQ, PRIMME_INT ldQ,
    /* X = X - BQ*(QtBQ\y); norms(i) = norm(X(i)) */
 
    SCALAR *X0 = NULL;
-   int m=min(M, mQ);
+   int m = min((PRIMME_INT)M, mQ);
    if (inX) {
       CHKERR(Num_malloc_Sprimme(m*nX, &X0, ctx));
    }
    if (norms) for (i=0; i<nX; i++) norms[i] = 0.0;
-   for (i=0; i < mQ; i+=m, m=min(m,mQ-i)) {
+   for (i = 0; i < mQ; i += m, m = min((PRIMME_INT)m, mQ - i)) {
       if (inX) {
          CHKERR(Num_copy_matrix_columns_Sprimme(
                &X[i], m, inX, nX, ldX, X0, NULL, m, ctx));
@@ -975,13 +977,15 @@ STATIC int Num_ortho_kernel(SCALAR *Q, PRIMME_INT M, int nQ, PRIMME_INT ldQ,
 
    if (D && Y) {
       if (nX == 1) {
-         m = min(PRIMME_BLOCK_SIZE, M);   /* Number of rows in the cache */
+         m = min((PRIMME_INT)PRIMME_BLOCK_SIZE,
+               M); /* Number of rows in the cache */
          if (!Yortho) {
             Y[0] = (HSCALAR)1.0/Y[0];
             Yortho = 1;
          }
       } else {
-         m = min(PRIMME_BLOCK_SIZE, M);   /* Number of rows in the cache */
+         m = min((PRIMME_INT)PRIMME_BLOCK_SIZE,
+               M); /* Number of rows in the cache */
       }
       if (Yortho) {
          CHKERR(Num_malloc_Sprimme(m * nX, &Xo, ctx));
@@ -1167,7 +1171,7 @@ STATIC int decomposition(HSCALAR *H, int n, int ldH, HSCALAR *Y, int ldY,
 STATIC int rank_estimation(HSCALAR *V, int n0, int n1, int n, int ldV) {
 
    int i, j;
-   HREAL threashold = max(.8 / n, MACHINE_EPSILON);
+   HREAL threashold = max((HREAL).8 / n, MACHINE_EPSILON);
    for(i=n0; i<n1; i++) {
       HREAL Vii = REAL_PART(V[i * ldV + i]);
       if (!ISFINITE(Vii) || Vii <= (HREAL)0.0) break;
@@ -1215,7 +1219,7 @@ int orthogonality_error_Sprimme(
                              CONJ(VtV[i * ldVtV + i] - (HSCALAR)1.0));
          for (j = i + 1; j < n; j++)
             norm_i += REAL_PART(VtV[j * ldVtV + i] * CONJ(VtV[j * ldVtV + i]));
-         norm = max(norm, sqrt(norm_i));
+         norm = max(norm, (HREAL)sqrt(norm_i));
       }
    }
    CHKERR(broadcast_RHprimme(&norm, 1, ctx));

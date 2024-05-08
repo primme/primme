@@ -563,14 +563,18 @@ void primme_set_defaults(primme_params *primme) {
    if (primme->maxBasisSize == 0) {
       if (primme->target==primme_smallest || primme->target==primme_largest)
          primme->maxBasisSize = min(primme->n - primme->numOrthoConst,
-               max(max(15, 4 * primme->maxBlockSize +
-                                 primme->restartingParams.maxPrevRetain),
+               (PRIMME_INT)max(
+                     (double)max(
+                           15, 4 * primme->maxBlockSize +
+                                     primme->restartingParams.maxPrevRetain),
                      2.5 * primme->minRestartSize +
                            primme->restartingParams.maxPrevRetain));
       else
          primme->maxBasisSize = min(primme->n - primme->numOrthoConst,
-               max(max(35, 5 * primme->maxBlockSize +
-                                 primme->restartingParams.maxPrevRetain),
+               (PRIMME_INT)max(
+                     (double)max(
+                           35, 5 * primme->maxBlockSize +
+                                     primme->restartingParams.maxPrevRetain),
                      1.7 * primme->minRestartSize +
                            primme->restartingParams.maxPrevRetain));
    }
@@ -588,22 +592,22 @@ void primme_set_defaults(primme_params *primme) {
       /* restart=basis-block*ceil((basis-restart-prevRetain)/block)-prevRetain*/
       if (primme->maxBlockSize > 1) {
          if (primme->restartingParams.maxPrevRetain > 0)
-            primme->minRestartSize =
-                  max(1, primme->maxBasisSize -
-                               primme->maxBlockSize *
-                                     (1 + (primme->maxBasisSize -
-                                                primme->minRestartSize - 1 -
-                                                primme->restartingParams
-                                                      .maxPrevRetain) /
-                                                 (double)primme->maxBlockSize) -
-                               primme->restartingParams.maxPrevRetain);
+            primme->minRestartSize = max(
+                  1., primme->maxBasisSize -
+                            primme->maxBlockSize *
+                                  (1 + (primme->maxBasisSize -
+                                             primme->minRestartSize - 1 -
+                                             primme->restartingParams
+                                                   .maxPrevRetain) /
+                                              (double)primme->maxBlockSize) -
+                            primme->restartingParams.maxPrevRetain);
          else
-            primme->minRestartSize =
-                  max(1, primme->maxBasisSize -
-                               primme->maxBlockSize *
-                                     (1 + (primme->maxBasisSize -
-                                                primme->minRestartSize - 1) /
-                                                 (double)primme->maxBlockSize));
+            primme->minRestartSize = max(
+                  1., primme->maxBasisSize -
+                            primme->maxBlockSize *
+                                  (1 + (primme->maxBasisSize -
+                                             primme->minRestartSize - 1) /
+                                              (double)primme->maxBlockSize));
       }
    }
 

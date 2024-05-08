@@ -74,8 +74,8 @@ int Num_compute_residuals_Sprimme(PRIMME_INT m, int n, HEVAL *eval,
 #ifdef USE_HOST
    int j;
    for (j = 0; j < n; j++) {
-      int k, M = min(m, PRIMME_BLOCK_SIZE);
-      for (k = 0; k < m; k += M, M = min(M, m - k)) {
+      int k, M = min(m, (PRIMME_INT)PRIMME_BLOCK_SIZE);
+      for (k = 0; k < m; k += M, M = min((PRIMME_INT)M, m - k)) {
          CHKERR(Num_copy_Sprimme(
                M, &Ax[ldAx * j + k], 1, &r[ldr * j + k], 1, ctx));
          CHKERR(Num_axpy_Sprimme(
@@ -172,7 +172,8 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
  
    PRIMME_INT i;     /* Loop variables */
    int j;            /* Loop variables */
-   int m=min(PRIMME_BLOCK_SIZE, mV);   /* Number of rows in the cache */
+   int m = min(
+         (PRIMME_INT)PRIMME_BLOCK_SIZE, mV); /* Number of rows in the cache */
    int nXb, nXe, nYb, nYe, nBXb, nBXe, ldG0=0, ldH0=0;
    PRIMME_INT ldX, ldY, ldBX;
    SCALAR *X, *Y, *BX;
@@ -250,7 +251,7 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
    if (H) CHKERR(Num_zero_matrix_SHprimme(H0, nH, nH, ldH0, ctx));
    if (xnorms) for (i=nxb; i<nxe; i++) xnorms[i-nxb] = 0.0;
 
-   for (i=0; i < mV; i+=m, m=min(m,mV-i)) {
+   for (i = 0; i < mV; i += m, m = min((PRIMME_INT)m, mV - i)) {
       /* X = V*h(nXb:nXe-1) */
       CHKERR(Num_gemm_dhd_Sprimme("N", "N", m, nXe-nXb, nV, 1.0,
          &V[i], ldV, &h[nXb*ldh], ldh, 0.0, X, ldX, ctx));
@@ -361,9 +362,9 @@ int Num_update_VWXR_Sprimme(SCALAR *V, SCALAR *W, SCALAR *BV, PRIMME_INT mV,
       if (xnorms) for (i=nxb; i<nxe; i++) tmp[j++] = xnorms[i-nxb];
       if (j) CHKERR(globalSum_RHprimme(tmp, j, ctx));
       j = 0;
-      if (Rnorms) for (i=nRb; i<nRe; i++) Rnorms[i-nRb] = sqrt(tmp[j++]);
-      if (rnorms) for (i=nrb; i<nre; i++) rnorms[i-nrb] = sqrt(tmp[j++]);
-      if (xnorms) for (i=nxb; i<nxe; i++) xnorms[i-nxb] = sqrt(tmp[j++]);
+      if (Rnorms) for (i=nRb; i<nRe; i++, j++) Rnorms[i-nRb] = sqrt(tmp[j]);
+      if (rnorms) for (i=nrb; i<nre; i++, j++) rnorms[i-nrb] = sqrt(tmp[j]);
+      if (xnorms) for (i=nxb; i<nxe; i++, j++) xnorms[i-nxb] = sqrt(tmp[j]);
       CHKERR(Num_free_RHprimme(tmp, ctx));
    }
    else {

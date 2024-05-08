@@ -511,7 +511,7 @@ int machineEpsMatrix_Sprimme(double *eps, primme_context ctx) {
             primme->massMatrixMatvec_type, &eps_massmatvec));
    }
 
-   *eps = max(max(MACHINE_EPSILON, eps_matvec), eps_massmatvec);
+   *eps = max(max((double)MACHINE_EPSILON, eps_matvec), eps_massmatvec);
 
    return 0;
 }
@@ -546,7 +546,7 @@ int machineEpsOrth_Sprimme(double *eps, primme_context ctx) {
       }
    }
 
-   *eps = max(max(MACHINE_EPSILON, eps_globalsum), eps_broadcast);
+   *eps = max(max((double)MACHINE_EPSILON, eps_globalsum), eps_broadcast);
 
    return 0;
 }

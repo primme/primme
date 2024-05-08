@@ -157,12 +157,12 @@ int solve_H_Sprimme(SCALAR *H, int basisSize, int ldH, SCALAR *VtBV, int ldVtBV,
    /* Update the leftmost and rightmost Ritz values ever seen  */
    /* -------------------------------------------------------- */
    for (i = 0; i < (partial ? *partial : basisSize); i++) {
-      ctx.primme->stats.estimateMinEVal =
-            min(ctx.primme->stats.estimateMinEVal, EVAL_REAL_PART(hVals[i]));
-      ctx.primme->stats.estimateMaxEVal =
-            max(ctx.primme->stats.estimateMaxEVal, EVAL_REAL_PART(hVals[i]));
-      ctx.primme->stats.estimateLargestSVal =
-            max(ctx.primme->stats.estimateLargestSVal, EVAL_ABS(hVals[i])); 
+      ctx.primme->stats.estimateMinEVal = min(ctx.primme->stats.estimateMinEVal,
+            (double)EVAL_REAL_PART(hVals[i]));
+      ctx.primme->stats.estimateMaxEVal = max(ctx.primme->stats.estimateMaxEVal,
+            (double)EVAL_REAL_PART(hVals[i]));
+      ctx.primme->stats.estimateLargestSVal = max(
+            ctx.primme->stats.estimateLargestSVal, (double)EVAL_ABS(hVals[i]));
    }
 
    return 0;
@@ -1163,7 +1163,7 @@ int prepare_vecs_Sprimme(int basisSize, int i0, int blockSize, SCALAR *H,
          HREAL sval0_i = min(0.0, hSVals[i] - primme->stats.estimateErrorOnA);
          HREAL sval1_i = hSVals[i] + primme->stats.estimateErrorOnA;
          HREAL sval1_j = hSVals[j] + primme->stats.estimateErrorOnA;
-         if (max(0.0, sval0_i * sval0_i - sval1_j * sval1_j) >=
+         if (max((HREAL)0, sval0_i * sval0_i - sval1_j * sval1_j) >=
                2 * sval1_i * sval1_i * primme->stats.estimateOrthoError)
             break;
       }
