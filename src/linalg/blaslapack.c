@@ -563,7 +563,11 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, PRIMME_INT m,
       }
       return 0;
    }
-   if (n == 1) {
+   if (n == 1
+#ifdef USE_COMPLEX
+         && *transb != 'c' && *transb != 'C'
+#endif
+   ) {
       PRIMME_INT mA; PRIMME_INT nA;
       if (*transa == 'n' || *transa == 'N') mA = m, nA = k;
       else mA = k, nA = m;
