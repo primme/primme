@@ -2,7 +2,7 @@
 
 import numpy as np
 cimport numpy as np
-from scipy.sparse.linalg.interface import aslinearoperator
+from scipy.sparse.linalg import aslinearoperator
 cimport cython
 from cython cimport view
 try:
@@ -21,7 +21,7 @@ ctypedef fused numerics_real:
     double
 
 # Exception captured in user-defined functions
-cpdef Exception __user_function_exception = None
+cdef Exception __user_function_exception = None
 
 cdef np.dtype get_np_type(numerics *p):
     if numerics == double: return np.dtype(np.double)
@@ -80,12 +80,12 @@ cdef extern from "../include/primme.h":
     int primme_constant_info(const char* label_name, int *value)
 
 # Block size passed in a callback such as matrixMatvec, massMatrixMatvec, applyPreconditioner
-cpdef int __current_block_size  = -1
+cdef int __current_block_size  = -1
 # Current primme_params running
 __current_primme_params = None
 
 cdef class PrimmeParams:
-    cpdef primme_params *pp
+    cdef primme_params *pp
     def __cinit__(self):
         self.pp = primme_params_create()
         if self.pp is NULL:
@@ -868,7 +868,7 @@ cdef extern from "../include/primme.h":
 
 
 cdef class PrimmeSvdsParams:
-    cpdef primme_svds_params *pp
+    cdef primme_svds_params *pp
     def __cinit__(self):
         self.pp = primme_svds_params_create()
         if self.pp is NULL:
