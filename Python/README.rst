@@ -104,9 +104,9 @@ the webpage http://www.cs.wm.edu/~andreas/software.
 .. _PRIMME: https://github.com/primme/primme
 .. _`Andreas Stathopoulos`: http://www.cs.wm.edu/~andreas/software
 .. _`github`: https://github.com/primme/primme
-.. _`doc`: http://www.cs.wm.edu/~andreas/software/doc/readme.html
-.. _PETSc : http://www.mcs.anl.gov/petsc/
+.. _`doc`: https://www.cs.wm.edu/~andreas/software/doc/readme.html
+.. _PETSc : https://www.mcs.anl.gov/petsc/
 .. _`bibtex`: https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib
-.. _eigsh: http://www.cs.wm.edu/~andreas/software/doc/pyeigsh.html
-.. _svds: http://www.cs.wm.edu/~andreas/software/doc/pysvds.html
+.. _eigsh: https://www.cs.wm.edu/~andreas/software/doc/pyeigsh.html
+.. _svds: https://www.cs.wm.edu/~andreas/software/doc/pysvds.html
 .. _examples: https://github.com/primme/primme/blob/master/Python/examples.py
