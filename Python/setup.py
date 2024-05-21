@@ -42,19 +42,17 @@ def get_numpy_options():
       r = dict( libraries = ['lapack', 'blas'] )
           
    r['define_macros'] = r.get('define_macros', []) + [("NDEBUG", None), ("F77UNDERSCORE", None)]
-   r['include_dirs'] = [numpy_include, "src/primme/include"]
+   r['include_dirs'] = [numpy_include, "src/primme/include", "src/primme/svds", "src/primme/eigs", "src/primme/linalg"]
 
    return r
 
-import sys
 from setuptools import setup, Extension
 
 try:
    import numpy
-except:
-   raise Exception("numpy not installed; please, install numpy and scipy before primme")
-else:
    extra_options = get_numpy_options()
+except:
+   extra_options = {}
 
 _Primme = Extension(name="primme",
                    sources=["primme.pyx",

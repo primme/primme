@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "numpy", "scipy"]
+requires = ["setuptools>=61.0", "numpy", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -30,6 +30,7 @@ classifiers = [
     'Operating System :: MacOS',
 ]
 license = {text = "BSD License"}
+dependencies = ["numpy", "scipy"]
 
 [project.urls]
 Homepage = "https://www.cs.wm.edu/~andreas/software"

@@ -6,7 +6,7 @@ all: update
 install:
 	$(PYTHON) ./setup.py install
 
-update:
+update: primme.c
 	rm -rf src
 	mkdir -p src/primme src/primme/include src/primme/linalg src/primme/eigs src/primme/svds
 	cd ..; cp include/*.h Python/src/primme/include
@@ -20,9 +20,12 @@ test: examples.py
 all_tests: tests.py examples.py
 	$(PYTHON) tests.py
 
+primme.c: primme.pyx
+	cython primme.pyx
+
 # Clean target
 clean:
-	$(RM) -rf build primme.*so primme.egg-info __pycache__ src
+	$(RM) -rf build primme.*so primme.egg-info __pycache__ src dist
 
 veryclean: clean
 

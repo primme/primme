@@ -52,7 +52,7 @@ def __get_real_dtype(dtype):
         return np.dtype(np.float64)
 
 
-cdef extern from "../include/primme.h":
+cdef extern from "src/primme/include/primme.h":
     struct primme_params:
         pass
     ctypedef int primme_preset_method
@@ -838,7 +838,7 @@ def get_eigsh_param(field):
 
     return __primme_params_get(__current_primme_params, field)
  
-cdef extern from "../include/primme.h":
+cdef extern from "src/primme/include/primme.h":
     struct primme_svds_params:
         pass
     ctypedef int primme_svds_preset_method
