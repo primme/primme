@@ -62,7 +62,7 @@ octave: clean clean_lib
 	@$(MAKE) lib PRIMME_WITH_MAGMA=no
 	@$(MAKE) -C Matlab octave
 
-python: clean clean_lib lib
+python: clean
 	@$(MAKE) -C Python clean all
 
 python_install: python

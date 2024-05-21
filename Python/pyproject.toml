@@ -37,5 +37,6 @@ Repository = "https://github.com/primme/primme"
 Documentation = "https://www.cs.wm.edu/~andreas/software/doc/readme.html"
 Issues = "https://github.com/primme/primme/issues"
 
-
-
+[tool.setuptools.packages.find]
+exclude = ["src*", "compare*"]
+namespaces = false
