@@ -403,9 +403,30 @@ static inline const char *__compose_function_name(const char *path,
 #endif
 
 #ifdef PRIMME_PROFILE_NV
+#ifdef PRIMME_WITH_CUDA
 #include <nvToolsExt.h>
 #define PROFILE_NV_BEGIN(CALL) nvtxRangePush(CALL);
 #define PROFILE_NV_END         nvtxRangePop();
+#elif defined(PRIMME_WITH_HIPBLAS)
+#include <roctracer/roctx.h>
+#define PROFILE_NV_BEGIN(CALL)                                                 \
+   {                                                                           \
+      /* Limit the call to 100 characteres and remove " (brakes json) */       \
+      char _aux_str__[100];                                                    \
+      const char *_str = (CALL);                                               \
+      for (int i = 0, j = 0; i < 100; ++i) {                                   \
+         if (_str[i] == 0 || i == 99) {                                        \
+            _aux_str__[j] = 0;                                                 \
+            break;                                                             \
+         } else if (_str[i] != '"')                                            \
+            _aux_str__[j++] = _str[i];                                         \
+      }                                                                        \
+      roctxRangePush(_aux_str__);                                              \
+   }
+#define PROFILE_NV_END roctxRangePop();
+#else
+#error "Unsupported GPU system for profiling"
+#endif
 #else
 #define PROFILE_NV_BEGIN(CALL)
 #define PROFILE_NV_END

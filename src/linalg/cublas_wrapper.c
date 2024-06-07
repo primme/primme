@@ -376,8 +376,14 @@ int Num_set_matrix_Sprimme(HSCALAR *x, PRIMME_INT m, PRIMME_INT n,
    CHKERR(Num_matrix_astype_SHprimme(x, m, n, ldx, PRIMME_OP_HSCALAR,
          (void **)&x0, &ldx0, PRIMME_OP_SCALAR, 1 /* alloc */, 1 /* copy */,
          ctx));
-   CHKERRCUDA(GPU_SYMBOL(Memcpy2D)(y, sizeof(SCALAR) * ldy, x0, sizeof(SCALAR) * ldx0,
-         sizeof(SCALAR) * m, n, GPU_SYMBOL(MemcpyHostToDevice)));
+   if (n == 1 || (ldx0 == m && ldy == m)) {
+      CHKERRCUDA(GPU_SYMBOL(Memcpy)(
+            y, x0, sizeof(SCALAR) * m * n, GPU_SYMBOL(MemcpyHostToDevice)));
+   } else {
+      CHKERRCUDA(GPU_SYMBOL(Memcpy2D)(y, sizeof(SCALAR) * ldy, x0,
+            sizeof(SCALAR) * ldx0, sizeof(SCALAR) * m, n,
+            GPU_SYMBOL(MemcpyHostToDevice)));
+   }
    CHKERRCUDA(GPU_SYMBOL(DeviceSynchronize)());
    if ((XSCALAR *)x != x0) CHKERR(Num_free_SXprimme(x0, ctx));
 
@@ -385,7 +391,8 @@ int Num_set_matrix_Sprimme(HSCALAR *x, PRIMME_INT m, PRIMME_INT n,
 }
 
 /******************************************************************************
- * Function Num_get_matrix_Sprimme - Copy the matrix x from device into y on host
+ * Function Num_get_matrix_Sprimme - Copy the matrix x from device into y on
+ * host
  *
  * PARAMETERS
  * ---------------------------
@@ -411,8 +418,14 @@ int Num_get_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    CHKERR(Num_matrix_astype_SHprimme(y, m, n, ldy, PRIMME_OP_HSCALAR,
          (void **)&y0, &ldy0, PRIMME_OP_SCALAR, 1 /* alloc */,
          0 /* don't copy */, ctx));
-   CHKERRCUDA(GPU_SYMBOL(Memcpy2D)(y0, sizeof(SCALAR) * ldy0, x, sizeof(SCALAR) * ldx,
-         sizeof(SCALAR) * m, n, GPU_SYMBOL(MemcpyDeviceToHost)));
+   if (n == 1 || (ldx == m && ldy0 == m)) {
+      CHKERRCUDA(GPU_SYMBOL(Memcpy)(
+            y0, x, sizeof(SCALAR) * m * n, GPU_SYMBOL(MemcpyDeviceToHost)));
+   } else {
+      CHKERRCUDA(GPU_SYMBOL(Memcpy2D)(y0, sizeof(SCALAR) * ldy0, x,
+            sizeof(SCALAR) * ldx, sizeof(SCALAR) * m, n,
+            GPU_SYMBOL(MemcpyDeviceToHost)));
+   }
    CHKERRCUDA(GPU_SYMBOL(DeviceSynchronize)());
    CHKERR(Num_matrix_astype_SHprimme(y0, m, n, ldy0, PRIMME_OP_SCALAR,
          (void **)&y, &ldy, PRIMME_OP_HSCALAR, -1 /* destroy */, 1 /* copy */,
@@ -438,19 +451,21 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    if (k == 0 || ABS(alpha) == 0.0) {
       if (ABS(beta) == 0.0) {
          CHKERR(Num_zero_matrix_Sprimme(c, m, n, ldc, ctx));
-      }
-      else if (beta != (HSCALAR)1.0) {
+      } else if (beta != (HSCALAR)1.0) {
          int i;
-         for (i=0; i<n; i++) {
-            CHKERR(Num_scal_Sprimme(m, beta, &c[ldc*i], 1, ctx));
+         for (i = 0; i < n; i++) {
+            CHKERR(Num_scal_Sprimme(m, beta, &c[ldc * i], 1, ctx));
          }
       }
       return 0;
    }
    if (n == 1) {
-      PRIMME_INT mA; int nA;
-      if (*transa == 'n' || *transa == 'N') mA = m, nA = k;
-      else mA = k, nA = m;
+      PRIMME_INT mA;
+      int nA;
+      if (*transa == 'n' || *transa == 'N')
+         mA = m, nA = k;
+      else
+         mA = k, nA = m;
       int incb = ((*transb == 'n' || *transb == 'N') ? 1 : ldb);
       return Num_gemv_Sprimme(
             transa, mA, nA, alpha, a, lda, b, incb, beta, c, 1, ctx);
@@ -464,8 +479,10 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    XSCALAR salpha, sbeta;
    SET_COMPLEX(salpha, alpha);
    SET_COMPLEX(sbeta, beta);
-   gpuDataType t; toCudaDataType(PRIMME_OP_SCALAR, &t);
-   gpuComputeDataType tc; toCublasComputeDataType(PRIMME_OP_SCALAR, &tc);
+   gpuDataType t;
+   toCudaDataType(PRIMME_OP_SCALAR, &t);
+   gpuComputeDataType tc;
+   toCublasComputeDataType(PRIMME_OP_SCALAR, &tc);
    CHKERRGPUBLAS(GPUBLAS_SYMBOL(GemmEx)(gpu_handle, toCublasOperation(*transa),
          toCublasOperation(*transb), m, n, k, (const void *)&salpha,
          (const void *)a, t, lda, (const void *)b, t, ldb, (const void *)&sbeta,
@@ -473,7 +490,6 @@ int Num_gemm_Sprimme(const char *transa, const char *transb, int m, int n,
    return 0;
 #endif
 }
-
 
 /*******************************************************************************
  * Subroutine Num_gemm_dhd_Sprimme - C = op(A)*op(B), with C size m x n
@@ -493,7 +509,7 @@ int Num_gemm_dhd_Sprimme(const char *transa, const char *transb, int m, int n,
    int nb = (*transb == 'N' || *transb == 'n') ? n : k;
 
    SCALAR *b_dev; /* copy of b on device */
-   CHKERR(Num_malloc_Sprimme(mb*nb, &b_dev, ctx));
+   CHKERR(Num_malloc_Sprimme(mb * nb, &b_dev, ctx));
    CHKERR(Num_set_matrix_Sprimme(b, mb, nb, ldb, b_dev, mb, ctx));
    CHKERR(Num_gemm_Sprimme(
          transa, transb, m, n, k, alpha, a, lda, b_dev, mb, beta, c, ldc, ctx));
@@ -516,7 +532,7 @@ int Num_gemm_ddh_Sprimme(const char *transa, const char *transb, int m, int n,
    if (m == 0 || n == 0) return 0;
 
    SCALAR *c_dev; /* copy of c on device */
-   CHKERR(Num_malloc_Sprimme(m*n, &c_dev, ctx));
+   CHKERR(Num_malloc_Sprimme(m * n, &c_dev, ctx));
    if (ABS(beta) != 0) {
       CHKERR(Num_set_matrix_Sprimme(c, m, n, ldc, c_dev, m, ctx));
    } else {
@@ -550,8 +566,7 @@ int Num_gemv_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
    if (nA == 0) {
       if (ABS(beta) == 0.0) {
          CHKERR(Num_zero_matrix_Sprimme(y, 1, mA, incy, ctx));
-      }
-      else {
+      } else {
          CHKERR(Num_scal_Sprimme(mA, beta, y, incy, ctx));
       }
       return 0;
@@ -645,8 +660,8 @@ int Num_gemv_dhd_Sprimme(const char *transa, PRIMME_INT m, int n, HSCALAR alpha,
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, 
-   SCALAR *y, int incy, primme_context ctx) {
+int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
+      SCALAR *y, int incy, primme_context ctx) {
 
    /* Zero dimension matrix may cause problems */
    if (n == 0) return 0;
@@ -664,7 +679,8 @@ int Num_axpy_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
    GPUBLAS_SYMBOL(Handle_t) gpu_handle = *(GPUBLAS_SYMBOL(Handle_t) *)ctx.queue;
    XSCALAR salpha;
    SET_COMPLEX(salpha, alpha);
-   gpuDataType t; toCudaDataType(PRIMME_OP_SCALAR, &t);
+   gpuDataType t;
+   toCudaDataType(PRIMME_OP_SCALAR, &t);
    CHKERRGPUBLAS(GPUBLAS_SYMBOL(AxpyEx)(gpu_handle, n, (const void *)&salpha, t,
          (const void *)x, t, incx, y, t, incy, t));
    return 0;
@@ -689,13 +705,15 @@ HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
    (void)incy;
    (void)ctx;
    float nan2[2] = {NAN, NAN};
-   return *(HSCALAR*)&nan2;
+   return *(HSCALAR *)&nan2;
 
 #else
    GPUBLAS_SYMBOL(Handle_t) gpu_handle = *(GPUBLAS_SYMBOL(Handle_t) *)ctx.queue;
    HSCALAR result;
-   gpuDataType t; toCudaDataType(PRIMME_OP_SCALAR, &t);
-   gpuDataType tr; toCudaDataType(PRIMME_OP_HSCALAR, &tr);
+   gpuDataType t;
+   toCudaDataType(PRIMME_OP_SCALAR, &t);
+   gpuDataType tr;
+   toCudaDataType(PRIMME_OP_HSCALAR, &tr);
    CHKERRGPUBLAS(GPUBLAS_SYMBOL(DotcEx)(
          gpu_handle, n, x, t, incx, y, t, incy, &result, tr, t));
    return result;
@@ -705,10 +723,10 @@ HSCALAR Num_dot_Sprimme(PRIMME_INT n, SCALAR *x, int incx, SCALAR *y, int incy,
 /*******************************************************************************
  * Subroutine Num_scal_Sprimme - x(0:n*incx-1:incx) *= alpha
  ******************************************************************************/
- 
+
 TEMPLATE_PLEASE
-int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
-      primme_context ctx) {
+int Num_scal_Sprimme(
+      PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx, primme_context ctx) {
 
    /* Zero dimension matrix may cause problems */
    if (n == 0) return 0;
@@ -724,7 +742,8 @@ int Num_scal_Sprimme(PRIMME_INT n, HSCALAR alpha, SCALAR *x, int incx,
    GPUBLAS_SYMBOL(Handle_t) gpu_handle = *(GPUBLAS_SYMBOL(Handle_t) *)ctx.queue;
    XSCALAR salpha;
    SET_COMPLEX(salpha, alpha);
-   gpuDataType t; toCudaDataType(PRIMME_OP_SCALAR, &t);
+   gpuDataType t;
+   toCudaDataType(PRIMME_OP_SCALAR, &t);
    CHKERRGPUBLAS(
          GPUBLAS_SYMBOL(ScalEx)(gpu_handle, n, &salpha, t, x, t, incx, t));
    return 0;
@@ -769,17 +788,21 @@ int Num_larnv_Sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
 
 TEMPLATE_PLEASE
 int Num_copy_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy,
-      primme_context ctx) {
+      PRIMME_INT ldx, SCALAR *y, PRIMME_INT ldy, primme_context ctx) {
 
    assert(m == 0 || n == 0 || (ldx >= m && ldy >= m));
 
    /* Do nothing if x and y are the same matrix */
-   if ((x == y && ldx == ldy) || m == 0 || n == 0)
-      return 0;
+   if ((x == y && ldx == ldy) || m == 0 || n == 0) return 0;
 
-   CHKERRCUDA(GPU_SYMBOL(Memcpy2D)(y, sizeof(SCALAR) * ldy, x, sizeof(SCALAR) * ldx,
-         sizeof(SCALAR) * m, n, GPU_SYMBOL(MemcpyDeviceToDevice)));
+   if (n == 1 || (ldx == m && ldy == m)) {
+      CHKERRCUDA(GPU_SYMBOL(Memcpy)(
+            y, x, sizeof(SCALAR) * m * n, GPU_SYMBOL(MemcpyDeviceToDevice)));
+   } else {
+      CHKERRCUDA(GPU_SYMBOL(Memcpy2D)(y, sizeof(SCALAR) * ldy, x,
+            sizeof(SCALAR) * ldx, sizeof(SCALAR) * m, n,
+            GPU_SYMBOL(MemcpyDeviceToDevice)));
+   }
 
    return 0;
 }
@@ -803,10 +826,15 @@ int Num_zero_matrix_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    /* Zero dimension matrix may cause problems */
    if (m == 0 || n == 0) return 0;
 
-   CHKERRCUDA(GPU_SYMBOL(Memset2D)(x, sizeof(SCALAR) * ldx, 0, sizeof(SCALAR) * m, n));
+   if (n == 1 || ldx == m) {
+      CHKERRCUDA(GPU_SYMBOL(Memset)(x, 0, sizeof(SCALAR) * m * n));
+   } else {
+      CHKERRCUDA(GPU_SYMBOL(Memset2D)(
+            x, sizeof(SCALAR) * ldx, 0, sizeof(SCALAR) * m, n));
+   }
 
    return 0;
-} 
+}
 
 /*******************************************************************************
  * Subroutine Num_trsm_hd_Sprimme - b = op(A)\b, where A is triangular

@@ -147,6 +147,21 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
 
    tol = sqrt(2.0L)/2.0L;
 
+   /*---------------------------------------------------*/
+   /* main loop to orthogonalize new vectors one by one */
+   /*---------------------------------------------------*/
+
+   t0 = primme_wTimer();
+
+   // Allocate overlaps and Bx
+
+   SCALAR *Bx = NULL;
+   CHKERR(Num_malloc_Sprimme(B?nLocal:0, &Bx, ctx));
+   if (b2_out) *b2_out = b1;
+   double eps_orth;
+   CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
+
+#ifdef USE_HOST
    /* Zero the columns from b1 to b2 of R */
    if (R) {
       CHKERR(Num_zero_matrix_SHprimme(
@@ -157,22 +172,9 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
             RLocked, numLocked, b2 - b1 + 1, ldRLocked, ctx));
    }
 
-   /*---------------------------------------------------*/
-   /* main loop to orthogonalize new vectors one by one */
-   /*---------------------------------------------------*/
-
-   t0 = primme_wTimer();
-
-   // Allocate overlaps and Bx
-
-   HSCALAR *overlaps;
-   CHKERR(Num_malloc_SHprimme(b2+1 + numLocked, &overlaps, ctx));
-   Num_zero_matrix_SHprimme(overlaps, 1, b2 + 1 + numLocked, 1, ctx);
-   SCALAR *Bx = NULL;
-   CHKERR(Num_malloc_Sprimme(B?nLocal:0, &Bx, ctx));
-   if (b2_out) *b2_out = b1;
-   double eps_orth;
-   CHKERR(machineEpsOrth_Sprimme(&eps_orth, ctx));
+   SCALAR *overlaps;
+   CHKERR(Num_malloc_Sprimme(b2 + numLocked + 1, &overlaps, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(overlaps, 1, b2 + numLocked+ 1, 1, ctx));
 
    for(i=b1; i <= b2; i++) {
     
@@ -201,7 +203,7 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
             }
 
             if (randomizations >= maxNumRandoms) {
-               goto clean;
+               goto ortho_out;
             }
             PRINTF(5, "Randomizing in ortho: %d, vector size of %" PRIMME_INT_P,
                   i, nLocal);
@@ -316,11 +318,159 @@ int Bortho_gen_Sprimme(SCALAR *V, PRIMME_INT ldV, HSCALAR *R, int ldR,
       }
       if (b2_out) *b2_out = i+1;
    }
+ortho_out:
+   CHKERR(Num_free_SHprimme(overlaps, ctx));
+#else // USE_HOST
+   /* Zero the columns from b1 to b2 of R */
+   SCALAR *R0 = NULL;
+   int ldR0 = b2 + 1;
+   if (R) {
+      CHKERR(Num_malloc_Sprimme((b2 + 1) * (b2 - b1), &R0, ctx));
+      CHKERR(Num_zero_matrix_Sprimme(R0, b2 + 1, b2 - b1 + 1, ldR0, ctx));
+   }
+   SCALAR *RLocked0 = NULL;
+   int ldRLocked0 = numLocked;
+   if (RLocked) {
+      CHKERR(Num_malloc_Sprimme(numLocked * (b2 - b1 + 1), &RLocked0, ctx));
+      CHKERR(Num_zero_matrix_Sprimme(
+            RLocked0, numLocked, b2 - b1 + 1, ldRLocked0, ctx));
+   }
 
-clean:
+   SCALAR *overlaps;
+   CHKERR(Num_malloc_Sprimme(b2 + 2 + numLocked, &overlaps, ctx));
+   CHKERR(Num_zero_matrix_Sprimme(overlaps, 1, b2 + 2 + numLocked, 1, ctx));
+   HREAL new_V_norms[b2 + 1 - b1];
+
+   for (i = b1; i <= b2; i++) {
+
+      int nOrth;          // number of orthogonalizations of the current vector
+      int randomizations; // times the current vector has been replaced by a
+                          // random vector
+      int reorth = 1;     // flag to keep iterating
+      int updateR =
+            (R || RLocked ? 1 : 0); // flag to keep updating R, after the first
+      int Bx_update = 0;            // flag indicating if Bx = B*V[i]
+                                    // randomization it is set to zero
+
+      for (nOrth = 0, randomizations = 0; reorth; nOrth++) {
+
+         if (nOrth >= maxNumOrthos) {
+            /* Stop updating R when replacing one of the columns of the V */
+            /* with a random vector                                           */
+
+            if (updateR) {
+               if (R) new_V_norms[i - b1] = 0;
+               updateR = 0;
+            }
+
+            if (randomizations >= maxNumRandoms) { goto ortho_out; }
+            PRINTF(5, "Randomizing in ortho: %d, vector size of %" PRIMME_INT_P,
+                  i, nLocal);
+
+            CHKERR(Num_larnv_Sprimme(2, iseed, nLocal, &V[ldV * i], ctx));
+            randomizations++;
+            nOrth = 0;
+            Bx_update = 0; // V[i] has changed, so Bx != B*V[i]
+         }
+
+         // Compute B*V[i]
+
+         if (B && !Bx_update) {
+            CHKERR(B(&V[ldV * i], ldV, Bx, nLocal, 1, Bctx));
+         } else if (!B) {
+            Bx = &V[ldV * i];
+         }
+
+         // V[0..i]'Bx
+         CHKERR(Num_gemv_Sprimme(
+               "C", nLocal, i + 1, 1.0, V, ldV, Bx, 1, 0.0, overlaps, 1, ctx));
+         if (primme) primme->stats.numOrthoInnerProds += i + 1;
+
+         CHKERR(Num_gemv_Sprimme("C", nLocal, numLocked, 1.0, locked, ldLocked,
+               Bx, 1, 0.0, &overlaps[i + 1], 1, ctx));
+         if (primme) primme->stats.numOrthoInnerProds += numLocked;
+
+         CHKERR(globalSum_Sprimme(overlaps, i + 1 + numLocked, ctx));
+
+         if (updateR) {
+            if (R) {
+               CHKERR(Num_axpy_Sprimme(
+                     i, 1.0, overlaps, 1, &R0[ldR0 * (i - b1)], 1, ctx));
+            }
+            if (RLocked) {
+               CHKERR(Num_axpy_Sprimme(numLocked, 1.0, overlaps + i + 1, 1,
+                     &RLocked0[ldRLocked0 * (i - b1)], 1, ctx));
+            }
+         }
+
+         CHKERR(Num_gemv_Sprimme("N", nLocal, i, -1.0, V, ldV, overlaps, 1, 1.0,
+               &V[ldV * i], 1, ctx));
+         if (primme) primme->stats.numOrthoInnerProds += i;
+
+         // Compute V[i] = V[i] - locked'*overlaps[i:i+numLocked-1]
+         CHKERR(Num_gemv_Sprimme("N", nLocal, numLocked, -1.0, locked, ldLocked,
+               &overlaps[i + 1], 1, 1.0, &V[ldV * i], 1, ctx));
+         if (primme) primme->stats.numOrthoInnerProds += numLocked;
+
+         if (nOrth >= 1) {
+            /* Compute the norm of V[i] explicitly */
+
+            if (B) {
+               CHKERR(B(&V[ldV * i], ldV, Bx, nLocal, 1, Bctx));
+               Bx_update = 1;
+            }
+            CHKERR(Num_gemv_Sprimme("C", nLocal, 1, 1.0, &V[ldV * i], ldV, Bx,
+                  1, 0.0, &overlaps[i + 1], 1, ctx));
+            if (primme) primme->stats.numOrthoInnerProds += 1;
+
+            CHKERR(globalSum_Sprimme(&overlaps[i + 1], 1, ctx));
+            XSCALAR overlaps_host[2];
+            CHKERR(Num_get_matrix_Sprimme(
+                  &overlaps[i], 2, 1, 2, overlaps_host, 2, ctx));
+
+            HREAL s0 = sqrt(REAL_PART(overlaps_host[0]));
+            HREAL s1 = sqrt(REAL_PART(overlaps_host[1]));
+            if (!ISFINITE(s0) || !ISFINITE(s1) || s1 <= eps_orth * s0) {
+               PRINTF(5, "Vector %d lost all significant digits in ortho",
+                     i - b1);
+               nOrth = maxNumOrthos;
+            } else if (s1 <= tol * s0 || (!primme && nOrth < maxNumOrthos)) {
+               /* No numerical benefit in normalizing the vector before reortho
+                */
+            } else {
+               if (updateR && R)
+                  new_V_norms[i - b1] = s1; // R[ldR * i + i] = s1;
+
+               if (ISFINITE((HREAL)(1.0 / s1))) {
+                  CHKERR(Num_scal_Sprimme(
+                        nLocal, 1.0 / s1, &V[ldV * i], 1, ctx));
+                  break;
+               } else {
+                  PRINTF(5, "Vector %d lost all significant digits in ortho",
+                        i - b1);
+                  nOrth = maxNumOrthos;
+               }
+            }
+         }
+      }
+      if (b2_out) *b2_out = i + 1;
+   }
+ortho_out:
+   CHKERR(Num_free_Sprimme(overlaps, ctx));
+   if (R) {
+      CHKERR(Num_get_matrix_Sprimme(
+            R0, b2, (i + 1 - b1), ldR0, &R[ldR * b1], ldR, ctx));
+      for (int j = 0; j < i + 1 - b1; ++j)
+         R[ldR * (j + b1) + j + b1] = new_V_norms[j];
+   }
+   if (RLocked) {
+      CHKERR(Num_get_matrix_Sprimme(RLocked0, numLocked, (i + 1 - b1),
+            ldRLocked0, RLocked, ldRLocked, ctx));
+   }
+#endif // USE_HOST
+
    if (primme) primme->stats.timeOrtho += primme_wTimer() - t0;
 
-   CHKERR(Num_free_SHprimme(overlaps, ctx));
    if (B) CHKERR(Num_free_Sprimme(Bx, ctx));
 
    /* Check orthogonality */

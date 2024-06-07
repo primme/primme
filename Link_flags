@@ -29,6 +29,9 @@ ifeq ($(origin LIBS), undefined)
     endif
     ifeq ($(PRIMME_WITH_HIPBLAS),yes)
          LIBS += -L$(ROCMDIR)/lib -lhipsparse -lhipblas -lamdhip64
+         ifeq ($(PRIMME_WITH_GPU_PROFILING), yes)
+            LIBS += -lroctx64
+         endif
     endif
     ifndef MKLROOT
         LIBS += -llapack -lblas -lm
