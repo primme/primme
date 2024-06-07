@@ -391,7 +391,7 @@ int globalSum_Tprimme(void *buffer_, primme_op_datatype buffert, int count,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   REAL *buffer = buffer_;
+   REAL *buffer = (REAL *)buffer_;
 
    /* Quick exit */
 
@@ -460,7 +460,7 @@ int broadcast_Tprimme(void *buffer_, primme_op_datatype buffert, int count,
       primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   REAL *buffer = buffer_;
+   REAL *buffer = (REAL *)buffer_;
    int ierr;
 
    /* Quick exit */
