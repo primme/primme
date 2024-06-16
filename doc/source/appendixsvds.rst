@@ -49,6 +49,8 @@ primme_svds_params
       calling  :c:func:`dprimme_svds` (or a variant), unless |SmatrixMatvec_type| sets
       another precision.
 
+      See more :ref:`exampleCode`.
+
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to NULL;
@@ -103,6 +105,8 @@ primme_svds_params
       calling  :c:func:`dprimme_svds` (or a variant), unless |SmatrixMatvec_type| sets
       another precision.
 
+      See more :ref:`exampleCode`.
+
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to NULL;
@@ -130,6 +134,8 @@ primme_svds_params
 
       Number of processes calling :c:func:`dprimme_svds` or :c:func:`zprimme_svds` in parallel.
 
+      See an example :ref:`svdsSimple`.
+
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to 1;
@@ -140,6 +146,8 @@ primme_svds_params
       The identity of the local process within a parallel execution calling :c:func:`dprimme_svds` or
       :c:func:`zprimme_svds`.
       Only the process with id 0 prints information.
+
+      See an example :ref:`svdsSimple`.
 
       Input/output:
 
@@ -334,6 +342,8 @@ primme_svds_params
       ``primme_svds_closest_abs``
          Closest in absolute value to the shifts in |StargetShifts|.
 
+      See a C example :ref:`svdsSimple` or a Fortran 90 example :ref:`f90SvdsSimple`.
+
       Input/output:
 
          | :c:func:`primme_svds_initialize` sets this field to |primme_svds_smallest|;
@@ -346,6 +356,8 @@ primme_svds_params
       Size of the array |StargetShifts|.
       Used only when |Starget| is |primme_svds_closest_abs|.
       The default values is 0.
+
+      See a C example :ref:`svdsSimple` or a Fortran 90 example :ref:`f90SvdsSimple`.
 
       Input/output:
 
@@ -362,6 +374,8 @@ primme_svds_params
       Singular values are computed in order so that the
       i-th singular value is the closest to the i-th shift. If |SnumTargetShifts| < |SnumSvals|, the last shift given
       is used for all the remaining i's.
+
+      See a C example :ref:`svdsSimple` or a Fortran 90 example :ref:`f90SvdsSimple`.
 
       Input/output:
 

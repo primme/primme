@@ -454,6 +454,13 @@ To build an example code using PRIMME make sure:
 - to add a reference for PRIMME, BLAS_ and LAPACK_ libraries;
 - to add the directory :file:`include` as an include directory.
 
+Installing with Spack
+"""""""""""""""""""""
+
+You can install primme C library via Spack (tested with Spack v0.16.2). First, create a primme folder in your Spack packages/ directory. Second, copy package.py from the top of the primme directory into your Spack packages/primme/. Third, run::
+        
+    spack install primme
+
 Tested Systems
 ^^^^^^^^^^^^^^
 

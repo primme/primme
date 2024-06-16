@@ -24,7 +24,10 @@ PRIMME Documentation
    intro
    apieigs
    apisvds
+   examples
 
+
+   
 .. only:: not text and not singlehtml
 
    Indices

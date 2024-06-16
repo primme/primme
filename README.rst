@@ -30,6 +30,10 @@ The flags can be indicated by customizing `Make_flags` or directly introduced at
 
     make lib CC=clang CFLAGS='-O3'
 
+You can install primme C library via Spack by copying package.py into your Spack packages/primme/ directory::
+        
+    spack install primme
+
 For building the external interfaces just do::
 
     make matlab       # Set MATLAB=/path/Matlab/bin/matlab MEX=/path/Matlab/bin/mex if needed
