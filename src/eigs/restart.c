@@ -1837,7 +1837,7 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
    }
   
    // Recompute Q and R factors of the sketched basis, but only for process 0
-   if(primme->procID == 0){
+   if(T){
       SCALAR *q;
       SCALAR *Q_temp;
 
@@ -1861,7 +1861,7 @@ STATIC int restart_sketched(SCALAR *V, int ldV, SCALAR *W, int ldW, SCALAR *SV,
    CHKERR(Num_free_Sprimme(VecNorms, ctx));
 
    // Update eiganpairs and residuals
-   CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, restartSize, hVals, restartSize, ctx));
+   CHKERR(sketched_RR_Sprimme(SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, restartSize, hVals, restartSize, ctx));
  
    (*basisSize) = restartSize;
 

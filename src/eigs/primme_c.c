@@ -500,7 +500,9 @@ STATIC int check_input(
    else if (primme->locking > 0 && primme->initSize > primme->numEvals)
       ret = -24;
    else if (primme->minRestartSize + primme->restartingParams.maxPrevRetain 
-                   >= primme->maxBasisSize && primme->n > primme->maxBasisSize)
+                >= primme->maxBasisSize && primme->n > primme->maxBasisSize 
+                && primme->expansionParams.expansion != primme_expansion_lanczos
+                && primme->expansionParams.expansion != primme_expansion_fullLanczos)
       ret = -25;
    else if (primme->minRestartSize > primme->n && primme->n > 2)
       ret = -26;

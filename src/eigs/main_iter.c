@@ -121,26 +121,6 @@ int print_timings_Sprimme(PRIMME_INT basisSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
-   // Compute Max/Min/Avg Times over every process
-   REAL *times;
-   REAL max, min, avg;
-   int i;
-
-   CHKERR(Num_malloc_Rprimme(10*primme->numProcs, &times, ctx));
-   CHKERR(Num_zero_matrix_Rprimme(times, 1, 10*primme->numProcs, 1, ctx));
-
-   times[primme->procID]    = primme->stats.timeMatvec;
-   times[primme->procID+primme->numProcs] = primme->stats.timePrecond;
-   times[primme->procID+2*primme->numProcs] = primme->stats.timeOrtho;
-   times[primme->procID+3*primme->numProcs] = primme->stats.timeGlobalSum;
-   times[primme->procID+4*primme->numProcs] = primme->stats.timeBroadcast;
-   times[primme->procID+5*primme->numProcs] = primme->stats.timeSketchMatvec;
-   times[primme->procID+6*primme->numProcs] = primme->stats.timeRR;
-   times[primme->procID+7*primme->numProcs] = primme->stats.timeStabilization;
-   times[primme->procID+8*primme->numProcs] = primme->stats.timeRestart;
-   times[primme->procID+9*primme->numProcs] = primme->stats.timeResiduals;
-   CHKERR(globalSum_Rprimme(times, 10*primme->numProcs, ctx));  
-
    if(primme->procID == 0) {
       
       printf("Basis size: %-" PRIMME_INT_P "\n", basisSize); 
@@ -150,109 +130,19 @@ int print_timings_Sprimme(PRIMME_INT basisSize, primme_context ctx) {
       printf("Sketched Matvecs   : %-" PRIMME_INT_P "\n", primme->stats.numSketchedMatvecs);
       printf("Preconds  : %-" PRIMME_INT_P "\n", primme->stats.numPreconds);
       printf("Elapsed Time        : %-22.10E\n", primme->stats.elapsedTime);
+      printf("MatVec Time         : %-22.10E\n", primme->stats.timeMatvec);
+      printf("Precond Time        : %-22.10E\n", primme->stats.timePrecond);
+      printf("Ortho Time          : %-22.10E\n", primme->stats.timeOrtho);
+      printf("GlobalSum Time      : %-22.10E\n", primme->stats.timeGlobalSum);
+      printf("Broadcast Time      : %-22.10E\n", primme->stats.timeBroadcast);
+      printf("SketchedMatvec Time : %-22.10E\n", primme->stats.timeSketchMatvec);
+      printf("Rayleigh-Ritz Time  : %-22.10E\n", primme->stats.timeRR);
+      printf("Stabilization Time  : %-22.10E\n", primme->stats.timeStabilization);
+      printf("Restart Time        : %-22.10E\n", primme->stats.timeRestart);
+      printf("Residual Time       : %-22.10E\n", primme->stats.timeResiduals);
 
-      /* Matvec Times */
-      max = min = avg = times[0];
-      for(i = 1; i < primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("MatVec Time         : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Preconditioning Times */
-      max = min = avg = times[primme->numProcs];
-      for(i = primme->numProcs+1; i < 2*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Precond Time        : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Ortho Times */
-      max = min = avg = times[2*primme->numProcs];
-      for(i = 2*primme->numProcs+1; i < 3*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Ortho Time          : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* GlobalSum Times */
-      max = min = avg = times[3*primme->numProcs];
-      for(i = 3*primme->numProcs+1; i < 4*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("GlobalSum Time      : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
- 
-      /* Broadcast Times */
-      max = min = avg = times[4*primme->numProcs];
-      for(i = 4*primme->numProcs+1; i < 5*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Broadcast Time      : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Sketched Matvec Times */
-      max = min = avg = times[5*primme->numProcs];
-      for(i = 5*primme->numProcs+1; i < 6*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("SketchedMatvec Time : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Rayleigh-Ritz Times */
-      max = min = avg = times[6*primme->numProcs];
-      for(i = 6*primme->numProcs+1; i < 7*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Rayleigh-Ritz Time  : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Stabilization Times */
-      max = min = avg = times[7*primme->numProcs];
-      for(i = 7*primme->numProcs+1; i < 8*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Stabilization Time  : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Restart Times */
-      max = min = avg = times[8*primme->numProcs];
-      for(i = 8*primme->numProcs+1; i < 9*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Restart Time        : %-22.10E %-22.10E %-22.10E\n", max, min, avg); 
-
-      /* Residual Times */
-      max = min = avg = times[9*primme->numProcs];
-      for(i = 9*primme->numProcs+1; i < 10*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Residual Time       : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
    }
 
-   CHKERR(Num_free_Rprimme(times, ctx));
    return 0;
 }
 
@@ -1897,7 +1787,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, Q, ldQ, T, ldT, 0, basisSize, S_rows, S_vals, ctx));
       CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, NULL, 0, 0, basisSize, S_rows, S_vals, ctx));
 
-      CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+      CHKERR(sketched_RR_Sprimme(SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
       numArbitraryVecs = 0;
       maxRecentlyConverged = availableBlockSize = blockSize = 0;
@@ -2061,7 +1951,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             basisSize += blockSize;
             blockSize = 0;
 
-            CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+            CHKERR(sketched_RR_Sprimme(SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
             numArbitraryVecs = 0;
             candidates_prepared = 0;
@@ -2305,7 +2195,7 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, NULL, 0, basisSize, numNew, S_rows, S_vals, ctx));
 
             basisSize += numNew;
-            CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
+            CHKERR(sketched_RR_Sprimme(SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
          }
  
          primme->stats.numRestarts++;
@@ -2344,19 +2234,13 @@ int sketched_main_iter_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       /* ---------------------------------------------------------- */
 
       CHKERR(ortho_Sprimme(V, ldV, NULL, 0, 0, basisSize-1, NULL, 0, 0, primme->nLocal, primme->iseed, ctx));   
+
       CHKERR(matrixMatvec_Sprimme(V, primme->nLocal, ldV, W, ldW, 0, basisSize, ctx));
+
       CHKERR(sketch_basis_Sprimme(V, ldV, SV, ldSV, Q, ldQ, T, ldT, 0, basisSize, S_rows, S_vals, ctx));
       CHKERR(sketch_basis_Sprimme(W, ldW, SW, ldSW, NULL, 0, NULL, 0, 0, basisSize, S_rows, S_vals, ctx));
-      CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
-      /* For debugging -- Heather */
-      if(!double_eps){
-         primme->eps *= 2.0;
-         double_eps = 1;
-      }
-      CHKERR(verify_norms(V, ldV, W, ldW, NULL, 0, hVals,
-            restartLimitReached ? primme->numEvals : numConverged, resNorms,
-            flags, &numConverged, ctx));
+      CHKERR(sketched_RR_Sprimme(SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, basisSize, hVals, basisSize, ctx));
 
       /* ---------------------------------------------------------- */
       /* If the convergence limit is reached or the target vectors  */

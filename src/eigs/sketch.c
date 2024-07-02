@@ -250,7 +250,7 @@ return 0;
  ******************************************************************************/
 
 TEMPLATE_PLEASE
-int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, SCALAR *SW, PRIMME_INT ldSW, HSCALAR *hVecs, PRIMME_INT ldhVecs, HREAL *hVals, PRIMME_INT basisSize, primme_context ctx) {
+int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *Q, PRIMME_INT ldQ, SCALAR *T, PRIMME_INT ldT, SCALAR *SW, PRIMME_INT ldSW, HSCALAR *hVecs, PRIMME_INT ldhVecs, HREAL *hVals, PRIMME_INT basisSize, primme_context ctx) {
 #ifdef USE_HERMITIAN
    primme_params *primme = ctx.primme;
 
@@ -267,28 +267,26 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
       SCALAR *UtSW;           /* For solving the generalized eigenvalue problem */
       SCALAR *T_temp;         /* For taking the SVD of T */
 
-      REAL *sing_vals;  /* Returned singular values from the SVD */
       int *eval_perm;   /* To sort the eigenpairs */
 
-      REAL cond_est = 0;    /* Estimation of the condition number of V - used to determine whether stabilization is needed */
+      REAL cond_est = 1;    /* Estimation of the condition number of V - used to determine whether stabilization is needed */
       PRIMME_INT tbasisSize = basisSize; /* Truncated basis size (for Stabilization) */
 
       CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &UtSW, ctx));
-      CHKERR(Num_malloc_Sprimme(basisSize, &hVals_a, ctx));
-      CHKERR(Num_malloc_Sprimme(basisSize, &hVals_b, ctx));
-      CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &T_temp, ctx));
-
-      CHKERR(Num_malloc_Rprimme(basisSize, &sing_vals, ctx));
       CHKERR(Num_malloc_iprimme(basisSize, &eval_perm, ctx));
 
       /* Check condition number to see if stabilization is needed */
-      CHKERR(Num_copy_matrix_Sprimme(&T[0], basisSize, basisSize, ldT, &T_temp[0], basisSize, ctx)); /* Ensure T is not overwritten */
-      CHKERR(Num_trcon_Sprimme("O", "U", "N", basisSize, T_temp, basisSize, &cond_est, ctx));
+      if(T) {
+         CHKERR(Num_malloc_Sprimme(basisSize*basisSize, &T_temp, ctx));
+         CHKERR(Num_malloc_Sprimme(basisSize, &hVals_a, ctx));
+         CHKERR(Num_malloc_Sprimme(basisSize, &hVals_b, ctx));
 
-      //printf("Estimated Cond Num: %E\n", 1/cond_est);
+         CHKERR(Num_copy_matrix_Sprimme(&T[0], basisSize, basisSize, ldT, &T_temp[0], basisSize, ctx)); /* Ensure T is not overwritten */
+         CHKERR(Num_trcon_Sprimme("O", "U", "N", basisSize, T_temp, basisSize, &cond_est, ctx));
+      }
 
       /* XXX: Stabilization needed */
-      if(1/cond_est > 1/MACHINE_EPSILON) {
+      if(cond_est < MACHINE_EPSILON*100) {
          double stab_time = primme_wTimer(); // For monitoring
 
          SCALAR *UtSWV;          /* Left hand side of the generalized eigenvalue problem */
@@ -297,6 +295,7 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
          SCALAR *trunc_hVecs;    /* The stabilized eigenvectors of H */ 
          SCALAR *Sigma;          /* Right hand side of the generalized eigenvalue problem */
          SCALAR *temp_SV;        /* Temporarily store SV while performing LaPack's GESVD */
+         REAL *sing_vals;        /* Returned singular values from the SVD */
          PRIMME_INT ldVVecst, ldUVecs, ldUtSW, ldUtSWV, ldSigma, ldtrunc_hVecs;   /* Leading dimension of matrices */
 
          ldUVecs = ldSV;
@@ -305,6 +304,7 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
          CHKERR(Num_malloc_Sprimme(ldUVecs*basisSize, &UVecs, ctx));
          CHKERR(Num_malloc_Sprimme(ldVVecst*basisSize, &VVecst, ctx));
          CHKERR(Num_malloc_Sprimme(ldSV*basisSize, &temp_SV, ctx));
+         CHKERR(Num_malloc_Rprimme(basisSize, &sing_vals, ctx));
 
          /* Take the SVD decomposition of SV */
          CHKERR(Num_copy_matrix_Sprimme(&SV[0], ldSV, basisSize, ldSV, &temp_SV[0], ldSV, ctx));
@@ -314,7 +314,7 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
          /* Truncate the basis for stabilization */
          for(i = basisSize-1; i > primme->numEvals; i--)
          {
-            if(sing_vals[0]/sing_vals[i] >= 1/MACHINE_EPSILON)
+            if(sing_vals[0]/sing_vals[i] > 1/(MACHINE_EPSILON*100))
             {
                tbasisSize--;
             } else {
@@ -345,25 +345,35 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
          CHKERR(Num_free_Sprimme(UtSWV, ctx)); 
          CHKERR(Num_free_Sprimme(trunc_hVecs, ctx)); 
          CHKERR(Num_free_Sprimme(Sigma, ctx)); 
+         CHKERR(Num_free_Rprimme(sing_vals, ctx)); 
 
-      /* XXX: Stabilization NOT needed */
-      } else {
+      /* XXX: Stabilization NOT needed, but the Q and R factors of SV are used */
+      } else if (T) {
           
+         /* Compute left-hand-side of the eigenproblem */
+         assert(ldSV == ldSW); 
+         CHKERR(Num_gemm_Sprimme("C", "N", basisSize, basisSize, ldSV, 1.0, Q, ldQ, SW, ldSW, 0.0, UtSW, basisSize, ctx));
+
+         CHKERR(Num_copy_matrix_Sprimme(&T[0], basisSize, basisSize, ldT, &T_temp[0], basisSize, ctx)); /* Ensure T is not overwritten */
+         CHKERR(Num_ggev_Sprimme("N", "V", basisSize, UtSW, basisSize, T_temp, basisSize, hVals_a, NULL, hVals_b, NULL, basisSize, hVecs, ldhVecs, ctx)); 
+
+      /* XXX: Stabilization NOT needed, but the Q and R factors of SV are not stored */
+      } else {
+
          /* Compute left-hand-side of the eigenproblem */
          assert(ldSV == ldSW); 
          CHKERR(Num_gemm_Sprimme("C", "N", basisSize, basisSize, ldSV, 1.0, SV, ldSV, SW, ldSW, 0.0, UtSW, basisSize, ctx));
 
-         /* Solve the eigenproblem */
-         CHKERR(Num_copy_matrix_Sprimme(&T[0], basisSize, basisSize, ldT, &T_temp[0], basisSize, ctx)); /* Ensure T is not overwritten */
-         CHKERR(Num_ggev_Sprimme("N", "V", basisSize, UtSW, basisSize, T_temp, basisSize, hVals_a, NULL, hVals_b, NULL, basisSize, hVecs, ldhVecs, ctx)); 
+         CHKERR(solve_H_Sprimme(UtSW, basisSize, basisSize, NULL, 0, NULL, 0, NULL, 0, NULL, 0, NULL, 0, hVecs, ldhVecs, hVals, NULL, 0, ctx));
 
-      } /* End eigenproblem (with or without stabilization) */
+      } 
+      /* End eigenproblem (with or without stabilization) */
 
 
       for(i = 0; i < tbasisSize; i++)
       {
          // Compute the returned hVals
-         hVals[i] = REAL_PART(hVals_a[i]/hVals_b[i]);
+         if (T) hVals[i] = REAL_PART(hVals_a[i]/hVals_b[i]);
          eval_perm[i] = i;
 
          // Normalize the eigenvectors
@@ -377,16 +387,16 @@ int sketched_RR_Sprimme(SCALAR *SV, PRIMME_INT ldSV, SCALAR *T, PRIMME_INT ldT, 
 
       /* Free temporary storage */
       CHKERR(Num_free_Sprimme(UtSW, ctx)); 
-      CHKERR(Num_free_Rprimme(sing_vals, ctx)); 
-      CHKERR(Num_free_Sprimme(hVals_a, ctx)); 
-      CHKERR(Num_free_Sprimme(hVals_b, ctx)); 
       CHKERR(Num_free_iprimme(eval_perm, ctx)); 
-      CHKERR(Num_free_Sprimme(T_temp, ctx)); 
+
+      if(T) {
+         CHKERR(Num_free_Sprimme(T_temp, ctx)); 
+         CHKERR(Num_free_Sprimme(hVals_a, ctx)); 
+         CHKERR(Num_free_Sprimme(hVals_b, ctx)); 
+      }
 
    } /* End if procID == 0 */
 
-   //CHKERR(broadcast_SHprimme(hVecs, basisSize*ldhVecs, ctx));
-   //CHKERR(broadcast_RHprimme(hVals, basisSize, ctx));
    CHKERR(broadcast_SHprimme(hVecs, min(basisSize, primme->numEvals)*ldhVecs, ctx));
    CHKERR(broadcast_RHprimme(hVals, min(basisSize, primme->numEvals), ctx));
      

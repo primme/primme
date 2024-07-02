@@ -63,25 +63,6 @@ int print_lanczos_timings_Sprimme(PRIMME_INT basisSize, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
-   // Compute Max/Min/Avg Times over every process
-   REAL *times;
-   REAL max, min, avg;
-   int i;
-
-   CHKERR(Num_malloc_Rprimme(10*primme->numProcs, &times, ctx));
-   CHKERR(Num_zero_matrix_Rprimme(times, 1, 10*primme->numProcs, 1, ctx));
-   times[primme->procID]    = primme->stats.timeMatvec;
-   times[primme->procID+primme->numProcs] = primme->stats.timePrecond;
-   times[primme->procID+2*primme->numProcs] = primme->stats.timeOrtho;
-   times[primme->procID+3*primme->numProcs] = primme->stats.timeGlobalSum;
-   times[primme->procID+4*primme->numProcs] = primme->stats.timeBroadcast;
-   times[primme->procID+5*primme->numProcs] = primme->stats.timeSketchMatvec;
-   times[primme->procID+6*primme->numProcs] = primme->stats.timeRR;
-   times[primme->procID+7*primme->numProcs] = primme->stats.timeStabilization;
-   times[primme->procID+8*primme->numProcs] = primme->stats.timeRestart;
-   times[primme->procID+9*primme->numProcs] = primme->stats.timeResiduals;
-   CHKERR(globalSum_Rprimme(times, 10*primme->numProcs, ctx));  
-
    if(primme->procID == 0) {
       
       printf("Basis size: %-" PRIMME_INT_P "\n", basisSize); 
@@ -91,109 +72,19 @@ int print_lanczos_timings_Sprimme(PRIMME_INT basisSize, primme_context ctx) {
       printf("Sketched Matvecs   : %-" PRIMME_INT_P "\n", primme->stats.numSketchedMatvecs);
       printf("Preconds  : %-" PRIMME_INT_P "\n", primme->stats.numPreconds);
       printf("Elapsed Time        : %-22.10E\n", primme->stats.elapsedTime);
+      printf("MatVec Time         : %-22.10E\n", primme->stats.timeMatvec);
+      printf("Precond Time        : %-22.10E\n", primme->stats.timePrecond);
+      printf("Ortho Time          : %-22.10E\n", primme->stats.timeOrtho);
+      printf("GlobalSum Time      : %-22.10E\n", primme->stats.timeGlobalSum);
+      printf("Broadcast Time      : %-22.10E\n", primme->stats.timeBroadcast);
+      printf("SketchedMatvec Time : %-22.10E\n", primme->stats.timeSketchMatvec);
+      printf("Rayleigh-Ritz Time  : %-22.10E\n", primme->stats.timeRR);
+      printf("Stabilization Time  : %-22.10E\n", primme->stats.timeStabilization);
+      printf("Restart Time        : %-22.10E\n", primme->stats.timeRestart);
+      printf("Residual Time       : %-22.10E\n", primme->stats.timeResiduals);
 
-      /* Matvec Times */
-      max = min = avg = times[0];
-      for(i = 1; i < primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("MatVec Time         : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Preconditioning Times */
-      max = min = avg = times[primme->numProcs];
-      for(i = primme->numProcs+1; i < 2*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Precond Time        : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Ortho Times */
-      max = min = avg = times[2*primme->numProcs];
-      for(i = 2*primme->numProcs+1; i < 3*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Ortho Time          : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* GlobalSum Times */
-      max = min = avg = times[3*primme->numProcs];
-      for(i = 3*primme->numProcs+1; i < 4*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("GlobalSum Time      : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
- 
-      /* Broadcast Times */
-      max = min = avg = times[4*primme->numProcs];
-      for(i = 4*primme->numProcs+1; i < 5*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Broadcast Time      : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Sketched Matvec Times */
-      max = min = avg = times[5*primme->numProcs];
-      for(i = 5*primme->numProcs+1; i < 6*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("SketchedMatvec Time : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Rayleigh-Ritz Times */
-      max = min = avg = times[6*primme->numProcs];
-      for(i = 6*primme->numProcs+1; i < 7*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Rayleigh-Ritz Time  : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Stabilization Times */
-      max = min = avg = times[7*primme->numProcs];
-      for(i = 7*primme->numProcs+1; i < 8*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Stabilization Time  : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
-
-      /* Restart Times */
-      max = min = avg = times[8*primme->numProcs];
-      for(i = 8*primme->numProcs+1; i < 9*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Restart Time        : %-22.10E %-22.10E %-22.10E\n", max, min, avg); 
-
-      /* Residual Times */
-      max = min = avg = times[9*primme->numProcs];
-      for(i = 9*primme->numProcs+1; i < 10*primme->numProcs; i++) {
-         if (times[i] > max) max = times[i];
-         if (times[i] < min) min = times[i];
-         avg += times[i];
-      }
-      avg /= primme->numProcs;
-      printf("Residual Time       : %-22.10E %-22.10E %-22.10E\n", max, min, avg);
    }
 
-   CHKERR(Num_free_Rprimme(times, ctx));
    return 0;
 
 }
@@ -458,7 +349,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
             CHKERR(Num_gemm_Sprimme("N", "N", ldSV, i+blockSize, i+2*blockSize, 1.0, SV, ldSV, H, ldH, 0.0, SW, ldSW, ctx));
 
             /* Getting our sketched basis and projected sketched basis */
-            CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, i+blockSize, hVals, i+blockSize, ctx));
+            CHKERR(sketched_RR_Sprimme(SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, i+blockSize, hVals, i+blockSize, ctx));
             
          } else { /* End sketching */ 
             solve_timer = primme_wTimer();
@@ -482,18 +373,6 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
          CHKERR(broadcast_Rprimme(resNorms, numEvals, ctx));
          for(j = 0; j < primme->numEvals; j++) if(resNorms[j] < primme->aNorm*primme->eps) numConverged++;
 
-         /* FOR TESTING: Print residual information */
-         if(primme->procID == 0){
-            printf("BasisSize %ld: NumConverged = %d, Convergence Tolerance = %.6E (%.6E x %.6E)\n", i+blockSize, numConverged, primme->aNorm*primme->eps, primme->aNorm, primme->eps);
-            for(j = 0; j < primme->numEvals; j++){
-               if(j < numEvals) {
-                  printf("BasisSize %ld Eval[%ld] = %.10E, ResNorm[%ld] = %.10E\n", i+blockSize, j, hVals[j], j, resNorms[j]);
-               } else {
-                  printf("BasisSize %ld Eval[%ld] = NaN, ResNorm[%ld] = NaN\n", i+blockSize, j, j);
-               }
-            }
-         }
-         
          /* If everything is marked as converged, find the ACTUAL residuals and make sure */
          if(numConverged == primme->numEvals) {
             CHKERR(Num_gemm_Sprimme("N", "N", primme->nLocal, numEvals, i+blockSize, 1.0, V, ldV, hVecs, i+blockSize, 0.0, evecs, ldevecs, ctx));    /* evecs = V*hVecs */
@@ -532,6 +411,18 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
 
          } /* End if numConverged == primme->numEvals */
 
+         /* FOR TESTING: Print residual information */
+         if(primme->procID == 0){
+            printf("BasisSize %ld: NumConverged = %d, Convergence Tolerance = %.6E (%.6E x %.6E)\n", i+blockSize, numConverged, primme->aNorm*primme->eps, primme->aNorm, primme->eps);
+            for(j = 0; j < primme->numEvals; j++){
+               if(j < numEvals) {
+                  printf("BasisSize %ld Eval[%ld] = %.10E, ResNorm[%ld] = %.10E\n", i+blockSize, j, hVals[j], j, resNorms[j]);
+               } else {
+                  printf("BasisSize %ld Eval[%ld] = NaN, ResNorm[%ld] = NaN\n", i+blockSize, j, j);
+               }
+            }
+         }
+
       } /* End the checking of residuals */
 
       /* Update loop variables */
@@ -564,7 +455,7 @@ int lanczos_Sprimme(HEVAL *evals, SCALAR *evecs, PRIMME_INT ldevecs,
       CHKERR(Num_gemm_Sprimme("N", "N", ldSV, primme->maxBasisSize, primme->maxBasisSize+blockSize, 1.0, SV, ldSV, H, ldH, 0.0, SW, ldSW, ctx));
 
       /* Performing sketched Rayleigh-Ritz */
-      CHKERR(sketched_RR_Sprimme(Q, ldQ, T, ldT, SW, ldSW, hVecs, ldhVecs, hVals, primme->maxBasisSize, ctx));
+      CHKERR(sketched_RR_Sprimme(SV, ldSV, Q, ldQ, T, ldT, SW, ldSW, hVecs, ldhVecs, hVals, primme->maxBasisSize, ctx));
 
    } else { /* End sketched */
       solve_timer = primme_wTimer();
