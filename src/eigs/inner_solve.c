@@ -167,6 +167,9 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    CHKERR(Num_malloc_RHprimme(blockSize, &tau_init, ctx));
    CHKERR(Num_malloc_RHprimme(blockSize, &tau_prev, ctx));
    CHKERR(Num_malloc_RHprimme(blockSize, &tau, ctx));
+   SCALAR *overlaps;
+   int overlaps_size = max(sizeLprojectorQ,sizeLprojectorX) * blockSize;
+   CHKERR(Num_malloc_Sprimme(overlaps_size, &overlaps, ctx));
 
    /* Parameters used to dynamically update eigenpair */
    double *Beta_prev, *Delta_prev, *Psi_prev, *eta;
@@ -279,7 +282,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
 
    CHKERR(apply_projected_preconditioner(g, ldg, evecs, ldevecs, RprojectorQ,
          ldRprojectorQ, x, ldx, RprojectorX, ldRprojectorX, sizeRprojectorQ,
-         sizeRprojectorX, xKinvBx, Mfact, ipivot, d, ldd, blockSize, ctx));
+         sizeRprojectorX, xKinvBx, Mfact, ipivot, d, ldd, blockSize, overlaps, overlaps_size, ctx));
 
    for (i=0; i<blockSize; i++) Theta_prev[i] = 0.0L;
    for (i=0; i<blockSize; i++) eval_prev[i] = eval[i];
@@ -316,7 +319,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
       CHKERR(apply_projected_matrix(d, ldd, shift, LprojectorQ,
             ldLprojectorQ, sizeLprojectorQ, LprojectorBQ, ldLprojectorBQ,
             LprojectorX, ldLprojectorX, LprojectorBX,
-            ldLprojectorBX, sizeLprojectorX, blockSize, w, ldw, ctx));
+            ldLprojectorBX, sizeLprojectorX, blockSize, w, ldw, overlaps, overlaps_size, ctx));
       CHKERR(Num_dist_dots_real_Sprimme(
             d, ldd, w, ldw, nLocal, blockSize, sigma_prev, ctx));
 
@@ -669,7 +672,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
          CHKERR(apply_projected_preconditioner(g, ldg, evecs, ldevecs,
                RprojectorQ, ldRprojectorQ, x, ldx, RprojectorX, ldRprojectorX,
                sizeRprojectorQ, sizeRprojectorX, xKinvBx, Mfact, ipivot, w, ldw,
-               blockSize, ctx));
+               blockSize, overlaps, overlaps_size, ctx));
 
          CHKERR(Num_dist_dots_real_Sprimme(
                g, ldg, w, ldw, nLocal, blockSize, rho, ctx));
@@ -710,6 +713,7 @@ int inner_solve_Sprimme(int blockSize, SCALAR *x, PRIMME_INT ldx, SCALAR *Bx,
    CHKERR(Num_free_RHprimme(tau_init, ctx));
    CHKERR(Num_free_RHprimme(tau_prev, ctx));
    CHKERR(Num_free_RHprimme(tau, ctx));
+   CHKERR(Num_free_Sprimme(overlaps, ctx));
    CHKERR(Num_free_dprimme(Beta_prev, ctx));
    CHKERR(Num_free_dprimme(Delta_prev, ctx));
    CHKERR(Num_free_dprimme(Psi_prev, ctx));
@@ -776,7 +780,7 @@ STATIC int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
       PRIMME_INT ldx, SCALAR *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, HSCALAR *xKinvBx,
       HSCALAR *Mfact, int *ipivot, SCALAR *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx) {
+      int blockSize, SCALAR *aux, int aux_size, primme_context ctx) {
 
    assert(sizeRprojectorX == 0 || sizeRprojectorX == blockSize);
 
@@ -786,7 +790,7 @@ STATIC int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
             ldresult, blockSize, ctx));
 
    CHKERR(apply_skew_projector(Q, ldQ, RprojectorQ, ldRprojectorQ, Mfact,
-         ipivot, sizeRprojectorQ, result, ldresult, blockSize, ctx));
+         ipivot, sizeRprojectorQ, result, ldresult, blockSize, aux, aux_size, ctx));
 
    if (sizeRprojectorX <= 0) return 0;
 
@@ -794,7 +798,7 @@ STATIC int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
    for (i=0; i<blockSize; i++) {
       CHKERR(apply_skew_projector(&x[ldx * i], ldx,
             &RprojectorX[ldRprojectorX * i], ldRprojectorX, &xKinvBx[i], NULL,
-            1, &result[ldresult * i], ldresult, 1, ctx));
+            1, &result[ldresult * i], ldresult, 1, aux, aux_size, ctx));
    }
 
    return 0;
@@ -828,7 +832,7 @@ STATIC int apply_projected_preconditioner(SCALAR *v, PRIMME_INT ldv, SCALAR *Q,
 
 STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
       PRIMME_INT ldQhat, HSCALAR *Mfact, int *ipivot, int numCols, SCALAR *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx) {
+      PRIMME_INT ldv, int blockSize, SCALAR *aux, int aux_size, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
@@ -838,8 +842,8 @@ STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
 
 #ifndef USE_HOST
    if (ctx.numProcs <= 1 && Mfact == NULL) {
-      SCALAR *overlaps; /* overlaps of v with columns of Q   */
-      CHKERR(Num_malloc_Sprimme(numCols * blockSize, &overlaps, ctx));
+      SCALAR *overlaps=aux; /* overlaps of v with columns of Q   */
+      if (aux_size < numCols*blockSize) return -1;
       CHKERR(Num_zero_matrix_Sprimme(
             overlaps, numCols, blockSize, numCols, ctx));
 
@@ -851,11 +855,10 @@ STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
       /* Compute v=v-Qhat*overlaps */
       CHKERR(Num_gemm_Sprimme("N", "N", primme->nLocal, blockSize, numCols,
             -1.0, Qhat, ldQhat, overlaps, numCols, 1.0, v, ldv, ctx));
-
-      CHKERR(Num_free_Sprimme(overlaps, ctx));
    } else
 #endif
    {
+      exit(-1);
       HSCALAR *overlaps; /* overlaps of v with columns of Q   */
       CHKERR(Num_malloc_SHprimme(numCols * blockSize, &overlaps, ctx));
 
@@ -919,7 +922,7 @@ STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
 STATIC int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
       SCALAR *Q, PRIMME_INT ldQ, int nQ, SCALAR *BQ, PRIMME_INT ldBQ, SCALAR *X,
       PRIMME_INT ldX, SCALAR *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      SCALAR *result, PRIMME_INT ldresult, primme_context ctx) {
+      SCALAR *result, PRIMME_INT ldresult, SCALAR *aux, int aux_size, primme_context ctx) {
 
    assert(nX == 0 || nX == blockSize);
    primme_params *primme = ctx.primme;
@@ -958,14 +961,14 @@ STATIC int apply_projected_matrix(SCALAR *v, PRIMME_INT ldv, double *shift,
    /* result = (I-BQ*Q')*result */
 
    CHKERR(apply_skew_projector(
-         Q, ldQ, BQ, ldBQ, NULL, NULL, nQ, result, ldresult, blockSize, ctx));
+         Q, ldQ, BQ, ldBQ, NULL, NULL, nQ, result, ldresult, blockSize, aux, aux_size, ctx));
 
    /* result = (I-BX*X)*result for each vector */
 
    if (nX <= 0) return 0;
    for (i = 0; i < blockSize; i++) {
       CHKERR(apply_skew_projector(&X[ldX * i], ldX, &BX[ldBX * i], ldBX, NULL,
-            NULL, 1, &result[ldresult * i], ldresult, 1, ctx));
+            NULL, 1, &result[ldresult * i], ldresult, 1, aux, aux_size, ctx));
    }
 
    return 0;
