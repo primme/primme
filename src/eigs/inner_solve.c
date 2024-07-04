@@ -858,7 +858,6 @@ STATIC int apply_skew_projector(SCALAR *Q, PRIMME_INT ldQ, SCALAR *Qhat,
    } else
 #endif
    {
-      exit(-1);
       HSCALAR *overlaps; /* overlaps of v with columns of Q   */
       CHKERR(Num_malloc_SHprimme(numCols * blockSize, &overlaps, ctx));
 
