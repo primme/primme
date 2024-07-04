@@ -470,13 +470,13 @@ static inline uint32_t hash_call(const char *str, double value) {
 #define PARALLEL_CHECK(CALL)                                                   \
    {                                                                           \
       double __value = CALL;                                                   \
-      uint32_t __hash_call =                                                   \
-                     hash_call(STR(CALL) __FILE__ STR(__LINE__), __value),     \
-               __hash_call0 = __hash_call;                                     \
-      CHKERR(ctx.bcast(&__hash_call0, primme_op_float, 1, ctx));               \
+      double __hash_call =                                                     \
+                   hash_call(STR(CALL) __FILE__ STR(__LINE__), __value),       \
+             __hash_call0 = __hash_call;                                       \
+      CHKERR(ctx.bcast(&__hash_call0, ctx));                                   \
       float __not_is_equal = (__hash_call != __hash_call0 ? 1 : 0),            \
             __not_is_equal_global = __not_is_equal;                            \
-      CHKERR(ctx.globalSum(&__not_is_equal_global, primme_op_float, 1, ctx));  \
+      CHKERR(ctx.globalSum(&__not_is_equal_global, ctx));                      \
       if (__not_is_equal_global != 0 && ctx.procID == 0) {                     \
          PRINTFALL(1,                                                          \
                "PRIMME: Process 0 has value %12g for '" STR(                   \
@@ -487,11 +487,10 @@ static inline uint32_t hash_call(const char *str, double value) {
          PRINTFALL(1,                                                          \
                "PRIMME: Process %d has different value %12g for '" STR(        \
                      CALL) "' (" __FILE__ ":" STR(__LINE__) ")\n",             \
-               ctx.procID, __value);                                   \
+               ctx.procID, __value);                                           \
       }                                                                        \
       if (__not_is_equal_global != 0) CHKERR(PRIMME_PARALLEL_FAILURE);         \
    }
-
 
 /*****************************************************************************/
 /* Error management                                                          */
@@ -663,10 +662,10 @@ typedef struct primme_context_str {
    int numProcs;     /* number of processes */
    int procID;       /* process id */
    void *mpicomm;    /* MPI communicator */
-   int (*bcast)(void *buffer, primme_op_datatype buffer_type, int count,
-         struct primme_context_str ctx); /* broadcast */
-   int (*globalSum)(void *buffer, primme_op_datatype buffer_type, int count,
-         struct primme_context_str ctx); /* global reduction */
+   int (*bcast)(double *buffer,
+         struct primme_context_str ctx); /* broadcast for cpu pointers */
+   int (*globalSum)(float *buffer,
+         struct primme_context_str ctx); /* global reduction for cpu pointers */
 
    /* For MAGMA */
    void *queue;      /* magma device queue (magma_queue_t*) */

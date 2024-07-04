@@ -583,7 +583,7 @@ int applyPreconditioner_dprimme(dummy_type_dprimme *V, PRIMME_INT nLocal, PRIMME
 #if !defined(CHECK_TEMPLATE) && !defined(globalSum_RHqprimme)
 #  define globalSum_RHqprimme CONCAT(globalSum_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
-int globalSum_dprimme(dummy_type_dprimme *buffer, int count, primme_context ctx);
+int globalSum_dprimme(dummy_type_dprimme *buffer_, int count, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_Sprimme)
 #  define broadcast_Sprimme CONCAT(broadcast_,SCALAR_SUF)
 #endif
@@ -674,191 +674,15 @@ int globalSum_dprimme(dummy_type_dprimme *buffer, int count, primme_context ctx)
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_RHqprimme)
 #  define broadcast_RHqprimme CONCAT(broadcast_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
-int broadcast_dprimme(dummy_type_dprimme *buffer, int count, primme_context ctx);
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSprimme)
-#  define globalSum_TprimmeSprimme CONCAT(globalSum_Tprimme,SCALAR_SUF)
+int broadcast_dprimme(dummy_type_dprimme *buffer_, int count, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(globalSum_float_cpu_primme)
+#  define globalSum_float_cpu_primme CONCAT(globalSum_float_cpu_primme,SCALAR_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRprimme)
-#  define globalSum_TprimmeRprimme CONCAT(globalSum_Tprimme,REAL_SUF)
+int globalSum_float_cpu_primmedprimme(float *buffer, primme_context ctx);
+#if !defined(CHECK_TEMPLATE) && !defined(broadcast_double_cpu_primme)
+#  define broadcast_double_cpu_primme CONCAT(broadcast_double_cpu_primme,SCALAR_SUF)
 #endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHprimme)
-#  define globalSum_TprimmeSHprimme CONCAT(globalSum_Tprimme,HOST_SCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHprimme)
-#  define globalSum_TprimmeRHprimme CONCAT(globalSum_Tprimme,HOST_REAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSXprimme)
-#  define globalSum_TprimmeSXprimme CONCAT(globalSum_Tprimme,XSCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXprimme)
-#  define globalSum_TprimmeRXprimme CONCAT(globalSum_Tprimme,XREAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeShprimme)
-#  define globalSum_TprimmeShprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRhprimme)
-#  define globalSum_TprimmeRhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSsprimme)
-#  define globalSum_TprimmeSsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRsprimme)
-#  define globalSum_TprimmeRsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSdprimme)
-#  define globalSum_TprimmeSdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRdprimme)
-#  define globalSum_TprimmeRdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSqprimme)
-#  define globalSum_TprimmeSqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRqprimme)
-#  define globalSum_TprimmeRqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSXhprimme)
-#  define globalSum_TprimmeSXhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXhprimme)
-#  define globalSum_TprimmeRXhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,h),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSXsprimme)
-#  define globalSum_TprimmeSXsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXsprimme)
-#  define globalSum_TprimmeRXsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSXdprimme)
-#  define globalSum_TprimmeSXdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXdprimme)
-#  define globalSum_TprimmeRXdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,d),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSXqprimme)
-#  define globalSum_TprimmeSXqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRXqprimme)
-#  define globalSum_TprimmeRXqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,q),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHhprimme)
-#  define globalSum_TprimmeSHhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHhprimme)
-#  define globalSum_TprimmeRHhprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHsprimme)
-#  define globalSum_TprimmeSHsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHsprimme)
-#  define globalSum_TprimmeRHsprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHdprimme)
-#  define globalSum_TprimmeSHdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHdprimme)
-#  define globalSum_TprimmeRHdprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,d),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeSHqprimme)
-#  define globalSum_TprimmeSHqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(globalSum_TprimmeRHqprimme)
-#  define globalSum_TprimmeRHqprimme CONCAT(globalSum_Tprimme,CONCAT(CONCAT(CONCAT(,q),primme),))
-#endif
-int globalSum_Tprimme(
-      void *buffer_, primme_op_datatype buffert, int count, primme_context ctx);
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSprimme)
-#  define broadcast_TprimmeSprimme CONCAT(broadcast_Tprimme,SCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRprimme)
-#  define broadcast_TprimmeRprimme CONCAT(broadcast_Tprimme,REAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHprimme)
-#  define broadcast_TprimmeSHprimme CONCAT(broadcast_Tprimme,HOST_SCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHprimme)
-#  define broadcast_TprimmeRHprimme CONCAT(broadcast_Tprimme,HOST_REAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSXprimme)
-#  define broadcast_TprimmeSXprimme CONCAT(broadcast_Tprimme,XSCALAR_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXprimme)
-#  define broadcast_TprimmeRXprimme CONCAT(broadcast_Tprimme,XREAL_SUF)
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeShprimme)
-#  define broadcast_TprimmeShprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(h,k)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRhprimme)
-#  define broadcast_TprimmeRhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,h),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSsprimme)
-#  define broadcast_TprimmeSsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRsprimme)
-#  define broadcast_TprimmeRsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSdprimme)
-#  define broadcast_TprimmeSdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(d,z)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRdprimme)
-#  define broadcast_TprimmeRdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,d),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSqprimme)
-#  define broadcast_TprimmeSqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,USE_ARITH(q,w)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRqprimme)
-#  define broadcast_TprimmeRqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(STEM_C,q),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSXhprimme)
-#  define broadcast_TprimmeSXhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(h,k)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXhprimme)
-#  define broadcast_TprimmeRXhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,h),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSXsprimme)
-#  define broadcast_TprimmeSXsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXsprimme)
-#  define broadcast_TprimmeRXsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSXdprimme)
-#  define broadcast_TprimmeSXdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXdprimme)
-#  define broadcast_TprimmeRXdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,d),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSXqprimme)
-#  define broadcast_TprimmeSXqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRXqprimme)
-#  define broadcast_TprimmeRXqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,q),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHhprimme)
-#  define broadcast_TprimmeSHhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHhprimme)
-#  define broadcast_TprimmeRHhprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHsprimme)
-#  define broadcast_TprimmeSHsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(s,c)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHsprimme)
-#  define broadcast_TprimmeRHsprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,s),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHdprimme)
-#  define broadcast_TprimmeSHdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(d,z)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHdprimme)
-#  define broadcast_TprimmeRHdprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,d),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeSHqprimme)
-#  define broadcast_TprimmeSHqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,USE_ARITH(q,w)),primme),))
-#endif
-#if !defined(CHECK_TEMPLATE) && !defined(broadcast_TprimmeRHqprimme)
-#  define broadcast_TprimmeRHqprimme CONCAT(broadcast_Tprimme,CONCAT(CONCAT(CONCAT(,q),primme),))
-#endif
-int broadcast_Tprimme(
-      void *buffer_, primme_op_datatype buffert, int count, primme_context ctx);
+int broadcast_double_cpu_primmedprimme(double *buffer, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(broadcast_iprimmeSprimme)
 #  define broadcast_iprimmeSprimme CONCAT(broadcast_iprimme,SCALAR_SUF)
 #endif
@@ -1508,8 +1332,8 @@ int massMatrixMatvec_hprimme(dummy_type_hprimme *V, PRIMME_INT nLocal, PRIMME_IN
       primme_context ctx);
 int applyPreconditioner_hprimme(dummy_type_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_hprimme(dummy_type_hprimme *buffer, int count, primme_context ctx);
-int broadcast_hprimme(dummy_type_hprimme *buffer, int count, primme_context ctx);
+int globalSum_hprimme(dummy_type_hprimme *buffer_, int count, primme_context ctx);
+int broadcast_hprimme(dummy_type_hprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_hprimme(double *eps, primme_context ctx);
 int machineEpsOrth_hprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_hprimme(
@@ -1528,8 +1352,8 @@ int massMatrixMatvec_kprimme(dummy_type_kprimme *V, PRIMME_INT nLocal, PRIMME_IN
       primme_context ctx);
 int applyPreconditioner_kprimme(dummy_type_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_kprimme(dummy_type_kprimme *buffer, int count, primme_context ctx);
-int broadcast_kprimme(dummy_type_kprimme *buffer, int count, primme_context ctx);
+int globalSum_kprimme(dummy_type_kprimme *buffer_, int count, primme_context ctx);
+int broadcast_kprimme(dummy_type_kprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_kprimme(double *eps, primme_context ctx);
 int machineEpsOrth_kprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_kprimme(
@@ -1548,8 +1372,8 @@ int massMatrixMatvec_sprimme(dummy_type_sprimme *V, PRIMME_INT nLocal, PRIMME_IN
       primme_context ctx);
 int applyPreconditioner_sprimme(dummy_type_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_sprimme(dummy_type_sprimme *buffer, int count, primme_context ctx);
-int broadcast_sprimme(dummy_type_sprimme *buffer, int count, primme_context ctx);
+int globalSum_sprimme(dummy_type_sprimme *buffer_, int count, primme_context ctx);
+int broadcast_sprimme(dummy_type_sprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_sprimme(double *eps, primme_context ctx);
 int machineEpsOrth_sprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_sprimme(
@@ -1568,8 +1392,8 @@ int massMatrixMatvec_cprimme(dummy_type_cprimme *V, PRIMME_INT nLocal, PRIMME_IN
       primme_context ctx);
 int applyPreconditioner_cprimme(dummy_type_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_cprimme(dummy_type_cprimme *buffer, int count, primme_context ctx);
-int broadcast_cprimme(dummy_type_cprimme *buffer, int count, primme_context ctx);
+int globalSum_cprimme(dummy_type_cprimme *buffer_, int count, primme_context ctx);
+int broadcast_cprimme(dummy_type_cprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_cprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cprimme(
@@ -1588,8 +1412,8 @@ int massMatrixMatvec_zprimme(dummy_type_zprimme *V, PRIMME_INT nLocal, PRIMME_IN
       primme_context ctx);
 int applyPreconditioner_zprimme(dummy_type_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_zprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_zprimme(dummy_type_zprimme *buffer, int count, primme_context ctx);
-int broadcast_zprimme(dummy_type_zprimme *buffer, int count, primme_context ctx);
+int globalSum_zprimme(dummy_type_zprimme *buffer_, int count, primme_context ctx);
+int broadcast_zprimme(dummy_type_zprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_zprimme(double *eps, primme_context ctx);
 int machineEpsOrth_zprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_zprimme(
@@ -1608,8 +1432,8 @@ int massMatrixMatvec_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_hprimme(dummy_type_magma_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_magma_hprimme(dummy_type_magma_hprimme *buffer, int count, primme_context ctx);
-int broadcast_magma_hprimme(dummy_type_magma_hprimme *buffer, int count, primme_context ctx);
+int globalSum_magma_hprimme(dummy_type_magma_hprimme *buffer_, int count, primme_context ctx);
+int broadcast_magma_hprimme(dummy_type_magma_hprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_magma_hprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_hprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_hprimme(
@@ -1628,8 +1452,8 @@ int massMatrixMatvec_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_kprimme(dummy_type_magma_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_magma_kprimme(dummy_type_magma_kprimme *buffer, int count, primme_context ctx);
-int broadcast_magma_kprimme(dummy_type_magma_kprimme *buffer, int count, primme_context ctx);
+int globalSum_magma_kprimme(dummy_type_magma_kprimme *buffer_, int count, primme_context ctx);
+int broadcast_magma_kprimme(dummy_type_magma_kprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_magma_kprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_kprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_kprimme(
@@ -1648,8 +1472,8 @@ int massMatrixMatvec_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_sprimme(dummy_type_magma_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_magma_sprimme(dummy_type_magma_sprimme *buffer, int count, primme_context ctx);
-int broadcast_magma_sprimme(dummy_type_magma_sprimme *buffer, int count, primme_context ctx);
+int globalSum_magma_sprimme(dummy_type_magma_sprimme *buffer_, int count, primme_context ctx);
+int broadcast_magma_sprimme(dummy_type_magma_sprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_magma_sprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_sprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_sprimme(
@@ -1668,8 +1492,8 @@ int massMatrixMatvec_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_cprimme(dummy_type_magma_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_magma_cprimme(dummy_type_magma_cprimme *buffer, int count, primme_context ctx);
-int broadcast_magma_cprimme(dummy_type_magma_cprimme *buffer, int count, primme_context ctx);
+int globalSum_magma_cprimme(dummy_type_magma_cprimme *buffer_, int count, primme_context ctx);
+int broadcast_magma_cprimme(dummy_type_magma_cprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_magma_cprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_cprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_magma_cprimme(
@@ -1688,8 +1512,8 @@ int massMatrixMatvec_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_dprimme(dummy_type_magma_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_dprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_magma_dprimme(dummy_type_magma_dprimme *buffer, int count, primme_context ctx);
-int broadcast_magma_dprimme(dummy_type_magma_dprimme *buffer, int count, primme_context ctx);
+int globalSum_magma_dprimme(dummy_type_magma_dprimme *buffer_, int count, primme_context ctx);
+int broadcast_magma_dprimme(dummy_type_magma_dprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_magma_dprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_dprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_magma_dprimme(
@@ -1708,8 +1532,8 @@ int massMatrixMatvec_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLoca
       primme_context ctx);
 int applyPreconditioner_magma_zprimme(dummy_type_magma_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_magma_zprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_magma_zprimme(dummy_type_magma_zprimme *buffer, int count, primme_context ctx);
-int broadcast_magma_zprimme(dummy_type_magma_zprimme *buffer, int count, primme_context ctx);
+int globalSum_magma_zprimme(dummy_type_magma_zprimme *buffer_, int count, primme_context ctx);
+int broadcast_magma_zprimme(dummy_type_magma_zprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_magma_zprimme(double *eps, primme_context ctx);
 int machineEpsOrth_magma_zprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_magma_zprimme(
@@ -1728,8 +1552,8 @@ int massMatrixMatvec_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_hprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_cublas_hprimme(dummy_type_cublas_hprimme *buffer, int count, primme_context ctx);
-int broadcast_cublas_hprimme(dummy_type_cublas_hprimme *buffer, int count, primme_context ctx);
+int globalSum_cublas_hprimme(dummy_type_cublas_hprimme *buffer_, int count, primme_context ctx);
+int broadcast_cublas_hprimme(dummy_type_cublas_hprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_cublas_hprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_hprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cublas_hprimme(
@@ -1748,8 +1572,8 @@ int massMatrixMatvec_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_kprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_cublas_kprimme(dummy_type_cublas_kprimme *buffer, int count, primme_context ctx);
-int broadcast_cublas_kprimme(dummy_type_cublas_kprimme *buffer, int count, primme_context ctx);
+int globalSum_cublas_kprimme(dummy_type_cublas_kprimme *buffer_, int count, primme_context ctx);
+int broadcast_cublas_kprimme(dummy_type_cublas_kprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_cublas_kprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_kprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cublas_kprimme(
@@ -1768,8 +1592,8 @@ int massMatrixMatvec_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_sprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_cublas_sprimme(dummy_type_cublas_sprimme *buffer, int count, primme_context ctx);
-int broadcast_cublas_sprimme(dummy_type_cublas_sprimme *buffer, int count, primme_context ctx);
+int globalSum_cublas_sprimme(dummy_type_cublas_sprimme *buffer_, int count, primme_context ctx);
+int broadcast_cublas_sprimme(dummy_type_cublas_sprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_cublas_sprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_sprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cublas_sprimme(
@@ -1788,8 +1612,8 @@ int massMatrixMatvec_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_cprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_cublas_cprimme(dummy_type_cublas_cprimme *buffer, int count, primme_context ctx);
-int broadcast_cublas_cprimme(dummy_type_cublas_cprimme *buffer, int count, primme_context ctx);
+int globalSum_cublas_cprimme(dummy_type_cublas_cprimme *buffer_, int count, primme_context ctx);
+int broadcast_cublas_cprimme(dummy_type_cublas_cprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_cublas_cprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_cprimme(double *eps, primme_context ctx);
 dummy_type_sprimme problemNorm_cublas_cprimme(
@@ -1808,8 +1632,8 @@ int massMatrixMatvec_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_dprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_cublas_dprimme(dummy_type_cublas_dprimme *buffer, int count, primme_context ctx);
-int broadcast_cublas_dprimme(dummy_type_cublas_dprimme *buffer, int count, primme_context ctx);
+int globalSum_cublas_dprimme(dummy_type_cublas_dprimme *buffer_, int count, primme_context ctx);
+int broadcast_cublas_dprimme(dummy_type_cublas_dprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_cublas_dprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_dprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_cublas_dprimme(
@@ -1828,8 +1652,8 @@ int massMatrixMatvec_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT nLo
       primme_context ctx);
 int applyPreconditioner_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT nLocal, PRIMME_INT ldV,
       dummy_type_cublas_zprimme *W, PRIMME_INT ldW, int blockSize, primme_context ctx);
-int globalSum_cublas_zprimme(dummy_type_cublas_zprimme *buffer, int count, primme_context ctx);
-int broadcast_cublas_zprimme(dummy_type_cublas_zprimme *buffer, int count, primme_context ctx);
+int globalSum_cublas_zprimme(dummy_type_cublas_zprimme *buffer_, int count, primme_context ctx);
+int broadcast_cublas_zprimme(dummy_type_cublas_zprimme *buffer_, int count, primme_context ctx);
 int machineEpsMatrix_cublas_zprimme(double *eps, primme_context ctx);
 int machineEpsOrth_cublas_zprimme(double *eps, primme_context ctx);
 dummy_type_dprimme problemNorm_cublas_zprimme(

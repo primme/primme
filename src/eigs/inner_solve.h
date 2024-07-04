@@ -142,20 +142,20 @@ int apply_projected_preconditionerdprimme(dummy_type_dprimme *v, PRIMME_INT ldv,
       PRIMME_INT ldx, dummy_type_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_dprimme *xKinvBx,
       dummy_type_dprimme *Mfact, int *ipivot, dummy_type_dprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_dprimme *aux, int aux_size, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(apply_skew_projector)
 #  define apply_skew_projector CONCAT(apply_skew_projector,WITH_KIND(SCALAR_SUF))
 #endif
 int apply_skew_projectordprimme(dummy_type_dprimme *Q, PRIMME_INT ldQ, dummy_type_dprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_dprimme *Mfact, int *ipivot, int numCols, dummy_type_dprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_dprimme *aux, int aux_size, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(apply_projected_matrix)
 #  define apply_projected_matrix CONCAT(apply_projected_matrix,WITH_KIND(SCALAR_SUF))
 #endif
 int apply_projected_matrixdprimme(dummy_type_dprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_dprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_dprimme *BQ, PRIMME_INT ldBQ, dummy_type_dprimme *X,
       PRIMME_INT ldX, dummy_type_dprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_dprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_dprimme *result, PRIMME_INT ldresult, dummy_type_dprimme *aux, int aux_size, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(perm_set_value_on_pos)
 #  define perm_set_value_on_pos CONCAT(perm_set_value_on_pos,WITH_KIND(SCALAR_SUF))
 #endif
@@ -176,14 +176,14 @@ int apply_projected_preconditionerhprimme(dummy_type_hprimme *v, PRIMME_INT ldv,
       PRIMME_INT ldx, dummy_type_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
       dummy_type_sprimme *Mfact, int *ipivot, dummy_type_hprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_hprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorhprimme(dummy_type_hprimme *Q, PRIMME_INT ldQ, dummy_type_hprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_hprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_hprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixhprimme(dummy_type_hprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_hprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_hprimme *BQ, PRIMME_INT ldBQ, dummy_type_hprimme *X,
       PRIMME_INT ldX, dummy_type_hprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_hprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_hprimme *result, PRIMME_INT ldresult, dummy_type_hprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poshprimme(int *p, int val, int pos, int n);
 int inner_solve_kprimme(int blockSize, dummy_type_kprimme *x, PRIMME_INT ldx, dummy_type_kprimme *Bx,
       PRIMME_INT ldBx, dummy_type_kprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_kprimme *evecs,
@@ -201,14 +201,14 @@ int apply_projected_preconditionerkprimme(dummy_type_kprimme *v, PRIMME_INT ldv,
       PRIMME_INT ldx, dummy_type_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
       dummy_type_cprimme *Mfact, int *ipivot, dummy_type_kprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_kprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorkprimme(dummy_type_kprimme *Q, PRIMME_INT ldQ, dummy_type_kprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_kprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_kprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixkprimme(dummy_type_kprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_kprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_kprimme *BQ, PRIMME_INT ldBQ, dummy_type_kprimme *X,
       PRIMME_INT ldX, dummy_type_kprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_kprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_kprimme *result, PRIMME_INT ldresult, dummy_type_kprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poskprimme(int *p, int val, int pos, int n);
 int inner_solve_sprimme(int blockSize, dummy_type_sprimme *x, PRIMME_INT ldx, dummy_type_sprimme *Bx,
       PRIMME_INT ldBx, dummy_type_sprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_sprimme *evecs,
@@ -226,14 +226,14 @@ int apply_projected_preconditionersprimme(dummy_type_sprimme *v, PRIMME_INT ldv,
       PRIMME_INT ldx, dummy_type_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
       dummy_type_sprimme *Mfact, int *ipivot, dummy_type_sprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_sprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorsprimme(dummy_type_sprimme *Q, PRIMME_INT ldQ, dummy_type_sprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_sprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_sprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixsprimme(dummy_type_sprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_sprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_sprimme *BQ, PRIMME_INT ldBQ, dummy_type_sprimme *X,
       PRIMME_INT ldX, dummy_type_sprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_sprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_sprimme *result, PRIMME_INT ldresult, dummy_type_sprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_possprimme(int *p, int val, int pos, int n);
 int inner_solve_cprimme(int blockSize, dummy_type_cprimme *x, PRIMME_INT ldx, dummy_type_cprimme *Bx,
       PRIMME_INT ldBx, dummy_type_cprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_cprimme *evecs,
@@ -251,14 +251,14 @@ int apply_projected_preconditionercprimme(dummy_type_cprimme *v, PRIMME_INT ldv,
       PRIMME_INT ldx, dummy_type_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
       dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_cprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorcprimme(dummy_type_cprimme *Q, PRIMME_INT ldQ, dummy_type_cprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_cprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_cprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixcprimme(dummy_type_cprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_cprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_cprimme *BQ, PRIMME_INT ldBQ, dummy_type_cprimme *X,
       PRIMME_INT ldX, dummy_type_cprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_cprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_cprimme *result, PRIMME_INT ldresult, dummy_type_cprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poscprimme(int *p, int val, int pos, int n);
 int inner_solve_zprimme(int blockSize, dummy_type_zprimme *x, PRIMME_INT ldx, dummy_type_zprimme *Bx,
       PRIMME_INT ldBx, dummy_type_zprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_zprimme *evecs,
@@ -276,14 +276,14 @@ int apply_projected_preconditionerzprimme(dummy_type_zprimme *v, PRIMME_INT ldv,
       PRIMME_INT ldx, dummy_type_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_zprimme *xKinvBx,
       dummy_type_zprimme *Mfact, int *ipivot, dummy_type_zprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_zprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorzprimme(dummy_type_zprimme *Q, PRIMME_INT ldQ, dummy_type_zprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_zprimme *Mfact, int *ipivot, int numCols, dummy_type_zprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_zprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixzprimme(dummy_type_zprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_zprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_zprimme *BQ, PRIMME_INT ldBQ, dummy_type_zprimme *X,
       PRIMME_INT ldX, dummy_type_zprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_zprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_zprimme *result, PRIMME_INT ldresult, dummy_type_zprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poszprimme(int *p, int val, int pos, int n);
 int inner_solve_magma_hprimme(int blockSize, dummy_type_magma_hprimme *x, PRIMME_INT ldx, dummy_type_magma_hprimme *Bx,
       PRIMME_INT ldBx, dummy_type_magma_hprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_hprimme *evecs,
@@ -301,14 +301,14 @@ int apply_projected_preconditionermagma_hprimme(dummy_type_magma_hprimme *v, PRI
       PRIMME_INT ldx, dummy_type_magma_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
       dummy_type_sprimme *Mfact, int *ipivot, dummy_type_magma_hprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_magma_hprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectormagma_hprimme(dummy_type_magma_hprimme *Q, PRIMME_INT ldQ, dummy_type_magma_hprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_hprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_magma_hprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixmagma_hprimme(dummy_type_magma_hprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_magma_hprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_hprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_hprimme *X,
       PRIMME_INT ldX, dummy_type_magma_hprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_magma_hprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_magma_hprimme *result, PRIMME_INT ldresult, dummy_type_magma_hprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_posmagma_hprimme(int *p, int val, int pos, int n);
 int inner_solve_magma_kprimme(int blockSize, dummy_type_magma_kprimme *x, PRIMME_INT ldx, dummy_type_magma_kprimme *Bx,
       PRIMME_INT ldBx, dummy_type_magma_kprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_kprimme *evecs,
@@ -326,14 +326,14 @@ int apply_projected_preconditionermagma_kprimme(dummy_type_magma_kprimme *v, PRI
       PRIMME_INT ldx, dummy_type_magma_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
       dummy_type_cprimme *Mfact, int *ipivot, dummy_type_magma_kprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_magma_kprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectormagma_kprimme(dummy_type_magma_kprimme *Q, PRIMME_INT ldQ, dummy_type_magma_kprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_kprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_magma_kprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixmagma_kprimme(dummy_type_magma_kprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_magma_kprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_kprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_kprimme *X,
       PRIMME_INT ldX, dummy_type_magma_kprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_magma_kprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_magma_kprimme *result, PRIMME_INT ldresult, dummy_type_magma_kprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_posmagma_kprimme(int *p, int val, int pos, int n);
 int inner_solve_magma_sprimme(int blockSize, dummy_type_magma_sprimme *x, PRIMME_INT ldx, dummy_type_magma_sprimme *Bx,
       PRIMME_INT ldBx, dummy_type_magma_sprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_sprimme *evecs,
@@ -351,14 +351,14 @@ int apply_projected_preconditionermagma_sprimme(dummy_type_magma_sprimme *v, PRI
       PRIMME_INT ldx, dummy_type_magma_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
       dummy_type_sprimme *Mfact, int *ipivot, dummy_type_magma_sprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_magma_sprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectormagma_sprimme(dummy_type_magma_sprimme *Q, PRIMME_INT ldQ, dummy_type_magma_sprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_sprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_magma_sprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixmagma_sprimme(dummy_type_magma_sprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_magma_sprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_sprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_sprimme *X,
       PRIMME_INT ldX, dummy_type_magma_sprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_magma_sprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_magma_sprimme *result, PRIMME_INT ldresult, dummy_type_magma_sprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_posmagma_sprimme(int *p, int val, int pos, int n);
 int inner_solve_magma_cprimme(int blockSize, dummy_type_magma_cprimme *x, PRIMME_INT ldx, dummy_type_magma_cprimme *Bx,
       PRIMME_INT ldBx, dummy_type_magma_cprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_magma_cprimme *evecs,
@@ -376,14 +376,14 @@ int apply_projected_preconditionermagma_cprimme(dummy_type_magma_cprimme *v, PRI
       PRIMME_INT ldx, dummy_type_magma_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
       dummy_type_cprimme *Mfact, int *ipivot, dummy_type_magma_cprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_magma_cprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectormagma_cprimme(dummy_type_magma_cprimme *Q, PRIMME_INT ldQ, dummy_type_magma_cprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_cprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_magma_cprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixmagma_cprimme(dummy_type_magma_cprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_magma_cprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_cprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_cprimme *X,
       PRIMME_INT ldX, dummy_type_magma_cprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_magma_cprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_magma_cprimme *result, PRIMME_INT ldresult, dummy_type_magma_cprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_posmagma_cprimme(int *p, int val, int pos, int n);
 int inner_solve_magma_dprimme(int blockSize, dummy_type_magma_dprimme *x, PRIMME_INT ldx, dummy_type_magma_dprimme *Bx,
       PRIMME_INT ldBx, dummy_type_magma_dprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_magma_dprimme *evecs,
@@ -401,14 +401,14 @@ int apply_projected_preconditionermagma_dprimme(dummy_type_magma_dprimme *v, PRI
       PRIMME_INT ldx, dummy_type_magma_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_dprimme *xKinvBx,
       dummy_type_dprimme *Mfact, int *ipivot, dummy_type_magma_dprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_magma_dprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectormagma_dprimme(dummy_type_magma_dprimme *Q, PRIMME_INT ldQ, dummy_type_magma_dprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_dprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_dprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_magma_dprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixmagma_dprimme(dummy_type_magma_dprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_magma_dprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_dprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_dprimme *X,
       PRIMME_INT ldX, dummy_type_magma_dprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_magma_dprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_magma_dprimme *result, PRIMME_INT ldresult, dummy_type_magma_dprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_posmagma_dprimme(int *p, int val, int pos, int n);
 int inner_solve_magma_zprimme(int blockSize, dummy_type_magma_zprimme *x, PRIMME_INT ldx, dummy_type_magma_zprimme *Bx,
       PRIMME_INT ldBx, dummy_type_magma_zprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_magma_zprimme *evecs,
@@ -426,14 +426,14 @@ int apply_projected_preconditionermagma_zprimme(dummy_type_magma_zprimme *v, PRI
       PRIMME_INT ldx, dummy_type_magma_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_zprimme *xKinvBx,
       dummy_type_zprimme *Mfact, int *ipivot, dummy_type_magma_zprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_magma_zprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectormagma_zprimme(dummy_type_magma_zprimme *Q, PRIMME_INT ldQ, dummy_type_magma_zprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_zprimme *Mfact, int *ipivot, int numCols, dummy_type_magma_zprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_magma_zprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixmagma_zprimme(dummy_type_magma_zprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_magma_zprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_magma_zprimme *BQ, PRIMME_INT ldBQ, dummy_type_magma_zprimme *X,
       PRIMME_INT ldX, dummy_type_magma_zprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_magma_zprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_magma_zprimme *result, PRIMME_INT ldresult, dummy_type_magma_zprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_posmagma_zprimme(int *p, int val, int pos, int n);
 int inner_solve_cublas_hprimme(int blockSize, dummy_type_cublas_hprimme *x, PRIMME_INT ldx, dummy_type_cublas_hprimme *Bx,
       PRIMME_INT ldBx, dummy_type_cublas_hprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_cublas_hprimme *evecs,
@@ -451,14 +451,14 @@ int apply_projected_preconditionercublas_hprimme(dummy_type_cublas_hprimme *v, P
       PRIMME_INT ldx, dummy_type_cublas_hprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
       dummy_type_sprimme *Mfact, int *ipivot, dummy_type_cublas_hprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_cublas_hprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorcublas_hprimme(dummy_type_cublas_hprimme *Q, PRIMME_INT ldQ, dummy_type_cublas_hprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_cublas_hprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_cublas_hprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixcublas_hprimme(dummy_type_cublas_hprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_cublas_hprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_cublas_hprimme *BQ, PRIMME_INT ldBQ, dummy_type_cublas_hprimme *X,
       PRIMME_INT ldX, dummy_type_cublas_hprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_cublas_hprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_cublas_hprimme *result, PRIMME_INT ldresult, dummy_type_cublas_hprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poscublas_hprimme(int *p, int val, int pos, int n);
 int inner_solve_cublas_kprimme(int blockSize, dummy_type_cublas_kprimme *x, PRIMME_INT ldx, dummy_type_cublas_kprimme *Bx,
       PRIMME_INT ldBx, dummy_type_cublas_kprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_cublas_kprimme *evecs,
@@ -476,14 +476,14 @@ int apply_projected_preconditionercublas_kprimme(dummy_type_cublas_kprimme *v, P
       PRIMME_INT ldx, dummy_type_cublas_kprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
       dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cublas_kprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_cublas_kprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorcublas_kprimme(dummy_type_cublas_kprimme *Q, PRIMME_INT ldQ, dummy_type_cublas_kprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_cublas_kprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_cublas_kprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixcublas_kprimme(dummy_type_cublas_kprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_cublas_kprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_cublas_kprimme *BQ, PRIMME_INT ldBQ, dummy_type_cublas_kprimme *X,
       PRIMME_INT ldX, dummy_type_cublas_kprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_cublas_kprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_cublas_kprimme *result, PRIMME_INT ldresult, dummy_type_cublas_kprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poscublas_kprimme(int *p, int val, int pos, int n);
 int inner_solve_cublas_sprimme(int blockSize, dummy_type_cublas_sprimme *x, PRIMME_INT ldx, dummy_type_cublas_sprimme *Bx,
       PRIMME_INT ldBx, dummy_type_cublas_sprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_cublas_sprimme *evecs,
@@ -501,14 +501,14 @@ int apply_projected_preconditionercublas_sprimme(dummy_type_cublas_sprimme *v, P
       PRIMME_INT ldx, dummy_type_cublas_sprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_sprimme *xKinvBx,
       dummy_type_sprimme *Mfact, int *ipivot, dummy_type_cublas_sprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_cublas_sprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorcublas_sprimme(dummy_type_cublas_sprimme *Q, PRIMME_INT ldQ, dummy_type_cublas_sprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_sprimme *Mfact, int *ipivot, int numCols, dummy_type_cublas_sprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_cublas_sprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixcublas_sprimme(dummy_type_cublas_sprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_cublas_sprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_cublas_sprimme *BQ, PRIMME_INT ldBQ, dummy_type_cublas_sprimme *X,
       PRIMME_INT ldX, dummy_type_cublas_sprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_cublas_sprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_cublas_sprimme *result, PRIMME_INT ldresult, dummy_type_cublas_sprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poscublas_sprimme(int *p, int val, int pos, int n);
 int inner_solve_cublas_cprimme(int blockSize, dummy_type_cublas_cprimme *x, PRIMME_INT ldx, dummy_type_cublas_cprimme *Bx,
       PRIMME_INT ldBx, dummy_type_cublas_cprimme *r, PRIMME_INT ldr, dummy_type_sprimme *rnorm, dummy_type_cublas_cprimme *evecs,
@@ -526,14 +526,14 @@ int apply_projected_preconditionercublas_cprimme(dummy_type_cublas_cprimme *v, P
       PRIMME_INT ldx, dummy_type_cublas_cprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_cprimme *xKinvBx,
       dummy_type_cprimme *Mfact, int *ipivot, dummy_type_cublas_cprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_cublas_cprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorcublas_cprimme(dummy_type_cublas_cprimme *Q, PRIMME_INT ldQ, dummy_type_cublas_cprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_cprimme *Mfact, int *ipivot, int numCols, dummy_type_cublas_cprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_cublas_cprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixcublas_cprimme(dummy_type_cublas_cprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_cublas_cprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_cublas_cprimme *BQ, PRIMME_INT ldBQ, dummy_type_cublas_cprimme *X,
       PRIMME_INT ldX, dummy_type_cublas_cprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_cublas_cprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_cublas_cprimme *result, PRIMME_INT ldresult, dummy_type_cublas_cprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poscublas_cprimme(int *p, int val, int pos, int n);
 int inner_solve_cublas_dprimme(int blockSize, dummy_type_cublas_dprimme *x, PRIMME_INT ldx, dummy_type_cublas_dprimme *Bx,
       PRIMME_INT ldBx, dummy_type_cublas_dprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_cublas_dprimme *evecs,
@@ -551,14 +551,14 @@ int apply_projected_preconditionercublas_dprimme(dummy_type_cublas_dprimme *v, P
       PRIMME_INT ldx, dummy_type_cublas_dprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_dprimme *xKinvBx,
       dummy_type_dprimme *Mfact, int *ipivot, dummy_type_cublas_dprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_cublas_dprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorcublas_dprimme(dummy_type_cublas_dprimme *Q, PRIMME_INT ldQ, dummy_type_cublas_dprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_dprimme *Mfact, int *ipivot, int numCols, dummy_type_cublas_dprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_cublas_dprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixcublas_dprimme(dummy_type_cublas_dprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_cublas_dprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_cublas_dprimme *BQ, PRIMME_INT ldBQ, dummy_type_cublas_dprimme *X,
       PRIMME_INT ldX, dummy_type_cublas_dprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_cublas_dprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_cublas_dprimme *result, PRIMME_INT ldresult, dummy_type_cublas_dprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poscublas_dprimme(int *p, int val, int pos, int n);
 int inner_solve_cublas_zprimme(int blockSize, dummy_type_cublas_zprimme *x, PRIMME_INT ldx, dummy_type_cublas_zprimme *Bx,
       PRIMME_INT ldBx, dummy_type_cublas_zprimme *r, PRIMME_INT ldr, dummy_type_dprimme *rnorm, dummy_type_cublas_zprimme *evecs,
@@ -576,13 +576,13 @@ int apply_projected_preconditionercublas_zprimme(dummy_type_cublas_zprimme *v, P
       PRIMME_INT ldx, dummy_type_cublas_zprimme *RprojectorX, PRIMME_INT ldRprojectorX,
       int sizeRprojectorQ, int sizeRprojectorX, dummy_type_zprimme *xKinvBx,
       dummy_type_zprimme *Mfact, int *ipivot, dummy_type_cublas_zprimme *result, PRIMME_INT ldresult,
-      int blockSize, primme_context ctx);
+      int blockSize, dummy_type_cublas_zprimme *aux, int aux_size, primme_context ctx);
 int apply_skew_projectorcublas_zprimme(dummy_type_cublas_zprimme *Q, PRIMME_INT ldQ, dummy_type_cublas_zprimme *Qhat,
       PRIMME_INT ldQhat, dummy_type_zprimme *Mfact, int *ipivot, int numCols, dummy_type_cublas_zprimme *v,
-      PRIMME_INT ldv, int blockSize, primme_context ctx);
+      PRIMME_INT ldv, int blockSize, dummy_type_cublas_zprimme *aux, int aux_size, primme_context ctx);
 int apply_projected_matrixcublas_zprimme(dummy_type_cublas_zprimme *v, PRIMME_INT ldv, double *shift,
       dummy_type_cublas_zprimme *Q, PRIMME_INT ldQ, int nQ, dummy_type_cublas_zprimme *BQ, PRIMME_INT ldBQ, dummy_type_cublas_zprimme *X,
       PRIMME_INT ldX, dummy_type_cublas_zprimme *BX, PRIMME_INT ldBX, int nX, int blockSize,
-      dummy_type_cublas_zprimme *result, PRIMME_INT ldresult, primme_context ctx);
+      dummy_type_cublas_zprimme *result, PRIMME_INT ldresult, dummy_type_cublas_zprimme *aux, int aux_size, primme_context ctx);
 int perm_set_value_on_poscublas_zprimme(int *p, int val, int pos, int n);
 #endif

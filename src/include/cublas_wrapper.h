@@ -1423,7 +1423,7 @@ int Num_gemv_dhd_cublas_hprimme(const char *transa, PRIMME_INT m, int n, dummy_t
 #  define Num_axpy_RHqprimme CONCAT(Num_axpy_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int Num_axpy_cublas_hprimme(PRIMME_INT n, dummy_type_sprimme alpha, dummy_type_cublas_hprimme *x, int incx,
-   dummy_type_cublas_hprimme *y, int incy, primme_context ctx);
+      dummy_type_cublas_hprimme *y, int incy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_dot_Sprimme)
 #  define Num_dot_Sprimme CONCAT(Num_dot_,SCALAR_SUF)
 #endif
@@ -1606,8 +1606,8 @@ dummy_type_sprimme Num_dot_cublas_hprimme(PRIMME_INT n, dummy_type_cublas_hprimm
 #if !defined(CHECK_TEMPLATE) && !defined(Num_scal_RHqprimme)
 #  define Num_scal_RHqprimme CONCAT(Num_scal_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
-int Num_scal_cublas_hprimme(PRIMME_INT n, dummy_type_sprimme alpha, dummy_type_cublas_hprimme *x, int incx,
-      primme_context ctx);
+int Num_scal_cublas_hprimme(
+      PRIMME_INT n, dummy_type_sprimme alpha, dummy_type_cublas_hprimme *x, int incx, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_larnv_Sprimme)
 #  define Num_larnv_Sprimme CONCAT(Num_larnv_,SCALAR_SUF)
 #endif
@@ -1791,8 +1791,7 @@ int Num_larnv_cublas_hprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
 #  define Num_copy_matrix_RHqprimme CONCAT(Num_copy_matrix_,CONCAT(CONCAT(CONCAT(,q),primme),))
 #endif
 int Num_copy_matrix_cublas_hprimme(dummy_type_cublas_hprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_cublas_hprimme *y, PRIMME_INT ldy,
-      primme_context ctx);
+      PRIMME_INT ldx, dummy_type_cublas_hprimme *y, PRIMME_INT ldy, primme_context ctx);
 #if !defined(CHECK_TEMPLATE) && !defined(Num_zero_matrix_Sprimme)
 #  define Num_zero_matrix_Sprimme CONCAT(Num_zero_matrix_,SCALAR_SUF)
 #endif
@@ -2289,16 +2288,15 @@ int Num_gemv_dhd_cublas_kprimme(const char *transa, PRIMME_INT m, int n, dummy_t
       dummy_type_cublas_kprimme *a, int lda, dummy_type_cprimme *x, int incx, dummy_type_cprimme beta, dummy_type_cublas_kprimme *y,
       int incy, primme_context ctx);
 int Num_axpy_cublas_kprimme(PRIMME_INT n, dummy_type_cprimme alpha, dummy_type_cublas_kprimme *x, int incx,
-   dummy_type_cublas_kprimme *y, int incy, primme_context ctx);
+      dummy_type_cublas_kprimme *y, int incy, primme_context ctx);
 dummy_type_cprimme Num_dot_cublas_kprimme(PRIMME_INT n, dummy_type_cublas_kprimme *x, int incx, dummy_type_cublas_kprimme *y, int incy,
       primme_context ctx);
-int Num_scal_cublas_kprimme(PRIMME_INT n, dummy_type_cprimme alpha, dummy_type_cublas_kprimme *x, int incx,
-      primme_context ctx);
+int Num_scal_cublas_kprimme(
+      PRIMME_INT n, dummy_type_cprimme alpha, dummy_type_cublas_kprimme *x, int incx, primme_context ctx);
 int Num_larnv_cublas_kprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       dummy_type_cublas_kprimme *x, primme_context ctx);
 int Num_copy_matrix_cublas_kprimme(dummy_type_cublas_kprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_cublas_kprimme *y, PRIMME_INT ldy,
-      primme_context ctx);
+      PRIMME_INT ldx, dummy_type_cublas_kprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_cublas_kprimme(dummy_type_cublas_kprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
 int Num_trsm_hd_cublas_kprimme(const char *side, const char *uplo, const char *transa,
@@ -2345,16 +2343,15 @@ int Num_gemv_dhd_cublas_sprimme(const char *transa, PRIMME_INT m, int n, dummy_t
       dummy_type_cublas_sprimme *a, int lda, dummy_type_sprimme *x, int incx, dummy_type_sprimme beta, dummy_type_cublas_sprimme *y,
       int incy, primme_context ctx);
 int Num_axpy_cublas_sprimme(PRIMME_INT n, dummy_type_sprimme alpha, dummy_type_cublas_sprimme *x, int incx,
-   dummy_type_cublas_sprimme *y, int incy, primme_context ctx);
+      dummy_type_cublas_sprimme *y, int incy, primme_context ctx);
 dummy_type_sprimme Num_dot_cublas_sprimme(PRIMME_INT n, dummy_type_cublas_sprimme *x, int incx, dummy_type_cublas_sprimme *y, int incy,
       primme_context ctx);
-int Num_scal_cublas_sprimme(PRIMME_INT n, dummy_type_sprimme alpha, dummy_type_cublas_sprimme *x, int incx,
-      primme_context ctx);
+int Num_scal_cublas_sprimme(
+      PRIMME_INT n, dummy_type_sprimme alpha, dummy_type_cublas_sprimme *x, int incx, primme_context ctx);
 int Num_larnv_cublas_sprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       dummy_type_cublas_sprimme *x, primme_context ctx);
 int Num_copy_matrix_cublas_sprimme(dummy_type_cublas_sprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_cublas_sprimme *y, PRIMME_INT ldy,
-      primme_context ctx);
+      PRIMME_INT ldx, dummy_type_cublas_sprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_cublas_sprimme(dummy_type_cublas_sprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
 int Num_trsm_hd_cublas_sprimme(const char *side, const char *uplo, const char *transa,
@@ -2401,16 +2398,15 @@ int Num_gemv_dhd_cublas_cprimme(const char *transa, PRIMME_INT m, int n, dummy_t
       dummy_type_cublas_cprimme *a, int lda, dummy_type_cprimme *x, int incx, dummy_type_cprimme beta, dummy_type_cublas_cprimme *y,
       int incy, primme_context ctx);
 int Num_axpy_cublas_cprimme(PRIMME_INT n, dummy_type_cprimme alpha, dummy_type_cublas_cprimme *x, int incx,
-   dummy_type_cublas_cprimme *y, int incy, primme_context ctx);
+      dummy_type_cublas_cprimme *y, int incy, primme_context ctx);
 dummy_type_cprimme Num_dot_cublas_cprimme(PRIMME_INT n, dummy_type_cublas_cprimme *x, int incx, dummy_type_cublas_cprimme *y, int incy,
       primme_context ctx);
-int Num_scal_cublas_cprimme(PRIMME_INT n, dummy_type_cprimme alpha, dummy_type_cublas_cprimme *x, int incx,
-      primme_context ctx);
+int Num_scal_cublas_cprimme(
+      PRIMME_INT n, dummy_type_cprimme alpha, dummy_type_cublas_cprimme *x, int incx, primme_context ctx);
 int Num_larnv_cublas_cprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       dummy_type_cublas_cprimme *x, primme_context ctx);
 int Num_copy_matrix_cublas_cprimme(dummy_type_cublas_cprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_cublas_cprimme *y, PRIMME_INT ldy,
-      primme_context ctx);
+      PRIMME_INT ldx, dummy_type_cublas_cprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_cublas_cprimme(dummy_type_cublas_cprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
 int Num_trsm_hd_cublas_cprimme(const char *side, const char *uplo, const char *transa,
@@ -2457,16 +2453,15 @@ int Num_gemv_dhd_cublas_dprimme(const char *transa, PRIMME_INT m, int n, dummy_t
       dummy_type_cublas_dprimme *a, int lda, dummy_type_dprimme *x, int incx, dummy_type_dprimme beta, dummy_type_cublas_dprimme *y,
       int incy, primme_context ctx);
 int Num_axpy_cublas_dprimme(PRIMME_INT n, dummy_type_dprimme alpha, dummy_type_cublas_dprimme *x, int incx,
-   dummy_type_cublas_dprimme *y, int incy, primme_context ctx);
+      dummy_type_cublas_dprimme *y, int incy, primme_context ctx);
 dummy_type_dprimme Num_dot_cublas_dprimme(PRIMME_INT n, dummy_type_cublas_dprimme *x, int incx, dummy_type_cublas_dprimme *y, int incy,
       primme_context ctx);
-int Num_scal_cublas_dprimme(PRIMME_INT n, dummy_type_dprimme alpha, dummy_type_cublas_dprimme *x, int incx,
-      primme_context ctx);
+int Num_scal_cublas_dprimme(
+      PRIMME_INT n, dummy_type_dprimme alpha, dummy_type_cublas_dprimme *x, int incx, primme_context ctx);
 int Num_larnv_cublas_dprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       dummy_type_cublas_dprimme *x, primme_context ctx);
 int Num_copy_matrix_cublas_dprimme(dummy_type_cublas_dprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_cublas_dprimme *y, PRIMME_INT ldy,
-      primme_context ctx);
+      PRIMME_INT ldx, dummy_type_cublas_dprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_cublas_dprimme(dummy_type_cublas_dprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
 int Num_trsm_hd_cublas_dprimme(const char *side, const char *uplo, const char *transa,
@@ -2513,16 +2508,15 @@ int Num_gemv_dhd_cublas_zprimme(const char *transa, PRIMME_INT m, int n, dummy_t
       dummy_type_cublas_zprimme *a, int lda, dummy_type_zprimme *x, int incx, dummy_type_zprimme beta, dummy_type_cublas_zprimme *y,
       int incy, primme_context ctx);
 int Num_axpy_cublas_zprimme(PRIMME_INT n, dummy_type_zprimme alpha, dummy_type_cublas_zprimme *x, int incx,
-   dummy_type_cublas_zprimme *y, int incy, primme_context ctx);
+      dummy_type_cublas_zprimme *y, int incy, primme_context ctx);
 dummy_type_zprimme Num_dot_cublas_zprimme(PRIMME_INT n, dummy_type_cublas_zprimme *x, int incx, dummy_type_cublas_zprimme *y, int incy,
       primme_context ctx);
-int Num_scal_cublas_zprimme(PRIMME_INT n, dummy_type_zprimme alpha, dummy_type_cublas_zprimme *x, int incx,
-      primme_context ctx);
+int Num_scal_cublas_zprimme(
+      PRIMME_INT n, dummy_type_zprimme alpha, dummy_type_cublas_zprimme *x, int incx, primme_context ctx);
 int Num_larnv_cublas_zprimme(int idist, PRIMME_INT *iseed, PRIMME_INT length,
       dummy_type_cublas_zprimme *x, primme_context ctx);
 int Num_copy_matrix_cublas_zprimme(dummy_type_cublas_zprimme *x, PRIMME_INT m, PRIMME_INT n,
-      PRIMME_INT ldx, dummy_type_cublas_zprimme *y, PRIMME_INT ldy,
-      primme_context ctx);
+      PRIMME_INT ldx, dummy_type_cublas_zprimme *y, PRIMME_INT ldy, primme_context ctx);
 int Num_zero_matrix_cublas_zprimme(dummy_type_cublas_zprimme *x, PRIMME_INT m, PRIMME_INT n,
       PRIMME_INT ldx, primme_context ctx);
 int Num_trsm_hd_cublas_zprimme(const char *side, const char *uplo, const char *transa,
