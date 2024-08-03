@@ -54,7 +54,7 @@
 #        define GPU_SELECT(X, Y) X
 #    elif defined(PRIMME_WITH_HIPBLAS)
 #        include <hip/hip_runtime.h>
-#        include <hipblas.h>
+#        include <hipblas/hipblas.h>
 #        define GPU_SELECT(X, Y) Y
 #    else
 #        error Unsupported platform
@@ -164,11 +164,20 @@ int Num_check_pointer_Sprimme(void *x) {
    if (GPU_SYMBOL(PointerGetAttributes)(&ptr_attr, x) != GPU_SYMBOL(Success))
       return -1;
 
-#if defined(PRIMME_WITH_CUBLAS) && CUDART_VERSION >= 10000
+#if defined(PRIMME_WITH_CUBLAS)
+#if CUDART_VERSION >= 10000
    if (ptr_attr.type == GPU_SYMBOL(MemoryTypeHost)) return -1;
-#elif defined(PRIMME_WITH_HIPBLAS) || (defined(PRIMME_WITH_CUBLAS) && CUDART_VERSION < 10000)
+#else
    if (!ptr_attr.isManaged && ptr_attr.memoryType == GPU_SYMBOL(MemoryTypeHost))
       return -1;
+#endif
+#elif defined(PRIMME_WITH_HIPBLAS)
+#if HIP_VERSION_MAJOR >= 6
+   if (ptr_attr.type == GPU_SYMBOL(MemoryTypeDevice)) return -1;
+#else
+   if (ptr_attr.memoryType == GPU_SYMBOL(MemoryTypeDevice)) return -1;
+#endif
+
 #endif
    return 0;
 }
