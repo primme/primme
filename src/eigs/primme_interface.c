@@ -130,6 +130,7 @@ void primme_initialize(primme_params *primme) {
    primme->globalSumReal_type      = primme_op_default;
    primme->broadcastReal           = NULL;
    primme->broadcastReal_type      = primme_op_default;
+   primme->commFuncsSupportGpuPointers = 0;
 
    /* Initial guesses/constraints */
    primme->initSize                = 0;
@@ -829,8 +830,17 @@ int primme_get_member(primme_params *primme, primme_params_label label,
       case PRIMME_globalSumReal:
               v->globalSumRealFunc_v = primme->globalSumReal;
       break;
+      case PRIMME_globalSumReal_type:
+              *(PRIMME_INT*)value = primme->globalSumReal_type;
+      break;
       case PRIMME_broadcastReal:
               v->broadcastRealFunc_v = primme->broadcastReal;
+      break;
+      case PRIMME_broadcastReal_type:
+              *(PRIMME_INT*)value = primme->broadcastReal_type;
+      break;
+      case PRIMME_commFuncsSupportGpuPointers:
+              *(PRIMME_INT*)value = primme->commFuncsSupportGpuPointers;
       break;
       case PRIMME_numEvals:
               *(PRIMME_INT*)value = primme->numEvals;
@@ -1133,6 +1143,9 @@ int primme_set_member(primme_params *primme, primme_params_label label,
       break;
       case PRIMME_broadcastReal_type:
               primme->broadcastReal_type = (primme_op_datatype)*(PRIMME_INT*)value;
+      break;
+      case PRIMME_commFuncsSupportGpuPointers:
+              primme->commFuncsSupportGpuPointers = (int)*(PRIMME_INT*)value;
       break;
       case PRIMME_numEvals:
               if (*(PRIMME_INT*)value > INT_MAX) return 1; else 

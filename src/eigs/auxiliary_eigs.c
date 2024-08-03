@@ -101,8 +101,8 @@ primme_context primme_get_context(primme_params *primme) {
       ctx.numProcs = primme->numProcs;
       ctx.procID = primme->procID;
       ctx.mpicomm = primme->commInfo;
-      ctx.globalSum = globalSum_Tprimme;
-      ctx.bcast = broadcast_Tprimme; 
+      ctx.globalSum = globalSum_float_cpu_primme;
+      ctx.bcast = broadcast_double_cpu_primme; 
       ctx.queue = primme->queue;
       ctx.report = monitor_report;
 #ifdef PRIMME_PROFILE
@@ -364,61 +364,74 @@ int applyPreconditioner_Sprimme(SCALAR *V, PRIMME_INT nLocal, PRIMME_INT ldV,
    return 0;
 }
 
-#ifdef USE_HOST
-
 TEMPLATE_PLEASE
-int globalSum_Sprimme(SCALAR *buffer, int count, primme_context ctx) {
-
-#ifdef USE_COMPLEX
-   count *= 2;
-#endif
-
-   return globalSum_Tprimme(buffer, PRIMME_OP_SCALAR, count, ctx);
-}
-
-TEMPLATE_PLEASE
-int broadcast_Sprimme(SCALAR *buffer, int count, primme_context ctx) {
-
-#ifdef USE_COMPLEX
-   count *= 2;
-#endif
-
-   return broadcast_Tprimme(buffer, PRIMME_OP_SCALAR, count, ctx);
-}
-
-#ifdef USE_DOUBLE
-
-TEMPLATE_PLEASE
-int globalSum_Tprimme(
-      void *buffer, primme_op_datatype buffert, int count, primme_context ctx) {
+int globalSum_Sprimme(SCALAR *buffer_, int count, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
 
    /* Quick exit */
 
-   if (!primme || primme->numProcs == 1 || !primme->globalSumReal) {
-      return 0;
-   }
+   if (!primme || primme->numProcs == 1 || !primme->globalSumReal) { return 0; }
 
+   /* Use just reals */
+#ifdef USE_COMPLEX
+   count *= 2;
+#endif
+   REAL *buffer = (REAL *)buffer_;
 
    double t0 = primme_wTimer();
 
-   /* Cast buffer */
+#ifndef USE_HOST
+   if (!primme->commFuncsSupportGpuPointers) {
+      /* Transfer the buffer to host */
 
-   void *buffer0 = NULL;
-   CHKERR(Num_matrix_astype_Rprimme(buffer, 1, count, 1, buffert, &buffer0,
-         NULL, primme->globalSumReal_type, 1 /* alloc */, 1 /* copy */, ctx));
+      HREAL *buffer0 = NULL;
+      CHKERR(Num_matrix_on_cpu_Rprimme(
+            buffer, 1, count, 1, &buffer0, NULL, 1 /* alloc */, ctx));
 
-   int ierr = 0;
-   CHKERRM(
-         (primme->globalSumReal(buffer0, buffer0, &count, primme, &ierr), ierr),
-         PRIMME_USER_FAILURE, "Error returned by 'globalSumReal' %d", ierr);
+      /* Cast buffer */
 
-   /* Copy back buffer0 */
+      void *buffer1 = NULL;
+      CHKERR(Num_matrix_astype_RHprimme(buffer0, 1, count, 1, PRIMME_OP_REAL, &buffer1,
+            NULL, primme->globalSumReal_type, 1 /* alloc */, 1 /* copy */,
+            ctx));
 
-   CHKERR(Num_matrix_astype_Rprimme(buffer0, 1, count, 1,
-         primme->globalSumReal_type, (void **)&buffer, NULL, buffert,
-         -1 /* dealloc */, 1 /* copy */, ctx));
+      int ierr = 0;
+      CHKERRM((primme->globalSumReal(buffer1, buffer1, &count, primme, &ierr),
+                    ierr),
+            PRIMME_USER_FAILURE, "Error returned by 'globalSumReal' %d", ierr);
+
+      /* Copy back buffer1 */
+
+      CHKERR(Num_matrix_astype_RHprimme(buffer1, 1, count, 1,
+            primme->globalSumReal_type, (void **)&buffer0, NULL, PRIMME_OP_REAL,
+            -1 /* dealloc */, 1 /* copy */, ctx));
+
+      /* Copy back to gpu */
+
+      CHKERR(Num_matrix_on_cpu_Rprimme(buffer, 1, count, 1, &buffer0, NULL,
+            -1 /* copy back and dealloc */, ctx));
+   } else
+#endif // USE_HOST
+   {
+      /* Cast buffer */
+
+      void *buffer1 = NULL;
+      CHKERR(Num_matrix_astype_Rprimme(buffer, 1, count, 1, PRIMME_OP_REAL, &buffer1,
+            NULL, primme->globalSumReal_type, 1 /* alloc */, 1 /* copy */,
+            ctx));
+
+      int ierr = 0;
+      CHKERRM((primme->globalSumReal(buffer1, buffer1, &count, primme, &ierr),
+                    ierr),
+            PRIMME_USER_FAILURE, "Error returned by 'globalSumReal' %d", ierr);
+
+      /* Copy back buffer1 */
+
+      CHKERR(Num_matrix_astype_Rprimme(buffer1, 1, count, 1,
+            primme->globalSumReal_type, (void **)&buffer, NULL, PRIMME_OP_REAL,
+            -1 /* dealloc */, 1 /* copy */, ctx));
+   }
 
    primme->stats.numGlobalSum++;
    primme->stats.timeGlobalSum += primme_wTimer() - t0;
@@ -428,42 +441,79 @@ int globalSum_Tprimme(
 }
 
 TEMPLATE_PLEASE
-int broadcast_Tprimme(
-      void *buffer, primme_op_datatype buffert, int count, primme_context ctx) {
+int broadcast_Sprimme(SCALAR *buffer_, int count, primme_context ctx) {
 
    primme_params *primme = ctx.primme;
-   int ierr;
 
    /* Quick exit */
 
-   if (!primme || primme->numProcs == 1) {
-      return 0;
-   }
+   if (!primme || primme->numProcs == 1) { return 0; }
+
+   /* Use just reals */
+#ifdef USE_COMPLEX
+   count *= 2;
+#endif
+   REAL *buffer = (REAL *)buffer_;
 
    double t0 = primme_wTimer();
 
    if (primme && primme->broadcastReal) {
-      /* Cast buffer */
+#ifndef USE_HOST
+      if (!primme->commFuncsSupportGpuPointers) {
+         /* Transfer the buffer to host */
 
-      void *buffer0 = NULL;
-      CHKERR(Num_matrix_astype_dprimme(buffer, 1, count, 1, buffert,
-            (void **)&buffer0, NULL, primme->broadcastReal_type, 1 /* alloc */,
-            1 /* copy */, ctx));
+         HREAL *buffer0 = NULL;
+         CHKERR(Num_matrix_on_cpu_Rprimme(
+               buffer, 1, count, 1, &buffer0, NULL, 1 /* alloc */, ctx));
 
-      CHKERRM((primme->broadcastReal(buffer0, &count, primme, &ierr), ierr),
-            PRIMME_USER_FAILURE, "Error returned by 'broadcastReal' %d", ierr);
+         /* Cast buffer */
 
-      /* Copy back buffer0 */
+         void *buffer1 = NULL;
+         CHKERR(Num_matrix_astype_RHprimme(buffer0, 1, count, 1, PRIMME_OP_REAL,
+               (void **)&buffer1, NULL, primme->broadcastReal_type,
+               1 /* alloc */, 1 /* copy */, ctx));
 
-      CHKERR(Num_matrix_astype_Sprimme(buffer0, 1, count, 1,
-            primme->broadcastReal_type, (void **)&buffer, NULL, buffert,
-            -1 /* dealloc */, 1 /* copy */, ctx));
+         int ierr;
+         CHKERRM((primme->broadcastReal(buffer1, &count, primme, &ierr), ierr),
+               PRIMME_USER_FAILURE, "Error returned by 'broadcastReal' %d",
+               ierr);
 
+         /* Copy back buffer1 */
+
+         CHKERR(Num_matrix_astype_RHprimme(buffer1, 1, count, 1,
+               primme->broadcastReal_type, (void **)&buffer0, NULL, PRIMME_OP_REAL,
+               -1 /* dealloc */, 1 /* copy */, ctx));
+
+         /* Copy back to gpu */
+
+         CHKERR(Num_matrix_on_cpu_Rprimme(buffer, 1, count, 1, &buffer0, NULL,
+               -1 /* copy back and dealloc */, ctx));
+      } else
+#endif // USE_HOST
+      {
+         /* Cast buffer */
+
+         void *buffer1 = NULL;
+         CHKERR(Num_matrix_astype_Rprimme(buffer, 1, count, 1, PRIMME_OP_REAL,
+               (void **)&buffer1, NULL, primme->broadcastReal_type,
+               1 /* alloc */, 1 /* copy */, ctx));
+
+         int ierr;
+         CHKERRM((primme->broadcastReal(buffer1, &count, primme, &ierr), ierr),
+               PRIMME_USER_FAILURE, "Error returned by 'broadcastReal' %d",
+               ierr);
+
+         /* Copy back buffer1 */
+
+         CHKERR(Num_matrix_astype_Rprimme(buffer1, 1, count, 1,
+               primme->broadcastReal_type, (void **)&buffer, NULL, PRIMME_OP_REAL,
+               -1 /* dealloc */, 1 /* copy */, ctx));
+      }
    } else {
       if (primme->procID != 0) {
-         CHKERR(Num_zero_matrix_Tprimme(buffer, buffert, 1, count, 1, ctx));
+         CHKERR(Num_zero_matrix_Sprimme(buffer_, 1, count, 1, ctx));
       }
-      CHKERR(globalSum_Tprimme(buffer, buffert, count, ctx));
+      CHKERR(globalSum_Sprimme(buffer_, count, ctx));
    }
 
    primme->stats.numBroadcast++;
@@ -473,16 +523,51 @@ int broadcast_Tprimme(
    return 0;
 }
 
-TEMPLATE_PLEASE
-int broadcast_iprimme(int *buffer, int count, primme_context ctx) {
-
-   CHKERR(broadcast_Tprimme(buffer, primme_op_int, count, ctx));
+#ifndef AUXILIARY_EIGS__PRIVATE_H
+#define AUXILIARY_EIGS__PRIVATE_H
+STATIC
+int globalSum_float_cpu_primme(float *buffer, primme_context ctx) {
+   CHKERR(globalSum_sprimme(buffer, 1, ctx));
    return 0;
 }
 
-#endif /* USE_DOUBLE */
+STATIC
+int broadcast_double_cpu_primme(double *buffer, primme_context ctx) {
+   CHKERR(broadcast_dprimme(buffer, 1, ctx));
+   return 0;
+}
+#endif /* AUXILIARY_EIGS__PRIVATE_H */
 
-#endif /* USE_HOST */
+#ifdef USE_DOUBLE
+TEMPLATE_PLEASE
+int broadcast_iprimme(int *buffer, int count, primme_context ctx) {
+
+   primme_params *primme = ctx.primme;
+
+   /* Quick exit */
+
+   if (!primme || primme->numProcs == 1) { return 0; }
+
+   /* Cast into double */
+
+   void *buffer0 = NULL;
+   CHKERR(Num_matrix_astype_Rprimme(buffer, 1, count, 1, primme_op_int,
+         (void **)&buffer0, NULL, primme_op_double, 1 /* alloc */, 1 /* copy */,
+         ctx));
+
+   /* Do the broadcast */
+
+   CHKERR(broadcast_dprimme((double *)buffer0, count, ctx));
+
+   /* Copy back buffer0 */
+
+   CHKERR(Num_matrix_astype_Rprimme(buffer0, 1, count, 1, primme_op_int,
+         (void **)&buffer, NULL, primme_op_double, -1 /* dealloc */,
+         1 /* copy */, ctx));
+
+   return 0;
+}
+#endif /* USE_DOUBLE */
 
 /*******************************************************************************
  * Subroutine machineEpsMatrix - return the machine epsilon considering the

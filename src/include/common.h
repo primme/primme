@@ -403,9 +403,30 @@ static inline const char *__compose_function_name(const char *path,
 #endif
 
 #ifdef PRIMME_PROFILE_NV
+#ifdef PRIMME_WITH_CUDA
 #include <nvToolsExt.h>
 #define PROFILE_NV_BEGIN(CALL) nvtxRangePush(CALL);
 #define PROFILE_NV_END         nvtxRangePop();
+#elif defined(PRIMME_WITH_HIPBLAS)
+#include <roctracer/roctx.h>
+#define PROFILE_NV_BEGIN(CALL)                                                 \
+   {                                                                           \
+      /* Limit the call to 100 characteres and remove " (brakes json) */       \
+      char _aux_str__[100];                                                    \
+      const char *_str = (CALL);                                               \
+      for (int i = 0, j = 0; i < 100; ++i) {                                   \
+         if (_str[i] == 0 || i == 99) {                                        \
+            _aux_str__[j] = 0;                                                 \
+            break;                                                             \
+         } else if (_str[i] != '"')                                            \
+            _aux_str__[j++] = _str[i];                                         \
+      }                                                                        \
+      roctxRangePush(_aux_str__);                                              \
+   }
+#define PROFILE_NV_END roctxRangePop();
+#else
+#error "Unsupported GPU system for profiling"
+#endif
 #else
 #define PROFILE_NV_BEGIN(CALL)
 #define PROFILE_NV_END
@@ -449,13 +470,13 @@ static inline uint32_t hash_call(const char *str, double value) {
 #define PARALLEL_CHECK(CALL)                                                   \
    {                                                                           \
       double __value = CALL;                                                   \
-      uint32_t __hash_call =                                                   \
-                     hash_call(STR(CALL) __FILE__ STR(__LINE__), __value),     \
-               __hash_call0 = __hash_call;                                     \
-      CHKERR(ctx.bcast(&__hash_call0, primme_op_float, 1, ctx));               \
+      double __hash_call =                                                     \
+                   hash_call(STR(CALL) __FILE__ STR(__LINE__), __value),       \
+             __hash_call0 = __hash_call;                                       \
+      CHKERR(ctx.bcast(&__hash_call0, ctx));                                   \
       float __not_is_equal = (__hash_call != __hash_call0 ? 1 : 0),            \
             __not_is_equal_global = __not_is_equal;                            \
-      CHKERR(ctx.globalSum(&__not_is_equal_global, primme_op_float, 1, ctx));  \
+      CHKERR(ctx.globalSum(&__not_is_equal_global, ctx));                      \
       if (__not_is_equal_global != 0 && ctx.procID == 0) {                     \
          PRINTFALL(1,                                                          \
                "PRIMME: Process 0 has value %12g for '" STR(                   \
@@ -466,11 +487,10 @@ static inline uint32_t hash_call(const char *str, double value) {
          PRINTFALL(1,                                                          \
                "PRIMME: Process %d has different value %12g for '" STR(        \
                      CALL) "' (" __FILE__ ":" STR(__LINE__) ")\n",             \
-               ctx.procID, __value);                                   \
+               ctx.procID, __value);                                           \
       }                                                                        \
       if (__not_is_equal_global != 0) CHKERR(PRIMME_PARALLEL_FAILURE);         \
    }
-
 
 /*****************************************************************************/
 /* Error management                                                          */
@@ -642,10 +662,10 @@ typedef struct primme_context_str {
    int numProcs;     /* number of processes */
    int procID;       /* process id */
    void *mpicomm;    /* MPI communicator */
-   int (*bcast)(void *buffer, primme_op_datatype buffer_type, int count,
-         struct primme_context_str ctx); /* broadcast */
-   int (*globalSum)(void *buffer, primme_op_datatype buffer_type, int count,
-         struct primme_context_str ctx); /* global reduction */
+   int (*bcast)(double *buffer,
+         struct primme_context_str ctx); /* broadcast for cpu pointers */
+   int (*globalSum)(float *buffer,
+         struct primme_context_str ctx); /* global reduction for cpu pointers */
 
    /* For MAGMA */
    void *queue;      /* magma device queue (magma_queue_t*) */

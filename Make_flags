@@ -49,18 +49,21 @@ CLANG ?= clang
 PRIMME_WITH_MAGMA ?= $(if $(findstring undefined,$(origin MAGMADIR)),no,yes)
 # CUDADIR  ?= /usr/local/cuda
 PRIMME_WITH_CUDA ?= $(if $(findstring undefined,$(origin CUDADIR)),no,yes)
+# Set PRIMME_WITH_GPU_PROFILING to yes to track GPU kernels with the invoking PRIMME function
+PRIMME_WITH_GPU_PROFILING ?= no
 ifeq ($(PRIMME_WITH_CUDA), yes)
     ifeq ($(PRIMME_WITH_MAGMA), yes)
         override CFLAGS += -I$(MAGMADIR)/include -DPRIMME_WITH_MAGMA
     endif
     override CFLAGS += -I$(CUDADIR)/include -DPRIMME_WITH_CUBLAS
-    # Uncomment the next line to mark CUDA kernels with the invoking PRIMME function
-    # override CFLAGS += -DPRIMME_PROFILE_NV
 endif
 # ROCMDIR ?= $(shell hipconfig -R)
 PRIMME_WITH_HIPBLAS ?= $(if $(findstring undefined,$(origin ROCMDIR)),no,yes)
 ifeq ($(PRIMME_WITH_HIPBLAS), yes)
     override CFLAGS += $(shell hipconfig -C) -I$(ROCMDIR)/include -DPRIMME_WITH_HIPBLAS
+endif
+ifeq ($(PRIMME_WITH_GPU_PROFILING), yes)
+    override CFLAGS += -DPRIMME_PROFILE_NV
 endif
 
 #---------------------------------------------------------------
