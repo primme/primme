@@ -173,9 +173,9 @@ int Num_check_pointer_Sprimme(void *x) {
 #endif
 #elif defined(PRIMME_WITH_HIPBLAS)
 #if HIP_VERSION_MAJOR >= 6
-   if (ptr_attr.type == GPU_SYMBOL(MemoryTypeDevice)) return -1;
+   if (ptr_attr.type == GPU_SYMBOL(MemoryTypeHost)) return -1;
 #else
-   if (ptr_attr.memoryType == GPU_SYMBOL(MemoryTypeDevice)) return -1;
+   if (ptr_attr.memoryType == GPU_SYMBOL(MemoryTypeHost)) return -1;
 #endif
 
 #endif

@@ -386,6 +386,8 @@ int Num_matrix_on_cpu_Sprimme(SCALAR *x, PRIMME_INT m, PRIMME_INT n,
    if (ldy) *ldy = ldx;
 #else
    if (do_alloc > 0) {
+      Mem_keep_frame(
+            ctx); /* The next allocation will not be freed in this function */
       HSCALAR *x_cpu; /* copy of x on cpu */
       CHKERR(Num_malloc_SHprimme(m * n, &x_cpu, ctx));
       CHKERR(Num_get_matrix_Sprimme(x, m, n, ldx, x_cpu, m, ctx));
