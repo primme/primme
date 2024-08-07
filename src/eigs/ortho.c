@@ -325,7 +325,7 @@ ortho_out:
    SCALAR *R0 = NULL;
    int ldR0 = b2 + 1;
    if (R) {
-      CHKERR(Num_malloc_Sprimme((b2 + 1) * (b2 - b1), &R0, ctx));
+      CHKERR(Num_malloc_Sprimme((b2 + 1) * (b2 - b1 + 1), &R0, ctx));
       CHKERR(Num_zero_matrix_Sprimme(R0, b2 + 1, b2 - b1 + 1, ldR0, ctx));
    }
    SCALAR *RLocked0 = NULL;
@@ -339,7 +339,8 @@ ortho_out:
    SCALAR *overlaps;
    CHKERR(Num_malloc_Sprimme(b2 + 2 + numLocked, &overlaps, ctx));
    CHKERR(Num_zero_matrix_Sprimme(overlaps, 1, b2 + 2 + numLocked, 1, ctx));
-   HREAL new_V_norms[b2 + 1 - b1];
+   HREAL *new_V_norms = NULL;
+   CHKERR(Num_malloc_RHprimme(b2 + 1 - b1, &new_V_norms, ctx));
 
    for (i = b1; i <= b2; i++) {
 
@@ -352,7 +353,7 @@ ortho_out:
       int Bx_update = 0;            // flag indicating if Bx = B*V[i]
                                     // randomization it is set to zero
 
-      for (nOrth = 0, randomizations = 0; reorth; nOrth++) {
+      for (nOrth = 0, randomizations = 0; reorth;) {
 
          if (nOrth >= maxNumOrthos) {
             /* Stop updating R when replacing one of the columns of the V */
@@ -373,6 +374,8 @@ ortho_out:
             Bx_update = 0; // V[i] has changed, so Bx != B*V[i]
          }
 
+         nOrth++;
+
          // Compute B*V[i]
 
          if (B && !Bx_update) {
@@ -386,11 +389,15 @@ ortho_out:
                "C", nLocal, i + 1, 1.0, V, ldV, Bx, 1, 0.0, overlaps, 1, ctx));
          if (primme) primme->stats.numOrthoInnerProds += i + 1;
 
-         CHKERR(Num_gemv_Sprimme("C", nLocal, numLocked, 1.0, locked, ldLocked,
-               Bx, 1, 0.0, &overlaps[i + 1], 1, ctx));
-         if (primme) primme->stats.numOrthoInnerProds += numLocked;
+         // NOTE: reserve overlaps[i+1] for the inner-prod of V[i] after ortho
 
-         CHKERR(globalSum_Sprimme(overlaps, i + 1 + numLocked, ctx));
+         if (numLocked > 0) {
+            CHKERR(Num_gemv_Sprimme("C", nLocal, numLocked, 1.0, locked,
+                  ldLocked, Bx, 1, 0.0, &overlaps[i + 2], 1, ctx));
+            if (primme) primme->stats.numOrthoInnerProds += numLocked;
+         }
+
+         CHKERR(globalSum_Sprimme(overlaps, i + 2 + numLocked, ctx));
 
          if (updateR) {
             if (R) {
@@ -398,7 +405,7 @@ ortho_out:
                      i, 1.0, overlaps, 1, &R0[ldR0 * (i - b1)], 1, ctx));
             }
             if (RLocked) {
-               CHKERR(Num_axpy_Sprimme(numLocked, 1.0, overlaps + i + 1, 1,
+               CHKERR(Num_axpy_Sprimme(numLocked, 1.0, overlaps + i + 2, 1,
                      &RLocked0[ldRLocked0 * (i - b1)], 1, ctx));
             }
          }
@@ -409,7 +416,7 @@ ortho_out:
 
          // Compute V[i] = V[i] - locked'*overlaps[i:i+numLocked-1]
          CHKERR(Num_gemv_Sprimme("N", nLocal, numLocked, -1.0, locked, ldLocked,
-               &overlaps[i + 1], 1, 1.0, &V[ldV * i], 1, ctx));
+               &overlaps[i + 2], 1, 1.0, &V[ldV * i], 1, ctx));
          if (primme) primme->stats.numOrthoInnerProds += numLocked;
 
          if (nOrth >= 1) {
@@ -424,9 +431,9 @@ ortho_out:
             if (primme) primme->stats.numOrthoInnerProds += 1;
 
             CHKERR(globalSum_Sprimme(&overlaps[i + 1], 1, ctx));
-            XSCALAR overlaps_host[2];
+            HSCALAR overlaps_host[2];
             CHKERR(Num_get_matrix_Sprimme(
-                  &overlaps[i], 2, 1, 2, overlaps_host, 2, ctx));
+                  &overlaps[i], 1, 2, 1, overlaps_host, 1, ctx));
 
             HREAL s0 = sqrt(REAL_PART(overlaps_host[0]));
             HREAL s1 = sqrt(REAL_PART(overlaps_host[1]));
@@ -459,13 +466,16 @@ ortho_out:
    CHKERR(Num_free_Sprimme(overlaps, ctx));
    if (R) {
       CHKERR(Num_get_matrix_Sprimme(
-            R0, b2, (i + 1 - b1), ldR0, &R[ldR * b1], ldR, ctx));
-      for (int j = 0; j < i + 1 - b1; ++j)
+            R0, b2, (i - b1), ldR0, &R[ldR * b1], ldR, ctx));
+      for (int j = 0; j < i - b1; ++j)
          R[ldR * (j + b1) + j + b1] = new_V_norms[j];
+      CHKERR(Num_free_Sprimme(R0, ctx));
    }
+   CHKERR(Num_free_RHprimme(new_V_norms, ctx));
    if (RLocked) {
-      CHKERR(Num_get_matrix_Sprimme(RLocked0, numLocked, (i + 1 - b1),
-            ldRLocked0, RLocked, ldRLocked, ctx));
+      CHKERR(Num_get_matrix_Sprimme(
+            RLocked0, numLocked, i - b1, ldRLocked0, RLocked, ldRLocked, ctx));
+      CHKERR(Num_free_Sprimme(RLocked0, ctx));
    }
 #endif // USE_HOST
 
