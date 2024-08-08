@@ -449,15 +449,15 @@ int broadcast_Sprimme(SCALAR *buffer_, int count, primme_context ctx) {
 
    if (!primme || primme->numProcs == 1) { return 0; }
 
-   /* Use just reals */
-#ifdef USE_COMPLEX
-   count *= 2;
-#endif
-   REAL *buffer = (REAL *)buffer_;
-
    double t0 = primme_wTimer();
 
    if (primme && primme->broadcastReal) {
+      /* Use just reals */
+#ifdef USE_COMPLEX
+      count *= 2;
+#endif
+      REAL *buffer = (REAL *)buffer_;
+
 #ifndef USE_HOST
       if (!primme->commFuncsSupportGpuPointers) {
          /* Transfer the buffer to host */
