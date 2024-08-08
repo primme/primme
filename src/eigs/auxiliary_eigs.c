@@ -561,9 +561,9 @@ int broadcast_iprimme(int *buffer, int count, primme_context ctx) {
 
    /* Copy back buffer0 */
 
-   CHKERR(Num_matrix_astype_Rprimme(buffer0, 1, count, 1, primme_op_int,
-         (void **)&buffer, NULL, primme_op_double, -1 /* dealloc */,
-         1 /* copy */, ctx));
+   CHKERR(Num_matrix_astype_Rprimme(buffer0, 1, count, 1, primme_op_double,
+         (void **)&buffer, NULL, primme_op_int, -1 /* dealloc */, 1 /* copy */,
+         ctx));
 
    return 0;
 }
