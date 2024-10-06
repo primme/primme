@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "primme"
-version = "3.2.2"
+version = "3.2.3"
 authors = [
   { name="Eloy Romero Alcalde", email="eromero@jlab.org" },
   { name="Andreas Stathopoulos", email="andreas@cs.wm.edu" },
