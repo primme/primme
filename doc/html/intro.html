@@ -1,95 +1,50 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>PRIMME: PReconditioned Iterative MultiMethod Eigensolver &mdash; PRIMME 3.2 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PRIMME: PReconditioned Iterative MultiMethod Eigensolver &mdash; PRIMME 3.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/extra.css?v=00826961" />
 
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7895512d"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Eigenvalue Problems" href="apieigs.html" />
     <link rel="prev" title="PRIMME Documentation" href="readme.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search"  style="background: white" >
-          
+        <div class="wy-side-nav-search"  style="background: #343131" >
 
           
-            <a href="readme.html">
           
-
-          
+          <a href="readme.html">
             
-            <img src="_static/logo.png" class="logo" alt="Logo"/>
-          
+              <img src="_static/logo-grey.png" class="logo" alt="Logo"/>
           </a>
-
-          
-            
-            
-              <div class="version">
-                3.2
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#incompatibilities">Incompatibilities</a></li>
@@ -103,7 +58,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#considerations-using-an-ide">Considerations using an IDE</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#tested-systems">Tested Systems</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#main-contributors">Main Contributors</a></li>
 </ul>
 </li>
@@ -111,88 +65,43 @@
 <li class="toctree-l1"><a class="reference internal" href="apisvds.html">Singular Value Problems</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #343131" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="readme.html">PRIMME</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="readme.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li>PRIMME: PReconditioned Iterative MultiMethod Eigensolver</li>
-    
-    
+      <li><a href="readme.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/intro.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
-  </ul>
-
-  
-  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
-      
-        <a href="apieigs.html" class="btn btn-neutral float-right" title="Eigenvalue Problems" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="readme.html" class="btn btn-neutral float-left" title="PRIMME Documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="readme.html" class="btn btn-neutral float-left" title="PRIMME Documentation" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="apieigs.html" class="btn btn-neutral float-right" title="Eigenvalue Problems" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="primme-preconditioned-iterative-multimethod-eigensolver">
-<h1>PRIMME: PReconditioned Iterative MultiMethod Eigensolver<a class="headerlink" href="#primme-preconditioned-iterative-multimethod-eigensolver" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="primme-preconditioned-iterative-multimethod-eigensolver">
+<h1>PRIMME: PReconditioned Iterative MultiMethod Eigensolver<a class="headerlink" href="#primme-preconditioned-iterative-multimethod-eigensolver" title="Link to this heading"></a></h1>
 <p>PRIMME, pronounced as <em>prime</em>, is a high-performance library for computing a few eigenvalues/eigenvectors, and singular values/vectors.
 PRIMME is especially optimized for large, difficult problems.
 Real symmetric and complex Hermitian problems, standard <span class="math notranslate nohighlight">\(A x = \lambda x\)</span> and generalized <span class="math notranslate nohighlight">\(A x = \lambda B x\)</span>, are supported.
 Besides standard eigenvalue problems with a normal matrix are supported.
 It can find largest, smallest, or interior singular/eigenvalues, and can use preconditioning to accelerate convergence.
 PRIMME is written in C99, but complete interfaces are provided for Fortran, MATLAB, Python, and R.</p>
-<div class="section" id="incompatibilities">
-<h2>Incompatibilities<a class="headerlink" href="#incompatibilities" title="Permalink to this headline">¶</a></h2>
+<section id="incompatibilities">
+<h2>Incompatibilities<a class="headerlink" href="#incompatibilities" title="Link to this heading"></a></h2>
 <p>From PRIMME 2.2 to 3.0:</p>
 <ul class="simple">
 <li><p>Removed constants <code class="docutils literal notranslate"><span class="pre">primme_thick</span></code> and <code class="docutils literal notranslate"><span class="pre">primme_dtr</span></code>, and the member <code class="docutils literal notranslate"><span class="pre">scheme</span></code> from <code class="docutils literal notranslate"><span class="pre">restarting_params</span></code>.</p></li>
@@ -219,9 +128,17 @@ PRIMME is written in C99, but complete interfaces are provided for Fortran, MATL
 <li><p>Extra parameter in many Fortran functions to return the error code.</p></li>
 <li><p>Removed <code class="docutils literal notranslate"><span class="pre">primme_display_stats_f77</span></code>.</p></li>
 </ul>
-</div>
-<div class="section" id="changelog">
-<h2>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="changelog">
+<h2>Changelog<a class="headerlink" href="#changelog" title="Link to this heading"></a></h2>
+<p>Changes in PRIMME 3.2.3 (released on Nov 8, 2024):</p>
+<ul class="simple">
+<li><p>Fixed bug in updating the convergence flags when blockSize&gt;1.</p></li>
+<li><p>Added a new GPU interface that does not need MAGMA, supporting CUDA &amp; ROCM
+(see <a class="reference internal" href="primmec.html#c.cublas_dprimme" title="cublas_dprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">cublas_dprimme()</span></code></a>, <code class="xref c c-func docutils literal notranslate"><span class="pre">cublas_zprimme_normal()</span></code>, and <a class="reference internal" href="svdsc.html#c.cublas_dprimme_svds" title="cublas_dprimme_svds"><code class="xref c c-func docutils literal notranslate"><span class="pre">cublas_dprimme_svds()</span></code></a>).</p></li>
+<li><p>Fixed compilation issues with several GPU libraries: MAGMA, cu/hipBLAS, cu/hipSPARSE.</p></li>
+<li><p>Updated the Python package to support Python 3.6+.</p></li>
+</ul>
 <p>Changes in PRIMME 3.2 (released on Jan 29, 2021):</p>
 <ul class="simple">
 <li><p>Fixed Intel 2021 compiler error <code class="docutils literal notranslate"><span class="pre">&quot;Unsupported</span> <span class="pre">combination</span> <span class="pre">of</span> <span class="pre">types</span> <span class="pre">for</span> <span class="pre">&lt;tgmath.h&gt;.&quot;</span></code></p></li>
@@ -362,81 +279,88 @@ setting the method and the user setting of parameters, and improved
 the interface in the sample programs and makefiles.</p></li>
 <li><p>Other performance and documentation improvements.</p></li>
 </ul>
-</div>
-<div class="section" id="license-information">
-<h2>License Information<a class="headerlink" href="#license-information" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="license-information">
+<h2>License Information<a class="headerlink" href="#license-information" title="Link to this heading"></a></h2>
 <p>PRIMME is licensed under the 3-clause license BSD.
 Python and MATLAB interfaces have BSD-compatible licenses.
 Source code under <code class="file docutils literal notranslate"><span class="pre">tests</span></code> is compatible with LGPLv3.
 Details can be taken from <code class="file docutils literal notranslate"><span class="pre">COPYING.txt</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Copyright <span class="o">(</span>c<span class="o">)</span> <span class="m">2018</span>, College of William <span class="p">&amp;</span> Mary
-All rights reserved.
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Copyright<span class="w"> </span><span class="o">(</span>c<span class="o">)</span><span class="w"> </span><span class="m">2018</span>,<span class="w"> </span>College<span class="w"> </span>of<span class="w"> </span>William<span class="w"> </span><span class="p">&amp;</span><span class="w"> </span>Mary
+All<span class="w"> </span>rights<span class="w"> </span>reserved.
 </pre></div>
 </div>
-</div>
-<div class="section" id="citing-the-code">
-<h2>Citing the code<a class="headerlink" href="#citing-the-code" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="citing-the-code">
+<h2>Citing the code<a class="headerlink" href="#citing-the-code" title="Link to this heading"></a></h2>
 <p>Please cite (<a class="reference external" href="https://raw.githubusercontent.com/primme/primme/master/doc/primme.bib">BibTeX</a>):</p>
-<dl class="citation">
-<dt class="label" id="r1"><span class="brackets"><a class="fn-backref" href="#id1">r1</a></span></dt>
-<dd><p>A. Stathopoulos and J. R. McCombs PRIMME: <em>PReconditioned Iterative
+<div role="list" class="citation-list">
+<div class="citation" id="r1" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">r1</a><span class="fn-bracket">]</span></span>
+<p>A. Stathopoulos and J. R. McCombs PRIMME: <em>PReconditioned Iterative
 MultiMethod Eigensolver: Methods and software description</em>, ACM
 Transaction on Mathematical Software Vol. 37, No. 2, (2010),
 21:1-21:30.</p>
-</dd>
-<dt class="label" id="r6"><span class="brackets"><a class="fn-backref" href="#id2">r6</a></span></dt>
-<dd><p>L. Wu, E. Romero and A. Stathopoulos, <em>PRIMME_SVDS: A High-Performance
+</div>
+<div class="citation" id="r6" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">r6</a><span class="fn-bracket">]</span></span>
+<p>L. Wu, E. Romero and A. Stathopoulos, <em>PRIMME_SVDS: A High-Performance
 Preconditioned SVD Solver for Accurate Large-Scale Computations</em>,
 J. Sci. Comput., Vol. 39, No. 5, (2017), S248–S271.</p>
-</dd>
-</dl>
+</div>
+</div>
 <p>More information on the algorithms and research that led to this
 software can be found in the rest of the papers. The work has been
 supported by a number of grants from the National Science Foundation.</p>
-<dl class="citation">
-<dt class="label" id="r2"><span class="brackets"><a class="fn-backref" href="#id3">r2</a></span></dt>
-<dd><p>A. Stathopoulos, <em>Nearly optimal preconditioned methods for Hermitian
+<div role="list" class="citation-list">
+<div class="citation" id="r2" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">r2</a><span class="fn-bracket">]</span></span>
+<p>A. Stathopoulos, <em>Nearly optimal preconditioned methods for Hermitian
 eigenproblems under limited memory. Part I: Seeking one eigenvalue</em>, SIAM
 J. Sci. Comput., Vol. 29, No. 2, (2007), 481–514.</p>
-</dd>
-<dt class="label" id="r3"><span class="brackets"><a class="fn-backref" href="#id4">r3</a></span></dt>
-<dd><p>A. Stathopoulos and J. R. McCombs, <em>Nearly optimal preconditioned
+</div>
+<div class="citation" id="r3" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">r3</a><span class="fn-bracket">]</span></span>
+<p>A. Stathopoulos and J. R. McCombs, <em>Nearly optimal preconditioned
 methods for Hermitian eigenproblems under limited memory. Part II:
 Seeking many eigenvalues</em>, SIAM J. Sci. Comput., Vol. 29, No. 5, (2007),
 2162-2188.</p>
-</dd>
-<dt class="label" id="r4"><span class="brackets"><a class="fn-backref" href="#id5">r4</a></span></dt>
-<dd><p>J. R. McCombs and A. Stathopoulos, <em>Iterative Validation of
+</div>
+<div class="citation" id="r4" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">r4</a><span class="fn-bracket">]</span></span>
+<p>J. R. McCombs and A. Stathopoulos, <em>Iterative Validation of
 Eigensolvers: A Scheme for Improving the Reliability of Hermitian
 Eigenvalue Solvers</em>, SIAM J. Sci. Comput., Vol. 28, No. 6, (2006),
 2337-2358.</p>
-</dd>
-<dt class="label" id="r5"><span class="brackets"><a class="fn-backref" href="#id6">r5</a></span></dt>
-<dd><p>A. Stathopoulos, <em>Locking issues for finding a large number of eigenvectors
+</div>
+<div class="citation" id="r5" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">r5</a><span class="fn-bracket">]</span></span>
+<p>A. Stathopoulos, <em>Locking issues for finding a large number of eigenvectors
 of Hermitian matrices</em>, Tech Report: WM-CS-2005-03, July, 2005.</p>
-</dd>
-<dt class="label" id="r7"><span class="brackets"><a class="fn-backref" href="#id7">r7</a></span></dt>
-<dd><p>L. Wu and A. Stathopoulos, <em>A Preconditioned Hybrid SVD Method for Computing
+</div>
+<div class="citation" id="r7" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">r7</a><span class="fn-bracket">]</span></span>
+<p>L. Wu and A. Stathopoulos, <em>A Preconditioned Hybrid SVD Method for Computing
 Accurately Singular Triplets of Large Matrices</em>, SIAM J. Sci. Comput. 37-5(2015),
 pp. S365-S388.</p>
-</dd>
-</dl>
 </div>
-<div class="section" id="contact-information">
-<h2>Contact Information<a class="headerlink" href="#contact-information" title="Permalink to this headline">¶</a></h2>
+</div>
+</section>
+<section id="contact-information">
+<h2>Contact Information<a class="headerlink" href="#contact-information" title="Link to this heading"></a></h2>
 <p>For reporting bugs or questions about functionality contact <a class="reference external" href="http://www.cs.wm.edu/~andreas/">Andreas Stathopoulos</a> by
 email, <cite>andreas</cite> at <cite>cs.wm.edu</cite>. See further information in
 the webpage <a class="reference external" href="http://www.cs.wm.edu/~andreas/software">http://www.cs.wm.edu/~andreas/software</a> and on <a class="reference external" href="https://github.com/primme/primme">github</a>.</p>
-</div>
-<div class="section" id="support">
-<h2>Support<a class="headerlink" href="#support" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="support">
+<h2>Support<a class="headerlink" href="#support" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>National Science Foundation through grants CCF 1218349, ACI SI2-SSE 1440700, and NSCI 1835821</p></li>
 <li><p>Department of Energy through grant Exascale Computing Project 17-SC-20-SC</p></li>
 </ul>
-</div>
-<div class="section" id="directory-structure">
-<h2>Directory Structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="directory-structure">
+<h2>Directory Structure<a class="headerlink" href="#directory-structure" title="Link to this heading"></a></h2>
 <p>The next directories and files should be available:</p>
 <ul>
 <li><p><code class="file docutils literal notranslate"><span class="pre">COPYING.txt</span></code>, license;</p></li>
@@ -462,9 +386,9 @@ the webpage <a class="reference external" href="http://www.cs.wm.edu/~andreas/so
 <li><p><code class="file docutils literal notranslate"><span class="pre">readme.txt</span></code>     text version of the documentation;</p></li>
 <li><p><code class="file docutils literal notranslate"><span class="pre">doc/</span></code>           directory with the HTML and PDF versions of the documentation.</p></li>
 </ul>
-</div>
-<div class="section" id="making-and-linking">
-<span id="making"></span><h2>Making and Linking<a class="headerlink" href="#making-and-linking" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="making-and-linking">
+<span id="making"></span><h2>Making and Linking<a class="headerlink" href="#making-and-linking" title="Link to this heading"></a></h2>
 <p><code class="file docutils literal notranslate"><span class="pre">Make_flags</span></code> has the flags and compilers used to make <code class="file docutils literal notranslate"><span class="pre">libprimme.a</span></code>:</p>
 <ul class="simple">
 <li><p><cite>CC</cite>, compiler program such as <code class="docutils literal notranslate"><span class="pre">gcc</span></code>, <code class="docutils literal notranslate"><span class="pre">clang</span></code> or <code class="docutils literal notranslate"><span class="pre">icc</span></code>.</p></li>
@@ -499,11 +423,11 @@ standard, you can set the corresponding type name supported, for instance
 <code class="docutils literal notranslate"><span class="pre">-DPRIMME_BLASINT_SIZE=__int64</span></code>.</p>
 </div>
 <p>After customizing <code class="file docutils literal notranslate"><span class="pre">Make_flags</span></code>, type this to generate <code class="file docutils literal notranslate"><span class="pre">libprimme.a</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make lib
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>lib
 </pre></div>
 </div>
 <p>Making can be also done at the command line:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make lib <span class="nv">CC</span><span class="o">=</span>clang <span class="nv">CFLAGS</span><span class="o">=</span><span class="s1">&#39;-O3&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>lib<span class="w"> </span><span class="nv">CC</span><span class="o">=</span>clang<span class="w"> </span><span class="nv">CFLAGS</span><span class="o">=</span><span class="s1">&#39;-O3&#39;</span>
 </pre></div>
 </div>
 <p><code class="file docutils literal notranslate"><span class="pre">Link_flags</span></code> has the flags for linking with external libraries and making the executables
@@ -513,11 +437,11 @@ located in <code class="file docutils literal notranslate"><span class="pre">exa
 <li><p><cite>LIBS</cite>, flags to link with libraries (<a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> are required), such as <code class="docutils literal notranslate"><span class="pre">-lprimme</span> <span class="pre">-llapack</span> <span class="pre">-lblas</span> <span class="pre">-lgfortran</span> <span class="pre">-lm</span></code>.</p></li>
 </ul>
 <p>After that, type this to compile and execute a simple test:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make <span class="nb">test</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>make<span class="w"> </span><span class="nb">test</span>
 ...
-Test passed!
+Test<span class="w"> </span>passed!
 ...
-Test passed!
+Test<span class="w"> </span>passed!
 </pre></div>
 </div>
 <p>In case of linking problems check flags in <cite>LDFLAGS</cite> and <cite>LIBS</cite> and consider
@@ -537,8 +461,8 @@ to add/remove <code class="docutils literal notranslate"><span class="pre">-DPRI
 <li><p><cite>make test</cite>, build and execute simple examples.</p></li>
 <li><p><cite>make clean</cite>, removes all <code class="file docutils literal notranslate"><span class="pre">*.o</span></code>, <code class="file docutils literal notranslate"><span class="pre">a.out</span></code>, and core files from <code class="file docutils literal notranslate"><span class="pre">src</span></code>.</p></li>
 </ul>
-<div class="section" id="considerations-using-an-ide">
-<h3>Considerations using an IDE<a class="headerlink" href="#considerations-using-an-ide" title="Permalink to this headline">¶</a></h3>
+<section id="considerations-using-an-ide">
+<h3>Considerations using an IDE<a class="headerlink" href="#considerations-using-an-ide" title="Link to this heading"></a></h3>
 <p>PRIMME can be built in other environments such as Anjuta, Eclipse, KDevelop, Qt Creator,
 Visual Studio and XCode. To build the PRIMME library do the following:</p>
 <ol class="arabic simple">
@@ -550,87 +474,48 @@ Visual Studio and XCode. To build the PRIMME library do the following:</p>
 <li><p>to add a reference for PRIMME, <a class="reference external" href="http://www.netlib.org/blas/">BLAS</a> and <a class="reference external" href="http://www.netlib.org/lapack/">LAPACK</a> libraries;</p></li>
 <li><p>to add the directory <code class="file docutils literal notranslate"><span class="pre">include</span></code> as an include directory.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="tested-systems">
-<h2>Tested Systems<a class="headerlink" href="#tested-systems" title="Permalink to this headline">¶</a></h2>
-<p>PRIMME is primary developed with GNU gcc, g++ and gfortran (versions 4.8 and later).
-Many users have reported builds on several other platforms/compilers:</p>
-<ul class="simple">
-<li><p>SUSE 13.1 &amp; 13.2</p></li>
-<li><p>CentOS 6.6</p></li>
-<li><p>Ubuntu 18.04</p></li>
-<li><p>MacOS X 10.9 &amp; 10.10</p></li>
-<li><p>Cygwin &amp; MinGW</p></li>
-<li><p>Cray XC30</p></li>
-<li><p>FreeBSD 11.2</p></li>
-</ul>
-</div>
-<div class="section" id="main-contributors">
-<h2>Main Contributors<a class="headerlink" href="#main-contributors" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="main-contributors">
+<h2>Main Contributors<a class="headerlink" href="#main-contributors" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>James R. McCombs</p></li>
 <li><p>Eloy Romero Alcalde</p></li>
 <li><p>Andreas Stathopoulos</p></li>
 <li><p>Lingfei Wu</p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="apieigs.html" class="btn btn-neutral float-right" title="Eigenvalue Problems" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="readme.html" class="btn btn-neutral float-left" title="PRIMME Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="readme.html" class="btn btn-neutral float-left" title="PRIMME Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="apieigs.html" class="btn btn-neutral float-right" title="Eigenvalue Problems" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2020, College of William &amp; Mary
-
-    </p>
+    <p>&#169; Copyright 2024, College of William &amp; Mary.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

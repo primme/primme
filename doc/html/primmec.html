@@ -1,95 +1,50 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>C Library Interface &mdash; PRIMME 3.2 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C Library Interface &mdash; PRIMME 3.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/extra.css?v=00826961" />
 
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7895512d"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FORTRAN 77 Library Interface" href="primmef77.html" />
     <link rel="prev" title="Eigenvalue Problems" href="apieigs.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search"  style="background: white" >
-          
+        <div class="wy-side-nav-search"  style="background: #343131" >
 
           
-            <a href="readme.html">
           
-
-          
+          <a href="readme.html">
             
-            <img src="_static/logo.png" class="logo" alt="Logo"/>
-          
+              <img src="_static/logo-grey.png" class="logo" alt="Logo"/>
           </a>
-
-          
-            
-            
-              <div class="version">
-                3.2
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a><ul class="current">
@@ -98,9 +53,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#parameters-guide">Parameters Guide</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#interface-description">Interface Description</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#primme">?primme</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#magma-primme"><cite>magma_?primme</cite></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cublas-primme-magma-primme"><cite>cublas_?primme</cite> &amp; <cite>magma_?primme</cite></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#primme-normal">?primme_normal</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#magma-primme-normal"><cite>magma_?primme_normal</cite></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cublas-primme-normal-magma-primme-normal"><cite>cublas_?primme_normal</cite> &amp; <cite>magma_?primme_normal</cite></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#primme-initialize">primme_initialize</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#primme-params-create">primme_params_create</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#primme-set-method">primme_set_method</a></li>
@@ -123,82 +78,36 @@
 <li class="toctree-l1"><a class="reference internal" href="apisvds.html">Singular Value Problems</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #343131" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="readme.html">PRIMME</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="readme.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="apieigs.html">Eigenvalue Problems</a> &raquo;</li>
-        
-      <li>C Library Interface</li>
-    
-    
+      <li><a href="readme.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="apieigs.html">Eigenvalue Problems</a></li>
+      <li class="breadcrumb-item active">C Library Interface</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/primmec.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
-  </ul>
-
-  
-  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
-      
-        <a href="primmef77.html" class="btn btn-neutral float-right" title="FORTRAN 77 Library Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="apieigs.html" class="btn btn-neutral float-left" title="Eigenvalue Problems" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="apieigs.html" class="btn btn-neutral float-left" title="Eigenvalue Problems" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="primmef77.html" class="btn btn-neutral float-right" title="FORTRAN 77 Library Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="c-library-interface">
-<h1>C Library Interface<a class="headerlink" href="#c-library-interface" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="c-library-interface">
+<h1>C Library Interface<a class="headerlink" href="#c-library-interface" title="Link to this heading"></a></h1>
 <p>The PRIMME interface is composed of the following functions.
 To solve real symmetric and complex Hermitian problems, standard <span class="math notranslate nohighlight">\(A x = \lambda x\)</span> and generalized <span class="math notranslate nohighlight">\(A x = \lambda B x\)</span>, call:</p>
 <pre class="literal-block">int <a class="reference internal" href="#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">dprimme</span></code></a> (double *evals, double *evecs, double *resNorms,
@@ -207,11 +116,6 @@ int <a class="reference internal" href="#c.zprimme" title="zprimme"><code class=
                  double *resNorms, primme_params *primme)</pre>
 <p>There are more versions for matrix problems working in other precisions:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 22%" />
-<col style="width: 39%" />
-<col style="width: 39%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Precision</p></th>
 <th class="head"><p>Real</p></th>
@@ -241,10 +145,6 @@ int <a class="reference internal" href="#c.zprimme" title="zprimme"><code class=
                  double *resNorms, primme_params *primme)</pre>
 <p>There are more versions for matrix problems working in other precisions:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 29%" />
-<col style="width: 71%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Precision</p></th>
 <th class="head"><p>Complex</p></th>
@@ -271,12 +171,12 @@ void <a class="reference internal" href="#c.primme_display_params" title="primme
 void <code class="xref c c-func docutils literal notranslate"><span class="pre">primme_free</span></code> (primme_params *primme)</pre>
 <p>PRIMME stores its data on the structure <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><code class="xref c c-type docutils literal notranslate"><span class="pre">primme_params</span></code></a>.
 See <a class="reference internal" href="#guide-params"><span class="std std-ref">Parameters Guide</span></a> for an introduction about its fields.</p>
-<div class="section" id="running">
-<h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
+<section id="running">
+<h2>Running<a class="headerlink" href="#running" title="Link to this heading"></a></h2>
 <p>To use PRIMME, follow these basic steps.</p>
 <ol class="arabic">
 <li><p>Include:</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;primme.h&quot;</span><span class="c1">   /* header file is required to run primme */</span><span class="cp"></span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;primme.h&quot;</span><span class="c1">   /* header file is required to run primme */</span>
 </pre></div>
 </div>
 </li>
@@ -307,9 +207,9 @@ ret = <a class="reference internal" href="#c.primme_set_method" title="primme_se
 </li>
 </ol>
 <p>See usage examples at the directory <cite>examples</cite>.</p>
-</div>
-<div class="section" id="parameters-guide">
-<span id="guide-params"></span><h2>Parameters Guide<a class="headerlink" href="#parameters-guide" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="parameters-guide">
+<span id="guide-params"></span><h2>Parameters Guide<a class="headerlink" href="#parameters-guide" title="Link to this heading"></a></h2>
 <p>PRIMME stores the data on the structure <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><code class="xref c c-type docutils literal notranslate"><span class="pre">primme_params</span></code></a>, which has the next fields:</p>
 <div class="line-block">
 <div class="line"><em>Basic</em></div>
@@ -386,60 +286,60 @@ should also provide them into <a class="reference internal" href="appendix.html#
 the right choice on other parameters. It is sometimes useful to check the actual
 parameters that PRIMME is going to use (before calling it) or used (on return)
 by printing them with <a class="reference internal" href="#c.primme_display_params" title="primme_display_params"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_display_params()</span></code></a>.</p>
-</div>
-<div class="section" id="interface-description">
-<h2>Interface Description<a class="headerlink" href="#interface-description" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="interface-description">
+<h2>Interface Description<a class="headerlink" href="#interface-description" title="Link to this heading"></a></h2>
 <p>The next enumerations and functions are declared in <code class="docutils literal notranslate"><span class="pre">primme.h</span></code>.</p>
-<div class="section" id="primme">
-<h3>?primme<a class="headerlink" href="#primme" title="Permalink to this headline">¶</a></h3>
+<section id="primme">
+<h3>?primme<a class="headerlink" href="#primme" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.hprimme">
-int <code class="sig-name descname">hprimme</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>evecs</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.hprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.hprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">hprimme</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.hprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.hsprimme">
-int <code class="sig-name descname">hsprimme</code><span class="sig-paren">(</span>float *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.hsprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.hsprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">hsprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.hsprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.kprimme">
-int <code class="sig-name descname">kprimme</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evecs</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.kprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.kprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">kprimme</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.kprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.ksprimme">
-int <code class="sig-name descname">ksprimme</code><span class="sig-paren">(</span>float *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.ksprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.ksprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ksprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.ksprimme" title="Link to this definition"></a><br /></dt>
 <dd><div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
 <dl class="c function">
-<dt id="c.sprimme">
-int <code class="sig-name descname">sprimme</code><span class="sig-paren">(</span>float *<em>evals</em>, float *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.sprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.sprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.sprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.cprimme">
-int <code class="sig-name descname">cprimme</code><span class="sig-paren">(</span>float *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT">PRIMME_COMPLEX_FLOAT</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT"><span class="n"><span class="pre">PRIMME_COMPLEX_FLOAT</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme" title="Link to this definition"></a><br /></dt>
 <dd><div class="versionadded">
-<p><span class="versionmodified added">New in version 2.0.</span></p>
+<p><span class="versionmodified added">Added in version 2.0.</span></p>
 </div>
 </dd></dl>
 
 <dl class="c function">
-<dt id="c.dprimme">
-int <code class="sig-name descname">dprimme</code><span class="sig-paren">(</span>double *<em>evals</em>, double *<em>evecs</em>, double *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.dprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.dprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.dprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.zprimme">
-int <code class="sig-name descname">zprimme</code><span class="sig-paren">(</span>double *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE">PRIMME_COMPLEX_DOUBLE</a> *<em>evecs</em>, double *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.zprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">zprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE"><span class="n"><span class="pre">PRIMME_COMPLEX_DOUBLE</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme" title="Link to this definition"></a><br /></dt>
 <dd><p>Solve a real symmetric/Hermitian standard or generalized eigenproblem.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#c.magma_dprimme" title="magma_dprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">magma_dprimme()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> – array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all processes in a parallel run return this local array with the same values.</p></li>
@@ -451,7 +351,7 @@ the same values.</p></li>
 <li><p><strong>primme</strong> – parameters structure.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p>
 </dd>
 </dl>
@@ -464,51 +364,91 @@ The functions <a class="reference internal" href="#c.hsprimme" title="hsprimme">
 <p>The type and precision of the callbacks is also the same as <cite>evecs</cite>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-primme">
-<h3><cite>magma_?primme</cite><a class="headerlink" href="#magma-primme" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="cublas-primme-magma-primme">
+<h3><cite>cublas_?primme</cite> &amp; <cite>magma_?primme</cite><a class="headerlink" href="#cublas-primme-magma-primme" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.magma_hprimme">
-int <code class="sig-name descname">magma_hprimme</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>evecs</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_hprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cublas_hprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cublas_hprimme</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cublas_hprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_hsprimme">
-int <code class="sig-name descname">magma_hsprimme</code><span class="sig-paren">(</span>float *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_hsprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cublas_hsprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cublas_hsprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cublas_hsprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_kprimme">
-int <code class="sig-name descname">magma_kprimme</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evecs</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_kprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cublas_kprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cublas_kprimme</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cublas_kprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_sprimme">
-int <code class="sig-name descname">magma_sprimme</code><span class="sig-paren">(</span>float *<em>evals</em>, float *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_sprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cublas_sprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cublas_sprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cublas_sprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_ksprimme">
-int <code class="sig-name descname">magma_ksprimme</code><span class="sig-paren">(</span>float *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_ksprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cublas_ksprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cublas_ksprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cublas_ksprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_cprimme">
-int <code class="sig-name descname">magma_cprimme</code><span class="sig-paren">(</span>float *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT">PRIMME_COMPLEX_FLOAT</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_cprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cublas_cprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cublas_cprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT"><span class="n"><span class="pre">PRIMME_COMPLEX_FLOAT</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cublas_cprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_dprimme">
-int <code class="sig-name descname">magma_dprimme</code><span class="sig-paren">(</span>double *<em>evals</em>, double *<em>evecs</em>, double *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_dprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cublas_dprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cublas_dprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cublas_dprimme" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_zprimme">
-int <code class="sig-name descname">magma_zprimme</code><span class="sig-paren">(</span>double *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE">PRIMME_COMPLEX_DOUBLE</a> *<em>evecs</em>, double *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_zprimme" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cublas_zprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cublas_zprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE"><span class="n"><span class="pre">PRIMME_COMPLEX_DOUBLE</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cublas_zprimme" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.magma_hprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_hprimme</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_hprimme" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.magma_hsprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_hsprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_hsprimme" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.magma_kprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_kprimme</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_kprimme" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.magma_sprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_sprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_sprimme" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.magma_ksprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_ksprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_ksprimme" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.magma_cprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_cprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT"><span class="n"><span class="pre">PRIMME_COMPLEX_FLOAT</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_cprimme" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.magma_dprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_dprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_dprimme" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.magma_zprimme">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_zprimme</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE"><span class="n"><span class="pre">PRIMME_COMPLEX_DOUBLE</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_zprimme" title="Link to this definition"></a><br /></dt>
 <dd><p>Solve a real symmetric/Hermitian standard or generalized eigenproblem.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">dprimme()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> – CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all processes in a parallel run return this local array with the same values.</p></li>
@@ -520,7 +460,7 @@ the same values.</p></li>
 <li><p><strong>primme</strong> – parameters structure.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p>
 </dd>
 </dl>
@@ -532,35 +472,35 @@ The first vector has index i=0. The number of eigenpairs marked as converged (se
 The functions <a class="reference internal" href="#c.hsprimme" title="hsprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">hsprimme()</span></code></a> and <a class="reference internal" href="#c.ksprimme" title="ksprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">ksprimme()</span></code></a> perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.</p>
 <p>The type and precision of the callbacks is also the same as <cite>evecs</cite>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-normal">
-<h3>?primme_normal<a class="headerlink" href="#primme-normal" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="primme-normal">
+<h3>?primme_normal<a class="headerlink" href="#primme-normal" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.kprimme_normal">
-int <code class="sig-name descname">kprimme_normal</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evecs</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.kprimme_normal" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.kprimme_normal">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">kprimme_normal</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.kprimme_normal" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.kcprimme_normal">
-int <code class="sig-name descname">kcprimme_normal</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT">PRIMME_COMPLEX_FLOAT</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.kcprimme_normal" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.kcprimme_normal">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">kcprimme_normal</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT"><span class="n"><span class="pre">PRIMME_COMPLEX_FLOAT</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.kcprimme_normal" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.cprimme_normal">
-int <code class="sig-name descname">cprimme_normal</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT">PRIMME_COMPLEX_FLOAT</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT">PRIMME_COMPLEX_FLOAT</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme_normal" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.cprimme_normal">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cprimme_normal</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT"><span class="n"><span class="pre">PRIMME_COMPLEX_FLOAT</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT"><span class="n"><span class="pre">PRIMME_COMPLEX_FLOAT</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.cprimme_normal" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.zprimme_normal">
-int <code class="sig-name descname">zprimme_normal</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE">PRIMME_COMPLEX_DOUBLE</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE">PRIMME_COMPLEX_DOUBLE</a> *<em>evecs</em>, double *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme_normal" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.zprimme_normal">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">zprimme_normal</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE"><span class="n"><span class="pre">PRIMME_COMPLEX_DOUBLE</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE"><span class="n"><span class="pre">PRIMME_COMPLEX_DOUBLE</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.zprimme_normal" title="Link to this definition"></a><br /></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#c.magma_zprimme_normal" title="magma_zprimme_normal"><code class="xref c c-func docutils literal notranslate"><span class="pre">magma_zprimme_normal()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> – array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all processes in a parallel run return this local array with the same values.</p></li>
@@ -572,7 +512,7 @@ the same values.</p></li>
 <li><p><strong>primme</strong> – parameters structure.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p>
 </dd>
 </dl>
@@ -584,35 +524,35 @@ The first vector has index i=0. The number of eigenpairs marked as converged (se
 The functions <a class="reference internal" href="#c.hsprimme" title="hsprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">hsprimme()</span></code></a> and <a class="reference internal" href="#c.ksprimme" title="ksprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">ksprimme()</span></code></a> perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.</p>
 <p>The type and precision of the callbacks is also the same as <cite>evecs</cite>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-primme-normal">
-<h3><cite>magma_?primme_normal</cite><a class="headerlink" href="#magma-primme-normal" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="cublas-primme-normal-magma-primme-normal">
+<h3><cite>cublas_?primme_normal</cite> &amp; <cite>magma_?primme_normal</cite><a class="headerlink" href="#cublas-primme-normal-magma-primme-normal" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.magma_kprimme_normal">
-int <code class="sig-name descname">magma_kprimme_normal</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evecs</em>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF">PRIMME_HALF</a> *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_kprimme_normal" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.magma_kprimme_normal">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_kprimme_normal</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_HALF" title="PRIMME_HALF"><span class="n"><span class="pre">PRIMME_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_kprimme_normal" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_kcprimme_normal">
-int <code class="sig-name descname">magma_kcprimme_normal</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT">PRIMME_COMPLEX_FLOAT</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF">PRIMME_COMPLEX_HALF</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_kcprimme_normal" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.magma_kcprimme_normal">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_kcprimme_normal</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT"><span class="n"><span class="pre">PRIMME_COMPLEX_FLOAT</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_HALF" title="PRIMME_COMPLEX_HALF"><span class="n"><span class="pre">PRIMME_COMPLEX_HALF</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_kcprimme_normal" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_cprimme_normal">
-int <code class="sig-name descname">magma_cprimme_normal</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT">PRIMME_COMPLEX_FLOAT</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT">PRIMME_COMPLEX_FLOAT</a> *<em>evecs</em>, float *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_cprimme_normal" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.magma_cprimme_normal">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_cprimme_normal</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT"><span class="n"><span class="pre">PRIMME_COMPLEX_FLOAT</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_FLOAT" title="PRIMME_COMPLEX_FLOAT"><span class="n"><span class="pre">PRIMME_COMPLEX_FLOAT</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_cprimme_normal" title="Link to this definition"></a><br /></dt>
 <dd></dd></dl>
 
 <dl class="c function">
-<dt id="c.magma_zprimme_normal">
-int <code class="sig-name descname">magma_zprimme_normal</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE">PRIMME_COMPLEX_DOUBLE</a> *<em>evals</em>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE">PRIMME_COMPLEX_DOUBLE</a> *<em>evecs</em>, double *<em>resNorms</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_zprimme_normal" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.magma_zprimme_normal">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">magma_zprimme_normal</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE"><span class="n"><span class="pre">PRIMME_COMPLEX_DOUBLE</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evals</span></span>, <a class="reference internal" href="appendix.html#c.PRIMME_COMPLEX_DOUBLE" title="PRIMME_COMPLEX_DOUBLE"><span class="n"><span class="pre">PRIMME_COMPLEX_DOUBLE</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">evecs</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">resNorms</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.magma_zprimme_normal" title="Link to this definition"></a><br /></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#c.zprimme_normal" title="zprimme_normal"><code class="xref c c-func docutils literal notranslate"><span class="pre">zprimme_normal()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> – CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all processes in a parallel run return this local array with the same values.</p></li>
@@ -624,7 +564,7 @@ the same values.</p></li>
 <li><p><strong>primme</strong> – parameters structure.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>error indicator; see <a class="reference internal" href="appendix.html#error-codes"><span class="std std-ref">Error Codes</span></a>.</p>
 </dd>
 </dl>
@@ -636,32 +576,32 @@ The first vector has index i=0. The number of eigenpairs marked as converged (se
 The functions <a class="reference internal" href="#c.hsprimme" title="hsprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">hsprimme()</span></code></a> and <a class="reference internal" href="#c.ksprimme" title="ksprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">ksprimme()</span></code></a> perform all computations in half precision by default and report the eigenvalues and the residual norms in single precision. These functions may help in applications that may be not built with a compiler supporting half precision.</p>
 <p>The type and precision of the callbacks is also the same as <cite>evecs</cite>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-initialize">
-<h3>primme_initialize<a class="headerlink" href="#primme-initialize" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="primme-initialize">
+<h3>primme_initialize<a class="headerlink" href="#primme-initialize" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.primme_initialize">
-void <code class="sig-name descname">primme_initialize</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_initialize" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.primme_initialize">
+<span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">primme_initialize</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_initialize" title="Link to this definition"></a><br /></dt>
 <dd><p>Initialize a PRIMME parameters structure to the default values.</p>
 <p>After calling <a class="reference internal" href="#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">dprimme()</span></code></a> (or a variant), call <a class="reference internal" href="#c.primme_free" title="primme_free"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_free()</span></code></a> to release allocated resources by PRIMME.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme</strong> – parameters structure.</p></li>
 </ul>
 </dd>
 </dl>
 <p>Example:</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">primme_params</span> <span class="n">primme</span><span class="p">;</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">primme_params</span><span class="w"> </span><span class="n">primme</span><span class="p">;</span>
 <span class="n">primme_initialize</span><span class="p">(</span><span class="o">&amp;</span><span class="n">primme</span><span class="p">);</span>
 
-<span class="n">primme</span><span class="p">.</span><span class="n">n</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+<span class="n">primme</span><span class="p">.</span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
 <span class="p">...</span>
-<span class="n">dprimme</span><span class="p">(</span><span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span><span class="p">,</span> <span class="n">rnorms</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">primme</span><span class="p">);</span>
+<span class="n">dprimme</span><span class="p">(</span><span class="n">evals</span><span class="p">,</span><span class="w"> </span><span class="n">evecs</span><span class="p">,</span><span class="w"> </span><span class="n">rnorms</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">primme</span><span class="p">);</span>
 <span class="p">...</span>
 
 <span class="n">primme_free</span><span class="p">(</span><span class="o">&amp;</span><span class="n">primme</span><span class="p">);</span>
@@ -670,25 +610,25 @@ void <code class="sig-name descname">primme_initialize</code><span class="sig-pa
 <p>See the alternative function <a class="reference internal" href="#c.primme_params_create" title="primme_params_create"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a> that also allocates the <cite>primme_params</cite> structure.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-params-create">
-<h3>primme_params_create<a class="headerlink" href="#primme-params-create" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="primme-params-create">
+<h3>primme_params_create<a class="headerlink" href="#primme-params-create" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.primme_params_create">
-<a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<code class="sig-name descname">primme_params_create</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#c.primme_params_create" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.primme_params_create">
+<a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">primme_params_create</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_params_create" title="Link to this definition"></a><br /></dt>
 <dd><p>Allocate and initialize a parameters structure to the default values.</p>
 <p>After calling <a class="reference internal" href="#c.dprimme" title="dprimme"><code class="xref c c-func docutils literal notranslate"><span class="pre">dprimme()</span></code></a> (or a variant), call <a class="reference internal" href="#c.primme_params_destroy" title="primme_params_destroy"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_params_destroy()</span></code></a> to release allocated resources by PRIMME.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pointer to a parameters structure.</p>
 </dd>
 </dl>
 <p>Example:</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">primme_params</span> <span class="o">*</span><span class="n">primme</span> <span class="o">=</span> <span class="n">primme_params_create</span><span class="p">();</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">primme_params</span><span class="w"> </span><span class="o">*</span><span class="n">primme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">primme_params_create</span><span class="p">();</span>
 
-<span class="n">primme</span><span class="o">-&gt;</span><span class="n">n</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+<span class="n">primme</span><span class="o">-&gt;</span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
 <span class="p">...</span>
-<span class="n">dprimme</span><span class="p">(</span><span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span><span class="p">,</span> <span class="n">rnorms</span><span class="p">,</span> <span class="n">primme</span><span class="p">);</span>
+<span class="n">dprimme</span><span class="p">(</span><span class="n">evals</span><span class="p">,</span><span class="w"> </span><span class="n">evecs</span><span class="p">,</span><span class="w"> </span><span class="n">rnorms</span><span class="p">,</span><span class="w"> </span><span class="n">primme</span><span class="p">);</span>
 <span class="p">...</span>
 
 <span class="n">primme_params_destroy</span><span class="p">(</span><span class="n">primme</span><span class="p">);</span>
@@ -696,19 +636,19 @@ void <code class="sig-name descname">primme_initialize</code><span class="sig-pa
 </div>
 <p>See the alternative function <a class="reference internal" href="#c.primme_initialize" title="primme_initialize"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_initialize()</span></code></a> that only initializes the structure.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-set-method">
-<h3>primme_set_method<a class="headerlink" href="#primme-set-method" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="primme-set-method">
+<h3>primme_set_method<a class="headerlink" href="#primme-set-method" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.primme_set_method">
-int <code class="sig-name descname">primme_set_method</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_preset_method" title="primme_preset_method">primme_preset_method</a> <em>method</em>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_set_method" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.primme_set_method">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">primme_set_method</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_preset_method" title="primme_preset_method"><span class="n"><span class="pre">primme_preset_method</span></span></a><span class="w"> </span><span class="n"><span class="pre">method</span></span>, <a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_set_method" title="Link to this definition"></a><br /></dt>
 <dd><p>Set PRIMME parameters to one of the preset configurations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>method</strong> – <p>preset configuration; one of</p>
 <div class="line-block">
@@ -736,15 +676,15 @@ int <code class="sig-name descname">primme_set_method</code><span class="sig-par
 <p>See also <a class="reference internal" href="appendix.html#methods"><span class="std std-ref">Preset Methods</span></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-display-params">
-<h3>primme_display_params<a class="headerlink" href="#primme-display-params" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="primme-display-params">
+<h3>primme_display_params<a class="headerlink" href="#primme-display-params" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.primme_display_params">
-void <code class="sig-name descname">primme_display_params</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> <em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_display_params" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.primme_display_params">
+<span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">primme_display_params</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_display_params" title="Link to this definition"></a><br /></dt>
 <dd><p>Display all printable settings of <code class="docutils literal notranslate"><span class="pre">primme</span></code> into the file descriptor <a class="reference internal" href="appendix.html#c.primme_params.outputFile" title="primme_params.outputFile"><code class="xref c c-member docutils literal notranslate"><span class="pre">outputFile</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme</strong> – parameters structure.</p></li>
 </ul>
@@ -752,15 +692,15 @@ void <code class="sig-name descname">primme_display_params</code><span class="si
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-free">
-<h3>primme_free<a class="headerlink" href="#primme-free" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="primme-free">
+<h3>primme_free<a class="headerlink" href="#primme-free" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.primme_free">
-void <code class="sig-name descname">primme_free</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_free" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.primme_free">
+<span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">primme_free</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_free" title="Link to this definition"></a><br /></dt>
 <dd><p>Free memory allocated by PRIMME.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme</strong> – parameters structure.</p></li>
 </ul>
@@ -768,87 +708,62 @@ void <code class="sig-name descname">primme_free</code><span class="sig-paren">(
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-params-destroy">
-<h3>primme_params_destroy<a class="headerlink" href="#primme-params-destroy" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="primme-params-destroy">
+<h3>primme_params_destroy<a class="headerlink" href="#primme-params-destroy" title="Link to this heading"></a></h3>
 <dl class="c function">
-<dt id="c.primme_params_destroy">
-int <code class="sig-name descname">primme_params_destroy</code><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params">primme_params</a> *<em>primme</em><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_params_destroy" title="Permalink to this definition">¶</a><br /></dt>
+<dt class="sig sig-object c" id="c.primme_params_destroy">
+<span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">primme_params_destroy</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="appendix.html#c.primme_params" title="primme_params"><span class="n"><span class="pre">primme_params</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">primme</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.primme_params_destroy" title="Link to this definition"></a><br /></dt>
 <dd><p>Free memory allocated by PRIMME associated to a parameters structure created
 with <a class="reference internal" href="#c.primme_params_create" title="primme_params_create"><code class="xref c c-func docutils literal notranslate"><span class="pre">primme_params_create()</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme</strong> – parameters structure.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>nonzero value if the call is not successful.</p>
 </dd>
 </dl>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="primmef77.html" class="btn btn-neutral float-right" title="FORTRAN 77 Library Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="apieigs.html" class="btn btn-neutral float-left" title="Eigenvalue Problems" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="apieigs.html" class="btn btn-neutral float-left" title="Eigenvalue Problems" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="primmef77.html" class="btn btn-neutral float-right" title="FORTRAN 77 Library Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2020, College of William &amp; Mary
-
-    </p>
+    <p>&#169; Copyright 2024, College of William &amp; Mary.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

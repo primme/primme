@@ -1,102 +1,59 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Python Interface &mdash; PRIMME 3.2 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Interface &mdash; PRIMME 3.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/extra.css?v=00826961" />
 
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7895512d"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="MATLAB Interface" href="mateigs.html" />
     <link rel="prev" title="FORTRAN 90 Library Interface" href="primmef90.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search"  style="background: white" >
-          
+        <div class="wy-side-nav-search"  style="background: #343131" >
 
           
-            <a href="readme.html">
           
-
-          
+          <a href="readme.html">
             
-            <img src="_static/logo.png" class="logo" alt="Logo"/>
-          
+              <img src="_static/logo-grey.png" class="logo" alt="Logo"/>
           </a>
-
-          
-            
-            
-              <div class="version">
-                3.2
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="primmec.html">C Library Interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="primmef77.html">FORTRAN 77 Library Interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="primmef90.html">FORTRAN 90 Library Interface</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Python Interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Python Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#primme.eigsh"><code class="docutils literal notranslate"><span class="pre">eigsh()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="mateigs.html">MATLAB Interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="appendix.html">Parameters Description</a></li>
 <li class="toctree-l2"><a class="reference internal" href="appendix.html#preset-methods">Preset Methods</a></li>
@@ -106,85 +63,39 @@
 <li class="toctree-l1"><a class="reference internal" href="apisvds.html">Singular Value Problems</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #343131" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="readme.html">PRIMME</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="readme.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="apieigs.html">Eigenvalue Problems</a> &raquo;</li>
-        
-      <li>Python Interface</li>
-    
-    
+      <li><a href="readme.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="apieigs.html">Eigenvalue Problems</a></li>
+      <li class="breadcrumb-item active">Python Interface</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/pyeigsh.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
-  </ul>
-
-  
-  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
-      
-        <a href="mateigs.html" class="btn btn-neutral float-right" title="MATLAB Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="primmef90.html" class="btn btn-neutral float-left" title="FORTRAN 90 Library Interface" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="primmef90.html" class="btn btn-neutral float-left" title="FORTRAN 90 Library Interface" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mateigs.html" class="btn btn-neutral float-right" title="MATLAB Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="python-interface">
-<h1>Python Interface<a class="headerlink" href="#python-interface" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="python-interface">
+<h1>Python Interface<a class="headerlink" href="#python-interface" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt id="primme.eigsh">
-<code class="sig-prename descclassname">primme.</code><code class="sig-name descname">eigsh</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">A</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">6</span></em>, <em class="sig-param"><span class="n">M</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">which</span><span class="o">=</span><span class="default_value">'LM'</span></em>, <em class="sig-param"><span class="n">v0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ncv</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">return_eigenvectors</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">Minv</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">OPinv</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'normal'</span></em>, <em class="sig-param"><span class="n">lock</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_stats</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">maxBlockSize</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">minRestartSize</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">maxPrevRetain</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_history</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">convtest</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#primme.eigsh" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="primme.eigsh">
+<span class="sig-prename descclassname"><span class="pre">primme.</span></span><span class="sig-name descname"><span class="pre">eigsh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'LM'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_eigenvectors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Minv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OPinv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'normal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxBlockSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minRestartSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxPrevRetain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_unconverged</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_history</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convtest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_for_unconverged</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#primme.eigsh" title="Link to this definition"></a></dt>
 <dd><p>Find k eigenvalues and eigenvectors of the real symmetric square matrix
 or complex Hermitian matrix A.</p>
 <p>Solves <code class="docutils literal notranslate"><span class="pre">A</span> <span class="pre">*</span> <span class="pre">x[i]</span> <span class="pre">=</span> <span class="pre">w[i]</span> <span class="pre">*</span> <span class="pre">x[i]</span></code>, the standard eigenvalue problem for
@@ -193,7 +104,7 @@ w[i] eigenvalues with corresponding eigenvectors x[i].</p>
 generalized eigenvalue problem for w[i] eigenvalues
 with corresponding eigenvectors x[i]</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>A</strong> (<em>An N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, or </em><em>LinearOperator</em>) – the operation A * x, where A is a real symmetric matrix or complex
 Hermitian.</p></li>
@@ -210,7 +121,7 @@ results, the data type of M should be the same as that of A.</p>
 <li><p><strong>sigma</strong> (<em>real</em><em>, </em><em>optional</em>) – Find eigenvalues near sigma.</p></li>
 <li><p><strong>v0</strong> (<em>N x i</em><em>, </em><em>ndarray</em><em>, </em><em>optional</em>) – Initial guesses to the eigenvectors.</p></li>
 <li><p><strong>ncv</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum size of the basis</p></li>
-<li><p><strong>which</strong> (<em>str</em><em> [</em><em>'LM' | 'SM' | 'LA' | 'SA' | number</em><em>]</em>) – <p>Which <cite>k</cite> eigenvectors and eigenvalues to find:</p>
+<li><p><strong>which</strong> (<em>str</em><em> [</em><em>'LM'</em><em> | </em><em>'SM'</em><em> | </em><em>'LA'</em><em> | </em><em>'SA'</em><em> | </em><em>number</em><em>]</em>) – <p>Which <cite>k</cite> eigenvectors and eigenvalues to find:</p>
 <blockquote>
 <div><p>’LM’ : Largest in magnitude eigenvalues; the farthest from sigma</p>
 <p>’SM’ : Smallest in magnitude eigenvalues; the closest to sigma</p>
@@ -231,7 +142,7 @@ results, the data type of M should be the same as that of A.</p>
 <li><p><strong>OPinv</strong> (<em>N x N matrix</em><em>, </em><em>array</em><em>, </em><em>sparse matrix</em><em>, or </em><em>LinearOperator</em><em>, </em><em>optional</em>) – Preconditioner to accelerate the convergence. Usually it is an
 approximation of the inverse of (A - sigma*M).</p></li>
 <li><p><strong>return_eigenvectors</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return eigenvectors (True) in addition to eigenvalues</p></li>
-<li><p><strong>mode</strong> (<em>string</em><em> [</em><em>'normal' | 'buckling' | 'cayley'</em><em>]</em>) – Only ‘normal’ mode is supported.</p></li>
+<li><p><strong>mode</strong> (<em>string</em><em> [</em><em>'normal'</em><em> | </em><em>'buckling'</em><em> | </em><em>'cayley'</em><em>]</em>) – Only ‘normal’ mode is supported.</p></li>
 <li><p><strong>lock</strong> (<em>N x i</em><em>, </em><em>ndarray</em><em>, </em><em>optional</em>) – Seek the eigenvectors orthogonal to these ones. The provided
 vectors <em>should</em> be orthonormal. Useful to avoid converging to previously
 computed solutions.</p></li>
@@ -246,22 +157,26 @@ restart. Also referred as +k vectors in GD+k.</p></li>
 <li><p>DYNAMIC : choose dynamically between these previous methods.</p></li>
 </ul>
 <p>See a detailed description of the methods and other possible values
-in <a class="footnote-reference brackets" href="#id4" id="id1">2</a>.</p>
+in <a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
 </p></li>
+<li><p><strong>return_unconverged</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return all requested eigenvalues and vectors regardless of
+being marked as converged. The default is False.</p></li>
 <li><p><strong>convtest</strong> (<em>callable</em>) – <p>User-defined function to mark an approximate eigenpair as converged.</p>
 <p>The function is called as convtest(eval, evec, resNorm) and returns
 True if the eigenpair with value <cite>eval</cite>, vector <cite>evec</cite> and residual
 norm <cite>resNorm</cite> is considered converged.</p>
 </p></li>
+<li><p><strong>raise_for_unconverged</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True and return_unconverged is False, raise an exception when not
+all requested eigenvalues and vectors converged. The default is True.</p></li>
 <li><p><strong>return_stats</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the function returns extra information (see stats in Returns).</p></li>
 <li><p><strong>return_history</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the function returns performance information at every iteration
 (see hist in Returns).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>w</strong> (<em>array</em>) – Array of k eigenvalues ordered to best satisfy “which”.</p></li>
-<li><p><strong>v</strong> (<em>array</em>) – An array representing the <cite>k</cite> eigenvectors.  The column <code class="docutils literal notranslate"><span class="pre">v[:,</span> <span class="pre">i]</span></code> is
+<li><p><strong>v</strong> (<em>array, optional (if return_eigenvectors)</em>) – An array representing the <cite>k</cite> eigenvectors.  The column <code class="docutils literal notranslate"><span class="pre">v[:,</span> <span class="pre">i]</span></code> is
 the eigenvector corresponding to the eigenvalue <code class="docutils literal notranslate"><span class="pre">w[i]</span></code>.</p></li>
 <li><p><strong>stats</strong> (<em>dict, optional (if return_stats)</em>) – Extra information reported by PRIMME:</p>
 <ul>
@@ -288,7 +203,7 @@ the eigenvector corresponding to the eigenvalue <code class="docutils literal no
 </ul>
 </p>
 </dd>
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>PrimmeError</strong> – When the requested convergence is not obtained.
     
     The PRIMME error code can be found as <code class="docutils literal notranslate"><span class="pre">err</span></code> attribute of the exception
@@ -298,30 +213,33 @@ the eigenvector corresponding to the eigenvalue <code class="docutils literal no
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.sparse.linalg.eigs()</span></code></dt><dd><p>eigenvalues and eigenvectors for a general (nonsymmetric) matrix A</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.sparse.linalg.eigs</span></code></dt><dd><p>eigenvalues and eigenvectors for a general (nonsymmetric) matrix A</p>
 </dd>
-<dt><a class="reference internal" href="pysvds.html#primme.svds" title="primme.svds"><code class="xref py py-func docutils literal notranslate"><span class="pre">primme.svds()</span></code></a></dt><dd><p>singular value decomposition for a matrix A</p>
+<dt><a class="reference internal" href="pysvds.html#primme.svds" title="primme.svds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">primme.svds</span></code></a></dt><dd><p>singular value decomposition for a matrix A</p>
 </dd>
 </dl>
 </div>
 <p class="rubric">Notes</p>
 <p>This function is a wrapper to PRIMME functions to find the eigenvalues and
-eigenvectors <a class="footnote-reference brackets" href="#id3" id="id2">1</a>.</p>
+eigenvectors <a class="footnote-reference brackets" href="#id3" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 <p class="rubric">References</p>
-<dl class="footnote brackets">
-<dt class="label" id="id3"><span class="brackets"><a class="fn-backref" href="#id2">1</a></span></dt>
-<dd><p>PRIMME Software, <a class="reference external" href="https://github.com/primme/primme">https://github.com/primme/primme</a></p>
-</dd>
-<dt class="label" id="id4"><span class="brackets"><a class="fn-backref" href="#id1">2</a></span></dt>
-<dd><p>Preset Methods, <a class="reference external" href="http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods">http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods</a></p>
-</dd>
-<dt class="label" id="id5"><span class="brackets">3</span></dt>
-<dd><p>A. Stathopoulos and J. R. McCombs PRIMME: PReconditioned
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">1</a><span class="fn-bracket">]</span></span>
+<p>PRIMME Software, <a class="reference external" href="https://github.com/primme/primme">https://github.com/primme/primme</a></p>
+</aside>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">2</a><span class="fn-bracket">]</span></span>
+<p>Preset Methods, <a class="reference external" href="http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods">http://www.cs.wm.edu/~andreas/software/doc/readme.html#preset-methods</a></p>
+</aside>
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<p>A. Stathopoulos and J. R. McCombs PRIMME: PReconditioned
 Iterative MultiMethod Eigensolver: Methods and software
 description, ACM Transaction on Mathematical Software Vol. 37,
 No. 2, (2010), 21:1-21:30.</p>
-</dd>
-</dl>
+</aside>
+</aside>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">primme</span><span class="o">,</span> <span class="nn">scipy.sparse</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">spdiags</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="c1"># sparse diag. matrix</span>
@@ -356,62 +274,37 @@ No. 2, (2010), 21:1-21:30.</p>
 </div>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="mateigs.html" class="btn btn-neutral float-right" title="MATLAB Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="primmef90.html" class="btn btn-neutral float-left" title="FORTRAN 90 Library Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="primmef90.html" class="btn btn-neutral float-left" title="FORTRAN 90 Library Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mateigs.html" class="btn btn-neutral float-right" title="MATLAB Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2020, College of William &amp; Mary
-
-    </p>
+    <p>&#169; Copyright 2024, College of William &amp; Mary.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

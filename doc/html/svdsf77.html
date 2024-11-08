@@ -1,95 +1,50 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>FORTRAN Library Interface &mdash; PRIMME 3.2 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FORTRAN Library Interface &mdash; PRIMME 3.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/extra.css?v=00826961" />
 
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7895512d"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FORTRAN 90 Library Interface" href="svdsf90.html" />
     <link rel="prev" title="C Library Interface" href="svdsc.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search"  style="background: white" >
-          
+        <div class="wy-side-nav-search"  style="background: #343131" >
 
           
-            <a href="readme.html">
           
-
-          
+          <a href="readme.html">
             
-            <img src="_static/logo.png" class="logo" alt="Logo"/>
-          
+              <img src="_static/logo-grey.png" class="logo" alt="Logo"/>
           </a>
-
-          
-            
-            
-              <div class="version">
-                3.2
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a></li>
@@ -123,95 +78,49 @@
 </li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #343131" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="readme.html">PRIMME</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="readme.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="apisvds.html">Singular Value Problems</a> &raquo;</li>
-        
-      <li>FORTRAN Library Interface</li>
-    
-    
+      <li><a href="readme.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="apisvds.html">Singular Value Problems</a></li>
+      <li class="breadcrumb-item active">FORTRAN Library Interface</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/svdsf77.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
-  </ul>
-
-  
-  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
-      
-        <a href="svdsf90.html" class="btn btn-neutral float-right" title="FORTRAN 90 Library Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="svdsc.html" class="btn btn-neutral float-left" title="C Library Interface" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="svdsc.html" class="btn btn-neutral float-left" title="C Library Interface" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="svdsf90.html" class="btn btn-neutral float-right" title="FORTRAN 90 Library Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="fortran-library-interface">
-<h1>FORTRAN Library Interface<a class="headerlink" href="#fortran-library-interface" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="fortran-library-interface">
+<h1>FORTRAN Library Interface<a class="headerlink" href="#fortran-library-interface" title="Link to this heading"></a></h1>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 2.0.</span></p>
+<p><span class="versionmodified added">Added in version 2.0.</span></p>
 </div>
 <p>The next enumerations and functions are declared in <code class="docutils literal notranslate"><span class="pre">primme_svds_f77.h</span></code>.</p>
-<div class="section" id="sprimme-svds-f77">
-<h2>sprimme_svds_f77<a class="headerlink" href="#sprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/sprimme_svds_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">sprimme_svds_f77</code><span class="sig-paren">(</span><em class="sig-param">svals</em>, <em class="sig-param">svecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/sprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+<section id="sprimme-svds-f77">
+<h2>sprimme_svds_f77<a class="headerlink" href="#sprimme-svds-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/sprimme_svds_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">sprimme_svds_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">svals</span></em>, <em class="sig-param"><span class="pre">svecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/sprimme_svds_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a real singular value problem using single precision.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_sprimme_svds_f77" title="f/_/magma_sprimme_svds_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_sprimme_svds_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>svals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
 computed singular values; all processes in a parallel run return this local array with the same values.</p></li>
@@ -236,16 +145,16 @@ The first vector has i=1.</p>
 <p>The type and precision of the callbacks depends on the type and precision of <cite>svecs</cite>. See details for <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.globalSumReal" title="primme_svds_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.broadcastReal" title="primme_svds_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.convTestFun" title="primme_svds_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="cprimme-svds-f77">
-<h2>cprimme_svds_f77<a class="headerlink" href="#cprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/cprimme_svds_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">cprimme_svds_f77</code><span class="sig-paren">(</span><em class="sig-param">svals</em>, <em class="sig-param">svecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/cprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="cprimme-svds-f77">
+<h2>cprimme_svds_f77<a class="headerlink" href="#cprimme-svds-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/cprimme_svds_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">cprimme_svds_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">svals</span></em>, <em class="sig-param"><span class="pre">svecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/cprimme_svds_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a complex singular value problem using single precision.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_cprimme_svds_f77" title="f/_/magma_cprimme_svds_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_cprimme_svds_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>svals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
 computed singular values; all processes in a parallel run return this local array with the same values.</p></li>
@@ -270,16 +179,16 @@ The first vector has i=1.</p>
 <p>The type and precision of the callbacks depends on the type and precision of <cite>svecs</cite>. See details for <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.globalSumReal" title="primme_svds_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.broadcastReal" title="primme_svds_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.convTestFun" title="primme_svds_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="dprimme-svds-f77">
-<h2>dprimme_svds_f77<a class="headerlink" href="#dprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/dprimme_svds_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">dprimme_svds_f77</code><span class="sig-paren">(</span><em class="sig-param">svals</em>, <em class="sig-param">svecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/dprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="dprimme-svds-f77">
+<h2>dprimme_svds_f77<a class="headerlink" href="#dprimme-svds-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/dprimme_svds_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">dprimme_svds_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">svals</span></em>, <em class="sig-param"><span class="pre">svecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/dprimme_svds_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a real singular value problem using double precision.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_dprimme_svds_f77" title="f/_/magma_dprimme_svds_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_dprimme_svds_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>svals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
 computed singular values; all processes in a parallel run return this local array with the same values.</p></li>
@@ -304,16 +213,16 @@ The first vector has i=1.</p>
 <p>The type and precision of the callbacks depends on the type and precision of <cite>svecs</cite>. See details for <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.globalSumReal" title="primme_svds_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.broadcastReal" title="primme_svds_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.convTestFun" title="primme_svds_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="zprimme-svds-f77">
-<h2>zprimme_svds_f77<a class="headerlink" href="#zprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/zprimme_svds_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">zprimme_svds_f77</code><span class="sig-paren">(</span><em class="sig-param">svals</em>, <em class="sig-param">svecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/zprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="zprimme-svds-f77">
+<h2>zprimme_svds_f77<a class="headerlink" href="#zprimme-svds-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/zprimme_svds_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">zprimme_svds_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">svals</span></em>, <em class="sig-param"><span class="pre">svecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/zprimme_svds_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a complex singular value problem using double precision.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_zprimme_svds_f77" title="f/_/magma_zprimme_svds_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_zprimme_svds_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>svals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
 computed singular values; all processes in a parallel run return this local array with the same values.</p></li>
@@ -338,16 +247,16 @@ The first vector has i=1.</p>
 <p>The type and precision of the callbacks depends on the type and precision of <cite>svecs</cite>. See details for <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.globalSumReal" title="primme_svds_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.broadcastReal" title="primme_svds_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.convTestFun" title="primme_svds_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-sprimme-svds-f77">
-<h2>magma_sprimme_svds_f77<a class="headerlink" href="#magma-sprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_sprimme_svds_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_sprimme_svds_f77</code><span class="sig-paren">(</span><em class="sig-param">svals</em>, <em class="sig-param">svecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_sprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-sprimme-svds-f77">
+<h2>magma_sprimme_svds_f77<a class="headerlink" href="#magma-sprimme-svds-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_sprimme_svds_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_sprimme_svds_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">svals</span></em>, <em class="sig-param"><span class="pre">svecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_sprimme_svds_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a real singular value problem using single precision.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#f/_/sprimme_svds_f77" title="f/_/sprimme_svds_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">sprimme_svds_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>svals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
 computed singular values; all processes in a parallel run return this local array with the same values.</p></li>
@@ -371,20 +280,20 @@ The first vector has i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">svecs</span></code> unless the user sets <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.internalPrecision" title="primme_svds_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks depends on the type and precision of <cite>svecs</cite>. See details for <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.globalSumReal" title="primme_svds_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.broadcastReal" title="primme_svds_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.convTestFun" title="primme_svds_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-cprimme-svds-f77">
-<h2>magma_cprimme_svds_f77<a class="headerlink" href="#magma-cprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_cprimme_svds_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_cprimme_svds_f77</code><span class="sig-paren">(</span><em class="sig-param">svals</em>, <em class="sig-param">svecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_cprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-cprimme-svds-f77">
+<h2>magma_cprimme_svds_f77<a class="headerlink" href="#magma-cprimme-svds-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_cprimme_svds_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_cprimme_svds_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">svals</span></em>, <em class="sig-param"><span class="pre">svecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_cprimme_svds_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a complex singular value problem using single precision.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#f/_/cprimme_svds_f77" title="f/_/cprimme_svds_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">cprimme_svds_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>svals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
 computed singular values; all processes in a parallel run return this local array with the same values.</p></li>
@@ -408,20 +317,20 @@ The first vector has i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">svecs</span></code> unless the user sets <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.internalPrecision" title="primme_svds_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks depends on the type and precision of <cite>svecs</cite>. See details for <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.globalSumReal" title="primme_svds_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.broadcastReal" title="primme_svds_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.convTestFun" title="primme_svds_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-dprimme-svds-f77">
-<h2>magma_dprimme_svds_f77<a class="headerlink" href="#magma-dprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_dprimme_svds_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_dprimme_svds_f77</code><span class="sig-paren">(</span><em class="sig-param">svals</em>, <em class="sig-param">svecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_dprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-dprimme-svds-f77">
+<h2>magma_dprimme_svds_f77<a class="headerlink" href="#magma-dprimme-svds-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_dprimme_svds_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_dprimme_svds_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">svals</span></em>, <em class="sig-param"><span class="pre">svecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_dprimme_svds_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a real singular value problem using double precision.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#f/_/dprimme_svds_f77" title="f/_/dprimme_svds_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_svds_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>svals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
 computed singular values; all processes in a parallel run return this local array with the same values.</p></li>
@@ -445,20 +354,20 @@ The first vector has i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">svecs</span></code> unless the user sets <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.internalPrecision" title="primme_svds_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks depends on the type and precision of <cite>svecs</cite>. See details for <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.globalSumReal" title="primme_svds_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.broadcastReal" title="primme_svds_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.convTestFun" title="primme_svds_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-zprimme-svds-f77">
-<h2>magma_zprimme_svds_f77<a class="headerlink" href="#magma-zprimme-svds-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_zprimme_svds_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_zprimme_svds_f77</code><span class="sig-paren">(</span><em class="sig-param">svals</em>, <em class="sig-param">svecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_zprimme_svds_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-zprimme-svds-f77">
+<h2>magma_zprimme_svds_f77<a class="headerlink" href="#magma-zprimme-svds-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_zprimme_svds_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_zprimme_svds_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">svals</span></em>, <em class="sig-param"><span class="pre">svecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_zprimme_svds_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a complex singular value problem using double precision.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#f/_/zprimme_svds_f77" title="f/_/zprimme_svds_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">zprimme_svds_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>svals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.numSvals" title="primme_svds_params.numSvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numSvals</span></code></a> to store the
 computed singular values; all processes in a parallel run return this local array with the same values.</p></li>
@@ -482,34 +391,34 @@ The first vector has i=1.</p>
 <p>All internal operations are performed at the same precision than <code class="docutils literal notranslate"><span class="pre">svecs</span></code> unless the user sets <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.internalPrecision" title="primme_svds_params.internalPrecision"><code class="xref c c-member docutils literal notranslate"><span class="pre">internalPrecision</span></code></a> otherwise.</p>
 <p>The type and precision of the callbacks depends on the type and precision of <cite>svecs</cite>. See details for <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.matrixMatvec" title="primme_svds_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.applyPreconditioner" title="primme_svds_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.globalSumReal" title="primme_svds_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.broadcastReal" title="primme_svds_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.convTestFun" title="primme_svds_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-svds-initialize-f77">
-<h2>primme_svds_initialize_f77<a class="headerlink" href="#primme-svds-initialize-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_svds_initialize_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_svds_initialize_f77</code><span class="sig-paren">(</span><em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_initialize_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-svds-initialize-f77">
+<h2>primme_svds_initialize_f77<a class="headerlink" href="#primme-svds-initialize-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_svds_initialize_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_svds_initialize_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_initialize_f77" title="Link to this definition"></a></dt>
 <dd><p>Set PRIMME SVDS parameters structure to the default values.</p>
 <p>After calling <a class="reference internal" href="#f/_/dprimme_svds_f77" title="f/_/dprimme_svds_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_svds_f77()</span></code></a> (or a variant), call <a class="reference internal" href="#f/_/primme_svds_free_f77" title="f/_/primme_svds_free_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_svds_free_f77()</span></code></a> to release allocated resources by PRIMME.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>primme_svds</strong><em> [</em><a class="reference internal" href="primmef77.html#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (output) parameters structure.</p>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-svds-set-method-f77">
-<h2>primme_svds_set_method_f77<a class="headerlink" href="#primme-svds-set-method-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_svds_set_method_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_svds_set_method_f77</code><span class="sig-paren">(</span><em class="sig-param">method</em>, <em class="sig-param">methodStage1</em>, <em class="sig-param">methodStage2</em>, <em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_set_method_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-svds-set-method-f77">
+<h2>primme_svds_set_method_f77<a class="headerlink" href="#primme-svds-set-method-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_svds_set_method_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_svds_set_method_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">method</span></em>, <em class="sig-param"><span class="pre">methodStage1</span></em>, <em class="sig-param"><span class="pre">methodStage2</span></em>, <em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_set_method_f77" title="Link to this definition"></a></dt>
 <dd><p>Set PRIMME SVDS parameters to one of the preset configurations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>method</strong><em> [</em><em>integer</em><em>]</em> :: <p>(input) preset configuration to compute the singular triplets; one of</p>
 <ul>
@@ -531,43 +440,43 @@ the second stage of <a class="reference internal" href="appendixsvds.html#c.prim
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-svds-display-params-f77">
-<h2>primme_svds_display_params_f77<a class="headerlink" href="#primme-svds-display-params-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_svds_display_params_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_svds_display_params_f77</code><span class="sig-paren">(</span><em class="sig-param">primme_svds</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_display_params_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-svds-display-params-f77">
+<h2>primme_svds_display_params_f77<a class="headerlink" href="#primme-svds-display-params-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_svds_display_params_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_svds_display_params_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme_svds</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_display_params_f77" title="Link to this definition"></a></dt>
 <dd><p>Display all printable settings of <code class="docutils literal notranslate"><span class="pre">primme_svds</span></code> into the file descriptor <a class="reference internal" href="appendixsvds.html#c.primme_svds_params.outputFile" title="primme_svds_params.outputFile"><code class="xref c c-member docutils literal notranslate"><span class="pre">outputFile</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>primme_svds</strong><em> [</em><a class="reference internal" href="primmef77.html#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input) parameters structure.</p>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-svds-free-f77">
-<h2>primme_svds_free_f77<a class="headerlink" href="#primme-svds-free-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_svds_free_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_svds_free_f77</code><span class="sig-paren">(</span><em class="sig-param">primme_svds</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_free_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-svds-free-f77">
+<h2>primme_svds_free_f77<a class="headerlink" href="#primme-svds-free-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_svds_free_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_svds_free_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_free_f77" title="Link to this definition"></a></dt>
 <dd><p>Free memory allocated by PRIMME SVDS and delete all values set.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>primme_svds</strong><em> [</em><a class="reference internal" href="primmef77.html#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input/output) parameters structure.</p>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-svds-set-member-f77">
-<h2>primme_svds_set_member_f77<a class="headerlink" href="#primme-svds-set-member-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_svds_set_member_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_svds_set_member_f77</code><span class="sig-paren">(</span><em class="sig-param">primme_svds</em>, <em class="sig-param">label</em>, <em class="sig-param">value</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_set_member_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-svds-set-member-f77">
+<h2>primme_svds_set_member_f77<a class="headerlink" href="#primme-svds-set-member-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_svds_set_member_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_svds_set_member_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">label</span></em>, <em class="sig-param"><span class="pre">value</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_set_member_f77" title="Link to this definition"></a></dt>
 <dd><p>Set a value in some field of the parameter structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme_svds</strong><em> [</em><a class="reference internal" href="primmef77.html#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input) parameters structure.</p></li>
 <li><p><strong>label</strong><em> [</em><em>integer</em><em>]</em> :: <p>field where to set value. One of:</p>
@@ -645,15 +554,15 @@ the second stage of <a class="reference internal" href="appendixsvds.html#c.prim
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-svdstop-get-member-f77">
-<h2>primme_svdstop_get_member_f77<a class="headerlink" href="#primme-svdstop-get-member-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_svdstop_get_member_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_svdstop_get_member_f77</code><span class="sig-paren">(</span><em class="sig-param">primme_svds</em>, <em class="sig-param">label</em>, <em class="sig-param">value</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svdstop_get_member_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-svdstop-get-member-f77">
+<h2>primme_svdstop_get_member_f77<a class="headerlink" href="#primme-svdstop-get-member-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_svdstop_get_member_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_svdstop_get_member_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">label</span></em>, <em class="sig-param"><span class="pre">value</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svdstop_get_member_f77" title="Link to this definition"></a></dt>
 <dd><p>Get the value in some field of the parameter structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme_svds</strong><em> [</em><a class="reference internal" href="primmef77.html#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input) parameters structure.</p></li>
 <li><p><strong>label</strong><em> [</em><em>integer</em><em>]</em> :: (input) field where to get value. One of
@@ -675,20 +584,20 @@ the detailed in subroutine <code class="xref f f-func docutils literal notransla
 the returned <code class="docutils literal notranslate"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal notranslate"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
 For instance:</p>
 <div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="k">use </span><span class="nb">iso_c_binding</span>
-<span class="n">MPI_Comm</span> <span class="n">comm</span>
+<span class="n">MPI_Comm</span><span class="w"> </span><span class="n">comm</span>
 
-<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI_COMM_WORLD</span>
-<span class="k">call </span><span class="n">primme_svds_set_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span> <span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="n">comm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MPI_COMM_WORLD</span>
+<span class="k">call </span><span class="n">primme_svds_set_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span><span class="w"> </span><span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">)</span>
 <span class="p">...</span>
 <span class="k">subroutine </span><span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme_svds</span><span class="p">)</span>
 <span class="k">use </span><span class="nb">iso_c_binding</span>
 <span class="k">implicit none</span>
 <span class="p">...</span>
-<span class="n">MPI_Comm</span><span class="p">,</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">comm</span>
-<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pcomm</span>
+<span class="n">MPI_Comm</span><span class="p">,</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">comm</span>
+<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pcomm</span>
 
-<span class="k">call </span><span class="n">primme_svds_get_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span> <span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
-<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">primme_svds_get_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span><span class="w"> </span><span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span><span class="w"> </span><span class="n">pcomm</span><span class="p">)</span>
+<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">)</span>
 <span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -696,15 +605,15 @@ For instance:</p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-svds-get-member-f77">
-<h2>primme_svds_get_member_f77<a class="headerlink" href="#primme-svds-get-member-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_svds_get_member_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_svds_get_member_f77</code><span class="sig-paren">(</span><em class="sig-param">primme_svds</em>, <em class="sig-param">label</em>, <em class="sig-param">value</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_get_member_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-svds-get-member-f77">
+<h2>primme_svds_get_member_f77<a class="headerlink" href="#primme-svds-get-member-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_svds_get_member_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_svds_get_member_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme_svds</span></em>, <em class="sig-param"><span class="pre">label</span></em>, <em class="sig-param"><span class="pre">value</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_svds_get_member_f77" title="Link to this definition"></a></dt>
 <dd><p>Get the value in some field of the parameter structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme_svds</strong><em> [</em><a class="reference internal" href="primmef77.html#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input) parameters structure.</p></li>
 <li><p><strong>label</strong><em> [</em><em>integer</em><em>]</em> :: (input) field where to get value. One of
@@ -726,20 +635,20 @@ from the main program, use the subroutine <a class="reference internal" href="#f
 the returned <code class="docutils literal notranslate"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal notranslate"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
 For instance:</p>
 <div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="k">use </span><span class="nb">iso_c_binding</span>
-<span class="n">MPI_Comm</span> <span class="n">comm</span>
+<span class="n">MPI_Comm</span><span class="w"> </span><span class="n">comm</span>
 
-<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI_COMM_WORLD</span>
-<span class="k">call </span><span class="n">primme_svds_set_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span> <span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="n">comm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MPI_COMM_WORLD</span>
+<span class="k">call </span><span class="n">primme_svds_set_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span><span class="w"> </span><span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">)</span>
 <span class="p">...</span>
 <span class="k">subroutine </span><span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme_svds</span><span class="p">)</span>
 <span class="k">use </span><span class="nb">iso_c_binding</span>
 <span class="k">implicit none</span>
 <span class="p">...</span>
-<span class="n">MPI_Comm</span><span class="p">,</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">comm</span>
-<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pcomm</span>
+<span class="n">MPI_Comm</span><span class="p">,</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">comm</span>
+<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pcomm</span>
 
-<span class="k">call </span><span class="n">primme_svds_get_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span> <span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
-<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">primme_svds_get_member_f77</span><span class="p">(</span><span class="n">primme_svds</span><span class="p">,</span><span class="w"> </span><span class="n">PRIMME_SVDS_commInfo</span><span class="p">,</span><span class="w"> </span><span class="n">pcomm</span><span class="p">)</span>
+<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">)</span>
 <span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -747,63 +656,38 @@ For instance:</p>
 </div>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="svdsf90.html" class="btn btn-neutral float-right" title="FORTRAN 90 Library Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="svdsc.html" class="btn btn-neutral float-left" title="C Library Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="svdsc.html" class="btn btn-neutral float-left" title="C Library Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="svdsf90.html" class="btn btn-neutral float-right" title="FORTRAN 90 Library Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2020, College of William &amp; Mary
-
-    </p>
+    <p>&#169; Copyright 2024, College of William &amp; Mary.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

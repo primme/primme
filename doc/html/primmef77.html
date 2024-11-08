@@ -1,95 +1,49 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>FORTRAN 77 Library Interface &mdash; PRIMME 3.2 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FORTRAN 77 Library Interface &mdash; PRIMME 3.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/extra.css?v=00826961" />
 
   
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7895512d"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="FORTRAN 90 Library Interface" href="primmef90.html" />
     <link rel="prev" title="C Library Interface" href="primmec.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search"  style="background: white" >
-          
+        <div class="wy-side-nav-search"  style="background: #343131" >
 
           
-            <a href="readme.html">
           
-
-          
+          <a href="readme.html">
             
-            <img src="_static/logo.png" class="logo" alt="Logo"/>
-          
+              <img src="_static/logo-grey.png" class="logo" alt="Logo"/>
           </a>
-
-          
-            
-            
-              <div class="version">
-                3.2
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">PRIMME: PReconditioned Iterative MultiMethod Eigensolver</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="apieigs.html">Eigenvalue Problems</a><ul class="current">
@@ -128,113 +82,67 @@
 <li class="toctree-l1"><a class="reference internal" href="apisvds.html">Singular Value Problems</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #343131" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="readme.html">PRIMME</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="readme.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="apieigs.html">Eigenvalue Problems</a> &raquo;</li>
-        
-      <li>FORTRAN 77 Library Interface</li>
-    
-    
+      <li><a href="readme.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="apieigs.html">Eigenvalue Problems</a></li>
+      <li class="breadcrumb-item active">FORTRAN 77 Library Interface</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="_sources/primmef77.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
-  </ul>
-
-  
-  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
-      
-        <a href="primmef90.html" class="btn btn-neutral float-right" title="FORTRAN 90 Library Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="primmec.html" class="btn btn-neutral float-left" title="C Library Interface" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="primmec.html" class="btn btn-neutral float-left" title="C Library Interface" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="primmef90.html" class="btn btn-neutral float-right" title="FORTRAN 90 Library Interface" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="fortran-77-library-interface">
-<h1>FORTRAN 77 Library Interface<a class="headerlink" href="#fortran-77-library-interface" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="fortran-77-library-interface">
+<h1>FORTRAN 77 Library Interface<a class="headerlink" href="#fortran-77-library-interface" title="Link to this heading"></a></h1>
 <p>The next enumerations and functions are declared in <code class="docutils literal notranslate"><span class="pre">primme_f77.h</span></code>.</p>
-<dl class="type">
-<dt id="f/_/ptr">
-<em class="property">type  </em><code class="sig-name descname">ptr</code><a class="headerlink" href="#f/_/ptr" title="Permalink to this definition">¶</a></dt>
+<dl>
+<dt class="sig sig-object f" id="f/_/ptr">
+<em class="property"><span class="pre">type</span>&#160; </em><span class="sig-name descname"><span class="pre">ptr</span></span><a class="headerlink" href="#f/_/ptr" title="Link to this definition"></a></dt>
 <dd><p>Fortran datatype with the same size as a pointer.
 Use <code class="docutils literal notranslate"><span class="pre">integer*4</span></code> when compiling in 32 bits and <code class="docutils literal notranslate"><span class="pre">integer*8</span></code> in 64 bits.</p>
 </dd></dl>
 
-<div class="section" id="primme-initialize-f77">
-<h2>primme_initialize_f77<a class="headerlink" href="#primme-initialize-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_initialize_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_initialize_f77</code><span class="sig-paren">(</span><em class="sig-param">primme</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_initialize_f77" title="Permalink to this definition">¶</a></dt>
+<section id="primme-initialize-f77">
+<h2>primme_initialize_f77<a class="headerlink" href="#primme-initialize-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_initialize_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_initialize_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_initialize_f77" title="Link to this definition"></a></dt>
 <dd><p>Allocate and initialize a PRIMME parameters structure to the default values.</p>
 <p>After calling <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a> (or a variant), call <a class="reference internal" href="#f/_/primme_free_f77" title="f/_/primme_free_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">primme_free_f77()</span></code></a> to release allocated resources by PRIMME.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (output) parameters structure.</p>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-set-method-f77">
-<h2>primme_set_method_f77<a class="headerlink" href="#primme-set-method-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_set_method_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_set_method_f77</code><span class="sig-paren">(</span><em class="sig-param">method</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_set_method_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-set-method-f77">
+<h2>primme_set_method_f77<a class="headerlink" href="#primme-set-method-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_set_method_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_set_method_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">method</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_set_method_f77" title="Link to this definition"></a></dt>
 <dd><p>Set PRIMME parameters to one of the preset configurations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>method</strong><em> [</em><em>integer</em><em>]</em> :: <p>(input) preset configuration. One of:</p>
 <div class="line-block">
@@ -263,30 +171,30 @@ Use <code class="docutils literal notranslate"><span class="pre">integer*4</span
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-free-f77">
-<h2>primme_free_f77<a class="headerlink" href="#primme-free-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_free_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_free_f77</code><span class="sig-paren">(</span><em class="sig-param">primme</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_free_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-free-f77">
+<h2>primme_free_f77<a class="headerlink" href="#primme-free-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_free_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_free_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_free_f77" title="Link to this definition"></a></dt>
 <dd><p>Free memory allocated by PRIMME and delete all values set.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input/output) parameters structure.</p>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="sprimme-f77">
-<h2>sprimme_f77<a class="headerlink" href="#sprimme-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/sprimme_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">sprimme_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/sprimme_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="sprimme-f77">
+<h2>sprimme_f77<a class="headerlink" href="#sprimme-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/sprimme_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">sprimme_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/sprimme_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a real symmetric standard or generalized eigenproblem.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_sprimme_f77" title="f/_/magma_sprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_sprimme_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -301,20 +209,20 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 2.0.</span></p>
+<p><span class="versionmodified added">Added in version 2.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="cprimme-f77">
-<h2>cprimme_f77<a class="headerlink" href="#cprimme-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/cprimme_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">cprimme_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/cprimme_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="cprimme-f77">
+<h2>cprimme_f77<a class="headerlink" href="#cprimme-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/cprimme_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">cprimme_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/cprimme_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a Hermitian standard or generalized eigenproblem.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_cprimme_f77" title="f/_/magma_cprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_cprimme_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -329,20 +237,20 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 2.0.</span></p>
+<p><span class="versionmodified added">Added in version 2.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="dprimme-f77">
-<h2>dprimme_f77<a class="headerlink" href="#dprimme-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/dprimme_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">dprimme_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/dprimme_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="dprimme-f77">
+<h2>dprimme_f77<a class="headerlink" href="#dprimme-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/dprimme_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">dprimme_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/dprimme_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a real symmetric standard or generalized eigenproblem.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_dprimme_f77" title="f/_/magma_dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_dprimme_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -363,16 +271,16 @@ The first vector has index i=1. The number of eigenpairs marked as converged (se
 <p>The type and precision of the callbacks is also the same as <cite>evecs</cite>. Although this can be changed. See details for <a class="reference internal" href="appendix.html#c.primme_params.matrixMatvec" title="primme_params.matrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">matrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.massMatrixMatvec" title="primme_params.massMatrixMatvec"><code class="xref c c-member docutils literal notranslate"><span class="pre">massMatrixMatvec</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.applyPreconditioner" title="primme_params.applyPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">applyPreconditioner</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.globalSumReal" title="primme_params.globalSumReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">globalSumReal</span></code></a>, <a class="reference internal" href="appendix.html#c.primme_params.broadcastReal" title="primme_params.broadcastReal"><code class="xref c c-member docutils literal notranslate"><span class="pre">broadcastReal</span></code></a>, and <a class="reference internal" href="appendix.html#c.primme_params.convTestFun" title="primme_params.convTestFun"><code class="xref c c-member docutils literal notranslate"><span class="pre">convTestFun</span></code></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="zprimme-f77">
-<h2>zprimme_f77<a class="headerlink" href="#zprimme-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/zprimme_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">zprimme_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/zprimme_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="zprimme-f77">
+<h2>zprimme_f77<a class="headerlink" href="#zprimme-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/zprimme_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">zprimme_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/zprimme_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a Hermitian standard or generalized eigenproblem.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_zprimme_f77" title="f/_/magma_zprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_zprimme_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -388,16 +296,16 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-sprimme-f77">
-<h2>magma_sprimme_f77<a class="headerlink" href="#magma-sprimme-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_sprimme_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_sprimme_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_sprimme_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-sprimme-f77">
+<h2>magma_sprimme_f77<a class="headerlink" href="#magma-sprimme-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_sprimme_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_sprimme_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_sprimme_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a real symmetric standard or generalized eigenproblem.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#f/_/sprimme_f77" title="f/_/sprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">sprimme_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -412,20 +320,20 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-cprimme-f77">
-<h2>magma_cprimme_f77<a class="headerlink" href="#magma-cprimme-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_cprimme_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_cprimme_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_cprimme_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-cprimme-f77">
+<h2>magma_cprimme_f77<a class="headerlink" href="#magma-cprimme-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_cprimme_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_cprimme_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_cprimme_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a Hermitian standard or generalized eigenproblem.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#f/_/cprimme_f77" title="f/_/cprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">cprimme_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -440,20 +348,20 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-dprimme-f77">
-<h2>magma_dprimme_f77<a class="headerlink" href="#magma-dprimme-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_dprimme_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_dprimme_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_dprimme_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-dprimme-f77">
+<h2>magma_dprimme_f77<a class="headerlink" href="#magma-dprimme-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_dprimme_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_dprimme_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_dprimme_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a real symmetric standard or generalized eigenproblem.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -468,20 +376,20 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-zprimme-f77">
-<h2>magma_zprimme_f77<a class="headerlink" href="#magma-zprimme-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_zprimme_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_zprimme_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_zprimme_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-zprimme-f77">
+<h2>magma_zprimme_f77<a class="headerlink" href="#magma-zprimme-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_zprimme_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_zprimme_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_zprimme_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a Hermitian standard or generalized eigenproblem.</p>
 <p>Most of the computations are performed on GPU (see <a class="reference internal" href="#f/_/zprimme_f77" title="f/_/zprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">zprimme_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -496,20 +404,20 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="cprimme-normal-f77">
-<h2>cprimme_normal_f77<a class="headerlink" href="#cprimme-normal-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/cprimme_normal_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">cprimme_normal_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/cprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="cprimme-normal-f77">
+<h2>cprimme_normal_f77<a class="headerlink" href="#cprimme-normal-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/cprimme_normal_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">cprimme_normal_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/cprimme_normal_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_cprimme_normal_f77" title="f/_/magma_cprimme_normal_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_cprimme_normal_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -524,20 +432,20 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="zprimme-normal-f77">
-<h2>zprimme_normal_f77<a class="headerlink" href="#zprimme-normal-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/zprimme_normal_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">zprimme_normal_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/zprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="zprimme-normal-f77">
+<h2>zprimme_normal_f77<a class="headerlink" href="#zprimme-normal-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/zprimme_normal_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">zprimme_normal_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/zprimme_normal_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>All arrays should be hosted on CPU. The computations are performed on CPU (see <a class="reference internal" href="#f/_/magma_zprimme_normal_f77" title="f/_/magma_zprimme_normal_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">magma_zprimme_normal_f77()</span></code></a> for using GPUs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -552,20 +460,20 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-cprimme-normal-f77">
-<h2>magma_cprimme_normal_f77<a class="headerlink" href="#magma-cprimme-normal-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_cprimme_normal_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_cprimme_normal_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_cprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-cprimme-normal-f77">
+<h2>magma_cprimme_normal_f77<a class="headerlink" href="#magma-cprimme-normal-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_cprimme_normal_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_cprimme_normal_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_cprimme_normal_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see <a class="reference internal" href="#f/_/cprimme_normal_f77" title="f/_/cprimme_normal_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">cprimme_normal_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>real</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -580,20 +488,20 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="magma-zprimme-normal-f77">
-<h2>magma_zprimme_normal_f77<a class="headerlink" href="#magma-zprimme-normal-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/magma_zprimme_normal_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">magma_zprimme_normal_f77</code><span class="sig-paren">(</span><em class="sig-param">evals</em>, <em class="sig-param">evecs</em>, <em class="sig-param">resNorms</em>, <em class="sig-param">primme</em>, <em class="sig-param">ierr</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_zprimme_normal_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="magma-zprimme-normal-f77">
+<h2>magma_zprimme_normal_f77<a class="headerlink" href="#magma-zprimme-normal-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/magma_zprimme_normal_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">magma_zprimme_normal_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">evals</span></em>, <em class="sig-param"><span class="pre">evecs</span></em>, <em class="sig-param"><span class="pre">resNorms</span></em>, <em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">ierr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/magma_zprimme_normal_f77" title="Link to this definition"></a></dt>
 <dd><p>Solve a normal standard eigenproblem, which may not be Hermitian.</p>
 <p>Most of the arrays are stored on GPU, and also most of the computations are done on GPU (see <a class="reference internal" href="#f/_/zprimme_normal_f77" title="f/_/zprimme_normal_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">zprimme_normal_f77()</span></code></a> for using only the CPU).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>evals</strong> (*)<em> [</em><em>double precision</em><em>]</em> :: (output) CPU array at least of size <a class="reference internal" href="appendix.html#c.primme_params.numEvals" title="primme_params.numEvals"><code class="xref c c-member docutils literal notranslate"><span class="pre">numEvals</span></code></a> to store the
 computed eigenvalues; all parallel calls return the same value in this array.</p></li>
@@ -608,19 +516,19 @@ residual norms of the computed eigenpairs; all parallel calls return the same va
 </dl>
 <p>Further descriptions of <cite>evals</cite>, <cite>evecs</cite>, and <cite>resNorms</cite> on notes in subroutine <a class="reference internal" href="#f/_/dprimme_f77" title="f/_/dprimme_f77"><code class="xref f f-func docutils literal notranslate"><span class="pre">dprimme_f77()</span></code></a>.</p>
 <div class="versionadded">
-<p><span class="versionmodified added">New in version 3.0.</span></p>
+<p><span class="versionmodified added">Added in version 3.0.</span></p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-set-member-f77">
-<h2>primme_set_member_f77<a class="headerlink" href="#primme-set-member-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_set_member_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_set_member_f77</code><span class="sig-paren">(</span><em class="sig-param">primme</em>, <em class="sig-param">label</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_set_member_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-set-member-f77">
+<h2>primme_set_member_f77<a class="headerlink" href="#primme-set-member-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_set_member_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_set_member_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">label</span></em>, <em class="sig-param"><span class="pre">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_set_member_f77" title="Link to this definition"></a></dt>
 <dd><p>Set a value in some field of the parameter structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input) parameters structure.</p></li>
 <li><p><strong>label</strong><em> [</em><em>integer</em><em>]</em> :: <p>field where to set value. One of:</p>
@@ -728,15 +636,15 @@ type of <code class="docutils literal notranslate"><span class="pre">value</span
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primmetop-get-member-f77">
-<h2>primmetop_get_member_f77<a class="headerlink" href="#primmetop-get-member-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primmetop_get_member_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primmetop_get_member_f77</code><span class="sig-paren">(</span><em class="sig-param">primme</em>, <em class="sig-param">label</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primmetop_get_member_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primmetop-get-member-f77">
+<h2>primmetop_get_member_f77<a class="headerlink" href="#primmetop-get-member-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primmetop_get_member_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primmetop_get_member_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">label</span></em>, <em class="sig-param"><span class="pre">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primmetop_get_member_f77" title="Link to this definition"></a></dt>
 <dd><p>Get the value in some field of the parameter structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input) parameters structure.</p></li>
 <li><p><strong>label</strong><em> [</em><em>integer</em><em>]</em> :: (input) field where to get value. One of
@@ -761,20 +669,20 @@ type of <code class="docutils literal notranslate"><span class="pre">value</span
 the returned <code class="docutils literal notranslate"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal notranslate"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
 For instance:</p>
 <div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="k">use </span><span class="nb">iso_c_binding</span>
-<span class="n">MPI_Comm</span> <span class="n">comm</span>
+<span class="n">MPI_Comm</span><span class="w"> </span><span class="n">comm</span>
 
-<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI_COMM_WORLD</span>
-<span class="k">call </span><span class="n">primme_set_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="n">comm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MPI_COMM_WORLD</span>
+<span class="k">call </span><span class="n">primme_set_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span><span class="w"> </span><span class="n">PRIMME_commInfo</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">)</span>
 <span class="p">...</span>
 <span class="k">subroutine </span><span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme</span><span class="p">)</span>
 <span class="k">use </span><span class="nb">iso_c_binding</span>
 <span class="k">implicit none</span>
 <span class="p">...</span>
-<span class="n">MPI_Comm</span><span class="p">,</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">comm</span>
-<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pcomm</span>
+<span class="n">MPI_Comm</span><span class="p">,</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">comm</span>
+<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pcomm</span>
 
-<span class="k">call </span><span class="n">primme_get_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
-<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">primme_get_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span><span class="w"> </span><span class="n">PRIMME_commInfo</span><span class="p">,</span><span class="w"> </span><span class="n">pcomm</span><span class="p">)</span>
+<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">)</span>
 <span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -782,15 +690,15 @@ For instance:</p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primmetop-get-prec-shift-f77">
-<h2>primmetop_get_prec_shift_f77<a class="headerlink" href="#primmetop-get-prec-shift-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primmetop_get_prec_shift_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primmetop_get_prec_shift_f77</code><span class="sig-paren">(</span><em class="sig-param">primme</em>, <em class="sig-param">index</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primmetop_get_prec_shift_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primmetop-get-prec-shift-f77">
+<h2>primmetop_get_prec_shift_f77<a class="headerlink" href="#primmetop-get-prec-shift-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primmetop_get_prec_shift_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primmetop_get_prec_shift_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">index</span></em>, <em class="sig-param"><span class="pre">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primmetop_get_prec_shift_f77" title="Link to this definition"></a></dt>
 <dd><p>Get the value in some position of the array <a class="reference internal" href="appendix.html#c.primme_params.ShiftsForPreconditioner" title="primme_params.ShiftsForPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">ShiftsForPreconditioner</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input) parameters structure.</p></li>
 <li><p><strong>index</strong><em> [</em><em>integer</em><em>]</em> :: (input) position of the array; the first position is 1.</p></li>
@@ -800,15 +708,15 @@ For instance:</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-get-member-f77">
-<h2>primme_get_member_f77<a class="headerlink" href="#primme-get-member-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_get_member_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_get_member_f77</code><span class="sig-paren">(</span><em class="sig-param">primme</em>, <em class="sig-param">label</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_get_member_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-get-member-f77">
+<h2>primme_get_member_f77<a class="headerlink" href="#primme-get-member-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_get_member_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_get_member_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">label</span></em>, <em class="sig-param"><span class="pre">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_get_member_f77" title="Link to this definition"></a></dt>
 <dd><p>Get the value in some field of the parameter structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input) parameters structure.</p></li>
 <li><p><strong>label</strong><em> [</em><em>integer</em><em>]</em> :: (input) field where to get value. One of
@@ -833,20 +741,20 @@ from the main program, use the subroutine <a class="reference internal" href="#f
 the returned <code class="docutils literal notranslate"><span class="pre">value</span></code> is a C pointer (<code class="docutils literal notranslate"><span class="pre">void*</span></code>). Use Fortran pointer or other extensions to deal with it.
 For instance:</p>
 <div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="k">use </span><span class="nb">iso_c_binding</span>
-<span class="n">MPI_Comm</span> <span class="n">comm</span>
+<span class="n">MPI_Comm</span><span class="w"> </span><span class="n">comm</span>
 
-<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI_COMM_WORLD</span>
-<span class="k">call </span><span class="n">primme_set_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="n">comm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MPI_COMM_WORLD</span>
+<span class="k">call </span><span class="n">primme_set_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span><span class="w"> </span><span class="n">PRIMME_commInfo</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">)</span>
 <span class="p">...</span>
 <span class="k">subroutine </span><span class="n">par_GlobalSumDouble</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">primme</span><span class="p">)</span>
 <span class="k">use </span><span class="nb">iso_c_binding</span>
 <span class="k">implicit none</span>
 <span class="p">...</span>
-<span class="n">MPI_Comm</span><span class="p">,</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">comm</span>
-<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pcomm</span>
+<span class="n">MPI_Comm</span><span class="p">,</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">comm</span>
+<span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pcomm</span>
 
-<span class="k">call </span><span class="n">primme_get_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span> <span class="n">PRIMME_commInfo</span><span class="p">,</span> <span class="n">pcomm</span><span class="p">)</span>
-<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+<span class="k">call </span><span class="n">primme_get_member_f77</span><span class="p">(</span><span class="n">primme</span><span class="p">,</span><span class="w"> </span><span class="n">PRIMME_commInfo</span><span class="p">,</span><span class="w"> </span><span class="n">pcomm</span><span class="p">)</span>
+<span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">pcomm</span><span class="p">,</span><span class="w"> </span><span class="n">comm</span><span class="p">)</span>
 <span class="k">call </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">MPI_DOUBLE</span><span class="p">,</span><span class="n">MPI_SUM</span><span class="p">,</span><span class="n">comm</span><span class="p">,</span><span class="n">ierr</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -854,15 +762,15 @@ For instance:</p>
 </div>
 </dd></dl>
 
-</div>
-<div class="section" id="primme-get-prec-shift-f77">
-<h2>primme_get_prec_shift_f77<a class="headerlink" href="#primme-get-prec-shift-f77" title="Permalink to this headline">¶</a></h2>
-<dl class="subroutine">
-<dt id="f/_/primme_get_prec_shift_f77">
-<em class="property">subroutine  </em><code class="sig-name descname">primme_get_prec_shift_f77</code><span class="sig-paren">(</span><em class="sig-param">primme</em>, <em class="sig-param">index</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_get_prec_shift_f77" title="Permalink to this definition">¶</a></dt>
+</section>
+<section id="primme-get-prec-shift-f77">
+<h2>primme_get_prec_shift_f77<a class="headerlink" href="#primme-get-prec-shift-f77" title="Link to this heading"></a></h2>
+<dl>
+<dt class="sig sig-object f" id="f/_/primme_get_prec_shift_f77">
+<em class="property"><span class="pre">subroutine</span>&#160; </em><span class="sig-name descname"><span class="pre">primme_get_prec_shift_f77</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">primme</span></em>, <em class="sig-param"><span class="pre">index</span></em>, <em class="sig-param"><span class="pre">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f/_/primme_get_prec_shift_f77" title="Link to this definition"></a></dt>
 <dd><p>Get the value in some position of the array <a class="reference internal" href="appendix.html#c.primme_params.ShiftsForPreconditioner" title="primme_params.ShiftsForPreconditioner"><code class="xref c c-member docutils literal notranslate"><span class="pre">ShiftsForPreconditioner</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>primme</strong><em> [</em><a class="reference internal" href="#f/_/ptr" title="f/_/ptr"><em>ptr</em></a><em>]</em> :: (input) parameters structure.</p></li>
 <li><p><strong>index</strong><em> [</em><em>integer</em><em>]</em> :: (input) position of the array; the first position is 1.</p></li>
@@ -877,63 +785,38 @@ Otherwise use the subroutine <a class="reference internal" href="#f/_/primmetop_
 </div>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="primmef90.html" class="btn btn-neutral float-right" title="FORTRAN 90 Library Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="primmec.html" class="btn btn-neutral float-left" title="C Library Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="primmec.html" class="btn btn-neutral float-left" title="C Library Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="primmef90.html" class="btn btn-neutral float-right" title="FORTRAN 90 Library Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2020, College of William &amp; Mary
-
-    </p>
+    <p>&#169; Copyright 2024, College of William &amp; Mary.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
