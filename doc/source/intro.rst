@@ -56,6 +56,17 @@ From PRIMME 1.x to 2.0:
 Changelog
 ^^^^^^^^^
 
+Changes in PRIMME 3.2.3 (released on Nov 8, 2024):
+
+* Fixed bug in updating the convergence flags when blockSize>1.
+
+* Added a new GPU interface that does not need MAGMA, supporting CUDA & ROCM
+  (see :c:func:`cublas_dprimme`, :c:func:`cublas_zprimme_normal`, and :c:func:`cublas_dprimme_svds`).
+
+* Fixed compilation issues with several GPU libraries: MAGMA, cu/hipBLAS, cu/hipSPARSE.
+
+* Updated the Python package to support Python 3.6+.
+
 Changes in PRIMME 3.2 (released on Jan 29, 2021):
 
 * Fixed Intel 2021 compiler error ``"Unsupported combination of types for <tgmath.h>."``
@@ -453,20 +464,6 @@ To build an example code using PRIMME make sure:
 
 - to add a reference for PRIMME, BLAS_ and LAPACK_ libraries;
 - to add the directory :file:`include` as an include directory.
-
-Tested Systems
-^^^^^^^^^^^^^^
-
-PRIMME is primary developed with GNU gcc, g++ and gfortran (versions 4.8 and later).
-Many users have reported builds on several other platforms/compilers:
-
-* SUSE 13.1 & 13.2
-* CentOS 6.6
-* Ubuntu 18.04
-* MacOS X 10.9 & 10.10 
-* Cygwin & MinGW
-* Cray XC30
-* FreeBSD 11.2
 
 Main Contributors
 ^^^^^^^^^^^^^^^^^

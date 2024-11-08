@@ -363,9 +363,17 @@ The next enumerations and functions are declared in ``primme.h``.
    The type and precision of the callbacks depends on the type and precision of ``svecs``. Although this can be changed. See details for |SmatrixMatvec|, |SapplyPreconditioner|, |SglobalSumReal|, |SbroadcastReal|, and |SconvTestFun|.
 
 
-`magma_?primme_svds`
-""""""""""""""""""""
+`cublas_?primme_svds` & `magma_?primme_svds`
+""""""""""""""""""""""""""""""""""""""""""""
 
+.. c:function:: int cublas_hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int cublas_hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int cublas_kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int cublas_ksprimme_svds(float *svals, PRIMME_COMPLEX_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int cublas_sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int cublas_cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int cublas_dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
+.. c:function:: int cublas_zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int magma_hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int magma_hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
 .. c:function:: int magma_kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)

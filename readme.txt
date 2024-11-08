@@ -27,8 +27,6 @@ Table Of Contents:
 
   * Making and Linking
 
-  * Tested Systems
-
   * Main Contributors
 
 * Eigenvalue Problems
@@ -145,6 +143,19 @@ From PRIMME 1.x to 2.0:
 
 Changelog
 =========
+
+Changes in PRIMME 3.2.3 (released on Nov 8, 2024):
+
+* Fixed bug in updating the convergence flags when blockSize>1.
+
+* Added a new GPU interface that does not need MAGMA, supporting CUDA
+  & ROCM (see "cublas_dprimme()", "cublas_zprimme_normal()", and
+  "cublas_dprimme_svds()").
+
+* Fixed compilation issues with several GPU libraries: MAGMA,
+  cu/hipBLAS, cu/hipSPARSE.
+
+* Updated the Python package to support Python 3.6+.
 
 Changes in PRIMME 3.2 (released on Jan 29, 2021):
 
@@ -601,28 +612,6 @@ To build an example code using PRIMME make sure:
 * to add the directory "include" as an include directory.
 
 
-Tested Systems
-==============
-
-PRIMME is primary developed with GNU gcc, g++ and gfortran (versions
-4.8 and later). Many users have reported builds on several other
-platforms/compilers:
-
-* SUSE 13.1 & 13.2
-
-* CentOS 6.6
-
-* Ubuntu 18.04
-
-* MacOS X 10.9 & 10.10
-
-* Cygwin & MinGW
-
-* Cray XC30
-
-* FreeBSD 11.2
-
-
 Main Contributors
 =================
 
@@ -862,13 +851,13 @@ int kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorm
 
 int ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)
 
-   New in version 3.0.
+   Added in version 3.0.
 
 int sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
 
 int cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
 
-   New in version 2.0.
+   Added in version 2.0.
 
 int dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
 
@@ -926,8 +915,24 @@ int zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primm
    "globalSumReal", "broadcastReal", and "convTestFun".
 
 
-*magma_?primme*
----------------
+*cublas_?primme* & *magma_?primme*
+----------------------------------
+
+int cublas_hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
+
+int cublas_hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, primme_params *primme)
+
+int cublas_kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
+
+int cublas_sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
+
+int cublas_ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)
+
+int cublas_cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
+
+int cublas_dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
+
+int cublas_zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
 
 int magma_hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
 
@@ -996,7 +1001,7 @@ int magma_zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms,
    "matrixMatvec", "massMatrixMatvec", "applyPreconditioner",
    "globalSumReal", "broadcastReal", and "convTestFun".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 ?primme_normal
@@ -1060,11 +1065,11 @@ int zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *evecs, d
    "matrixMatvec", "applyPreconditioner", "globalSumReal",
    "broadcastReal", and "convTestFun".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
-*magma_?primme_normal*
-----------------------
+*cublas_?primme_normal* & *magma_?primme_normal*
+------------------------------------------------
 
 int magma_kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
 
@@ -1124,7 +1129,7 @@ int magma_zprimme_normal(PRIMME_COMPLEX_DOUBLE *evals, PRIMME_COMPLEX_DOUBLE *ev
    "matrixMatvec", "applyPreconditioner", "globalSumReal",
    "broadcastReal", and "convTestFun".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 primme_initialize
@@ -1184,7 +1189,7 @@ primme_params *primme_params_create(void)
    See the alternative function "primme_initialize()" that only
    initializes the structure.
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 primme_set_method
@@ -1257,7 +1262,7 @@ int primme_params_destroy(primme_params *primme)
    Returns:
       nonzero value if the call is not successful.
 
-   New in version 3.0.
+   Added in version 3.0.
 
 FORTRAN 77 Library Interface
 ****************************
@@ -1365,7 +1370,7 @@ subroutine  sprimme_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 2.0.
+   Added in version 2.0.
 
 
 cprimme_f77
@@ -1401,7 +1406,7 @@ subroutine  cprimme_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 2.0.
+   Added in version 2.0.
 
 
 dprimme_f77
@@ -1524,7 +1529,7 @@ subroutine  magma_sprimme_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 magma_cprimme_f77
@@ -1560,7 +1565,7 @@ subroutine  magma_cprimme_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 magma_dprimme_f77
@@ -1597,7 +1602,7 @@ subroutine  magma_dprimme_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 magma_zprimme_f77
@@ -1634,7 +1639,7 @@ subroutine  magma_zprimme_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 cprimme_normal_f77
@@ -1670,7 +1675,7 @@ subroutine  cprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 zprimme_normal_f77
@@ -1707,7 +1712,7 @@ subroutine  zprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 magma_cprimme_normal_f77
@@ -1744,7 +1749,7 @@ subroutine  magma_cprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 magma_zprimme_normal_f77
@@ -1782,7 +1787,7 @@ subroutine  magma_zprimme_normal_f77(evals, evecs, resNorms, primme, ierr)
    Further descriptions of *evals*, *evecs*, and *resNorms* on notes
    in subroutine "dprimme_f77()".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 primme_set_member_f77
@@ -2060,7 +2065,7 @@ subroutine  primme_get_prec_shift_f77(primme, index, value)
 FORTRAN 90 Library Interface
 ****************************
 
-New in version 3.0.
+Added in version 3.0.
 
 The next enumerations and functions are declared in "primme_f90.inc".
 
@@ -2553,28 +2558,28 @@ type PRIMME_HALF
    compiler. Otherwise it is a struct with the same size as "int
    short".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 type PRIMME_COMPLEX_HALF
 
    Macro that is a struct with fields "r" and "i" with type
    "PRIMME_HALF".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 type PRIMME_COMPLEX_FLOAT
 
    Macro that is "complex float" in C and "std::complex<float>" in
    C++.
 
-   New in version 2.0.
+   Added in version 2.0.
 
 type PRIMME_COMPLEX_DOUBLE
 
    Macro that is "complex double" in C and "std::complex<double>" in
    C++.
 
-   New in version 2.0.
+   Added in version 2.0.
 
 
 Other macros
@@ -2586,7 +2591,7 @@ PRIMME_VERSION_MAJOR
 
    For instance, the value of the macro is "3" for version 3.0.
 
-   New in version 3.0.
+   Added in version 3.0.
 
 PRIMME_VERSION_MINOR
 
@@ -2594,7 +2599,7 @@ PRIMME_VERSION_MINOR
 
    For instance, the value of the macro is "0" for version 3.0.
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 primme_params
@@ -2618,23 +2623,29 @@ type primme_params
       Block matrix-multivector multiplication, y = A x in solving A x
       = \lambda x or A x = \lambda B x.
 
-      Parameters:
-         * **x** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldx".
+      Param x:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldx".
 
-         * **ldx** – the leading dimension of the array "x".
+      Param ldx:
+         the leading dimension of the array "x".
 
-         * **y** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldy".
+      Param y:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldy".
 
-         * **ldy** – the leading dimension of the array "y".
+      Param ldy:
+         the leading dimension of the array "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "x" and "y" matches the type of "evecs" of
       the calling  "dprimme()" (or a variant), unless the user sets
@@ -2676,7 +2687,7 @@ type primme_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void (*applyPreconditioner)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
@@ -2684,23 +2695,29 @@ type primme_params
       M is usually an approximation of A - \sigma I or A - \sigma B
       for finding eigenvalues close to \sigma.
 
-      Parameters:
-         * **x** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldx".
+      Param x:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldx".
 
-         * **ldx** – the leading dimension of the array "x".
+      Param ldx:
+         the leading dimension of the array "x".
 
-         * **y** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldy".
+      Param y:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldy".
 
-         * **ldy** – the leading dimension of the array "y".
+      Param ldy:
+         the leading dimension of the array "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "x" and "y" matches the type of "evecs" of
       the calling  "dprimme()" (or a variant), unless the user sets
@@ -2733,7 +2750,7 @@ type primme_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void (*massMatrixMatvec)(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr)
 
@@ -2741,23 +2758,29 @@ type primme_params
       = \lambda B x. If it is NULL, the standard eigenvalue problem A
       x = \lambda x is solved.
 
-      Parameters:
-         * **x** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldx".
+      Param x:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldx".
 
-         * **ldx** – the leading dimension of the array "x".
+      Param ldx:
+         the leading dimension of the array "x".
 
-         * **y** – matrix of size "nLocal" x "blockSize" in column-
-           major order with leading dimension "ldy".
+      Param y:
+         matrix of size "nLocal" x "blockSize" in column-major order
+         with leading dimension "ldy".
 
-         * **ldy** – the leading dimension of the array "y".
+      Param ldy:
+         the leading dimension of the array "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "x" and "y" matches the type of "evecs" of
       the calling  "dprimme()" (or a variant), unless the user sets
@@ -2795,7 +2818,7 @@ type primme_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    int numProcs
 
@@ -2847,20 +2870,23 @@ type primme_params
       Global sum reduction function. No need to set for sequential
       programs.
 
-      Parameters:
-         * **sendBuf** – array of size "count" with the local input
-           values.
+      Param sendBuf:
+         array of size "count" with the local input values.
 
-         * **recvBuf** – array of size "count" with the global output
-           values so that the i-th element of recvBuf is the sum over
-           all processes of the i-th element of "sendBuf".
+      Param recvBuf:
+         array of size "count" with the global output values so that
+         the i-th element of recvBuf is the sum over all processes of
+         the i-th element of "sendBuf".
 
-         * **count** – array size of "sendBuf" and "recvBuf".
+      Param count:
+         array size of "sendBuf" and "recvBuf".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "sendBuf" and "recvBuf" matches the type of
       "evecs" of the calling  "dprimme()" (or a variant), unless the
@@ -2919,23 +2945,25 @@ type primme_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void (*broadcastReal)(void *buffer, int *count, primme_params *primme, int *ierr)
 
       Broadcast function from process with ID zero. It is optional in
       parallel executions, and not needed for sequential programs.
 
-      Parameters:
-         * **buffer** – array of size "count" with the local input
-           values.
+      Param buffer:
+         array of size "count" with the local input values.
 
-         * **count** – array size of "sendBuf" and "recvBuf".
+      Param count:
+         array size of "sendBuf" and "recvBuf".
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "buffer" matches the type of "evecs" of the
       calling  "dprimme()" (or a variant), unless the user sets
@@ -2966,7 +2994,7 @@ type primme_params
       When calling "sprimme()" and "cprimme()" replace "MPI_DOUBLE" by
       "`MPI_FLOAT".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    primme_op_datatype broadcastReal_type
 
@@ -2992,7 +3020,7 @@ type primme_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    primme_op_datatype internalPrecision
 
@@ -3010,7 +3038,7 @@ type primme_params
             "primme_initialize()" sets this field to "primme_op_default";
             this field is read by "dprimme()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    int numEvals
 
@@ -3197,7 +3225,7 @@ type primme_params
             "primme_initialize()" sets this field to 0.0;
             this field is read and written by "dprimme()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double invBNorm
 
@@ -3213,7 +3241,7 @@ type primme_params
             "primme_initialize()" sets this field to 0.0;
             this field is read and written by "dprimme()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    primme_orth orth
 
@@ -3245,7 +3273,7 @@ type primme_params
             "primme_initialize()" sets this field to "primme_orth_default";
             this field is read and written by "dprimme()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double eps
 
@@ -3341,7 +3369,7 @@ type primme_params
             "primme_initialize()" sets this field to -1;
             this field is read by "dprimme()".
 
-      New in version 2.0.
+      Added in version 2.0.
 
    int numOrthoConst
 
@@ -3460,7 +3488,7 @@ type primme_params
 
             "primme_initialize()" sets this field to NULL;
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void *preconditioner
 
@@ -3506,7 +3534,7 @@ type primme_params
             "primme_initialize()" sets this field to "primme_init_krylov";
             this field is read by "dprimme()".
 
-      New in version 2.0.
+      Added in version 2.0.
 
    primme_projection projectionParams.projection
 
@@ -3738,7 +3766,7 @@ type primme_params
             "primme_initialize()" sets this field to -1;
             this field is read by "dprimme()".
 
-      New in version 2.0.
+      Added in version 2.0.
 
    void (*monitorFun)(void *basisEvals, int *basisSize, int *basisFlags, int *iblock, int *blockSize, void *basisNorms, int *numConverged, void *lockedEvals, int *numLocked, int *lockedFlags, void *lockedNorms, int *inner_its, void *LSRes, const char *msg, double *time, primme_event *event, struct primme_params *primme, int *ierr)
 
@@ -3747,57 +3775,68 @@ type primme_params
       unconverged and converged eigenvalues, residual norms, targets,
       etc).
 
-      Parameters:
-         * **basisEvals** – array with approximate eigenvalues of the
-           basis.
+      Param basisEvals:
+         array with approximate eigenvalues of the basis.
 
-         * **basisSize** – size of the arrays, "basisEvals",
-           "basisFlags" and "basisNorms".
+      Param basisSize:
+         size of the arrays, "basisEvals", "basisFlags" and
+         "basisNorms".
 
-         * **basisFlags** – state of every approximate pair in the
-           basis.
+      Param basisFlags:
+         state of every approximate pair in the basis.
 
-         * **iblock** – indices of the approximate pairs in the block
-           targeted during current iteration.
+      Param iblock:
+         indices of the approximate pairs in the block targeted during
+         current iteration.
 
-         * **blockSize** – size of array "iblock".
+      Param blockSize:
+         size of array "iblock".
 
-         * **basisNorms** – array with residual norms of the pairs in
-           the basis.
+      Param basisNorms:
+         array with residual norms of the pairs in the basis.
 
-         * **numConverged** – number of pairs converged in the basis
-           plus the number of the locked pairs (note that this value
-           isn’t monotonic).
+      Param numConverged:
+         number of pairs converged in the basis plus the number of the
+         locked pairs (note that this value isn’t monotonic).
 
-         * **lockedEvals** – array with the locked eigenvalues.
+      Param lockedEvals:
+         array with the locked eigenvalues.
 
-         * **numLocked** – size of the arrays "lockedEvals",
-           "lockedFlags" and "lockedNorms".
+      Param numLocked:
+         size of the arrays "lockedEvals", "lockedFlags" and
+         "lockedNorms".
 
-         * **lockedFlags** – state of each locked eigenpair.
+      Param lockedFlags:
+         state of each locked eigenpair.
 
-         * **lockedNorms** – array with the residual norms of the
-           locked pairs.
+      Param lockedNorms:
+         array with the residual norms of the locked pairs.
 
-         * **inner_its** – number of performed QMR iterations in the
-           current correction equation. It resets for each block
-           vector.
+      Param inner_its:
+         number of performed QMR iterations in the current correction
+         equation. It resets for each block vector.
 
-         * **LSRes** – residual norm of the linear system at the
-           current QMR iteration.
+      Param LSRes:
+         residual norm of the linear system at the current QMR
+         iteration.
 
-         * **msg** – output message or function name.
+      Param msg:
+         output message or function name.
 
-         * **time** – time duration.
+      Param time:
+         time duration.
 
-         * **event** – event reported.
+      Param event:
+         event reported.
 
-         * **primme** – parameters structure; the counter in "stats"
-           are updated with the current number of matrix-vector
-           products, iterations, elapsed time, etc., since start.
+      Param primme:
+         parameters structure; the counter in "stats" are updated with
+         the current number of matrix-vector products, iterations,
+         elapsed time, etc., since start.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       This function is called at the following events:
 
@@ -3906,7 +3945,7 @@ type primme_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void *monitor
 
@@ -3917,7 +3956,7 @@ type primme_params
 
             "primme_initialize()" sets this field to NULL;
 
-      New in version 2.0.
+      Added in version 2.0.
 
    PRIMME_INT stats.numOuterIterations
 
@@ -3990,7 +4029,7 @@ type primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.volumeBroadcast
 
@@ -4002,7 +4041,7 @@ type primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    PRIMME_INT stats.numOrthoInnerProds
 
@@ -4015,7 +4054,7 @@ type primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.elapsedTime
 
@@ -4077,7 +4116,7 @@ type primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.estimateMinEVal
 
@@ -4134,7 +4173,7 @@ type primme_params
             "primme_initialize()" sets this field to 0;
             written by "dprimme()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void (*convTestFun)(double *eval, void *evec, double *resNorm, int *isconv, primme_params *primme, int *ierr)
 
@@ -4142,21 +4181,26 @@ type primme_params
       converged. If NULL, it is used the default convergence criteria
       (see "eps").
 
-      Parameters:
-         * **eval** – the approximate value to evaluate.
+      Param eval:
+         the approximate value to evaluate.
 
-         * **evec** – one dimensional array of size "nLocal"
-           containing the approximate vector; it can be NULL.
+      Param evec:
+         one dimensional array of size "nLocal" containing the
+         approximate vector; it can be NULL.
 
-         * **resNorm** – the norm of the residual vector.
+      Param resNorm:
+         the norm of the residual vector.
 
-         * **isconv** – (output) the function sets zero if the pair is
-           not converged and non zero otherwise.
+      Param isconv:
+         (output) the function sets zero if the pair is not converged
+         and non zero otherwise.
 
-         * **primme** – parameters structure.
+      Param primme:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "evec" matches the type of "evecs" of the
       calling  "dprimme()" (or a variant), unless the user sets
@@ -4167,7 +4211,7 @@ type primme_params
             "primme_initialize()" sets this field to NULL;
             this field is read by "dprimme()".
 
-      New in version 2.0.
+      Added in version 2.0.
 
    primme_op_datatype convTestFun_type
 
@@ -4185,7 +4229,7 @@ type primme_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void *convtest
 
@@ -4196,7 +4240,7 @@ type primme_params
 
             "primme_initialize()" sets this field to NULL;
 
-      New in version 2.0.
+      Added in version 2.0.
 
    void *queue
 
@@ -4212,7 +4256,7 @@ type primme_params
             "primme_initialize()" sets this field to NULL;
             this field is read by "dprimme_magma()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
 
 Preset Methods
@@ -4639,7 +4683,8 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
 
       * **ncv** (*int**, **optional*) – The maximum size of the basis
 
-      * **which** (*str** [**'LM' | 'SM' | 'LA' | 'SA' | number**]*) –
+      * **which** (*str** [**'LM'** | **'SM'** | **'LA'** | **'SA'** |
+        **number**]*) –
 
         Which *k* eigenvectors and eigenvalues to find:
 
@@ -4686,8 +4731,8 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
       * **return_eigenvectors** (*bool**, **optional*) – Return
         eigenvectors (True) in addition to eigenvalues
 
-      * **mode** (*string** [**'normal' | 'buckling' | 'cayley'**]*) –
-        Only ‘normal’ mode is supported.
+      * **mode** (*string** [**'normal'** | **'buckling'** |
+        **'cayley'**]*) – Only ‘normal’ mode is supported.
 
       * **lock** (*N x i**, **ndarray**, **optional*) – Seek the
         eigenvectors orthogonal to these ones. The provided vectors
@@ -4791,11 +4836,11 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
 
    See also:
 
-     "scipy.sparse.linalg.eigs()"
+     "scipy.sparse.linalg.eigs"
         eigenvalues and eigenvectors for a general (nonsymmetric)
         matrix A
 
-     "primme.svds()"
+     "primme.svds"
         singular value decomposition for a matrix A
 
    -[ Notes ]-
@@ -5145,7 +5190,7 @@ Singular Value Problems
 C Library Interface
 *******************
 
-New in version 2.0.
+Added in version 2.0.
 
 The PRIMME SVDS interface is composed of the following functions. To
 solve real and complex singular value problems call respectively:
@@ -5330,13 +5375,13 @@ int kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *re
 
 int ksprimme_svds(float *svals, PRIMME_COMPLEX_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
 
-   New in version 3.0.
+   Added in version 3.0.
 
 int sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
 
 int cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
 
-   New in version 2.0.
+   Added in version 2.0.
 
 int dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
 
@@ -5390,8 +5435,24 @@ int zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, 
    "broadcastReal", and "convTestFun".
 
 
-*magma_?primme_svds*
---------------------
+*cublas_?primme_svds* & *magma_?primme_svds*
+--------------------------------------------
+
+int cublas_hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+
+int cublas_hsprimme_svds(float *svals, PRIMME_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+int cublas_kprimme_svds(PRIMME_HALF *svals, PRIMME_COMPLEX_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
+
+int cublas_ksprimme_svds(float *svals, PRIMME_COMPLEX_HALF *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+int cublas_sprimme_svds(float *svals, float *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+int cublas_cprimme_svds(float *svals, PRIMME_COMPLEX_FLOAT *svecs, float *resNorms, primme_svds_params *primme_svds)
+
+int cublas_dprimme_svds(double *svals, double *svecs, double *resNorms, primme_svds_params *primme_svds)
+
+int cublas_zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resNorms, primme_svds_params *primme_svds)
 
 int magma_hprimme_svds(PRIMME_HALF *svals, PRIMME_HALF *svecs, PRIMME_HALF *resNorms, primme_svds_params *primme_svds)
 
@@ -5456,7 +5517,7 @@ int magma_zprimme_svds(double *svals, PRIMME_COMPLEX_DOUBLE *svecs, double *resN
    "matrixMatvec", "applyPreconditioner", "globalSumReal",
    "broadcastReal", and "convTestFun".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 primme_svds_initialize
@@ -5517,7 +5578,7 @@ primme_svds_params *primme_svds_params_create(void)
    See the alternative function "primme_svds_initialize()" that only
    initializes the structure.
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 primme_svds_set_method
@@ -5598,12 +5659,12 @@ int primme_svds_params_destroy(primme_svds_params *primme)
    Returns:
       nonzero value if the call is not successful.
 
-   New in version 3.0.
+   Added in version 3.0.
 
 FORTRAN Library Interface
 *************************
 
-New in version 2.0.
+Added in version 2.0.
 
 The next enumerations and functions are declared in
 "primme_svds_f77.h".
@@ -5860,7 +5921,7 @@ subroutine  magma_sprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
    "applyPreconditioner", "globalSumReal", "broadcastReal", and
    "convTestFun".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 magma_cprimme_svds_f77
@@ -5912,7 +5973,7 @@ subroutine  magma_cprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
    "applyPreconditioner", "globalSumReal", "broadcastReal", and
    "convTestFun".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 magma_dprimme_svds_f77
@@ -5965,7 +6026,7 @@ subroutine  magma_dprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
    "applyPreconditioner", "globalSumReal", "broadcastReal", and
    "convTestFun".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 magma_zprimme_svds_f77
@@ -6018,7 +6079,7 @@ subroutine  magma_zprimme_svds_f77(svals, svecs, resNorms, primme_svds, ierr)
    "applyPreconditioner", "globalSumReal", "broadcastReal", and
    "convTestFun".
 
-   New in version 3.0.
+   Added in version 3.0.
 
 
 primme_svds_initialize_f77
@@ -6297,7 +6358,7 @@ subroutine  primme_svds_get_member_f77(primme_svds, label, value, ierr)
 FORTRAN 90 Library Interface
 ****************************
 
-New in version 3.0.
+Added in version 3.0.
 
 The next enumerations and functions are declared in "primme_f90.inc".
 
@@ -6712,24 +6773,30 @@ type primme_svds_params
       Block matrix-multivector multiplication, y = A x if "transpose"
       is zero, and y = A^*x otherwise.
 
-      Parameters:
-         * **x** – input array.
+      Param x:
+         input array.
 
-         * **ldx** – leading dimension of "x".
+      Param ldx:
+         leading dimension of "x".
 
-         * **y** – output array.
+      Param y:
+         output array.
 
-         * **ldy** – leading dimension of "y".
+      Param ldy:
+         leading dimension of "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **transpose** – if non-zero, the transpose A should be
-           applied.
+      Param transpose:
+         if non-zero, the transpose A should be applied.
 
-         * **primme_svds** – parameters structure.
+      Param primme_svds:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       If "transpose" is zero, then "x" and "y" are arrays of
       dimensions "nLocal" x "blockSize" and "mLocal" x "blockSize"
@@ -6769,7 +6836,7 @@ type primme_svds_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void (*applyPreconditioner)(void *x, PRIMME_INT ldx, void *y, PRIMME_INT ldy, int *blockSize, int *mode, primme_svds_params *primme_svds, int *ierr)
 
@@ -6784,24 +6851,31 @@ type primme_svds_params
       * "primme_svds_op_augmented": M \approx \left(\begin{array}{cc}
         0 & A^* \\ A & 0 \end{array}\right) - \sigma I.
 
-      Parameters:
-         * **x** – input array.
+      Param x:
+         input array.
 
-         * **ldx** – leading dimension of "x".
+      Param ldx:
+         leading dimension of "x".
 
-         * **y** – output array.
+      Param y:
+         output array.
 
-         * **ldy** – leading dimension of "y".
+      Param ldy:
+         leading dimension of "y".
 
-         * **blockSize** – number of columns in "x" and "y".
+      Param blockSize:
+         number of columns in "x" and "y".
 
-         * **mode** – one of "primme_svds_op_AtA",
-           "primme_svds_op_AAt" or "primme_svds_op_augmented".
+      Param mode:
+         one of "primme_svds_op_AtA", "primme_svds_op_AAt" or
+         "primme_svds_op_augmented".
 
-         * **primme_svds** – parameters structure.
+      Param primme_svds:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       If "mode" is "primme_svds_op_AtA", then "x" and "y" are arrays
       of dimensions "nLocal" x "blockSize"; if mode is
@@ -6837,7 +6911,7 @@ type primme_svds_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    int numProcs
 
@@ -6904,20 +6978,23 @@ type primme_svds_params
       Global sum reduction function. No need to set for sequential
       programs.
 
-      Parameters:
-         * **sendBuf** – array of size "count" with the local input
-           values.
+      Param sendBuf:
+         array of size "count" with the local input values.
 
-         * **recvBuf** – array of size "count" with the global output
-           values so that the i-th element of recvBuf is the sum over
-           all processes of the i-th element of "sendBuf".
+      Param recvBuf:
+         array of size "count" with the global output values so that
+         the i-th element of recvBuf is the sum over all processes of
+         the i-th element of "sendBuf".
 
-         * **count** – array size of "sendBuf" and "recvBuf".
+      Param count:
+         array size of "sendBuf" and "recvBuf".
 
-         * **primme_svds** – parameters structure.
+      Param primme_svds:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "sendBuf" and "recvBuf" depends on which
       function is being calling. For "dprimme_svds()" and
@@ -6964,23 +7041,25 @@ type primme_svds_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void (*broadcastReal)(void *buffer, int *count, primme_svds_params *primme_svds, int *ierr)
 
       Broadcast function from process with ID zero. It is optional in
       parallel executions, and not needed for sequential programs.
 
-      Parameters:
-         * **buffer** – array of size "count" with the local input
-           values.
+      Param buffer:
+         array of size "count" with the local input values.
 
-         * **count** – array size of "sendBuf" and "recvBuf".
+      Param count:
+         array size of "sendBuf" and "recvBuf".
 
-         * **primme_svds** – parameters structure.
+      Param primme_svds:
+         parameters structure.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "buffer" matches the type of "svecs" of the
       calling  "dprimme_svds()" (or a variant), unless
@@ -7008,7 +7087,7 @@ type primme_svds_params
       When calling "sprimme_svds()" and "cprimme_svds()" replace
       "MPI_DOUBLE" by "`MPI_FLOAT".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    int numSvals
 
@@ -7035,7 +7114,7 @@ type primme_svds_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    primme_op_datatype internalPrecision
 
@@ -7053,7 +7132,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to "primme_op_default";
             this field is read by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    primme_svds_target target
 
@@ -7401,32 +7480,40 @@ type primme_svds_params
             this field is read and written by "primme_svds_set_method()" (see Preset Methods);
             this field is read and written by "dprimme_svds()" and "zprimme_svds()".
 
-   void (*convTestFun)(double *sval, void *leftsvec, void *rightsvec, double *rNorm, int *isconv, primme_svds_params *primme_svds, int *ierr)
+   void (*convTestFun)(double *sval, void *leftsvec, void *rightsvec, double *rNorm, int *method, int *isconv, primme_svds_params *primme_svds, int *ierr)
 
       Function that evaluates if the approximate triplet has
       converged. If NULL, it is used the default convergence criteria
       (see "eps").
 
-      Parameters:
-         * **sval** – the approximate singular value to evaluate.
+      Param sval:
+         the approximate singular value to evaluate.
 
-         * **leftsvec** – one dimensional array of size "mLocal"
-           containing the approximate left singular vector; it can be
-           NULL.
+      Param leftsvec:
+         one dimensional array of size "mLocal" containing the
+         approximate left singular vector; it can be NULL.
 
-         * **rightsvec** – one dimensional array of size "nLocal"
-           containing the approximate right singular vector; it can be
-           NULL.
+      Param rightsvec:
+         one dimensional array of size "nLocal" containing the
+         approximate right singular vector; it can be NULL.
 
-         * **resNorm** – the norm of the residual vector.
+      Param rNorm:
+         the norm of the residual vector.
 
-         * **isconv** – (output) the function sets zero if the pair is
-           not converged and non zero otherwise.
+      Param method:
+         current eigenvalue problem being solved, either,
+         "primme_svds_normalequations" or  "primme_svds_augmented".
 
-         * **primme_svds** – parameters structure.
+      Param isconv:
+         (output) the function sets zero if the pair is not converged
+         and non zero otherwise.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param primme_svds:
+         parameters structure.
+
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       The actual type of "leftsvec" and "rightsvec" matches the type
       of "svecs" of the calling  "dprimme_svds()" (or a variant),
@@ -7462,7 +7549,7 @@ type primme_svds_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void *convtest
 
@@ -7479,59 +7566,70 @@ type primme_svds_params
       information during execution (stage, iteration number, matvecs,
       time, residual norms, targets, etc).
 
-      Parameters:
-         * **basisSvals** – array with approximate singular values of
-           the basis.
+      Param basisSvals:
+         array with approximate singular values of the basis.
 
-         * **basisSize** – size of the arrays "basisSvals",
-           "basisFlags" and "basisNorms".
+      Param basisSize:
+         size of the arrays "basisSvals", "basisFlags" and
+         "basisNorms".
 
-         * **basisFlags** – state of every approximate triplet in the
-           basis.
+      Param basisFlags:
+         state of every approximate triplet in the basis.
 
-         * **iblock** – indices of the approximate triplet in the
-           block.
+      Param iblock:
+         indices of the approximate triplet in the block.
 
-         * **blockSize** – size of array "iblock".
+      Param blockSize:
+         size of array "iblock".
 
-         * **basisNorms** – array with residual norms of the triplets
-           in the basis.
+      Param basisNorms:
+         array with residual norms of the triplets in the basis.
 
-         * **numConverged** – number of triplets converged in the
-           basis plus the number of the locked triplets (note that
-           this value isn’t monotonic).
+      Param numConverged:
+         number of triplets converged in the basis plus the number of
+         the locked triplets (note that this value isn’t monotonic).
 
-         * **lockedSvals** – array with the locked triplets.
+      Param lockedSvals:
+         array with the locked triplets.
 
-         * **numLocked** – size of the arrays "lockedSvals",
-           "lockedFlags" and "lockedNorms".
+      Param numLocked:
+         size of the arrays "lockedSvals", "lockedFlags" and
+         "lockedNorms".
 
-         * **lockedFlags** – state of each locked triplets.
+      Param lockedFlags:
+         state of each locked triplets.
 
-         * **lockedNorms** – array with residual norms of the locked
-           triplets.
+      Param lockedNorms:
+         array with residual norms of the locked triplets.
 
-         * **inner_its** – number of performed QMR iterations in the
-           current correction equation.
+      Param inner_its:
+         number of performed QMR iterations in the current correction
+         equation.
 
-         * **LSRes** – residual norm of the linear system at the
-           current QMR iteration.
+      Param LSRes:
+         residual norm of the linear system at the current QMR
+         iteration.
 
-         * **msg** – output message or function name.
+      Param msg:
+         output message or function name.
 
-         * **time** – time duration.
+      Param time:
+         time duration.
 
-         * **event** – event reported.
+      Param event:
+         event reported.
 
-         * **stage** – "0" for first stage, "1" for second stage.
+      Param stage:
+         "0" for first stage, "1" for second stage.
 
-         * **primme_svds** – parameters structure; the counter in
-           "stats" are updated with the current number of matrix-
-           vector products, iterations, elapsed time, etc., since
-           start.
+      Param primme_svds:
+         parameters structure; the counter in "stats" are updated with
+         the current number of matrix-vector products, iterations,
+         elapsed time, etc., since start.
 
-         * **ierr** – output error code; if it is set to non-zero, the
-           current call to PRIMME will stop.
+      Param ierr:
+         output error code; if it is set to non-zero, the current call
+         to PRIMME will stop.
 
       This function is called at the next events:
 
@@ -7639,7 +7737,7 @@ type primme_svds_params
             "primme_op_default" it is set to the value that matches the precision of
             calling function.
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void *monitor
 
@@ -7698,7 +7796,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.volumeGlobalSum
 
@@ -7710,7 +7808,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    PRIMME_INT stats.numBroadcast
 
@@ -7722,7 +7820,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.volumeBroadcast
 
@@ -7734,7 +7832,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    PRIMME_INT stats.numOrthoInnerProds
 
@@ -7747,7 +7845,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.elapsedTime
 
@@ -7769,7 +7867,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.timePrecond
 
@@ -7781,7 +7879,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.timeOrtho
 
@@ -7793,7 +7891,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.timeGlobalSum
 
@@ -7805,7 +7903,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    double stats.timeBroadcast
 
@@ -7817,7 +7915,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    PRIMME_INT stats.lockingIssue
 
@@ -7829,7 +7927,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to 0;
             written by "dprimme_svds()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
    void *queue
 
@@ -7845,7 +7943,7 @@ type primme_svds_params
             "primme_svds_initialize()" sets this field to NULL;
             this field is read by "dprimme_svds_magma()".
 
-      New in version 3.0.
+      Added in version 3.0.
 
 
 Preset Methods
@@ -8009,7 +8107,7 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
 
         The value is ignored if convtest is provided.
 
-      * **which** (*str** [**'LM' | 'SM'**] or **number**,
+      * **which** (*str** [**'LM'** | **'SM'**] or **number**,
         **optional*) –
 
         Which *k* singular values to find:
@@ -8149,11 +8247,11 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
 
    See also:
 
-     "primme.eigsh()"
+     "primme.eigsh"
         eigenvalue decomposition for a sparse symmetrix/complex
         Hermitian matrix A
 
-     "scipy.sparse.linalg.eigs()"
+     "scipy.sparse.linalg.eigs"
         eigenvalues and eigenvectors for a general (nonsymmetric)
         matrix A
 
