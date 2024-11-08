@@ -1362,4 +1362,376 @@ void monitor_stage2magma_zprimme(void *basisEvals_, int *basisSize, int *basisFl
       void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
       int *inner_its, void *LSRes_, const char *msg, double *time,
       primme_event *event, primme_params *primme, int *err);
+int Xprimme_svds_auxcublas_hprimme(void *svals, dummy_type_hprimme *svecs, void *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_cublas_hprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
+int comp_doublecublas_hprimme(const void *a, const void *b);
+int copy_last_params_from_svdscublas_hprimme(int stage, dummy_type_sprimme *svals, dummy_type_cublas_hprimme *svecs,
+      dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_cublas_hprimme **out_svecs, primme_context ctx);
+int copy_last_params_to_svdscublas_hprimme(int stage, dummy_type_sprimme *svals, dummy_type_cublas_hprimme *svecs,
+      dummy_type_sprimme *rnorms, int allocatedTargetShifts,
+      primme_context ctx);
+int primme_svds_check_inputcublas_hprimme(void *svals, void *svecs, void *resNorms,
+      primme_svds_params *primme_svds);
+int matrixMatvecSVDS_cublas_hprimme(dummy_type_cublas_hprimme *V, PRIMME_INT ldV, dummy_type_cublas_hprimme *W, PRIMME_INT ldW,
+      int basisSize, int blockSize, int conj, primme_context ctx);
+int convTestFunSVDS_cublas_hprimme(dummy_type_sprimme sval, dummy_type_cublas_hprimme *leftsvec, int givenLeftSvec,
+      dummy_type_cublas_hprimme *rightsvec, int givenRightSvec, dummy_type_sprimme rNorm, int method,
+      int *isconv, primme_context ctx);
+int monitorFunSVDS_cublas_hprimme(dummy_type_sprimme *basisSvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedSvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, int stage, double startTime, primme_context ctx);
+void matrixMatvec_eigs_cublas_hprimme(void *x_, PRIMME_INT *ldx, void *y_,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void applyPreconditioner_eigs_cublas_hprimme(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+int Num_scalInv_Smatrixcublas_hprimme(dummy_type_cublas_hprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
+      dummy_type_sprimme *factors, primme_context ctx);
+int globalSum_Rprimme_svdscublas_hprimme(
+      dummy_type_sprimme *sendBuf, dummy_type_sprimme *recvBuf, int count, primme_context ctx);
+int compute_resNormcublas_hprimme(dummy_type_cublas_hprimme *leftsvec, dummy_type_cublas_hprimme *rightsvec, dummy_type_sprimme *rNorm,
+      primme_context ctx);
+void default_convTestFuncublas_hprimme(double *sval, void *leftsvec_, void *rightsvec_,
+      double *rNorm, int *method, int *isConv, primme_svds_params *primme_svds,
+      int *ierr);
+void convTestFunATAcublas_hprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void convTestFunAugcublas_hprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void default_monitor_svdscublas_hprimme(void *basisSvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, int *stage, primme_svds_params *primme_svds,
+      int *err);
+void monitor_single_stagecublas_hprimme(void *basisEvals_, int *basisSize,
+      int *basisFlags, int *iblock, int *blockSize, void *basisNorms_,
+      int *numConverged, void *lockedEvals_, int *numLocked, int *lockedFlags,
+      void *lockedNorms_, int *inner_its, void *LSRes_, const char *msg,
+      double *time, primme_event *event, primme_params *primme, int *err);
+void monitor_stage1cublas_hprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+void monitor_stage2cublas_hprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int Xprimme_svds_auxcublas_kprimme(void *svals, dummy_type_kprimme *svecs, void *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_cublas_kprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
+int comp_doublecublas_kprimme(const void *a, const void *b);
+int copy_last_params_from_svdscublas_kprimme(int stage, dummy_type_sprimme *svals, dummy_type_cublas_kprimme *svecs,
+      dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_cublas_kprimme **out_svecs, primme_context ctx);
+int copy_last_params_to_svdscublas_kprimme(int stage, dummy_type_sprimme *svals, dummy_type_cublas_kprimme *svecs,
+      dummy_type_sprimme *rnorms, int allocatedTargetShifts,
+      primme_context ctx);
+int primme_svds_check_inputcublas_kprimme(void *svals, void *svecs, void *resNorms,
+      primme_svds_params *primme_svds);
+int matrixMatvecSVDS_cublas_kprimme(dummy_type_cublas_kprimme *V, PRIMME_INT ldV, dummy_type_cublas_kprimme *W, PRIMME_INT ldW,
+      int basisSize, int blockSize, int conj, primme_context ctx);
+int convTestFunSVDS_cublas_kprimme(dummy_type_sprimme sval, dummy_type_cublas_kprimme *leftsvec, int givenLeftSvec,
+      dummy_type_cublas_kprimme *rightsvec, int givenRightSvec, dummy_type_sprimme rNorm, int method,
+      int *isconv, primme_context ctx);
+int monitorFunSVDS_cublas_kprimme(dummy_type_sprimme *basisSvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedSvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, int stage, double startTime, primme_context ctx);
+void matrixMatvec_eigs_cublas_kprimme(void *x_, PRIMME_INT *ldx, void *y_,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void applyPreconditioner_eigs_cublas_kprimme(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+int Num_scalInv_Smatrixcublas_kprimme(dummy_type_cublas_kprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
+      dummy_type_sprimme *factors, primme_context ctx);
+int globalSum_Rprimme_svdscublas_kprimme(
+      dummy_type_sprimme *sendBuf, dummy_type_sprimme *recvBuf, int count, primme_context ctx);
+int compute_resNormcublas_kprimme(dummy_type_cublas_kprimme *leftsvec, dummy_type_cublas_kprimme *rightsvec, dummy_type_sprimme *rNorm,
+      primme_context ctx);
+void default_convTestFuncublas_kprimme(double *sval, void *leftsvec_, void *rightsvec_,
+      double *rNorm, int *method, int *isConv, primme_svds_params *primme_svds,
+      int *ierr);
+void convTestFunATAcublas_kprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void convTestFunAugcublas_kprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void default_monitor_svdscublas_kprimme(void *basisSvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, int *stage, primme_svds_params *primme_svds,
+      int *err);
+void monitor_single_stagecublas_kprimme(void *basisEvals_, int *basisSize,
+      int *basisFlags, int *iblock, int *blockSize, void *basisNorms_,
+      int *numConverged, void *lockedEvals_, int *numLocked, int *lockedFlags,
+      void *lockedNorms_, int *inner_its, void *LSRes_, const char *msg,
+      double *time, primme_event *event, primme_params *primme, int *err);
+void monitor_stage1cublas_kprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+void monitor_stage2cublas_kprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int Xprimme_svds_auxcublas_sprimme(void *svals, dummy_type_sprimme *svecs, void *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_cublas_sprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
+int comp_doublecublas_sprimme(const void *a, const void *b);
+int copy_last_params_from_svdscublas_sprimme(int stage, dummy_type_sprimme *svals, dummy_type_cublas_sprimme *svecs,
+      dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_cublas_sprimme **out_svecs, primme_context ctx);
+int copy_last_params_to_svdscublas_sprimme(int stage, dummy_type_sprimme *svals, dummy_type_cublas_sprimme *svecs,
+      dummy_type_sprimme *rnorms, int allocatedTargetShifts,
+      primme_context ctx);
+int primme_svds_check_inputcublas_sprimme(void *svals, void *svecs, void *resNorms,
+      primme_svds_params *primme_svds);
+int matrixMatvecSVDS_cublas_sprimme(dummy_type_cublas_sprimme *V, PRIMME_INT ldV, dummy_type_cublas_sprimme *W, PRIMME_INT ldW,
+      int basisSize, int blockSize, int conj, primme_context ctx);
+int convTestFunSVDS_cublas_sprimme(dummy_type_sprimme sval, dummy_type_cublas_sprimme *leftsvec, int givenLeftSvec,
+      dummy_type_cublas_sprimme *rightsvec, int givenRightSvec, dummy_type_sprimme rNorm, int method,
+      int *isconv, primme_context ctx);
+int monitorFunSVDS_cublas_sprimme(dummy_type_sprimme *basisSvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedSvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, int stage, double startTime, primme_context ctx);
+void matrixMatvec_eigs_cublas_sprimme(void *x_, PRIMME_INT *ldx, void *y_,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void applyPreconditioner_eigs_cublas_sprimme(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+int Num_scalInv_Smatrixcublas_sprimme(dummy_type_cublas_sprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
+      dummy_type_sprimme *factors, primme_context ctx);
+int globalSum_Rprimme_svdscublas_sprimme(
+      dummy_type_sprimme *sendBuf, dummy_type_sprimme *recvBuf, int count, primme_context ctx);
+int compute_resNormcublas_sprimme(dummy_type_cublas_sprimme *leftsvec, dummy_type_cublas_sprimme *rightsvec, dummy_type_sprimme *rNorm,
+      primme_context ctx);
+void default_convTestFuncublas_sprimme(double *sval, void *leftsvec_, void *rightsvec_,
+      double *rNorm, int *method, int *isConv, primme_svds_params *primme_svds,
+      int *ierr);
+void convTestFunATAcublas_sprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void convTestFunAugcublas_sprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void default_monitor_svdscublas_sprimme(void *basisSvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, int *stage, primme_svds_params *primme_svds,
+      int *err);
+void monitor_single_stagecublas_sprimme(void *basisEvals_, int *basisSize,
+      int *basisFlags, int *iblock, int *blockSize, void *basisNorms_,
+      int *numConverged, void *lockedEvals_, int *numLocked, int *lockedFlags,
+      void *lockedNorms_, int *inner_its, void *LSRes_, const char *msg,
+      double *time, primme_event *event, primme_params *primme, int *err);
+void monitor_stage1cublas_sprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+void monitor_stage2cublas_sprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int Xprimme_svds_auxcublas_cprimme(void *svals, dummy_type_cprimme *svecs, void *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_cublas_cprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
+int comp_doublecublas_cprimme(const void *a, const void *b);
+int copy_last_params_from_svdscublas_cprimme(int stage, dummy_type_sprimme *svals, dummy_type_cublas_cprimme *svecs,
+      dummy_type_sprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_cublas_cprimme **out_svecs, primme_context ctx);
+int copy_last_params_to_svdscublas_cprimme(int stage, dummy_type_sprimme *svals, dummy_type_cublas_cprimme *svecs,
+      dummy_type_sprimme *rnorms, int allocatedTargetShifts,
+      primme_context ctx);
+int primme_svds_check_inputcublas_cprimme(void *svals, void *svecs, void *resNorms,
+      primme_svds_params *primme_svds);
+int matrixMatvecSVDS_cublas_cprimme(dummy_type_cublas_cprimme *V, PRIMME_INT ldV, dummy_type_cublas_cprimme *W, PRIMME_INT ldW,
+      int basisSize, int blockSize, int conj, primme_context ctx);
+int convTestFunSVDS_cublas_cprimme(dummy_type_sprimme sval, dummy_type_cublas_cprimme *leftsvec, int givenLeftSvec,
+      dummy_type_cublas_cprimme *rightsvec, int givenRightSvec, dummy_type_sprimme rNorm, int method,
+      int *isconv, primme_context ctx);
+int monitorFunSVDS_cublas_cprimme(dummy_type_sprimme *basisSvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_sprimme *basisNorms, int numConverged,
+      dummy_type_sprimme *lockedSvals, int numLocked, int *lockedFlags, dummy_type_sprimme *lockedNorms,
+      int inner_its, dummy_type_sprimme LSRes, const char *msg, double time,
+      primme_event event, int stage, double startTime, primme_context ctx);
+void matrixMatvec_eigs_cublas_cprimme(void *x_, PRIMME_INT *ldx, void *y_,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void applyPreconditioner_eigs_cublas_cprimme(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+int Num_scalInv_Smatrixcublas_cprimme(dummy_type_cublas_cprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
+      dummy_type_sprimme *factors, primme_context ctx);
+int globalSum_Rprimme_svdscublas_cprimme(
+      dummy_type_sprimme *sendBuf, dummy_type_sprimme *recvBuf, int count, primme_context ctx);
+int compute_resNormcublas_cprimme(dummy_type_cublas_cprimme *leftsvec, dummy_type_cublas_cprimme *rightsvec, dummy_type_sprimme *rNorm,
+      primme_context ctx);
+void default_convTestFuncublas_cprimme(double *sval, void *leftsvec_, void *rightsvec_,
+      double *rNorm, int *method, int *isConv, primme_svds_params *primme_svds,
+      int *ierr);
+void convTestFunATAcublas_cprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void convTestFunAugcublas_cprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void default_monitor_svdscublas_cprimme(void *basisSvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, int *stage, primme_svds_params *primme_svds,
+      int *err);
+void monitor_single_stagecublas_cprimme(void *basisEvals_, int *basisSize,
+      int *basisFlags, int *iblock, int *blockSize, void *basisNorms_,
+      int *numConverged, void *lockedEvals_, int *numLocked, int *lockedFlags,
+      void *lockedNorms_, int *inner_its, void *LSRes_, const char *msg,
+      double *time, primme_event *event, primme_params *primme, int *err);
+void monitor_stage1cublas_cprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+void monitor_stage2cublas_cprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int Xprimme_svds_auxcublas_dprimme(void *svals, dummy_type_dprimme *svecs, void *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_cublas_dprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
+int comp_doublecublas_dprimme(const void *a, const void *b);
+int copy_last_params_from_svdscublas_dprimme(int stage, dummy_type_dprimme *svals, dummy_type_cublas_dprimme *svecs,
+      dummy_type_dprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_cublas_dprimme **out_svecs, primme_context ctx);
+int copy_last_params_to_svdscublas_dprimme(int stage, dummy_type_dprimme *svals, dummy_type_cublas_dprimme *svecs,
+      dummy_type_dprimme *rnorms, int allocatedTargetShifts,
+      primme_context ctx);
+int primme_svds_check_inputcublas_dprimme(void *svals, void *svecs, void *resNorms,
+      primme_svds_params *primme_svds);
+int matrixMatvecSVDS_cublas_dprimme(dummy_type_cublas_dprimme *V, PRIMME_INT ldV, dummy_type_cublas_dprimme *W, PRIMME_INT ldW,
+      int basisSize, int blockSize, int conj, primme_context ctx);
+int convTestFunSVDS_cublas_dprimme(dummy_type_dprimme sval, dummy_type_cublas_dprimme *leftsvec, int givenLeftSvec,
+      dummy_type_cublas_dprimme *rightsvec, int givenRightSvec, dummy_type_dprimme rNorm, int method,
+      int *isconv, primme_context ctx);
+int monitorFunSVDS_cublas_dprimme(dummy_type_dprimme *basisSvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_dprimme *basisNorms, int numConverged,
+      dummy_type_dprimme *lockedSvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
+      int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
+      primme_event event, int stage, double startTime, primme_context ctx);
+void matrixMatvec_eigs_cublas_dprimme(void *x_, PRIMME_INT *ldx, void *y_,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void applyPreconditioner_eigs_cublas_dprimme(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+int Num_scalInv_Smatrixcublas_dprimme(dummy_type_cublas_dprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
+      dummy_type_dprimme *factors, primme_context ctx);
+int globalSum_Rprimme_svdscublas_dprimme(
+      dummy_type_dprimme *sendBuf, dummy_type_dprimme *recvBuf, int count, primme_context ctx);
+int compute_resNormcublas_dprimme(dummy_type_cublas_dprimme *leftsvec, dummy_type_cublas_dprimme *rightsvec, dummy_type_dprimme *rNorm,
+      primme_context ctx);
+void default_convTestFuncublas_dprimme(double *sval, void *leftsvec_, void *rightsvec_,
+      double *rNorm, int *method, int *isConv, primme_svds_params *primme_svds,
+      int *ierr);
+void convTestFunATAcublas_dprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void convTestFunAugcublas_dprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void default_monitor_svdscublas_dprimme(void *basisSvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, int *stage, primme_svds_params *primme_svds,
+      int *err);
+void monitor_single_stagecublas_dprimme(void *basisEvals_, int *basisSize,
+      int *basisFlags, int *iblock, int *blockSize, void *basisNorms_,
+      int *numConverged, void *lockedEvals_, int *numLocked, int *lockedFlags,
+      void *lockedNorms_, int *inner_its, void *LSRes_, const char *msg,
+      double *time, primme_event *event, primme_params *primme, int *err);
+void monitor_stage1cublas_dprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+void monitor_stage2cublas_dprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int Xprimme_svds_auxcublas_zprimme(void *svals, dummy_type_zprimme *svecs, void *resNorms,
+      primme_svds_params *primme_svds, primme_op_datatype svals_resNorms_type);
+int wrapper_svds_cublas_zprimme(void *svals_, void *svecs_, void *resNorms_,
+      primme_op_datatype svals_resNorms_type, primme_op_datatype svecs_type,
+      int *outInitSize, primme_context ctx);
+int comp_doublecublas_zprimme(const void *a, const void *b);
+int copy_last_params_from_svdscublas_zprimme(int stage, dummy_type_dprimme *svals, dummy_type_cublas_zprimme *svecs,
+      dummy_type_dprimme *rnorms, int *allocatedTargetShifts,
+      dummy_type_cublas_zprimme **out_svecs, primme_context ctx);
+int copy_last_params_to_svdscublas_zprimme(int stage, dummy_type_dprimme *svals, dummy_type_cublas_zprimme *svecs,
+      dummy_type_dprimme *rnorms, int allocatedTargetShifts,
+      primme_context ctx);
+int primme_svds_check_inputcublas_zprimme(void *svals, void *svecs, void *resNorms,
+      primme_svds_params *primme_svds);
+int matrixMatvecSVDS_cublas_zprimme(dummy_type_cublas_zprimme *V, PRIMME_INT ldV, dummy_type_cublas_zprimme *W, PRIMME_INT ldW,
+      int basisSize, int blockSize, int conj, primme_context ctx);
+int convTestFunSVDS_cublas_zprimme(dummy_type_dprimme sval, dummy_type_cublas_zprimme *leftsvec, int givenLeftSvec,
+      dummy_type_cublas_zprimme *rightsvec, int givenRightSvec, dummy_type_dprimme rNorm, int method,
+      int *isconv, primme_context ctx);
+int monitorFunSVDS_cublas_zprimme(dummy_type_dprimme *basisSvals, int basisSize, int *basisFlags,
+      int *iblock, int blockSize, dummy_type_dprimme *basisNorms, int numConverged,
+      dummy_type_dprimme *lockedSvals, int numLocked, int *lockedFlags, dummy_type_dprimme *lockedNorms,
+      int inner_its, dummy_type_dprimme LSRes, const char *msg, double time,
+      primme_event event, int stage, double startTime, primme_context ctx);
+void matrixMatvec_eigs_cublas_zprimme(void *x_, PRIMME_INT *ldx, void *y_,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+void applyPreconditioner_eigs_cublas_zprimme(void *x, PRIMME_INT *ldx, void *y,
+      PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
+int Num_scalInv_Smatrixcublas_zprimme(dummy_type_cublas_zprimme *x, PRIMME_INT m, int n, PRIMME_INT ldx,
+      dummy_type_dprimme *factors, primme_context ctx);
+int globalSum_Rprimme_svdscublas_zprimme(
+      dummy_type_dprimme *sendBuf, dummy_type_dprimme *recvBuf, int count, primme_context ctx);
+int compute_resNormcublas_zprimme(dummy_type_cublas_zprimme *leftsvec, dummy_type_cublas_zprimme *rightsvec, dummy_type_dprimme *rNorm,
+      primme_context ctx);
+void default_convTestFuncublas_zprimme(double *sval, void *leftsvec_, void *rightsvec_,
+      double *rNorm, int *method, int *isConv, primme_svds_params *primme_svds,
+      int *ierr);
+void convTestFunATAcublas_zprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void convTestFunAugcublas_zprimme(double *eval, void *evec, double *rNorm, int *isConv,
+      primme_params *primme, int *ierr);
+void default_monitor_svdscublas_zprimme(void *basisSvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedSvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, int *stage, primme_svds_params *primme_svds,
+      int *err);
+void monitor_single_stagecublas_zprimme(void *basisEvals_, int *basisSize,
+      int *basisFlags, int *iblock, int *blockSize, void *basisNorms_,
+      int *numConverged, void *lockedEvals_, int *numLocked, int *lockedFlags,
+      void *lockedNorms_, int *inner_its, void *LSRes_, const char *msg,
+      double *time, primme_event *event, primme_params *primme, int *err);
+void monitor_stage1cublas_zprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+void monitor_stage2cublas_zprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
 #endif

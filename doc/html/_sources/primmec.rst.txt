@@ -386,9 +386,17 @@ The next enumerations and functions are declared in ``primme.h``.
 
    The type and precision of the callbacks is also the same as `evecs`. Although this can be changed. See details for |matrixMatvec|, |massMatrixMatvec|, |applyPreconditioner|, |globalSumReal|, |broadcastReal|, and |convTestFun|.
 
-`magma_?primme`
-"""""""""""""""
+`cublas_?primme` & `magma_?primme` 
+""""""""""""""""""""""""""""""""""
 
+.. c:function:: int cublas_hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
+.. c:function:: int cublas_hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, primme_params *primme)
+.. c:function:: int cublas_kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
+.. c:function:: int cublas_sprimme(float *evals, float *evecs, float *resNorms, primme_params *primme)
+.. c:function:: int cublas_ksprimme(float *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)
+.. c:function:: int cublas_cprimme(float *evals, PRIMME_COMPLEX_FLOAT *evecs, float *resNorms, primme_params *primme)
+.. c:function:: int cublas_dprimme(double *evals, double *evecs, double *resNorms, primme_params *primme)
+.. c:function:: int cublas_zprimme(double *evals, PRIMME_COMPLEX_DOUBLE *evecs, double *resNorms, primme_params *primme)
 .. c:function:: int magma_hprimme(PRIMME_HALF *evals, PRIMME_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
 .. c:function:: int magma_hsprimme(float *evals, PRIMME_HALF *evecs, float *resNorms, primme_params *primme)
 .. c:function:: int magma_kprimme(PRIMME_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
@@ -468,8 +476,8 @@ The next enumerations and functions are declared in ``primme.h``.
 
    .. versionadded:: 3.0
 
-`magma_?primme_normal`
-""""""""""""""""""""""
+`cublas_?primme_normal` & `magma_?primme_normal`
+""""""""""""""""""""""""""""""""""""""""""""""""
 
 .. c:function:: int magma_kprimme_normal(PRIMME_COMPLEX_HALF *evals, PRIMME_COMPLEX_HALF *evecs, PRIMME_HALF *resNorms, primme_params *primme)
 .. c:function:: int magma_kcprimme_normal(PRIMME_COMPLEX_FLOAT *evals, PRIMME_COMPLEX_HALF *evecs, float *resNorms, primme_params *primme)

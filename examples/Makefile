@@ -37,6 +37,13 @@ ifeq ($(PRIMME_WITH_MAGMA),yes)
   EXAMPLES_C += ex_eigs_dmagma ex_svds_dmagma
   INCLUDE += -I$(MAGMADIR)/include -I$(MAGMADIR)/sparse/include -I$(CUDADIR)/include
 endif
+ifeq ($(PRIMME_WITH_CUDA),yes)
+  EXAMPLES_C += ex_eigs_dcublas ex_eigs_zcublas ex_eigs_zcublas0
+endif
+ifeq ($(PRIMME_WITH_HIPBLAS),yes)
+  EXAMPLES_C += ex_eigs_dhipblas ex_eigs_zhipblas ex_eigs_zhipblas0
+endif
+
 
 $(EXAMPLES_C): %: %.o
 	$(CLDR) -o $@ $@.o $(LIBDIRS) $(INCLUDE) $(LIBS) $(LDFLAGS) 

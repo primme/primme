@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "numpy", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "primme"
+version = "3.2.3"
+authors = [
+  { name="Eloy Romero Alcalde", email="eromero@jlab.org" },
+  { name="Andreas Stathopoulos", email="andreas@cs.wm.edu" },
+  { name="Lingfei Wu" },
+]
+maintainers = [
+  { name="Eloy Romero Alcalde", email="eromero@jlab.org" },
+  { name="Andreas Stathopoulos", email="andreas@cs.wm.edu" },
+]
+description = "PRIMME wrapper for Python"
+readme = "README.rst"
+requires-python = ">=3.8"
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C",
+    "License :: OSI Approved :: BSD License",
+    'Intended Audience :: Science/Research',
+    'Topic :: Scientific/Engineering',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX',
+    'Operating System :: Unix',
+    'Operating System :: MacOS',
+]
+license = {text = "BSD License"}
+dependencies = ["numpy", "scipy"]
+
+[project.urls]
+Homepage = "https://www.cs.wm.edu/~andreas/software"
+Repository = "https://github.com/primme/primme"
+Documentation = "https://www.cs.wm.edu/~andreas/software/doc/readme.html"
+Issues = "https://github.com/primme/primme/issues"
+
+[tool.setuptools.packages.find]
+exclude = ["src*", "compare*"]
+namespaces = false

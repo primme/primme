@@ -523,6 +523,7 @@ int Num_copy_trimatrix_compact_Sprimme(SCALAR *x, PRIMME_INT m, int n,
    int i, j, k;
 
    assert(m == 0 || n == 0 || ldx >= m);
+   if (m < n) return -1;
 
    for (i=0, k=0; i<n; i++)
       for (j=0; j<=i+i0; j++)
@@ -556,6 +557,7 @@ int Num_copy_compact_trimatrix_Sprimme(SCALAR *x, PRIMME_INT m, int n, int i0,
    int i, j, k;
 
    assert(m == 0 || n == 0 || (ldy >= m && m >= n));
+   if (m < n) return -1;
 
    for (i=n-1, k=(n+1)*n/2+i0*n-1; i>=0; i--)
       for (j=i+i0; j>=0; j--)

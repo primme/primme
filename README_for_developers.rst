@@ -170,8 +170,8 @@ By default, calls to PRIMME internal functions should be made under an error che
 
 If Num_malloc_Sprimme or Num_copy_Sprimme or Num_free_Sprimme return a nonzero value, the function dummy_Sprimme immediately returns that value to the caller. If the error happens in Num_copy_Sprimme, the CHKERR in which the dummy_Sprimme call is enclosed frees the array allocated by Num_malloc_Sprimme. A function must notify if some allocations are not going to be freed on purpose after the function finishing with no error, by calling `Mem_keep_frame(ctx)`.
 
-WTF is this!? Why not using C++
--------------------------------
+Why not using C++ ??
+--------------------
 
 You're right! We don't have much of an excuse for not using C++, a language as well-established and multiplatform as C, and with support for polymorphism and RAII and exceptions. The advantages of that support would be to have a cleaner code without conditional compilations and fewer macros, and clearer error messages than the ones that C gives involving macros. However, there are a few drawbacks that can be worked out. The minor issues include that error messages involving std::complex can be hard to read, and debugging C++ functions is slightly more tedious. The most pressing issue is that to remove most the C macros, we need the more advanced, and recent, parts of the C++ standard, such as partial template specialization and if-constexpr, C++ 14 and C++ 17 respectively. Additionally, one can implement a reverse communication interface for PRIMME using coroutines, currently implemented in Boost, and likely part of C++ 20.
 

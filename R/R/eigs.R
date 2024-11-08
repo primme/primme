@@ -148,7 +148,7 @@
 #'     Transaction on Mathematical Software Vol. 37, No. 2, (2010)
 #'     21:1-21:30.
 #'
-#' [2] \url{http://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide}
+#' [2] \url{https://www.cs.wm.edu/~andreas/software/doc/primmec.html#parameters-guide}
 #'
 #' @seealso
 #' \code{\link{eigen}} for computing all values;
@@ -234,8 +234,7 @@ eigs_sym <- function(A, NEig=1, which="LA", targetShifts=NULL, tol=1e-6,
          else (inherits(A, "Matrix") && substr(class(A), 0, 1) == "d");
       if ((is.null(isreal) || isreal == isreal_suggestion) && (
                ismatrix ||
-               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix") %in% class(A)) ||
-               any(c("zmatrix", "zgeMatrix", "zgCMatrix", "zsCMatrix") %in% class(A)) )) {
+               any(c("dmatrix", "dgeMatrix", "dgCMatrix", "dsCMatrix", "dtCMatrix") %in% class(A)))) {
          Af <- A;
       }
       else {

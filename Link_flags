@@ -21,8 +21,14 @@ UNAME := $(shell uname)
 LDFLAGS ?= $(if $(findstring FreeBSD,$(UNAME)),-L/usr/local/lib -L/usr/local/lib/gcc7,)
 ifeq ($(origin LIBS), undefined)
     ifeq ($(PRIMME_WITH_MAGMA),yes)
-         LIBS += -L$(MAGMADIR)/lib -lmagma -lmagma_sparse  \
-                 -L$(CUDADIR)/lib64 -lcublas -lcudart -lcusparse
+         LIBS += -L$(MAGMADIR)/lib -lmagma_sparse -lmagma  \
+                 -L$(CUDADIR)/lib64 -lcublas -lcudart -lcusparse -lstdc++
+    endif
+    ifeq ($(PRIMME_WITH_CUDA),yes)
+         LIBS += -L$(CUDADIR)/lib64 -lcusparse -lcublas -lcudart
+    endif
+    ifeq ($(PRIMME_WITH_HIPBLAS),yes)
+         LIBS += -L$(ROCMDIR)/lib -lhipsparse -lhipblas -lamdhip64
     endif
     ifndef MKLROOT
         LIBS += -llapack -lblas -lm

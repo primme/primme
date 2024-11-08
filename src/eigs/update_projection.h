@@ -159,4 +159,22 @@ int update_projection_magma_dprimme(dummy_type_magma_dprimme *X, PRIMME_INT ldX,
 int update_projection_magma_zprimme(dummy_type_magma_zprimme *X, PRIMME_INT ldX, dummy_type_magma_zprimme *Y,
       PRIMME_INT ldY, dummy_type_zprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
       int numCols, int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_cublas_hprimme(dummy_type_cublas_hprimme *X, PRIMME_INT ldX, dummy_type_cublas_hprimme *Y,
+      PRIMME_INT ldY, dummy_type_sprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_cublas_kprimme(dummy_type_cublas_kprimme *X, PRIMME_INT ldX, dummy_type_cublas_kprimme *Y,
+      PRIMME_INT ldY, dummy_type_cprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_cublas_sprimme(dummy_type_cublas_sprimme *X, PRIMME_INT ldX, dummy_type_cublas_sprimme *Y,
+      PRIMME_INT ldY, dummy_type_sprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_cublas_cprimme(dummy_type_cublas_cprimme *X, PRIMME_INT ldX, dummy_type_cublas_cprimme *Y,
+      PRIMME_INT ldY, dummy_type_cprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_cublas_dprimme(dummy_type_cublas_dprimme *X, PRIMME_INT ldX, dummy_type_cublas_dprimme *Y,
+      PRIMME_INT ldY, dummy_type_dprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
+int update_projection_cublas_zprimme(dummy_type_cublas_zprimme *X, PRIMME_INT ldX, dummy_type_cublas_zprimme *Y,
+      PRIMME_INT ldY, dummy_type_zprimme *Z, PRIMME_INT ldZ, PRIMME_INT nLocal,
+      int numCols, int blockSize, int isSymmetric, primme_context ctx);
 #endif

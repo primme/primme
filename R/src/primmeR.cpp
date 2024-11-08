@@ -35,15 +35,28 @@
  *
  ******************************************************************************/
 
+// [[Rcpp::interfaces(r, cpp)]]
+
+#ifndef USE_FC_LEN_T
+#    define USE_FC_LEN_T
+#endif
 #include <R.h>
 #include <Rcpp.h>
 #include <algorithm>
-#include "primme.h"
+#include "c_interface/primme.h"
 #include "PRIMME_types.h"
+#include <Rconfig.h>
+#include <Rinternals.h>
 #include <R_ext/BLAS.h> // for BLAS and F77_NAME
 
 #include "Matrix.h"
 #include "Matrix_stubs.c"
+
+#ifdef USE_FC_LEN_T                                                                                                                                         
+#    define STRING_LEN1 , 1                                                                                                                                 
+#else
+#    define STRING_LEN1                                                                                                                                     
+#endif
 
 using namespace Rcpp;
 
@@ -81,9 +94,9 @@ void xhemm(const char *side, const char *uplo, int m, int n, const double *a,
    const int ONE=1;
    ASSERT(lda >= m && ldb >= m && ldc >= m);
    if (side[0] == 'L' && n == 1) {
-      F77_NAME(dsymv)(uplo, &m, &alpha, a, &lda, b, &ONE, &beta, c, &ONE);
+      F77_NAME(dsymv)(uplo, &m, &alpha, a, &lda, b, &ONE, &beta, c, &ONE STRING_LEN1);
    } else {
-      F77_NAME(dsymm)(side, uplo, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+      F77_NAME(dsymm)(side, uplo, &m, &n, &alpha, a, &lda, b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -93,9 +106,9 @@ void xhemm(const char *side, const char *uplo, int m, int n, const Rcomplex *a,
    Rcomplex alpha = {1.0, 0.0}, beta = {0.0, 0.0};
    const int ONE=1;
    if (side[0] == 'L' && n == 1) {
-      F77_NAME(zhemv)((char*)uplo, &m, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, (int*)&ONE, &beta, c, (int*)&ONE);
+      F77_NAME(zhemv)((char*)uplo, &m, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, (int*)&ONE, &beta, c, (int*)&ONE STRING_LEN1);
    } else {
-      F77_NAME(zhemm)((char*)side, (char*)uplo, &m, &n, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, &ldb, &beta, c, &ldc);
+      F77_NAME(zhemm)((char*)side, (char*)uplo, &m, &n, &alpha, (Rcomplex*)a, &lda, (Rcomplex*)b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -105,9 +118,9 @@ void xgemm(const char *transa, const char *transb, int m, int n, int k,
    const int ONE = 1;
    if (transb[0] == 'N' && n == 1) {
       F77_NAME(dgemv)(transa, transa[0]=='N'?&m:&k, transa[0]=='N'?&k:&m, &alpha,
-            a, &lda, b, &ONE, &beta, c, &ONE);
+            a, &lda, b, &ONE, &beta, c, &ONE STRING_LEN1);
    } else {
-      F77_NAME(dgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+      F77_NAME(dgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -117,9 +130,9 @@ void xgemm(const char *transa, const char *transb, int m, int n, int k,
    int ONE = 1;
    if (transb[0] == 'N' && n == 1) {
       F77_NAME(zgemv)((char*)transa, transa[0]=='N'?&m:&k, transa[0]=='N'?&k:&m, &alpha,
-            (Rcomplex*)a, &lda, (Rcomplex*)b, &ONE, &beta, c, &ONE);
+            (Rcomplex*)a, &lda, (Rcomplex*)b, &ONE, &beta, c, &ONE STRING_LEN1);
    } else {
-      F77_NAME(zgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc);
+      F77_NAME(zgemm)(transa, transb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc STRING_LEN1 STRING_LEN1);
    }
 }
 
@@ -192,6 +205,16 @@ void copyMatrix<double, ComplexMatrix>(ComplexMatrix mat, double *x, PRIMME_INT 
    stop("Unsupported to return complex values when using dprimme/dprimme_svds");
 }
 
+int is_ge(SEXP x) {
+   static const char *valid[] = {"ngeMatrix", "lgeMatrix", "dgeMatrix", ""};
+   return R_check_class_etc(x, valid) >= 0;
+}
+int is_Csparse(SEXP x) {
+   static const char *valid[] = {"ngCMatrix", "lgCMatrix", "dgCMatrix",
+         "nsCMatrix", "lsCMatrix", "dsCMatrix", "ntCMatrix", "ltCMatrix",
+         "dtCMatrix", ""};
+   return R_check_class_etc(x, valid) >= 0;
+}
 
 template <typename T>
 void copyMatrix_SEXP(SEXP mat, T *x, PRIMME_INT m, int n, PRIMME_INT ld,
@@ -203,7 +226,7 @@ void copyMatrix_SEXP(SEXP mat, T *x, PRIMME_INT m, int n, PRIMME_INT ld,
    } else if (is<ComplexMatrix>(mat)) {
       copyMatrix(as<ComplexMatrix>(mat), x, m, n, ld, checkDimensions);
       return;
-   } else if (!Matrix_isclass_ge_dense(mat)) {
+   } else if (!is_ge(mat)) {
       stop("Vector/matrix type not supported");
    }
 
@@ -267,7 +290,7 @@ void primme_set_method_rcpp(std::string methodstr, PrimmeParams primme) {
 
 // [[Rcpp::export(.primme_get_member)]]
 SEXP primme_get_member_rcpp(std::string labelstr, PrimmeParams primme) {
-   primme_params_label label = (primme_params_label)-1;
+   primme_params_label label = PRIMME_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -341,7 +364,7 @@ SEXP primme_get_member_rcpp(std::string labelstr, PrimmeParams primme) {
 
 // [[Rcpp::export(.primme_set_member)]]
 void primme_set_member_rcpp(std::string labelstr, SEXP value, PrimmeParams primme) {
-   primme_params_label label = (primme_params_label)-1;
+   primme_params_label label = PRIMME_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -527,7 +550,7 @@ void matrixMatvecEigs_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
 {
    checkUserInterrupt(primme);
 
-   const_CHM_SP chm = (const_CHM_SP)((void**)F::get(primme))[0];
+   CHM_SP chm = (CHM_SP)((void**)F::get(primme))[0];
    ASSERT(chm->nrow == chm->ncol && (PRIMME_INT)chm->nrow == primme->nLocal);
 
    cholmod_dense chx, chy;
@@ -547,10 +570,10 @@ void matrixMatvecEigs_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy,
    chy.z = NULL;
    chy.xtype = (sizeof(T) == sizeof(double) ? CHOLMOD_REAL : CHOLMOD_COMPLEX);
    chy.dtype = CHOLMOD_DOUBLE;
-   const double ONEf[] = {1.0, 0.0}, ZEROf[] = {0.0, 0.0};
+   double ONEf[] = {1.0, 0.0}, ZEROf[] = {0.0, 0.0};
    CHM_CM chol_c = (CHM_CM)((void**)F::get(primme))[1];
 
-   M_cholmod_sdmult(chm, 0, ONEf, ZEROf, (const_CHM_DN)&chx, &chy, chol_c);
+   M_cholmod_sdmult(chm, 0, ONEf, ZEROf, (CHM_DN)&chx, &chy, chol_c);
 
    *ierr = 0;
 }
@@ -640,10 +663,10 @@ static List xprimme(Matrix<S> ortho, Matrix<S> init, SEXP A, SEXP B,
    } else if (is<ComplexMatrix>(A)) {
       primme->matrix = COMPLEX(A);
       primme->matrixMatvec = matrixMatvecEigs_Matrix<TS, getMatrixField>;
-   } else if (Matrix_isclass_ge_dense(A)) {
+   } else if (is_ge(A)) {
       primme->matrix = AS_CHM_DN(A);
       primme->matrixMatvec = matrixMatvecEigs_CHM_DN<TS, getMatrixField>;
-   } else if (Matrix_isclass_Csparse(A)) {
+   } else if (is_Csparse(A)) {
       Aaux[0] = AS_CHM_SP(A);
       Aaux[1] = &Achol_c;
       M_R_cholmod_start(&Achol_c);
@@ -671,10 +694,10 @@ static List xprimme(Matrix<S> ortho, Matrix<S> init, SEXP A, SEXP B,
    } else if (is<ComplexMatrix>(B)) {
       primme->massMatrix = COMPLEX(B);
       primme->massMatrixMatvec = matrixMatvecEigs_Matrix<TS, getMassMatrixField>;
-   } else if (Matrix_isclass_ge_dense(B)) {
+   } else if (is_ge(B)) {
       primme->massMatrix = AS_CHM_DN(B);
       primme->massMatrixMatvec = matrixMatvecEigs_CHM_DN<TS, getMassMatrixField>;
-   } else if (Matrix_isclass_Csparse(B)) {
+   } else if (is_Csparse(B)) {
       Baux[0] = AS_CHM_SP(B);
       Baux[1] = &Bchol_c;
       M_R_cholmod_start(&Bchol_c);
@@ -711,13 +734,13 @@ static List xprimme(Matrix<S> ortho, Matrix<S> init, SEXP A, SEXP B,
    if (Ac) delete Ac;
    if (An) delete An;
    if (Af) delete Af;
-   if (Matrix_isclass_Csparse(A)) {
+   if (is_Csparse(A)) {
       M_cholmod_finish(&Achol_c);
    }
    if (Bc) delete Bc;
    if (Bn) delete Bn;
    if (Bf) delete Bf;
-   if (Matrix_isclass_Csparse(B)) {
+   if (is_Csparse(B)) {
       M_cholmod_finish(&Bchol_c);
    }
    if (fprec) delete fprec;
@@ -778,7 +801,7 @@ void primme_svds_set_method_rcpp(std::string methodstr,
 SEXP primme_svds_get_member_rcpp(std::string labelstr,
       PrimmeSvdsParams primme_svds) {
 
-   primme_svds_params_label label = (primme_svds_params_label)-1;
+   primme_svds_params_label label = PRIMME_SVDS_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -866,7 +889,7 @@ SEXP primme_svds_get_member_rcpp(std::string labelstr,
 void primme_svds_set_member_rcpp(std::string labelstr, SEXP value,
       PrimmeSvdsParams primme_svds) {
 
-   primme_svds_params_label label = (primme_svds_params_label)-1;
+   primme_svds_params_label label = PRIMME_SVDS_invalid_label;
    const char *labelname = labelstr.c_str();
    primme_type ptype;
    int arity;
@@ -1091,7 +1114,7 @@ static void matrixMatvecSvds_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_IN
 {  
    checkUserInterrupt(primme_svds);
 
-   const_CHM_SP chm = (const_CHM_SP)((void**)primme_svds->matrix)[0];
+   CHM_SP chm = (CHM_SP)((void**)primme_svds->matrix)[0];
    ASSERT((PRIMME_INT)chm->nrow == primme_svds->mLocal && (PRIMME_INT)chm->ncol == primme_svds->nLocal);
 
    cholmod_dense chx, chy;
@@ -1111,10 +1134,10 @@ static void matrixMatvecSvds_CHM_SP(void *x, PRIMME_INT *ldx, void *y, PRIMME_IN
    chy.z = NULL;
    chy.xtype = (sizeof(T) == sizeof(double) ? CHOLMOD_REAL : CHOLMOD_COMPLEX);
    chy.dtype = CHOLMOD_DOUBLE;
-   const double ONEf[] = {1.0, 0.0}, ZEROf[] = {0.0, 0.0};
+   double ONEf[] = {1.0, 0.0}, ZEROf[] = {0.0, 0.0};
    CHM_CM chol_c = (CHM_CM)((void**)primme_svds->matrix)[1];
 
-   M_cholmod_sdmult(chm, *transpose?1:0, ONEf, ZEROf, (const_CHM_DN)&chx, &chy,
+   M_cholmod_sdmult(chm, *transpose?1:0, ONEf, ZEROf, (CHM_DN)&chx, &chy,
          chol_c);
 
    *ierr = 0;
@@ -1182,18 +1205,20 @@ static List xprimme_svds(Matrix<S> orthol, Matrix<S> orthor, Matrix<S> initl,
    if (is<Matrix<S> >(A)) {
       primme_svds->matrix = Am = new Matrix<S>(A);
       primme_svds->matrixMatvec = matrixMatvecSvds_Matrix<T, S, TS>;
-   } else if (Matrix_isclass_ge_dense(A)) {
+   } else if (is_ge(A)) {
       primme_svds->matrix = AS_CHM_DN(A);
       primme_svds->matrixMatvec = matrixMatvecSvds_CHM_DN<TS>;
-   } else if (Matrix_isclass_Csparse(A)) {
+   } else if (is_Csparse(A)) {
       aux[0] = AS_CHM_SP(A);
       aux[1] = &chol_c;
       M_R_cholmod_start(&chol_c);
       primme_svds->matrix = aux;
       primme_svds->matrixMatvec = matrixMatvecSvds_CHM_SP<T>;
-   } else {
+   } else if (is<Function>(A)) {
       primme_svds->matrix = Af = new Function(as<Function>(A));
       primme_svds->matrixMatvec = matrixMatvecSvds<T, S, TS, getSvdsForMatrix>;
+   } else {
+      stop("Unsupported matrix type; pass a function instead");
    }
 
    Function *fprec = NULL;
@@ -1211,7 +1236,7 @@ static List xprimme_svds(Matrix<S> orthol, Matrix<S> orthor, Matrix<S> initl,
    // Destroy auxiliary memory
    if (Am) delete Am;
    if (Af) delete Af;
-   if (Matrix_isclass_Csparse(A)) {
+   if (is_Csparse(A)) {
       M_cholmod_finish(&chol_c);
    }
    if (fprec) delete fprec;

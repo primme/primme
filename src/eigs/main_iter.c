@@ -1533,7 +1533,7 @@ STATIC int prepare_candidates(SCALAR *V, PRIMME_INT ldV, SCALAR *W,
    *recentlyConverged = 0;
    while (1) {
       /* Recompute flags in iev(*blockSize:*blockSize+blockNormsize) */
-      for (i=*blockSize; i<blockNormsSize; i++)
+      for (i = *blockSize; i < *blockSize+blockNormsSize; i++)
          flagsBlock[i-*blockSize] = flags[iev[i]];
       CHKERR(check_convergence_Sprimme(X ? &X[(*blockSize) * ldV] : NULL, ldV,
             computeXR, R ? &R[(*blockSize) * ldW] : NULL, ldW, computeXR, evecs,

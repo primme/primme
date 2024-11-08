@@ -104,8 +104,17 @@
 #   undef BLASSCALAR
 #endif
 #if defined(PRIMME_BLAS_RCOMPLEX)
+#   ifndef USE_FC_LEN_T
+#       define USE_FC_LEN_T
+#   endif
 #   ifndef CHECK_TEMPLATE
+#       include <Rconfig.h>
 #       include <R_ext/BLAS.h>
+#   endif
+#   ifdef USE_FC_LEN_T
+#       define STRING_LEN1 , 1
+#   else
+#       define STRING_LEN1
 #   endif
 #   ifndef USE_COMPLEX
 #       define BLASSCALAR SCALAR
@@ -114,6 +123,7 @@
 #   endif
 #else
 #   define BLASSCALAR SCALAR
+#   define STRING_LEN1
 #endif
 
 

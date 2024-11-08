@@ -516,4 +516,148 @@ void default_monitormagma_zprimme(void *basisEvals_, int *basisSize, int *basisF
       primme_event *event, primme_params *primme, int *err);
 int check_params_coherencemagma_zprimme(primme_context ctx);
 int coordinated_exitmagma_zprimme(int ret, primme_context ctx);
+int Xprimme_aux_cublas_hprimme(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type);
+int wrapper_cublas_hprimme(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx);
+int check_inputcublas_hprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecublas_hprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcublas_hprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecublas_hprimme(primme_context ctx);
+int coordinated_exitcublas_hprimme(int ret, primme_context ctx);
+int Xprimme_aux_cublas_kprimme_normal(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type);
+int wrapper_cublas_kprimme_normal(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx);
+int check_inputcublas_kprimme_normal(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecublas_kprimme_normal(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcublas_kprimme_normal(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecublas_kprimme_normal(primme_context ctx);
+int coordinated_exitcublas_kprimme_normal(int ret, primme_context ctx);
+int Xprimme_aux_cublas_kprimme(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type);
+int wrapper_cublas_kprimme(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx);
+int check_inputcublas_kprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecublas_kprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcublas_kprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecublas_kprimme(primme_context ctx);
+int coordinated_exitcublas_kprimme(int ret, primme_context ctx);
+int Xprimme_aux_cublas_sprimme(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type);
+int wrapper_cublas_sprimme(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx);
+int check_inputcublas_sprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecublas_sprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcublas_sprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecublas_sprimme(primme_context ctx);
+int coordinated_exitcublas_sprimme(int ret, primme_context ctx);
+int Xprimme_aux_cublas_cprimme_normal(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type);
+int wrapper_cublas_cprimme_normal(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx);
+int check_inputcublas_cprimme_normal(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecublas_cprimme_normal(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcublas_cprimme_normal(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecublas_cprimme_normal(primme_context ctx);
+int coordinated_exitcublas_cprimme_normal(int ret, primme_context ctx);
+int Xprimme_aux_cublas_cprimme(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type);
+int wrapper_cublas_cprimme(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx);
+int check_inputcublas_cprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecublas_cprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcublas_cprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecublas_cprimme(primme_context ctx);
+int coordinated_exitcublas_cprimme(int ret, primme_context ctx);
+int Xprimme_aux_cublas_dprimme(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type);
+int wrapper_cublas_dprimme(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx);
+int check_inputcublas_dprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecublas_dprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcublas_dprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecublas_dprimme(primme_context ctx);
+int coordinated_exitcublas_dprimme(int ret, primme_context ctx);
+int Xprimme_aux_cublas_zprimme_normal(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type);
+int wrapper_cublas_zprimme_normal(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx);
+int check_inputcublas_zprimme_normal(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecublas_zprimme_normal(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcublas_zprimme_normal(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecublas_zprimme_normal(primme_context ctx);
+int coordinated_exitcublas_zprimme_normal(int ret, primme_context ctx);
+int Xprimme_aux_cublas_zprimme(void *evals, void *evecs, void *resNorms,
+            primme_params *primme, primme_op_datatype evals_resNorms_type);
+int wrapper_cublas_zprimme(void *evals, void *evecs, void *resNorms,
+      primme_op_datatype evals_resNorms_type, primme_op_datatype evecs_type,
+      int *outInitSize, primme_context ctx);
+int check_inputcublas_zprimme(
+      void *evals, void *evecs, void *resNorms, primme_params *primme);
+void convTestFunAbsolutecublas_zprimme(double *eval, void *evec, double *rNorm,
+      int *isConv, primme_params *primme, int *ierr);
+void default_monitorcublas_zprimme(void *basisEvals_, int *basisSize, int *basisFlags,
+      int *iblock, int *blockSize, void *basisNorms_, int *numConverged,
+      void *lockedEvals_, int *numLocked, int *lockedFlags, void *lockedNorms_,
+      int *inner_its, void *LSRes_, const char *msg, double *time,
+      primme_event *event, primme_params *primme, int *err);
+int check_params_coherencecublas_zprimme(primme_context ctx);
+int coordinated_exitcublas_zprimme(int ret, primme_context ctx);
 #endif
