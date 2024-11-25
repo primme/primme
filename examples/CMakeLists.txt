@@ -1,0 +1,31 @@
+function(add_primme_test)
+  set(option_args)
+  set(one_value_args NAME SOURCE)
+  set(multi_value_args OTHER_SOURCES)
+  cmake_parse_arguments(ARGP "${option_args}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+  if ("${ARGP_NAME}" STREQUAL "")
+    get_filename_component(ARGP_NAME ${ARGP_SOURCE} NAME_WE)
+  endif()
+  message(STATUS "Added test ${ARGP_NAME}_test with executable ${ARGP_NAME}")
+  add_executable(${ARGP_NAME})
+  target_link_libraries(${ARGP_NAME} PUBLIC ${ARGP_LIBRARIES} primme)
+  target_sources(${ARGP_NAME} PRIVATE ${ARGP_SOURCE} ${ARGP_OTHER_SOURCES})
+  add_test(${ARGP_NAME}_test ${ARGP_NAME})
+endfunction()
+
+set(C_SOURCES ex_eigs_dseq.c ex_eigs_zseq.c ex_eigs_zseq_normal.c ex_svds_dseq.c ex_svds_zseq.c)
+set(CXX_SOURCES ex_eigs_zseqxx.cxx ex_svds_zseqxx.cxx)
+if(WITH_FORTRAN)
+  set(F77_SOURCES ex_eigs_dseqf77.f ex_eigs_zseqf77.f ex_svds_dseqf77.f ex_svds_zseqf77.f)
+  set(F90_SOURCES ex_eigs_dseqf90.f90 ex_svds_dseqf90.f90)
+endif()
+
+foreach(f ${C_SOURCES} ${CXX_SOURCES} ${F90_SOURCES})
+    add_primme_test(SOURCE ${f} LIBRARIES LAPACK::LAPACK BLAS::BLAS primme)
+endforeach()
+
+if(MSVC)
+   set_source_files_properties(${C_SOURCES}
+      PROPERTIES LANGUAGE CXX)
+endif()

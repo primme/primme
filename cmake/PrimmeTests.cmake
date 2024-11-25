@@ -1,0 +1,26 @@
+include(CheckSymbolExists)
+
+function(primme_test_fortran_underscore)
+    if(WITH_FORTRAN)
+        enable_language(Fortran)
+        include(FortranCInterface)
+        FortranCInterface_VERIFY()
+        if (FortranCInterface_GLOBAL_SUFFIX STREQUAL "_")
+            set(F77_UNDERSCORE TRUE)
+        else()
+            set(F77_UNDERSCORE FALSE)
+        endif()
+    else()
+        set(CMAKE_REQUIRED_LIBRARIES BLAS::BLAS)
+        check_c_source_compiles(
+            "int main() { extern void sasum_(); sasum_(); }"
+            F77_UNDERSCORE
+        )
+    endif()
+    message(STATUS "Checking whether Fortran adds underscore - ${F77_UNDERSCORE}")
+    if(F77_UNDERSCORE)
+        set(CMAKE_REQUIRED_LIBRARIES BLAS::BLAS)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DF77UNDERSCORE" PARENT_SCOPE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DF77UNDERSCORE" PARENT_SCOPE)
+    endif()
+endfunction()

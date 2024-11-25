@@ -35,8 +35,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <complex.h>
 #include "primme.h"   /* header file is required to run primme */ 
+typedef PRIMME_COMPLEX_DOUBLE cdouble;
 
 void LaplacianMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
 void LaplacianApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr);
@@ -46,7 +46,7 @@ int main (int argc, char *argv[]) {
    /* Solver arrays and parameters */
    double *evals;    /* Array with the computed eigenvalues */
    double *rnorms;   /* Array with the computed eigenpairs residual norms */
-   complex double *evecs;    /* Array with the computed eigenvectors;
+   cdouble *evecs;    /* Array with the computed eigenvectors;
                         first vector starts in evecs[0],
                         second vector starts in evecs[primme.n],
                         third vector starts in evecs[primme.n*2]...  */
@@ -96,7 +96,7 @@ int main (int argc, char *argv[]) {
 
    /* Allocate space for converged Ritz values and residual norms */
    evals = (double*)malloc(primme.numEvals*sizeof(double));
-   evecs = (complex double*)malloc(primme.n*primme.numEvals*sizeof(complex double));
+   evecs = (cdouble*)malloc(primme.n*primme.numEvals*sizeof(cdouble));
    rnorms = (double*)malloc(primme.numEvals*sizeof(double));
 
    /* Call primme  */
@@ -306,12 +306,12 @@ void LaplacianMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, i
    
    int i;            /* vector index, from 0 to *blockSize-1*/
    int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
-   complex double *xvec;     /* pointer to i-th input vector x */
-   complex double *yvec;     /* pointer to i-th output vector y */
+   cdouble *xvec;     /* pointer to i-th input vector x */
+   cdouble *yvec;     /* pointer to i-th output vector y */
    
    for (i=0; i<*blockSize; i++) {
-      xvec = (complex double *)x + *ldx*i;
-      yvec = (complex double *)y + *ldy*i;
+      xvec = (cdouble *)x + *ldx*i;
+      yvec = (cdouble *)y + *ldy*i;
       for (row=0; row<primme->n; row++) {
          yvec[row] = 0.0;
          if (row-1 >= 0) yvec[row] += -1.0*xvec[row-1];
@@ -333,12 +333,12 @@ void LaplacianApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT 
    
    int i;            /* vector index, from 0 to *blockSize-1*/
    int row;          /* Laplacian matrix row index, from 0 to matrix dimension */
-   complex double *xvec;     /* pointer to i-th input vector x */
-   complex double *yvec;     /* pointer to i-th output vector y */
+   cdouble *xvec;     /* pointer to i-th input vector x */
+   cdouble *yvec;     /* pointer to i-th output vector y */
     
    for (i=0; i<*blockSize; i++) {
-      xvec = (complex double *)x + *ldx*i;
-      yvec = (complex double *)y + *ldy*i;
+      xvec = (cdouble *)x + *ldx*i;
+      yvec = (cdouble *)y + *ldy*i;
       for (row=0; row<primme->n; row++) {
          yvec[row] = xvec[row]/2.;
       }      

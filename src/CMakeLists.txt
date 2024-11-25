@@ -1,0 +1,69 @@
+set(HEADERS
+   include/common.h
+   include/template.h
+   include/template_types.h
+   include/template_undef.h
+   include/numerical.h
+   include/primme_interface.h
+   include/memman.h
+   eigs/common_eigs.h
+   eigs/template_normal.h
+   svds/primme_svds_interface.h
+)
+
+set(AUTOMATED_HEADERS_LINALG
+   include/blaslapack.h
+   include/magma_wrapper.h
+   include/auxiliary.h
+)
+
+set(AUTOMATED_HEADERS_OTHERS
+   eigs/auxiliary_eigs.h
+   eigs/auxiliary_eigs_normal.h
+   eigs/solve_projection.h
+   eigs/convergence.h
+   eigs/inner_solve.h
+   eigs/main_iter.h
+   eigs/ortho.h
+   eigs/primme_c.h
+   eigs/factorize.h
+   eigs/restart.h
+   eigs/update_W.h
+   eigs/correction.h
+   eigs/update_projection.h
+   eigs/init.h
+   svds/primme_svds_c.h
+)
+
+set(SOURCES
+   eigs/auxiliary_eigs.c
+   eigs/auxiliary_eigs_normal.c
+   eigs/convergence.c
+   eigs/correction.c
+   eigs/factorize.c
+   eigs/init.c
+   eigs/inner_solve.c
+   eigs/main_iter.c
+   eigs/ortho.c
+   eigs/primme_c.c
+   eigs/primme_f77.c
+   eigs/primme_interface.c
+   eigs/restart.c
+   eigs/solve_projection.c
+   eigs/update_projection.c
+   eigs/update_W.c
+   linalg/auxiliary.c
+   linalg/blaslapack.c
+   linalg/magma_wrapper.c
+   linalg/memman.c
+   linalg/wtime.c
+   svds/primme_svds_c.c
+   svds/primme_svds_f77.c
+   svds/primme_svds_interface.c
+)
+target_sources(primme PRIVATE ${SOURCES})
+if(MSVC)
+   set_source_files_properties(${SOURCES}
+      TARGET_DIRECTORY primme
+      PROPERTIES LANGUAGE CXX)
+endif()
