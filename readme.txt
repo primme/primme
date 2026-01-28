@@ -4877,7 +4877,7 @@ primme.eigsh(A, k=6, M=None, sigma=None, which='LM', v0=None, ncv=None, maxiter=
    >>> M = scipy.sparse.spdiags(np.asarray(range(99,-1,-1)), [0], 100, 100)
    >>> # the smallest eigenvalues of the eigenproblem (A,M)
    >>> evals, evecs = primme.eigsh(A, 3, M=M, tol=1e-6, which='SA')
-   >>> evals 
+   >>> evals
    array([1.0035e-07, 1.0204e-02, 2.0618e-02])
 
    >>> # Giving the matvec as a function
@@ -7361,7 +7361,7 @@ type primme_svds_params
 
       Input/output:
 
-            "primme_svds_initialize()" sets this field to 1;
+            "primme_svds_initialize()" sets this field to 0;
             this field is read and written by "primme_svds_set_method()" (see Preset Methods);
             this field is read by "dprimme_svds()" and "zprimme_svds()".
 
@@ -8269,7 +8269,7 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    ...           [0], 100, 100) # square diag. preconditioner
    >>> # the three smallest singular values of A, using preconditioning
    >>> svecs_left, svals, svecs_right = primme.svds(A, 3, which='SM', tol=1e-6, precAHA=prec)
-   >>> ["%.5f" % x for x in svals.flat] 
+   >>> ["%.5f" % x for x in svals.flat]
    ['4.57263', '4.78752', '4.82229']
 
    >>> # Giving the matvecs as functions
@@ -8286,7 +8286,7 @@ primme.svds(A, k=6, ncv=None, tol=0, which='LM', v0=None, maxiter=None, return_s
    ...
    >>> B = scipy.sparse.linalg.LinearOperator((200,100), matvec=Bmatmat, matmat=Bmatmat, rmatvec=Brmatmat, dtype=np.float32)
    >>> svecs_left, svals, svecs_right = primme.svds(B, 5, which='LM', tol=1e-6)
-   >>> svals 
+   >>> svals
    array([99., 98., 97., 96., 95.])
 
 MATLAB Interface
