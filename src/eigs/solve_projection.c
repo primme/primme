@@ -1273,9 +1273,9 @@ int map_vecs_Sprimme(HSCALAR *V, int m, int nV, int ldV, HSCALAR *W, int n0,
    for (i = n0; i < m; i++) {
       /* Find the j that maximizes ABS(V[j]'*G*W[i]) and is not used */
 
-      int j, jmax=-1;
+      int j, jmax = -1;
       HREAL ipmax = 0.0;
-      if (i < nV) {
+      if (i < n) {
          for (j = 0; j < nV; j++) {
             if (used[j]) continue;
             HREAL ipij = ABS(ip[nV * (i - n0) + j]);
