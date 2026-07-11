@@ -68,9 +68,22 @@
 #define GPUBLAS_SYMBOL(X) CONCAT(GPU_SELECT(cublas, hipblas), X)
 #define GPUBLAS_CONST(X) CONCAT(GPU_SELECT(CUBLAS_, HIPBLAS_), X)
 
+// Conditional compilation for versions of hipblas older than 3 and >= 3
+#if defined(PRIMME_WITH_HIPBLAS)
+#    if !defined(hipblasVersionMajor) || hipblasVersionMajor < 3
+#        define HIPBLAS_SELECT(OLD, NEW) OLD
+#    else
+#        define HIPBLAS_SELECT(OLD, NEW) NEW
+#    endif
+#endif
+
 #define CUBLAS_SCALAR                                                          \
-   ARITH(, , float, GPU_SELECT(cuComplex, hipblasComplex), double,             \
-         GPU_SELECT(cuDoubleComplex, hipblasDoubleComplex), , )
+   ARITH(, , float,                                                            \
+         GPU_SELECT(cuComplex, HIPBLAS_SELECT(hipblasComplex, hipComplex)),    \
+         double,                                                               \
+         GPU_SELECT(cuDoubleComplex,                                           \
+               HIPBLAS_SELECT(hipblasDoubleComplex, hipDoubleComplex)),        \
+         , )
 
 #define XGEMV     CONCAT(GPU_SELECT(cublas,hipblas),ARITH( , , Sgemv , Cgemv , Dgemv , Zgemv , , ))
 #define XTRSM     CONCAT(GPU_SELECT(cublas,hipblas),ARITH( , , Strsm , Ctrsm , Dtrsm , Ztrsm , , ))
@@ -80,8 +93,11 @@ static int free_fn_dummy (void *p, primme_context ctx) {
    return GPU_SYMBOL(Free)(p) == GPU_SYMBOL(Success) ? 0 : PRIMME_MALLOC_FAILURE;
 }
 
-typedef GPU_SELECT(cudaDataType_t, hipblasDatatype_t) gpuDataType;
-typedef GPU_SELECT(cublasComputeType_t, hipblasDatatype_t) gpuComputeDataType;
+typedef GPU_SELECT(cudaDataType_t,
+      HIPBLAS_SELECT(hipblasDatatype_t, hipDataType)) gpuDataType;
+typedef GPU_SELECT(
+      cublasComputeType_t, HIPBLAS_SELECT(hipblasDatatype_t,
+                                 hipblasComputeType_t)) gpuComputeDataType;
 
 static GPUBLAS_SYMBOL(Operation_t) toCublasOperation(const char trans) {
    switch(trans) {
