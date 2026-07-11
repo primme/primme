@@ -178,11 +178,6 @@ typedef struct { PRIMME_COMPLEX_QUAD a; }  dummy_type_cublas_wprimme;
 
 #define PRIMME_OP_HREAL PRIMME_OP_HSCALAR
 
-/* complex.h may be defined in primme.h or here; so undefine I */
-#ifdef I
-#   undef I
-#endif
-
 #ifndef __cplusplus
 /* pgcc does not provide tgmath.h and the system's one may not support PGI. */
 /* Reported issues with icc version 2021 on Ubuntu:
