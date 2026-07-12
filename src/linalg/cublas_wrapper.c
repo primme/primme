@@ -149,15 +149,15 @@ STATIC void toCudaDataType(primme_op_datatype xt, void *r) {
 }
 
 STATIC void toCublasComputeDataType(primme_op_datatype xt, void *r) {
-#ifdef PRIMME_WITH_HIPBLAS
+#if defined(PRIMME_WITH_HIPBLAS) && HIPBLAS_SELECT(0, 1) == 0
 toCudaDataType(xt, r);
 #else
    gpuComputeDataType t;
    if (xt == primme_op_default) xt = PRIMME_OP_SCALAR;
    switch(xt) {
-   case primme_op_half:    t = CUBLAS_COMPUTE_16F; break;
-   case primme_op_float:   t = CUBLAS_COMPUTE_32F; break;
-   case primme_op_double:  t = CUBLAS_COMPUTE_64F; break;
+   case primme_op_half:    t = GPU_SELECT(CUBLAS_COMPUTE_16F, HIPBLAS_COMPUTE_16F); break;
+   case primme_op_float:   t = GPU_SELECT(CUBLAS_COMPUTE_32F, HIPBLAS_COMPUTE_32F); break;
+   case primme_op_double:  t = GPU_SELECT(CUBLAS_COMPUTE_64F, HIPBLAS_COMPUTE_64F); break;
    default:                t = (gpuComputeDataType)-1;
    }
    *(gpuComputeDataType*)r = t;
