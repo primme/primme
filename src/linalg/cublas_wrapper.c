@@ -75,6 +75,9 @@
 #    else
 #        define HIPBLAS_SELECT(OLD, NEW) NEW
 #    endif
+#else
+// Dummy definition
+#    define HIPBLAS_SELECT(OLD, NEW) OLD
 #endif
 
 #define CUBLAS_SCALAR                                                          \
