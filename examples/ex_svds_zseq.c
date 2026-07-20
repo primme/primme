@@ -36,8 +36,16 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
-#include <complex.h>
 #include "primme.h"   /* header file for PRIMME SVDS too */ 
+typedef PRIMME_COMPLEX_DOUBLE cdouble;
+
+#ifdef __cplusplus
+#define creal(x) std::real(x)
+#define cimag(x) std::imag(x)
+#define cabs(x) std::abs(x)
+#define conj(x) std::conj(x)
+#define I cdouble(0,1)
+#endif
 
 #ifndef min
 #define min(A,B) ((A)<=(B)?(A):(B))
@@ -58,7 +66,7 @@ int main (int argc, char *argv[]) {
    /* Solver arrays and parameters */
    double *svals;    /* Array with the computed singular values */
    double *rnorms;   /* Array with the computed residual norms */
-   complex double *svecs;    /* Array with the computed singular vectors;
+   cdouble *svecs;    /* Array with the computed singular vectors;
                         first right (v) vector starts in svecs[0],
                         second right (v) vector starts in svecs[primme_svd.n],
                         first left (u) vector starts in svecs[primme_svd.n*numSVals]...  */
@@ -110,8 +118,8 @@ int main (int argc, char *argv[]) {
 
    /* Allocate space for converged Ritz values and residual norms */
    svals = (double*)malloc(primme_svds.numSvals*sizeof(double));
-   svecs = (complex double*)malloc((primme_svds.n+primme_svds.m)
-         *primme_svds.numSvals*sizeof(complex double));
+   svecs = (cdouble*)malloc((primme_svds.n+primme_svds.m)
+         *primme_svds.numSvals*sizeof(cdouble));
    rnorms = (double*)malloc(primme_svds.numSvals*sizeof(double));
 
    /* Call primme_svds  */
@@ -178,14 +186,14 @@ void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int
    int i;            /* vector index, from 0 to *blockSize-1 */
    int j;
    int min_m_n = min(primme_svds->m, primme_svds->n);
-   complex double *xvec;     /* pointer to i-th input vector x */
-   complex double *yvec;     /* pointer to i-th output vector y */
+   cdouble *xvec;     /* pointer to i-th input vector x */
+   cdouble *yvec;     /* pointer to i-th output vector y */
    double mu = *(double*)primme_svds->matrix;
 
    if (*transpose == 0) { /* Do y <- A * x */
       for (i=0; i<*blockSize; i++) { 
-         xvec = (complex double *)x + (*ldx)*i;
-         yvec = (complex double *)y + (*ldy)*i;
+         xvec = (cdouble *)x + (*ldx)*i;
+         yvec = (cdouble *)y + (*ldy)*i;
          yvec[0] = 0;
          for (j=0; j<primme_svds->n; j++) {
             yvec[0] += xvec[j];
@@ -196,8 +204,8 @@ void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int
       }
    } else { /* Do y <- A^t * x */
       for (i=0; i<*blockSize; i++) {
-         xvec = (complex double *)x + (*ldx)*i;
-         yvec = (complex double *)y + (*ldy)*i;
+         xvec = (cdouble *)x + (*ldx)*i;
+         yvec = (cdouble *)y + (*ldy)*i;
          for (j=0; j<primme_svds->n; j++) {
             yvec[j] = xvec[0];
             if (j+1 < primme_svds->m) yvec[j] += xvec[j+1]*(1.0 - (1.0 - mu)*j/(min_m_n - 1));
@@ -215,8 +223,8 @@ void LauchliMatrixMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int
 void LauchliAugmentedMatvec(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *ldy, int *blockSize, primme_params *primme, int *ierr) {
    /* A pointer to the primme_svds_params is stored at primme.matrix */
    primme_svds_params *primme_svds = (primme_svds_params*)primme->matrix;
-   complex double *x0 = (complex double*)x, *x1 = &x0[primme_svds->nLocal],
-              *y0 = (complex double*)y, *y1 = &y0[primme_svds->nLocal];
+   cdouble *x0 = (cdouble*)x, *x1 = &x0[primme_svds->nLocal],
+              *y0 = (cdouble*)y, *y1 = &y0[primme_svds->nLocal];
    int notrans=0, trans=1;
    /* [y0; y1] <-  * [x0; x1] */
 
@@ -238,11 +246,11 @@ void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *l
    
    int i;            /* vector index, from 0 to *blockSize-1*/
    int j;            /* row index */
-   complex double *xvec;     /* pointer to i-th input vector x */
-   complex double *yvec;     /* pointer to i-th output vector y */
+   cdouble *xvec;     /* pointer to i-th input vector x */
+   cdouble *yvec;     /* pointer to i-th output vector y */
    int modeAtA = primme_svds_op_AtA, modeAAt = primme_svds_op_AAt;
    double mu = *(double*)primme_svds->matrix;
-   complex double  *aux;
+   cdouble  *aux;
    PRIMME_INT ldaux;
    int notrans = 0, trans = 1;
    int min_m_n = min(primme_svds->m, primme_svds->n);
@@ -250,8 +258,8 @@ void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *l
    if (*mode == primme_svds_op_AtA) {
       /* Preconditioner for A^t*A, diag(A^t*A)^{-1} */
       for (i=0; i<*blockSize; i++) { 
-         xvec = (complex double *)x + (*ldx)*i;
-         yvec = (complex double *)y + (*ldy)*i;
+         xvec = (cdouble *)x + (*ldx)*i;
+         yvec = (cdouble *)y + (*ldy)*i;
          for (j=0; j<primme_svds->n; j++) {
             double ei = j<primme_svds->m ? 1.0 - (1.0 - mu)*j/(min_m_n - 1) : 0.0;
             yvec[j] = xvec[j]/(1.0 + ei*ei);
@@ -261,9 +269,9 @@ void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *l
    else if (*mode == primme_svds_op_AAt) {
       /* Preconditioner for A*A^t, diag(A*A^t)^{-1} */
       for (i=0; i<*blockSize; i++) {
-         xvec = (complex double *)x + (*ldx)*i;
-         yvec = (complex double *)y + (*ldy)*i;
-         yvec[0] = xvec[0]/(complex double)primme_svds->m;
+         xvec = (cdouble *)x + (*ldx)*i;
+         yvec = (cdouble *)y + (*ldy)*i;
+         yvec[0] = xvec[0]/(cdouble)primme_svds->m;
          for (j=1; j<primme_svds->m; j++) {
             double ei = j<primme_svds->n ? 1.0 - (1.0 - mu)*j/(min_m_n - 1) : 1.0;
             yvec[j] = xvec[j]/ei/ei;
@@ -276,14 +284,14 @@ void LauchliApplyPreconditioner(void *x, PRIMME_INT *ldx, void *y, PRIMME_INT *l
 
       /* [y0; y1] <- [0 A^t; A 0] * [x0; x1] */
       ldaux = primme_svds->n+primme_svds->m;
-      aux = (complex double*)malloc(sizeof(complex double)*(*blockSize)*ldaux);
+      aux = (cdouble*)malloc(sizeof(cdouble)*(*blockSize)*ldaux);
       primme_svds->matrixMatvec(x, ldx, &aux[primme_svds->n], &ldaux, blockSize, &notrans, primme_svds, ierr);
-      xvec = (complex double *)x + primme_svds->n;
+      xvec = (cdouble *)x + primme_svds->n;
       primme_svds->matrixMatvec(xvec, ldx, aux, &ldaux, blockSize, &trans, primme_svds, ierr);
       /* y0 <- preconditioner for A^t*A  * y0 */
       LauchliApplyPreconditioner(aux, &ldaux, y, ldy, blockSize, &modeAtA, primme_svds, ierr);
       /* y1 <- preconditioner for A*A^t  * y1 */
-      yvec = (complex double *)y + primme_svds->n;
+      yvec = (cdouble *)y + primme_svds->n;
       LauchliApplyPreconditioner(&aux[primme_svds->n], &ldaux, yvec, ldy, blockSize, &modeAAt, primme_svds, ierr);
       free(aux);
    }
